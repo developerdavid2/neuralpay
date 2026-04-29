@@ -1,0 +1,31 @@
+// Better-T-Stack
+//
+// Website: https://www.better-t-stack.dev/
+// Stack Builder: https://www.better-t-stack.dev/new
+// Analytics: https://www.better-t-stack.dev/analytics
+// Showcase: https://www.better-t-stack.dev/showcase
+// Sponsor: https://github.com/sponsors/AmanVarshney01
+//
+// Add new addons with: bun create better-t-stack add
+// This file is safe to delete
+
+{
+  "$schema": "https://r2.better-t-stack.dev/schema.json",
+  "version": "3.27.5",
+  "createdAt": "2026-04-26T19:17:12.789Z",
+  "reproducibleCommand": "bun create better-t-stack@latest neuralpay --frontend next --backend express --runtime bun --database postgres --orm drizzle --api trpc --auth better-auth --payments polar --addons husky turborepo --examples none --db-setup docker --web-deploy none --server-deploy none --git --package-manager bun --install",
+  "database": "postgres",
+  "orm": "drizzle",
+  "backend": "express",
+  "runtime": "bun",
+  "frontend": ["next"],
+  "addons": ["husky", "turborepo"],
+  "examples": [],
+  "auth": "better-auth",
+  "payments": "polar",
+  "packageManager": "bun",
+  "dbSetup": "docker",
+  "api": "trpc",
+  "webDeploy": "none",
+  "serverDeploy": "none",
+}

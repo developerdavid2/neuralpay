@@ -1,0 +1,28 @@
+{
+  "name": "payment-service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "PORT=4002 bun run --hot src/main.ts",
+    "build": "tsdown",
+    "check-types": "tsc -b"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "@neuralpay/env": "workspace:*",
+    "@neuralpay/types": "workspace:*",
+    "@trpc/server": "catalog:",
+    "fastify": "^5.8.5",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@neuralpay/config": "workspace:*",
+    "@types/bun": "catalog:",
+    "tsdown": "^0.21.9",
+    "typescript": "catalog:",
+    "winston": "^3.19.0"
+  }
+}

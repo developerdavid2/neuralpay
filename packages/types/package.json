@@ -1,0 +1,20 @@
+{
+  "name": "@neuralpay/types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check-types": "tsc -b"
+  },
+  "devDependencies": {
+    "@neuralpay/config": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@neuralpay/db": "workspace:*",
+    "zod": "catalog:"
+  }
+}
