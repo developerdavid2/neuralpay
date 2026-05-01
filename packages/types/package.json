@@ -14,7 +14,6 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "@neuralpay/db": "workspace:*",
     "zod": "catalog:"
   }
 }

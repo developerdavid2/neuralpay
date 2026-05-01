@@ -1,8 +1,7 @@
-import { userSelectSchema } from "@neuralpay/db";
 import { z } from "zod";
 
 export const signInSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   rememberMe: z.boolean().default(false),
 });
@@ -10,7 +9,7 @@ export const signInSchema = z.object({
 export const signUpSchema = z
   .object({
     name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.email("Invalid email address"),
+    email: z.string().email("Invalid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
@@ -25,12 +24,12 @@ export const signUpSchema = z
   });
 
 export const forgotPasswordSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: z.string().email("Invalid email address"),
 });
 
 export const resetPasswordSchema = z
   .object({
-    email: z.email(),
+    email: z.string().email(),
     otp: z.string().regex(/^\d{6}$/, "OTP must be 6 digits"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
@@ -46,11 +45,22 @@ export const resetPasswordSchema = z
   });
 
 export const verifyOtpSchema = z.object({
-  email: z.email(),
+  email: z.string().email(),
   otp: z.string().regex(/^\d{6}$/, "OTP must be 6 digits"),
 });
 
-export type User = z.infer<typeof userSelectSchema>;
+// Define User type without DB dependency
+export interface User {
+  id: string;
+  email: string;
+  emailVerified: boolean;
+  name: string;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Derived types from schemas
 export type SignInInput = z.input<typeof signInSchema>;
 export type SignUpInput = z.input<typeof signUpSchema>;
 export type ForgotPasswordInput = z.input<typeof forgotPasswordSchema>;
