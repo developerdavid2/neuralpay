@@ -49,6 +49,14 @@ export function createAuth(config: AuthConfig) {
     //     });
     //   },
     // },
+    session: {
+      expiresIn: 60 * 60 * 24, // 1 day default
+      updateAge: 60 * 60, // refresh if older than 1hr
+      cookieCache: {
+        enabled: true,
+        maxAge: 60 * 5,
+      },
+    },
 
     plugins: [
       emailOTP({

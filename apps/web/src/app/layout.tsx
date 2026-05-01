@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
 import localFont from "next/font/local";
 
-import "../index.css";
-import Header from "@/components/header";
 import Providers from "@/components/providers";
+import "../index.css";
+import { Toaster } from "@neuralpay/ui/components/sonner";
 
-const fontSans = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const fontNexa = localFont({
   src: [
     { path: "./fonts/Nexa-Thin.woff2", weight: "100", style: "normal" },
@@ -32,17 +30,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${fontSans.variable} ${fontNexa.variable} antialiased`}>
+      <body className={`${fontNexa.variable} antialiased`}>
         <Providers>
-          <div className="grid grid-rows-[auto_1fr] h-svh">
-            <Header />
-            {children}
-          </div>
+          <Toaster className="font-sans" />
+          <div className="grid grid-rows-[auto_1fr] h-svh">{children}</div>
         </Providers>
       </body>
     </html>

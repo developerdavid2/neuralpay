@@ -1,13 +1,6 @@
-import { z } from "zod";
-import type {
-  userSelectSchema,
-  userInsertSchema,
-  userUpdateSchema,
-} from "@neuralpay/db";
+export * from "./auth";
+export {};
 
-export type User = z.infer<typeof userSelectSchema>;
-export type NewUser = z.infer<typeof userInsertSchema>;
-export type UpdateUser = z.infer<typeof userUpdateSchema>;
 // export const UserSchema = z.object({
 //   id: z.string(),
 //   email: z.email(),
