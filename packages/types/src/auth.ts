@@ -1,4 +1,4 @@
-import type { userSelectSchema } from "@neuralpay/db";
+import { userSelectSchema } from "@neuralpay/db";
 import { z } from "zod";
 
 export const signInSchema = z.object({
@@ -31,7 +31,7 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z
   .object({
     email: z.email(),
-    otp: z.string().length(6, "OTP must be 6 digits"),
+    otp: z.string().regex(/^\d{6}$/, "OTP must be 6 digits"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
@@ -47,7 +47,7 @@ export const resetPasswordSchema = z
 
 export const verifyOtpSchema = z.object({
   email: z.email(),
-  otp: z.string().length(6, "OTP must be 6 digits"),
+  otp: z.string().regex(/^\d{6}$/, "OTP must be 6 digits"),
 });
 
 export type User = z.infer<typeof userSelectSchema>;

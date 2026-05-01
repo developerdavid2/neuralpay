@@ -15,6 +15,7 @@ const proxyErrorHandler = (err: Error, res: any, _next: any) => {
 const withUserId = (proxyReqOpts: any, srcReq: Request) => {
   proxyReqOpts.headers = proxyReqOpts.headers ?? {};
   proxyReqOpts.headers["Content-Type"] = "application/json";
+  proxyReqOpts.headers["Origin"] = gatewayEnv.CORS_ORIGIN;
   proxyReqOpts.headers["x-user-id"] = (srcReq as any).user?.id ?? "";
   proxyReqOpts.headers["x-internal-source"] = "api-gateway";
   return proxyReqOpts;

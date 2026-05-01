@@ -35,6 +35,7 @@ interface VerifyOtpViewProps {
 }
 
 const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [status, setStatus] = useState<FormStatus>({ type: "idle" });
   const [otp, setOtp] = useState("");
   const [cooldown, setCooldown] = useState(0);
@@ -46,6 +47,11 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pending = status.type === "loading";
 
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
+    };
+  }, []);
   useEffect(() => {
     const storageKey = isResetMode ? "reset_email" : "verify_email";
     const stored = sessionStorage.getItem(storageKey);
@@ -82,54 +88,65 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
   }, [otp, ready]);
 
   const handleVerify = async (code: string) => {
-    if (!email || code.length !== 6) return;
+    if (!email || code.length !== 6 || pending) return;
     setStatus({ type: "loading" });
 
-    if (isResetMode) {
-      // Use checkVerificationOtp to validate the OTP for password reset
-      await authClient.emailOtp.checkVerificationOtp?.(
-        { email, otp: code, type: "forget-password" },
-        {
-          onSuccess: () => {
-            // Store verified OTP and email for the reset-password page
-            sessionStorage.setItem("reset_otp", code);
-            sessionStorage.setItem("reset_email_verified", email);
-            setStatus({
-              type: "success",
-              message: "OTP verified! Redirecting...",
-            });
-            // Short delay to show success alert before redirect
-            setTimeout(() => {
-              router.push("/auth/reset-password");
-            }, 1500);
+    try {
+      if (isResetMode) {
+        await authClient.emailOtp.checkVerificationOtp?.(
+          { email, otp: code, type: "forget-password" },
+          {
+            onSuccess: () => {
+              sessionStorage.setItem("reset_otp", code);
+              sessionStorage.setItem("reset_email_verified", email);
+              setStatus({
+                type: "success",
+                message: "OTP verified! Redirecting...",
+              });
+              if (redirectTimeoutRef.current)
+                clearTimeout(redirectTimeoutRef.current);
+              redirectTimeoutRef.current = setTimeout(() => {
+                router.push("/auth/reset-password");
+              }, 1500);
+            },
+            onError: ({ error }) => {
+              setStatus({ type: "error", message: error.message });
+              setOtp("");
+            },
           },
-          onError: ({ error }) => {
-            setStatus({ type: "error", message: error.message });
-            setOtp("");
+        );
+      } else {
+        await authClient.emailOtp.verifyEmail(
+          { email, otp: code },
+          {
+            onSuccess: () => {
+              sessionStorage.removeItem("verify_email");
+              setStatus({
+                type: "success",
+                message: "Email verified! Redirecting...",
+              });
+              if (redirectTimeoutRef.current)
+                clearTimeout(redirectTimeoutRef.current);
+              redirectTimeoutRef.current = setTimeout(() => {
+                router.push("/onboarding");
+              }, 1500);
+            },
+            onError: ({ error }) => {
+              setStatus({ type: "error", message: error.message });
+              setOtp("");
+            },
           },
-        },
-      );
-    } else {
-      // Email verification after sign-up
-      await authClient.emailOtp.verifyEmail(
-        { email, otp: code },
-        {
-          onSuccess: () => {
-            sessionStorage.removeItem("verify_email");
-            setStatus({
-              type: "success",
-              message: "Email verified! Redirecting...",
-            });
-            setTimeout(() => {
-              router.push("/onboarding");
-            }, 1500);
-          },
-          onError: ({ error }) => {
-            setStatus({ type: "error", message: error.message });
-            setOtp("");
-          },
-        },
-      );
+        );
+      }
+    } catch (error) {
+      setStatus({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Verification failed. Please try again.",
+      });
+      setOtp("");
     }
   };
 

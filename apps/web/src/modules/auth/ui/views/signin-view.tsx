@@ -199,7 +199,6 @@ const SignInView = () => {
                       />
                       <button
                         type="button"
-                        tabIndex={-1}
                         onClick={() => setShowPassword((v) => !v)}
                         aria-label={
                           showPassword ? "Hide password" : "Show password"

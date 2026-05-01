@@ -35,6 +35,10 @@ const ResetPasswordView = () => {
   const [ready, setReady] = useState(false);
   const router = useRouter();
 
+  const form = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { email: "", otp: "", password: "" },
+  });
   useEffect(() => {
     // Must have come from verify-otp page
     const storedEmail = sessionStorage.getItem("reset_email_verified");
@@ -47,13 +51,14 @@ const ResetPasswordView = () => {
 
     setEmail(storedEmail);
     setOtp(storedOtp);
+    form.reset({
+      email: storedEmail,
+      otp: storedOtp,
+      password: "",
+      confirmPassword: "",
+    });
     setReady(true);
-  }, [router]);
-
-  const form = useForm<ResetPasswordInput>({
-    resolver: zodResolver(resetPasswordSchema),
-    defaultValues: { email: "", otp: "", password: "" },
-  });
+  }, [form, router]);
 
   const pending = status.type === "loading";
 
