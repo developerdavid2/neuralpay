@@ -1,3 +1,4 @@
+// apps/server/api-gateway/src/index.ts
 import { gatewayEnv } from "@neuralpay/env/gateway";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
@@ -22,18 +23,17 @@ app.use(
 app.use(morgan("dev"));
 app.use(requestLogger);
 
-// Better Auth — gateway handles its own auth too (Polar etc.)
-app.use("/auth", toNodeHandler(auth));
+// ⚠️  Gateway only mounts auth for Polar-specific routes (webhooks, portal)
+// All sign-in/sign-up/OTP routes are proxied to user-service via /v1/auth
+app.use("/auth/polar", toNodeHandler(auth));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "api-gateway", port: PORT });
 });
 
-// All proxied routes
 mountProxies(app);
 
 // Global error handler — must be last
