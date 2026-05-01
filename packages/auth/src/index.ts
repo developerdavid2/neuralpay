@@ -6,7 +6,7 @@ import { emailOTP } from "better-auth/plugins";
 import { sendEmail } from "./lib/email";
 import { otpTemplate, resetPasswordTemplate } from "./lib/email-templates";
 
-interface AuthConfig {
+export interface AuthConfig {
   corsOrigin: string;
   secret: string;
   baseURL: string;
@@ -38,20 +38,9 @@ export function createAuth(config: AuthConfig) {
       },
     },
 
-    // ALTERNATIVE TO USING LINKS INSTEAD OF OTP
-    // emailVerification: {
-    //   sendOnSignUp: true,
-    //   async sendVerificationEmail({ user, url }) {
-    //     void sendEmail({
-    //       to: user.email,
-    //       subject: "Verify your email",
-    //       html: `<p>Click the link to verify your email:</p><a href="${url}">${url}</a>`,
-    //     });
-    //   },
-    // },
     session: {
-      expiresIn: 60 * 60 * 24, // 1 day default
-      updateAge: 60 * 60, // refresh if older than 1hr
+      expiresIn: 60 * 60 * 24,
+      updateAge: 60 * 60,
       cookieCache: {
         enabled: true,
         maxAge: 60 * 5,
@@ -88,3 +77,18 @@ export function createAuth(config: AuthConfig) {
     },
   });
 }
+
+// 👇 Pre‑configured instance for server‑side use (API, web server)
+const configFromEnv: AuthConfig = {
+  corsOrigin: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
+  secret: process.env.BETTER_AUTH_SECRET ?? "",
+  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:4001",
+  polar: process.env.POLAR_ACCESS_TOKEN
+    ? {
+        accessToken: process.env.POLAR_ACCESS_TOKEN,
+        successUrl: process.env.POLAR_SUCCESS_URL ?? "",
+      }
+    : undefined,
+};
+
+export const auth = createAuth(configFromEnv);
