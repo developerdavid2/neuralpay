@@ -1,4 +1,4 @@
-import { createAuthClient } from "better-auth/client";
+import { createAuthClient } from "better-auth/react";
 import { emailOTPClient } from "better-auth/client/plugins";
 
 const baseURL =
@@ -10,3 +10,5 @@ export const authClient = createAuthClient({
   basePath,
   plugins: [emailOTPClient()],
 });
+
+export type Session = typeof authClient.$Infer.Session;
