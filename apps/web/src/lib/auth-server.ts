@@ -20,7 +20,7 @@ export async function getServerSession(): Promise<Session | null> {
     const headersList = await headers();
 
     const response = await fetch(
-      `${process.env.BETTER_AUTH_URL}/auth/get-session`,
+      `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/v1/auth/get-session`,
       {
         headers: {
           Cookie: headersList.get("cookie") || "",
