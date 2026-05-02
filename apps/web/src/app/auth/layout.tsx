@@ -25,7 +25,7 @@ const AuthenticationLayout = async ({
 
     // Only allow access to verify-otp page
     if (!pathname.includes("/verify-otp")) {
-      redirect("/auth/verify-otp"); // Note: removed /auth/ since your route is likely /verify-otp
+      redirect("/auth/verify-otp");
     }
   }
 

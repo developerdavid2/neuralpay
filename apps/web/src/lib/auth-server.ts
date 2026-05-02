@@ -20,7 +20,7 @@ export async function getServerSession(): Promise<Session | null> {
     const headersList = await headers();
 
     const response = await fetch(
-      `${process.env.BETTER_AUTH_URL}/auth/get-session`,
+      `${process.env.BETTER_AUTH_URL}/v1/auth/get-session`,
       {
         headers: {
           Cookie: headersList.get("cookie") || "",
@@ -49,18 +49,3 @@ export async function requireAuth(redirectTo: string = "/sign-in") {
   }
   return session;
 }
-
-// Helper to check if user is verified
-export async function requireVerifiedAuth(redirectTo: string = "/verify-otp") {
-  const session = await getServerSession();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-  if (!session.user.emailVerified) {
-    throw new Error("Email not verified");
-  }
-  return session;
-}
-
-// Don't export auth from here - it's causing the database initialization
-// export { auth };

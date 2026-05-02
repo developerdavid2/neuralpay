@@ -64,7 +64,9 @@ const SignUpView = () => {
       {
         onSuccess: () => {
           setStatus({ type: "success" });
-          toast.success("Logged in Successfully", { position: "top-center" });
+          toast.success("Account created successfully", {
+            position: "top-center",
+          });
           router.push(
             `/auth/verify-otp?email=${encodeURIComponent(payload.email)}`,
           );
@@ -93,7 +95,7 @@ const SignUpView = () => {
 
   return (
     <div className="grid md:grid-cols-2 w-full min-h-full rounded-3xl overflow-hidden">
-      {/* ── Left — identical stripe + card layout as sign-in ────────── */}
+      {/* Striped background */}
       <div
         className="relative flex items-center justify-center p-12 rounded-tl-[1rem] rounded-br-[1rem] rounded-tr-[4rem] rounded-bl-[4rem]"
         style={{
@@ -154,7 +156,7 @@ const SignUpView = () => {
                 name="name"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field>
                     <FieldLabel htmlFor="sign-up-name">
                       Full name
                       <span className="text-destructive ml-0.5">*</span>
@@ -181,7 +183,7 @@ const SignUpView = () => {
                 name="email"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field>
                     <FieldLabel htmlFor="sign-up-email">
                       Email
                       <span className="text-destructive ml-0.5">*</span>
@@ -208,7 +210,7 @@ const SignUpView = () => {
                 name="password"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field>
                     <FieldLabel htmlFor="sign-up-password">
                       Password
                       <span className="text-destructive ml-0.5">*</span>
@@ -257,7 +259,7 @@ const SignUpView = () => {
                 name="confirmPassword"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field>
                     <FieldLabel htmlFor="sign-up-confirm">
                       Confirm password
                       <span className="text-destructive ml-0.5">*</span>

@@ -1,8 +1,11 @@
+import { Demo } from "@/components/demo";
+
 export default async function DashboardPage() {
   return (
     <div>
-      <h1>Dashboard</h1>
-      <p>Welcome User</p>
+      <Demo />
+      <Demo />
+      <Demo />
     </div>
   );
 }
