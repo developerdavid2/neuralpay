@@ -11,18 +11,19 @@ import { useEffect, useState } from "react";
 const DashboardNavbar = () => {
   const [openCommand, setOpenCommand] = useState(false);
 
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpenCommand((open) => !open);
-      }
-    };
+  // TODO: re-enable once DashboardCommand is wired up
+  // useEffect(() => {
+  //   const down = (e: KeyboardEvent) => {
+  //     if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+  //       e.preventDefault();
+  //       setOpenCommand((open) => !open);
+  //     }
+  //   };
 
-    document.addEventListener("keydown", down);
+  //   document.addEventListener("keydown", down);
 
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+  //   return () => document.removeEventListener("keydown", down);
+  // }, []);
 
   return (
     <>

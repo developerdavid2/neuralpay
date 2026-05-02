@@ -9,6 +9,9 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
   if (!session?.user) {
     redirect("/auth/signin");
   }
+  if (!session.user.emailVerified) {
+    redirect("/auth/verify-otp");
+  }
 
   return <DashboardLayout>{children}</DashboardLayout>;
 };

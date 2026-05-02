@@ -1,3 +1,4 @@
+"use client";
 import { useSidebar } from "@neuralpay/ui/components/sidebar";
 
 export function NeuralPayLogo() {
