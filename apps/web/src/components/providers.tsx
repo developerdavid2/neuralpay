@@ -1,12 +1,10 @@
+// apps/web/src/components/providers.tsx
 "use client";
 
-import { Toaster } from "@neuralpay/ui/components/sonner";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-import { queryClient } from "@/utils/trpc";
-
+import { Toaster } from "@neuralpay/ui/components/sonner";
 import { ThemeProvider } from "./theme-provider";
+import { TRPCReactProvider } from "@/trpc/trpc-client";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -16,10 +14,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       enableSystem
       disableTransitionOnChange
     >
-      <QueryClientProvider client={queryClient}>
+      <TRPCReactProvider>
         {children}
         <ReactQueryDevtools />
-      </QueryClientProvider>
+      </TRPCReactProvider>
       <Toaster richColors />
     </ThemeProvider>
   );

@@ -1,9 +1,8 @@
+// apps/web/src/app/layout.tsx
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-
 import Providers from "@/components/providers";
 import "../index.css";
-import { Toaster } from "@neuralpay/ui/components/sonner";
 
 const fontNexa = localFont({
   src: [
@@ -35,7 +34,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${fontNexa.variable} antialiased`}>
         <Providers>
-          <Toaster className="font-sans" />
           <div className="grid grid-rows-[auto_1fr] h-svh">{children}</div>
         </Providers>
       </body>

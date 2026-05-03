@@ -6,6 +6,7 @@
   "exports": {
     "./server": "./src/server.ts",
     "./gateway": "./src/gateway.ts",
+    "./payment": "./src/payment.ts",
     "./user-service": "./src/user-service.ts",
     "./ai-service": "./src/ai-service.ts",
     "./web": "./src/web.ts"
