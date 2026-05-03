@@ -1,14 +1,9 @@
-import { protectedProcedure, publicProcedure, router } from "../index";
+import { publicProcedure, router } from "../trpc";
+import { usersRouter } from "./users/index";
 
 export const appRouter = router({
-  healthCheck: publicProcedure.query(() => {
-    return "OK";
-  }),
-  privateData: protectedProcedure.query(({ ctx }) => {
-    return {
-      message: "This is private",
-      user: ctx.session.user,
-    };
-  }),
+  health: publicProcedure.query(() => ({ ok: true, service: "api-gateway" })),
+  users: usersRouter,
 });
+
 export type AppRouter = typeof appRouter;

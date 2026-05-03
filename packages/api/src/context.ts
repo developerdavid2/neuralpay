@@ -1,15 +1,17 @@
-import { auth } from "@neuralpay/auth";
+// packages/api/src/context.ts
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import { fromNodeHeaders } from "better-auth/node";
 
-export async function createContext(opts: CreateExpressContextOptions) {
-  const session = await auth.api.getSession({
-    headers: fromNodeHeaders(opts.req.headers),
-  });
-  return {
-    auth: null,
-    session,
-  };
+// Use a plain interface with no Express internals exposed
+// This is what gets exported and referenced by routers
+export interface Context {
+  _headers: Headers;
 }
 
-export type Context = Awaited<ReturnType<typeof createContext>>;
+export async function createContext(
+  opts: CreateExpressContextOptions,
+): Promise<Context> {
+  return {
+    _headers: fromNodeHeaders(opts.req.headers),
+  };
+}

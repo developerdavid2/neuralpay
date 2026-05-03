@@ -2,15 +2,20 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import Fastify from "fastify";
+import { paymentServiceEnv } from "@neuralpay/env/payment";
 
 const PORT = Number(process.env.PORT) || 4002;
-const app = Fastify({ logger: true });
+const server = Fastify({ logger: true });
 
-await app.register(helmet);
-await app.register(cors, { origin: ["http://localhost:3000"], credentials: true });
-await app.register(rateLimit, { max: 200, timeWindow: "1 minute" });
+await server.register(helmet);
+await server.register(cors, {
+  origin: [paymentServiceEnv.CORS_ORIGIN],
+  credentials: true,
+});
 
-app.get("/health", async () => ({
+await server.register(rateLimit, { max: 200, timeWindow: "1 minute" });
+
+server.get("/health", async () => ({
   status: "ok",
   service: "payment-service",
   port: PORT,
@@ -18,6 +23,10 @@ app.get("/health", async () => ({
   uptime: process.uptime(),
 }));
 
-// TODO: Register transactions/accounts/provider/vaults/splits/webhooks routes with Fastify plugins.
-await app.listen({ port: PORT, host: "0.0.0.0" });
-console.log(`🚀 payment-service running on http://localhost:${PORT}`);
+try {
+  await server.listen({ port: PORT, host: "0.0.0.0" });
+  server.log.info(`🚀 payment-service running on http://localhost:${PORT}`);
+} catch (err) {
+  server.log.error(err);
+  process.exit(1);
+}

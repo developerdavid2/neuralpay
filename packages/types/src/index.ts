@@ -1,11 +1,7 @@
-import type { userInsertSchema, userUpdateSchema } from "@neuralpay/db";
-import { z } from "zod";
 export * from "./auth";
+export * from "./users";
 export {};
 
-export type NewUser = z.infer<typeof userInsertSchema>;
-export type UpdateUser = z.infer<typeof userUpdateSchema>;
-
-export type ServiceResponse<T> =
+export type ServiceResult<T> =
   | { success: true; data: T }
-  | { success: false; error: string };
+  | { success: false; error: string; code: string };

@@ -11,6 +11,8 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  phone: text("phone"),
+  planTier: text("plan_tier").default("free").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -21,6 +23,7 @@ export const user = pgTable("user", {
 export const userSelectSchema = createSelectSchema(user);
 export const userInsertSchema = createInsertSchema(user);
 export const userUpdateSchema = createUpdateSchema(user);
+export type UserRecord = typeof user.$inferSelect;
 
 export const session = pgTable(
   "session",
