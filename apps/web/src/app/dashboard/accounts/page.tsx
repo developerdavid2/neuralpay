@@ -7,7 +7,7 @@ import { AccountView } from "@/modules/accounts/account-view";
 export const dynamic = "force-dynamic";
 
 const Page = async () => {
-  prefetch(trpc.users.profile.list.queryOptions());
+  await prefetch(trpc.users.profile.list.queryOptions());
 
   return (
     <HydrateClient>

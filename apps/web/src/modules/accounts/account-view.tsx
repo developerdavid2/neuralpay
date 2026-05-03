@@ -4,7 +4,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 export function AccountView() {
   const trpc = useTRPC();
-  const { data } = useSuspenseQuery(trpc.users.profile.list.queryOptions());
+  const { data, error } = useSuspenseQuery(
+    trpc.users.profile.list.queryOptions(),
+  );
 
   return (
     <div className="p-8 text-foreground">
