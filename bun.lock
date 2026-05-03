@@ -197,10 +197,12 @@
         "@neuralpay/auth": "workspace:*",
         "@neuralpay/db": "workspace:*",
         "@neuralpay/env": "workspace:*",
+        "@neuralpay/types": "workspace:*",
         "@trpc/client": "catalog:",
         "@trpc/server": "catalog:",
         "better-auth": "catalog:",
         "dotenv": "catalog:",
+        "drizzle-orm": "^0.45.1",
         "zod": "catalog:",
       },
       "devDependencies": {

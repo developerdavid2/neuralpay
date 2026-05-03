@@ -38,6 +38,23 @@ export function createAuth(config: AuthConfig) {
       },
     },
 
+    user: {
+      additionalFields: {
+        phone: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+          input: true,
+        },
+        planTier: {
+          type: "string",
+          required: false,
+          defaultValue: "free",
+          input: false,
+        },
+      },
+    },
+
     session: {
       expiresIn: 60 * 60 * 24,
       updateAge: 60 * 60,
