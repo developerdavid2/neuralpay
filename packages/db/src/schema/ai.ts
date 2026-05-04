@@ -31,7 +31,7 @@ export const chatSessions = pgTable("chat_sessions", {
 
 export const chatMessages = pgTable("chat_messages", {
   id: uuid("id").defaultRandom().primaryKey(),
-  sessionId: text("session_id")
+  sessionId: uuid("session_id")
     .notNull()
     .references(() => chatSessions.id, { onDelete: "cascade" }),
   role: roleEnum("role").notNull(),

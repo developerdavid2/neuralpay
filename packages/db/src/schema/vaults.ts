@@ -39,7 +39,7 @@ export const vaults = pgTable("vaults", {
 
 export const vaultMembers = pgTable("vault_members", {
   id: uuid("id").defaultRandom().primaryKey(),
-  vaultId: text("vault_id")
+  vaultId: uuid("vault_id")
     .notNull()
     .references(() => vaults.id, { onDelete: "cascade" }),
   userId: text("user_id")
@@ -51,7 +51,7 @@ export const vaultMembers = pgTable("vault_members", {
 
 export const vaultContributions = pgTable("vault_contributions", {
   id: uuid("id").defaultRandom().primaryKey(),
-  vaultId: text("vault_id")
+  vaultId: uuid("vault_id")
     .notNull()
     .references(() => vaults.id, { onDelete: "cascade" }),
   userId: text("user_id")
@@ -64,7 +64,7 @@ export const vaultContributions = pgTable("vault_contributions", {
 
 export const vaultInvitations = pgTable("vault_invitations", {
   id: uuid("id").defaultRandom().primaryKey(),
-  vaultId: text("vault_id")
+  vaultId: uuid("vault_id")
     .notNull()
     .references(() => vaults.id, { onDelete: "cascade" }),
   invitedEmail: text("invited_email").notNull(),

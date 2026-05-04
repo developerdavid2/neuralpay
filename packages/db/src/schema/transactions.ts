@@ -4,6 +4,7 @@ import {
   integer,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -43,7 +44,7 @@ export const categoryEnum = pgEnum("category", [
 ]);
 
 // Accounts table
-export const bankAccounts = pgTable("bankAccounts", {
+export const bankAccounts = pgTable("bank_accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
     .notNull()
@@ -70,7 +71,7 @@ export const transactions = pgTable("transactions", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  bankAccountId: text("bank_account_id")
+  bankAccountId: uuid("bank_account_id")
     .notNull()
     .references(() => bankAccounts.id, { onDelete: "cascade" }),
   description: text("description").notNull(),
@@ -98,14 +99,18 @@ export const transactionTags = pgTable("transaction_tags", {
   color: text("color").notNull().default("#6C63FF"),
 });
 
-export const transactionTagMapping = pgTable("transaction_tag_mapping", {
-  transactionId: text("transaction_id")
-    .notNull()
-    .references(() => transactions.id, { onDelete: "cascade" }),
-  tagId: text("tag_id")
-    .notNull()
-    .references(() => transactionTags.id, { onDelete: "cascade" }),
-});
+export const transactionTagMapping = pgTable(
+  "transaction_tag_mapping",
+  {
+    transactionId: uuid("transaction_id")
+      .notNull()
+      .references(() => transactions.id),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => transactionTags.id),
+  },
+  (t) => [primaryKey({ columns: [t.transactionId, t.tagId] })],
+);
 
 // Budgets
 export const budgets = pgTable("budgets", {

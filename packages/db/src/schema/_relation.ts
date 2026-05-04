@@ -75,7 +75,7 @@ export const authAccountRelations = relations(account, ({ one }) => ({
 }));
 
 // ========== Transactions Relations ==========
-export const bankAccounttRelations = relations(
+export const bankAccountRelations = relations(
   bankAccounts,
   ({ one, many }) => ({
     user: one(user, {

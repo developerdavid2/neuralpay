@@ -40,7 +40,7 @@ export const splits = pgTable("splits", {
 
 export const splitParticipants = pgTable("split_participants", {
   id: uuid("id").defaultRandom().primaryKey(),
-  splitId: text("split_id")
+  splitId: uuid("split_id")
     .notNull()
     .references(() => splits.id, { onDelete: "cascade" }),
   userId: text("user_id")
@@ -54,7 +54,7 @@ export const splitParticipants = pgTable("split_participants", {
 
 export const splitChatMessages = pgTable("split_chat_messages", {
   id: uuid("id").defaultRandom().primaryKey(),
-  splitId: text("split_id")
+  splitId: uuid("split_id")
     .notNull()
     .references(() => splits.id, { onDelete: "cascade" }),
   userId: text("user_id")
