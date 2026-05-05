@@ -43,9 +43,9 @@ export const splitParticipants = pgTable("split_participants", {
   splitId: uuid("split_id")
     .notNull()
     .references(() => splits.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+  guestName: text("guest_name"), // for non-registered participants
+  guestEmail: text("guest_email"), // to send them a payment request
   shareAmount: decimal("share_amount", { precision: 18, scale: 2 }).notNull(),
   paid: boolean("paid").default(false),
   paidAt: timestamp("paid_at"),

@@ -27,15 +27,22 @@ export const chatSessions = pgTable("chat_sessions", {
   isActive: boolean("is_active").default(true),
   archivedAt: timestamp("archived_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+export type ChatSessionRecord = typeof chatSessions.$inferSelect;
 
 export const chatMessages = pgTable("chat_messages", {
   id: uuid("id").defaultRandom().primaryKey(),
   sessionId: uuid("session_id")
     .notNull()
     .references(() => chatSessions.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   role: roleEnum("role").notNull(),
   content: text("content").notNull(),
   tokensUsed: integer("tokens_used"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export type ChatMessageRecord = typeof chatMessages.$inferSelect;

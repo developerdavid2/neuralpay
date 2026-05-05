@@ -40,6 +40,8 @@ export const categoryEnum = pgEnum("category", [
   "transfer",
   "income",
   "investment",
+  "subscriptions",
+  "groceries",
   "other",
 ]);
 
@@ -50,7 +52,10 @@ export const bankAccounts = pgTable("bank_accounts", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   source: text("source").notNull(), // "plaid", "mono", "manual"
-  sourceItemId: text("source_item_id"), // plaid_item_id or mono_item_id
+  sourceItemId: text("source_item_id"),
+  sourceAccountId: text("source_account_id"), //  plaid's account_id or mono's accountId
+  accessToken: text("access_token"), // encrypted, needed for sync
+  cursor: text("cursor"), // Plaid incremental sync cursor
   name: text("name").notNull(),
   type: accountTypeEnum("type").notNull(),
   balance: decimal("balance", { precision: 18, scale: 2 })
@@ -61,9 +66,12 @@ export const bankAccounts = pgTable("bank_accounts", {
   bankName: text("bank_name"),
   isVerified: boolean("is_verified").default(false),
   lastSync: timestamp("last_sync"),
+  status: text("status").default("active"), //  active, disconnected, needs_update
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export type AccountRecord = typeof bankAccounts.$inferSelect;
 
 // Transactions table
 export const transactions = pgTable("transactions", {
@@ -88,6 +96,7 @@ export const transactions = pgTable("transactions", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+export type TransactionRecord = typeof transactions.$inferSelect;
 
 // Tags
 export const transactionTags = pgTable("transaction_tags", {
@@ -138,8 +147,10 @@ export const spendingInsights = pgTable("spending_insights", {
   description: text("description").notNull(),
   severity: text("severity"), // low, medium, high
   category: categoryEnum("category"),
-  data: text("data"), // JSON string with extra context
+  data: text("data"),
   dismissed: boolean("dismissed").default(false),
   generatedAt: timestamp("generated_at").defaultNow().notNull(),
   expiresAt: timestamp("expires_at"),
 });
+
+export type InsightRecord = typeof spendingInsights.$inferSelect;

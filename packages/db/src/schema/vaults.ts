@@ -60,6 +60,7 @@ export const vaultContributions = pgTable("vault_contributions", {
   amount: decimal("amount", { precision: 18, scale: 2 }).notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const vaultInvitations = pgTable("vault_invitations", {

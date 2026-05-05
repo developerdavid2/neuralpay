@@ -255,6 +255,10 @@ export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
     fields: [chatMessages.sessionId],
     references: [chatSessions.id],
   }),
+  user: one(user, {
+    fields: [chatMessages.userId],
+    references: [user.id],
+  }),
 }));
 
 // ========== Notifications Relations ==========
