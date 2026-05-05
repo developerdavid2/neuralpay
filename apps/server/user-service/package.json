@@ -1,14 +1,23 @@
 {
-  "name": "user-service",
+  "name": "@neuralpay/user-service",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./routers": {
+      "default": "./src/routers/index.ts"
+    },
+    ".": {
+      "default": "./src/main.ts"
+    }
+  },
   "scripts": {
     "dev": "PORT=4001 bun run --hot src/main.ts",
     "build": "tsdown",
     "check-types": "tsc -b"
   },
   "dependencies": {
+    "@neuralpay/api": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",

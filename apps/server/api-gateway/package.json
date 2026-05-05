@@ -10,9 +10,8 @@
     "start": "bun run dist/index.mjs"
   },
   "dependencies": {
-    "@neuralpay/api": "workspace:*",
+    "@neuralpay/user-service": "workspace:*",
     "@neuralpay/auth": "workspace:*",
-    "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@trpc/server": "catalog:",
     "better-auth": "catalog:",
