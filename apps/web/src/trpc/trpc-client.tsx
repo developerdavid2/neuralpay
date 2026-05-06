@@ -1,12 +1,12 @@
 "use client";
 
-import type { AppRouter } from "@neuralpay/api/routers/index";
 import { env } from "@neuralpay/env/web";
 import { createTRPCContext } from "@trpc/tanstack-react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { makeQueryClient } from "./query-client"; // ← from neutral file
+import type { AppRouter } from "@neuralpay/api-gateway/router";
 
 export const { TRPCProvider, useTRPC } = createTRPCContext<AppRouter>();
 

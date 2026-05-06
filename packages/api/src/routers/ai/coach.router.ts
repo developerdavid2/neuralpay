@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { AIService } from "../../services/ai/ai.service";
-import { protectedProcedure, router } from "../../trpc";
+import { protectedProcedure, router } from "../../../../config/src/trpc";
 import z from "zod";
 import { sendMessageSchema } from "@neuralpay/types";
 

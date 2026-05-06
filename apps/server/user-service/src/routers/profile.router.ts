@@ -2,11 +2,11 @@ import {
   protectedProcedure,
   publicProcedure,
   router,
-} from "@neuralpay/api/trpc";
+} from "@neuralpay/config/trpc";
 import { TRPCError } from "@trpc/server";
 import { UsersService } from "../services/users.service";
 
-export const usersRouter = router({
+export const profileRouter = router({
   health: publicProcedure.query(() => ({ ok: true, service: "user-service" })),
   me: protectedProcedure.query(async ({ ctx }) => {
     const result = await UsersService.getById(ctx.session.user.id);

@@ -1,21 +1,27 @@
-/**
- * ai-service — Express
- * Responsibilities: GPT-4o spending analysis, anomaly detection,
- *                   weekly report generation
- * Port: 4003
- */
-import { createExpressApp } from "@neuralpay/config/express";
+import * as trpcExpress from "@trpc/server/adapters/express";
+import { createExpressApp } from "@neuralpay/config/express-config";
+import { aiRouter } from "./routers";
+import { createContext } from "@neuralpay/config/express-context";
+import { aiServiceEnv } from "@neuralpay/env/ai-service";
 
-const PORT = Number(process.env.PORT) || 4003;
+const PORT = Number(aiServiceEnv.PORT) || 4003;
 const app = createExpressApp({ serviceName: "ai-service", port: PORT });
 
-// TODO: Mount reportsRouter to generate scheduled and on-demand spending reports.
-// app.use("/reports", reportsRouter);
-// TODO: Mount anomaliesRouter for anomaly detection requests and feedback loops.
-// app.use("/anomalies", anomaliesRouter);
-// TODO: Mount coachRouter for conversational AI coaching sessions.
-// app.use("/coach", coachRouter);
+// tRPC — gateway proxies /v1/trpc/users.* → here at /trpc
+app.use(
+  "/trpc",
+  trpcExpress.createExpressMiddleware({
+    router: aiRouter,
+    createContext,
+    onError({ path, error }) {
+      if (error.code === "INTERNAL_SERVER_ERROR") {
+        console.error(`[tRPC ai-service] error on /${path}:`, error.message);
+      }
+    },
+  }),
+);
 
 app.listen(PORT, () => {
   console.log(`🚀 ai-service running on http://localhost:${PORT}`);
+  console.log(`   tRPC at http://localhost:${PORT}/trpc`);
 });

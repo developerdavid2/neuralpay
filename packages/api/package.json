@@ -25,7 +25,7 @@
     "@trpc/server": "catalog:",
     "better-auth": "catalog:",
     "date-fns": "catalog:",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },

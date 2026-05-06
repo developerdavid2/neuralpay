@@ -1,1 +1,1 @@
-export { createExpressApp } from "./express";
+export { createExpressApp } from "./express-config";

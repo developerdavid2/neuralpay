@@ -1,15 +1,22 @@
+import {
+  router,
+  protectedProcedure,
+  publicProcedure,
+} from "@neuralpay/config/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { AIService } from "../../services/ai/ai.service";
-import { protectedProcedure, router } from "../../../../config/src/trpc";
+import { AIService } from "../services/ai.service";
 
 export const insightsRouter = router({
+  health: publicProcedure.query(() => ({ ok: true, service: "ai-service" })),
   list: protectedProcedure
-    .input(z.object({ limit: z.number().min(1).max(50).default(10) }))
+    .input(
+      z.object({ limit: z.number().min(1).max(50).default(10) }).optional(),
+    )
     .query(async ({ ctx, input }) => {
       const result = await AIService.getInsights(
         ctx.session.user.id,
-        input.limit,
+        input?.limit,
       );
       if (!result.success) {
         throw new TRPCError({

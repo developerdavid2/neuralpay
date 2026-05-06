@@ -14,12 +14,15 @@
     "@fastify/rate-limit": "^10.3.0",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
+    "@neuralpay/db": "workspace:*",
+    "@neuralpay/config": "workspace:*",
     "@trpc/server": "catalog:",
+    "date-fns": "catalog:",
+    "drizzle-orm": "catalog:",
     "fastify": "^5.8.5",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
     "@types/bun": "catalog:",
     "tsdown": "^0.21.9",
     "typescript": "catalog:",

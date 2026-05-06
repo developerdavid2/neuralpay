@@ -22,7 +22,9 @@
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
     "@neuralpay/auth": "workspace:*",
+    "@neuralpay/config": "workspace:*",
     "@trpc/server": "catalog:",
+    "drizzle-orm": "catalog:",
     "better-auth": "catalog:",
     "cors": "^2.8.6",
     "express": "^5.2.1",
@@ -31,7 +33,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",

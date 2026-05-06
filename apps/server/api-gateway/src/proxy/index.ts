@@ -43,7 +43,6 @@ const withUserId = (proxyReqOpts: any, srcReq: Request) => {
 // Cross-service batches are rare; if needed, add a batch-splitter middleware.
 
 function trpcNamespaceProxy(app: Express) {
-  // Map first segment → service URL
   const NAMESPACE_MAP: Record<string, string> = {
     users: gatewayEnv.USER_SERVICE_URL,
     payments: gatewayEnv.PAYMENT_SERVICE_URL,
@@ -51,12 +50,16 @@ function trpcNamespaceProxy(app: Express) {
     notifications: gatewayEnv.NOTIFICATION_SERVICE_URL,
   };
 
-  // Middleware that reads the namespace and proxies to the right service
   app.use("/v1/trpc", (req: Request, res: Response, next: NextFunction) => {
-    const segment = req.path.split("/")[1] ?? "";
-    const namespace = segment.split(".")[0];
+    // req.url here is e.g. "/users.profile.me" or "/users.profile.me,payments.accounts.list"
+    const rawPath = req.url.split("?")[0]?.replace(/^\//, "") ?? "";
 
-    const targetURL = NAMESPACE_MAP[namespace as string];
+    // For batched calls the path looks like "users.profile.me,payments.accounts.list"
+    // Take the first procedure to determine the namespace
+    const firstProcedure = rawPath.split(",")[0] ?? "";
+    const namespace = firstProcedure.split(".")[0] ?? "";
+
+    const targetURL = NAMESPACE_MAP[namespace];
 
     if (!targetURL) {
       res.status(404).json({
@@ -68,11 +71,26 @@ function trpcNamespaceProxy(app: Express) {
 
     logger.info(`[tRPC proxy] ${req.method} ${namespace} → ${targetURL}`);
 
-    // Proxy to the service — path stays the same (/v1/trpc/users.profile.me)
-    // Each service mounts tRPC at /trpc, so we strip the /v1 prefix
     proxy(targetURL, {
       proxyErrorHandler: proxyError,
-      proxyReqPathResolver: (r) => `/trpc${r.url}`,
+      proxyReqPathResolver: (r) => {
+        // Strip the namespace prefix from every procedure in the path
+        // "users.profile.me"         → "profile.me"
+        // "users.profile.me,users.profile.list" → "profile.me,profile.list"
+        const url = new URL(`http://x${r.url}`);
+        const stripped = url.pathname
+          .replace(/^\//, "") // remove leading slash
+          .split(",")
+          .map((proc) =>
+            proc.startsWith(`${namespace}.`)
+              ? proc.slice(namespace.length + 1) // strip "users."
+              : proc,
+          )
+          .join(",");
+
+        const query = url.search; // preserve ?batch=1&input=... etc
+        return `/trpc/${stripped}${query}`;
+      },
       proxyReqOptDecorator: withUserId,
       userResDecorator: (_proxyRes, proxyResData) => {
         logger.info(`[tRPC proxy] response from ${namespace}-service`);
@@ -81,7 +99,6 @@ function trpcNamespaceProxy(app: Express) {
     })(req, res, next);
   });
 }
-
 // ── Mount all proxies ─────────────────────────────────────────────────────────
 export function mountProxies(app: Express) {
   // 1. Better Auth routes → user-service

@@ -5,7 +5,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 export function AccountView() {
   const trpc = useTRPC();
   const { data, error } = useSuspenseQuery(
-    trpc.users.profile.list.queryOptions(),
+    trpc.users.profile.me.queryOptions(),
   );
 
   return (

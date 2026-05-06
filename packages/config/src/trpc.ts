@@ -1,23 +1,19 @@
-// packages/api/src/trpc.ts
 import { initTRPC, TRPCError } from "@trpc/server";
 import { auth } from "@neuralpay/auth";
-import type { Context } from "./context";
 
-type Session = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
-
-export interface AuthenticatedContext extends Context {
-  session: Session;
+// Base context — shared minimum shape all services provide
+// Each service's createContext must return at least this shape
+export interface BaseContext {
+  session: Awaited<ReturnType<typeof auth.api.getSession>>;
+  _headers: Headers;
 }
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<BaseContext>().create();
 
 export const router = t.router;
 export const publicProcedure = t.procedure;
-
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
-  const session = await auth.api.getSession({ headers: ctx._headers });
-
-  if (!session) {
+  if (!ctx.session) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Authentication required",
@@ -27,7 +23,7 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   return next({
     ctx: {
       ...ctx,
-      session,
-    } as AuthenticatedContext,
+      session: ctx.session, // narrowed — non-null
+    },
   });
 });
