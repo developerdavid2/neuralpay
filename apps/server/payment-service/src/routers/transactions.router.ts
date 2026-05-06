@@ -1,8 +1,9 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { TransactionsService } from "../../services/payments/transactions.service";
-import { protectedProcedure, router } from "../../trpc";
+
 import { listTransactionsInputSchema } from "@neuralpay/types";
+import { protectedProcedure, router } from "@neuralpay/config/trpc";
+import { TransactionsService } from "../services/transactions.service";
 
 export const transactionsRouter = router({
   list: protectedProcedure

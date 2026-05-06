@@ -7,15 +7,13 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { formatAmount, formatDate } from "@/lib/utils";
 import { CATEGORY_COLORS, CATEGORY_LABELS } from "../../constants";
+import { useTransactions } from "@/hooks/dashboard/use-transactions";
 
 export function RecentTransactions() {
-  const trpc = useTRPC();
-  const { data } = useSuspenseQuery(
-    trpc.payments.transactions.list.queryOptions({ limit: 7 }),
-  );
+  const { recentTransactions } = useTransactions();
 
   return (
-    <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm">
+    <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm font-sans">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <h2 className="text-sm font-semibold text-foreground">
@@ -44,12 +42,12 @@ export function RecentTransactions() {
 
       {/* Rows */}
       <div className="divide-y divide-border">
-        {data.items.length === 0 && (
+        {recentTransactions.items.length === 0 && (
           <p className="px-5 py-8 text-center text-sm text-muted-foreground">
             No transactions yet.
           </p>
         )}
-        {data.items.map((tx) => (
+        {recentTransactions.items.map((tx) => (
           <div
             key={tx.id}
             className={cn(

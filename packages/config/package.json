@@ -3,15 +3,24 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./trpc": "./src/trpc.ts",
+    "./express-config": "./src/express-config.ts",
+    "./express-context": {
+      "default": "./src/express-context.ts"
+    },
+    "./fastify-context": {
+      "default": "./src/fastify-context.ts"
+    },
     ".": "./src/index.ts",
-    "./express": "./src/express.ts",
     "./tsconfig.base.json": "./tsconfig.base.json"
   },
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "helmet": "^8.1.0",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "better-auth": "catalog:",
+    "@trpc/server": "catalog:"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

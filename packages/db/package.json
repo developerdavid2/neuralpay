@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@neuralpay/env": "workspace:*",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "catalog:",
     "drizzle-zod": "0.7.0",
     "pg": "^8.17.1",
     "server-only": "^0.0.1",

@@ -15,7 +15,7 @@ export function createExpressApp(config: AppConfig): Express {
   app.use(helmet());
   app.use(
     cors({
-      origin: config.allowedOrigins ?? ["http://localhost:3000"],
+      origin: config.allowedOrigins ?? ["http://localhost:3001"],
       credentials: true,
     }),
   );

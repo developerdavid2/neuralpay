@@ -4,25 +4,20 @@ import { useTRPC } from "@/trpc/trpc-client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { SPENDING_COLORS, SPENDING_LABELS } from "../../constants";
+import { useSpendingByCategory } from "@/hooks/dashboard/use-spending-by-category";
 
 export function SpendingChart() {
-  const trpc = useTRPC();
+  const { spendingCategory } = useSpendingByCategory();
+
   const now = new Date();
 
-  const { data } = useSuspenseQuery(
-    trpc.payments.transactions.spendingByCategory.queryOptions({
-      month: now.getMonth() + 1,
-      year: now.getFullYear(),
-    }),
-  );
-
-  const chartData = data.map((d) => ({
+  const chartData = spendingCategory.map((d) => ({
     name: SPENDING_LABELS[d.category] ?? d.category,
     value: Math.round(d.total * 100) / 100,
     color: SPENDING_COLORS[d.category] ?? SPENDING_COLORS.other,
   }));
 
-  const totalSpend = data.reduce((s, d) => s + d.total, 0);
+  const totalSpend = spendingCategory.reduce((s, d) => s + d.total, 0);
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-sm">

@@ -1,32 +1,20 @@
 "use client";
 
-import { useTRPC } from "@/trpc/trpc-client";
+import { useStatCards } from "@/hooks/dashboard/use-stat-cards";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { cardTemplates } from "../../constants";
 
 export function StatCards() {
-  const trpc = useTRPC();
+  const { totalBalance, monthSpending, savingsRate, accountCount } =
+    useStatCards();
 
-  const { data: balanceData } = useSuspenseQuery(
-    trpc.payments.accounts.totalBalance.queryOptions(),
-  );
-  const { data: accounts } = useSuspenseQuery(
-    trpc.payments.accounts.list.queryOptions(),
-  );
-  const { data: monthSpending } = useSuspenseQuery(
-    trpc.payments.transactions.currentMonthSpending.queryOptions(),
-  );
+  // Values must be in the same order as cardTemplates
 
-  const totalBalance = balanceData.totalBalance;
-  const accountCount = balanceData.accountCount;
-  const savingsAccount = accounts.find((a) => a.type === "savings");
-  const savingsBalance = parseFloat(savingsAccount?.balance ?? "0");
-  const savingsRate =
-    totalBalance > 0 ? ((savingsBalance / totalBalance) * 100).toFixed(1) : "0";
+  const values = [totalBalance, monthSpending, savingsRate, accountCount];
 
   return (
-    <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-      {cards.map((card) => (
+    <div className="grid grid-cols-2 gap-4 xl:grid-cols-4 font-sans">
+      {cardTemplates.map((card, index) => (
         <div
           key={card.label}
           className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm"
@@ -40,7 +28,7 @@ export function StatCards() {
             </span>
           </div>
           <p className="font-mono text-2xl font-bold tracking-tight text-foreground">
-            {card.value}
+            {card.formatValue(values[index] ?? 0)}
           </p>
           <p
             className={cn(

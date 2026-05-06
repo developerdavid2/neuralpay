@@ -1,17 +1,30 @@
 {
-  "name": "ai-service",
+  "name": "@neuralpay/ai-service",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./routers": {
+      "default": "./src/routers/index.ts"
+    },
+    ".": {
+      "default": "./src/main.ts"
+    }
+  },
   "scripts": {
     "dev": "PORT=4003 bun run --hot src/main.ts",
     "build": "tsdown",
     "check-types": "tsc -b"
   },
   "dependencies": {
+    "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
+    "@neuralpay/auth": "workspace:*",
+    "@neuralpay/config": "workspace:*",
+    "better-auth": "catalog:",
     "@trpc/server": "catalog:",
+    "drizzle-orm": "catalog:",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "helmet": "^8.1.0",
@@ -19,7 +32,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",

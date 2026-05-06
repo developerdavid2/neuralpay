@@ -2,11 +2,11 @@
 
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { StatCards } from "./components/stat-cards";
-import { RecentTransactions } from "./components/recent-transactions";
-import { SpendingChart } from "./components/spending-chart";
-import { InsightsSummary } from "./components/insights-summary";
-import { StatCardsSkeleton } from "../components/stat-cards";
+
+import { StatCards, StatCardsSkeleton } from "../components/stat-cards";
+import { RecentTransactions } from "../components/recent-transactions";
+import { InsightsSummary } from "../components/insights-summary";
+import { SpendingChart } from "../components/spending-chart";
 
 function SectionError() {
   return (

@@ -1,8 +1,8 @@
-import { router } from "@neuralpay/api/trpc";
-import { usersRouter } from "./profile.router";
+import { router } from "@neuralpay/config/trpc";
+import { profileRouter } from "./profile.router";
 
-export const appRouter = router({
-  users: usersRouter,
+export const usersRouter = router({
+  profile: profileRouter,
 });
 
-export type AppRouter = typeof appRouter;
+export type UserRouter = typeof usersRouter;

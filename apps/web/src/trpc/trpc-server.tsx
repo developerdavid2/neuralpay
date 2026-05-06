@@ -8,9 +8,10 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { headers } from "next/headers";
 import { cache } from "react";
-import type { AppRouter } from "@neuralpay/api/routers/index";
+
 import { env } from "@neuralpay/env/web";
 import { makeQueryClient } from "./query-client"; // ← from neutral file
+import type { AppRouter } from "@neuralpay/api-gateway/router";
 
 // Stable QueryClient per request
 export const getQueryClient = cache(makeQueryClient);

@@ -1,7 +1,12 @@
 {
-  "name": "api-gateway",
+  "name": "@neuralpay/api-gateway",
   "type": "module",
   "main": "src/main.ts",
+  "exports": {
+    "./router": {
+      "default": "./src/router.ts"
+    }
+  },
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc -b",
@@ -11,8 +16,11 @@
   },
   "dependencies": {
     "@neuralpay/user-service": "workspace:*",
+    "@neuralpay/ai-service": "workspace:*",
+    "@neuralpay/payment-service": "workspace:*",
     "@neuralpay/auth": "workspace:*",
     "@neuralpay/env": "workspace:*",
+    "@neuralpay/config": "workspace:*",
     "@trpc/server": "catalog:",
     "better-auth": "catalog:",
     "cors": "^2.8.5",
@@ -28,7 +36,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/cors": "^2.8.17",
     "@types/express": "catalog:",
