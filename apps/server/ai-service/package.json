@@ -17,12 +17,12 @@
     "check-types": "tsc -b"
   },
   "dependencies": {
-    "@neuralpay/api": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
     "@neuralpay/auth": "workspace:*",
     "@neuralpay/config": "workspace:*",
+    "better-auth": "catalog:",
     "@trpc/server": "catalog:",
     "drizzle-orm": "catalog:",
     "cors": "^2.8.6",

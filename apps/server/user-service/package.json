@@ -17,7 +17,6 @@
     "check-types": "tsc -b"
   },
   "dependencies": {
-    "@neuralpay/api": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",

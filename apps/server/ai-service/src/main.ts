@@ -1,8 +1,9 @@
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { createExpressApp } from "@neuralpay/config/express-config";
 import { aiRouter } from "./routers";
-import { createContext } from "@neuralpay/config/express-context";
+
 import { aiServiceEnv } from "@neuralpay/env/ai-service";
+import { createContext } from "./trpc/context";
 
 const PORT = Number(aiServiceEnv.PORT) || 4003;
 const app = createExpressApp({ serviceName: "ai-service", port: PORT });

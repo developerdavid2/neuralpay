@@ -17,6 +17,7 @@
   "dependencies": {
     "@neuralpay/user-service": "workspace:*",
     "@neuralpay/ai-service": "workspace:*",
+    "@neuralpay/payment-service": "workspace:*",
     "@neuralpay/auth": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/config": "workspace:*",

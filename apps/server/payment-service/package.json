@@ -1,8 +1,16 @@
 {
-  "name": "payment-service",
+  "name": "@neuralpay/payment-service",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./routers": {
+      "default": "./src/routers/index.ts"
+    },
+    ".": {
+      "default": "./src/main.ts"
+    }
+  },
   "scripts": {
     "dev": "PORT=4002 bun run --hot src/main.ts",
     "build": "tsdown",
@@ -13,6 +21,7 @@
     "@fastify/helmet": "^13.0.2",
     "@fastify/rate-limit": "^10.3.0",
     "@neuralpay/env": "workspace:*",
+    "@neuralpay/auth": "workspace:*",
     "@neuralpay/types": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/config": "workspace:*",

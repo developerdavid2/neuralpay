@@ -4,7 +4,7 @@ import { usersRouter } from "./routers";
 import { userServiceEnv } from "@neuralpay/env/user-service";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
-import { createContext } from "@neuralpay/config/express-context";
+import { createContext } from "./trpc/context";
 
 const PORT = Number(userServiceEnv.PORT) || 4001;
 const app = createExpressApp({ serviceName: "user-service", port: PORT });

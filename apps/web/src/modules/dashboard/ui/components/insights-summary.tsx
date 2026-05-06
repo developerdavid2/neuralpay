@@ -10,24 +10,10 @@ import { cn } from "@neuralpay/ui/lib/utils";
 import Link from "next/link";
 import { ArrowUpRight, X } from "lucide-react";
 import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
+import { useInsights } from "@/hooks/dashboard/use-insights";
 
 export function InsightsSummary() {
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
-
-  const { data: insights } = useSuspenseQuery(
-    trpc.ai.insights.list.queryOptions({ limit: 3 }),
-  );
-
-  const dismiss = useMutation(
-    trpc.ai.insights.dismiss.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries(
-          trpc.ai.insights.list.queryOptions({ limit: 3 }),
-        );
-      },
-    }),
-  );
+  const { insights, dismiss } = useInsights();
 
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm">

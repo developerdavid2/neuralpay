@@ -1,7 +1,7 @@
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
-import { createContext } from "@neuralpay/config/fastify-context";
+import { createContext } from "./trpc/context";
 import { paymentServiceEnv } from "@neuralpay/env/payment";
 import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import Fastify from "fastify";
