@@ -118,6 +118,7 @@
         "@neuralpay/env": "workspace:*",
         "@neuralpay/types": "workspace:*",
         "@trpc/server": "catalog:",
+        "better-auth": "catalog:",
         "date-fns": "catalog:",
         "drizzle-orm": "catalog:",
         "fastify": "^5.8.5",

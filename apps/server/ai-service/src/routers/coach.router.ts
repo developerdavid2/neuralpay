@@ -73,11 +73,16 @@ export const coachRouter = router({
         });
       }
 
-      // 3. TODO: call Claude here — for now return mock
+      // 3. TODO: call Claude here — for now return generic placeholder
       // const claudeResponse = await callClaude(input.message, history);
+      if (process.env.NODE_ENV === "production") {
+        throw new TRPCError({
+          code: "NOT_IMPLEMENTED",
+          message: "Coach chat is not yet available.",
+        });
+      }
       const mockReply =
-        "I can see your spending patterns. Your biggest category this month is food & dining at $340. " +
-        "Would you like me to suggest a budget for next month?";
+        "Coach is not connected yet. This is a development placeholder response.";
 
       // 4. Save assistant message
       const assistantMsgResult = await AIService.saveMessage(

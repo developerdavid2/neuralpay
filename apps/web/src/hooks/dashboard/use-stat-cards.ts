@@ -17,7 +17,9 @@ export function useStatCards() {
 
   const totalBalance = balance.totalBalance;
   const savingsAccount = accounts.find((a) => a.type === "savings");
-  const savingsBalance = parseFloat(savingsAccount?.balance ?? "0");
+  const savingsBalance = accounts
+    .filter((a) => a.type === "savings")
+    .reduce((sum, account) => sum + parseFloat(account.balance ?? "0"), 0);
   const savingsRate =
     totalBalance > 0 ? (savingsBalance / totalBalance) * 100 : 0;
   const accountCount = balance.accountCount;

@@ -7,10 +7,11 @@ import { auth } from "./lib/auth";
 import { createContext } from "./trpc/context";
 
 const PORT = Number(userServiceEnv.PORT) || 4001;
-const app = createExpressApp({ serviceName: "user-service", port: PORT });
-
-// // Better Auth — all auth HTTP routes
-app.use("/auth", toNodeHandler(auth));
+const app = createExpressApp({
+  serviceName: "user-service",
+  port: PORT,
+  beforeBodyParser: (a) => a.use("/auth", toNodeHandler(auth)),
+});
 app.use(
   "/trpc",
   trpcExpress.createExpressMiddleware({
