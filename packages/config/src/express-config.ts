@@ -9,7 +9,11 @@ interface AppConfig {
   allowedOrigins?: string[];
 }
 
-export function createExpressApp(config: AppConfig): Express {
+export function createExpressApp(
+  config: AppConfig & {
+    beforeBodyParser?: (app: Express) => void;
+  },
+): Express {
   const app = express();
 
   app.use(helmet());
@@ -19,6 +23,7 @@ export function createExpressApp(config: AppConfig): Express {
       credentials: true,
     }),
   );
+  config.beforeBodyParser?.(app);
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(morgan("dev"));

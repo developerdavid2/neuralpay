@@ -27,6 +27,7 @@
     "@neuralpay/config": "workspace:*",
     "@trpc/server": "catalog:",
     "date-fns": "catalog:",
+    "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "fastify": "^5.8.5",
     "zod": "catalog:"
