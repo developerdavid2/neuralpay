@@ -1,28 +1,36 @@
 import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
-import { prefetch, trpc, HydrateClient } from "@/trpc/trpc-server";
-
-export const dynamic = "force-dynamic";
-
-const Page = async () => {
-  const now = new Date();
-
-  prefetch(trpc.payments.accounts.totalBalance.queryOptions());
-  prefetch(trpc.payments.accounts.list.queryOptions());
-  prefetch(trpc.payments.transactions.currentMonthSpending.queryOptions());
-  prefetch(trpc.payments.transactions.list.queryOptions({ limit: 7 }));
-  prefetch(
-    trpc.payments.transactions.spendingByCategory.queryOptions({
-      month: now.getMonth() + 1,
-      year: now.getFullYear(),
-    }),
-  );
-  prefetch(trpc.ai.insights.list.queryOptions({ limit: 3 }));
+import { getQueryClient, HydrateClient, trpc } from "@/trpc/trpc-server";
+export default async function Page() {
+  const queryClient = getQueryClient();
+  await Promise.allSettled([
+    queryClient.prefetchQuery(
+      trpc.payments.accounts.totalBalance.queryOptions(),
+    ),
+    queryClient.prefetchQuery(trpc.payments.accounts.list.queryOptions()),
+    queryClient.prefetchQuery(
+      trpc.payments.transactions.currentMonthSpending.queryOptions(),
+    ),
+    queryClient.prefetchQuery(
+      trpc.payments.transactions.list.queryOptions({
+        limit: 7,
+      }),
+    ),
+    queryClient.prefetchQuery(
+      trpc.payments.transactions.spendingByCategory.queryOptions({
+        month: 5,
+        year: 2026,
+      }),
+    ),
+    queryClient.prefetchQuery(
+      trpc.ai.insights.list.queryOptions({
+        limit: 3,
+      }),
+    ),
+  ]);
 
   return (
     <HydrateClient>
       <DashboardView />
     </HydrateClient>
   );
-};
-
-export default Page;
+}

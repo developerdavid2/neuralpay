@@ -16,7 +16,6 @@ export function useStatCards() {
   );
 
   const totalBalance = balance.totalBalance;
-  const savingsAccount = accounts.find((a) => a.type === "savings");
   const savingsBalance = accounts
     .filter((a) => a.type === "savings")
     .reduce((sum, account) => sum + parseFloat(account.balance ?? "0"), 0);

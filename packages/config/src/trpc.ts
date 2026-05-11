@@ -1,4 +1,5 @@
 import { initTRPC, TRPCError } from "@trpc/server";
+import superjson from "superjson";
 
 export interface BaseContext {
   session: {
@@ -12,7 +13,9 @@ export interface BaseContext {
   _headers: Headers;
 }
 
-const t = initTRPC.context<BaseContext>().create();
+const t = initTRPC.context<BaseContext>().create({
+  transformer: superjson,
+});
 
 export const router = t.router;
 export const publicProcedure = t.procedure;
