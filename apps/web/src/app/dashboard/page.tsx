@@ -2,6 +2,11 @@ import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
 import { getQueryClient, HydrateClient, trpc } from "@/trpc/trpc-server";
 export default async function Page() {
   const queryClient = getQueryClient();
+
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1; // getMonth() returns 0-11
+  const currentYear = now.getFullYear();
+
   await Promise.allSettled([
     queryClient.prefetchQuery(
       trpc.payments.accounts.totalBalance.queryOptions(),
@@ -17,8 +22,8 @@ export default async function Page() {
     ),
     queryClient.prefetchQuery(
       trpc.payments.transactions.spendingByCategory.queryOptions({
-        month: 5,
-        year: 2026,
+        month: currentMonth,
+        year: currentYear,
       }),
     ),
     queryClient.prefetchQuery(
