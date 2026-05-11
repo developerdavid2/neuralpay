@@ -8,7 +8,6 @@ import { createContext } from "./trpc/context";
 const PORT = Number(aiServiceEnv.PORT) || 4003;
 const app = createExpressApp({ serviceName: "ai-service", port: PORT });
 
-// tRPC — gateway proxies /v1/trpc/users.* → here at /trpc
 app.use(
   "/trpc",
   trpcExpress.createExpressMiddleware({

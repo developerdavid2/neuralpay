@@ -1,13 +1,15 @@
-// NO "use client" — this file is imported by both server and client
 import {
-  defaultShouldDehydrateQuery,
   QueryClient,
+  defaultShouldDehydrateQuery,
 } from "@tanstack/react-query";
 
 export function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
-      queries: { staleTime: 30 * 1000 },
+      queries: {
+        staleTime: 1000 * 30,
+        retry: 1,
+      },
       dehydrate: {
         shouldDehydrateQuery: (query) =>
           defaultShouldDehydrateQuery(query) ||

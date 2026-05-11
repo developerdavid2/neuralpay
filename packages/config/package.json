@@ -15,12 +15,13 @@
     "./tsconfig.base.json": "./tsconfig.base.json"
   },
   "dependencies": {
+    "@trpc/server": "catalog:",
+    "better-auth": "catalog:",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1",
-    "better-auth": "catalog:",
-    "@trpc/server": "catalog:"
+    "superjson": "^2.2.6"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

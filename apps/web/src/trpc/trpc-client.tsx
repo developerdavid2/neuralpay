@@ -7,6 +7,7 @@ import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { makeQueryClient } from "./query-client"; // ← from neutral file
 import type { AppRouter } from "@neuralpay/api-gateway/router";
+import superjson from "superjson";
 
 export const { TRPCProvider, useTRPC } = createTRPCContext<AppRouter>();
 
@@ -25,6 +26,7 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
     createTRPCClient<AppRouter>({
       links: [
         httpBatchLink({
+          transformer: superjson,
           url: `${env.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
           fetch(url, options) {
             return fetch(url, { ...options, credentials: "include" });

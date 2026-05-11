@@ -1,55 +1,59 @@
 import "server-only";
 
-import {
-  createTRPCOptionsProxy,
-  type TRPCQueryOptions,
-} from "@trpc/tanstack-react-query";
-import { createTRPCClient, httpBatchLink } from "@trpc/client";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { headers } from "next/headers";
 import { cache } from "react";
 
-import { env } from "@neuralpay/env/web";
-import { makeQueryClient } from "./query-client"; // ← from neutral file
+import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
+
+import { createTRPCClient, httpBatchLink } from "@trpc/client";
+
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+
+import { headers } from "next/headers";
+
+import superjson from "superjson";
+
 import type { AppRouter } from "@neuralpay/api-gateway/router";
 
-// Stable QueryClient per request
+import { makeQueryClient } from "./query-client";
+
 export const getQueryClient = cache(makeQueryClient);
 
-// tRPC proxy — uses HTTP client because router is on separate server
 export const trpc = createTRPCOptionsProxy<AppRouter>({
   client: createTRPCClient<AppRouter>({
     links: [
       httpBatchLink({
-        url: `${env.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
+        url: `${process.env.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
+
+        transformer: superjson,
+
         async headers() {
           const h = await headers();
-          return { cookie: h.get("cookie") ?? "" };
+
+          return {
+            cookie: h.get("cookie") ?? "",
+          };
+        },
+
+        fetch(url, options) {
+          return fetch(url, {
+            ...options,
+
+            credentials: "include",
+          });
         },
       }),
     ],
   }),
+
   queryClient: getQueryClient,
 });
 
-// ── Helpers (same pattern as the codebase you showed) ─────────────────────
-
-export function HydrateClient({ children }: { children: React.ReactNode }) {
+export function HydrateClient(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      {children}
+      {props.children}
     </HydrationBoundary>
   );
-}
-
-export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
-  queryOptions: T,
-) {
-  const queryClient = getQueryClient();
-  if (queryOptions.queryKey[1]?.type === "infinite") {
-    void queryClient.prefetchInfiniteQuery(queryOptions as any);
-  } else {
-    void queryClient.prefetchQuery(queryOptions);
-  }
 }
