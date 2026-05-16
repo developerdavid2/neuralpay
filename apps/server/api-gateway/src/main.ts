@@ -3,6 +3,7 @@ import { gatewayEnv } from "@neuralpay/env/gateway";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import { requestLogger } from "./middleware/logger.middleware";
+import { authMiddleware } from "./middleware/auth.middleware";
 import { mountProxies } from "./proxy";
 import { errorHandler } from "./middleware/error.middleware";
 
@@ -16,8 +17,8 @@ const app = createExpressApp({
 app.use(requestLogger);
 // Polar webhook only — gateway-local Better Auth instance
 app.use("/auth/polar", toNodeHandler(auth));
-
-// // ── All routing — gateway knows nothing about business logic ──────────────
+// Auth middleware for tRPC/API routes — validates session and attaches req.user
+app.use(authMiddleware);
 mountProxies(app);
 
 app.use(errorHandler);

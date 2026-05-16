@@ -1,16 +1,10 @@
 "use client";
 
-import {
-  useSuspenseQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { useTRPC } from "@/trpc/trpc-client";
-import { cn } from "@neuralpay/ui/lib/utils";
-import Link from "next/link";
-import { ArrowUpRight, X } from "lucide-react";
-import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
 import { useInsights } from "@/hooks/dashboard/use-insights";
+import { cn } from "@neuralpay/ui/lib/utils";
+import { ArrowUpRight, X } from "lucide-react";
+import Link from "next/link";
+import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
 
 export function InsightsSummary() {
   const { insights, dismiss } = useInsights();

@@ -1,19 +1,110 @@
 "use client";
 
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useTRPC } from "@/trpc/trpc-client";
-import { cn } from "@neuralpay/ui/lib/utils";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { formatAmount, formatDate } from "@/lib/utils";
-import { CATEGORY_COLORS, CATEGORY_LABELS } from "../../constants";
+import { ArrowUpRight, Package } from "lucide-react";
+import { formatAmount, formatTransactionDate } from "@/lib/utils";
+import { cn } from "@neuralpay/ui/lib/utils";
 import { useTransactions } from "@/hooks/dashboard/use-transactions";
+import { CATEGORY_ICONS, CATEGORY_LABELS } from "../../constants";
+import type { Transaction } from "@/modules/transactions/types";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
+
+function TransactionIcon({ category }: { category: string | null }) {
+  const Icon = CATEGORY_ICONS[category ?? "other"] ?? Package;
+  return (
+    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent">
+      <Icon className="size-4 text-muted-foreground" aria-hidden />
+    </span>
+  );
+}
+
+function TransactionBadges({
+  isPending,
+  isAnomaly,
+}: {
+  isPending: boolean;
+  isAnomaly: boolean;
+}) {
+  if (!isPending && !isAnomaly) return null;
+  return (
+    <span className="flex items-center gap-1.5 shrink-0">
+      {isPending && (
+        <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          Pending
+        </span>
+      )}
+      {isAnomaly && (
+        <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-destructive/10 text-destructive">
+          Flagged
+        </span>
+      )}
+    </span>
+  );
+}
+
+function TransactionRow({ tx }: { tx: Transaction }) {
+  const isIncome = tx.type === "credit";
+  const isPending = tx.status === "pending";
+  const isAnomaly = tx.isAnomaly ?? false;
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-4 px-5 py-3.5",
+        "transition-colors hover:bg-muted/30",
+        isAnomaly && "border-l-2 border-l-destructive",
+      )}
+    >
+      <TransactionIcon category={tx.category} />
+
+      {/* Merchant + date */}
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="truncate text-sm font-medium text-foreground">
+          {tx.merchant ?? tx.description}
+        </span>
+        <span className="text-[11px] text-muted-foreground">
+          {formatTransactionDate(tx.date)}
+        </span>
+      </div>
+
+      {/* Category label — hidden on mobile */}
+      <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">
+        {CATEGORY_LABELS[tx.category ?? "other"] ?? "Other"}
+      </span>
+
+      {/* Status badges + amount */}
+      <div className="flex items-center gap-2 shrink-0">
+        <TransactionBadges isPending={isPending} isAnomaly={isAnomaly} />
+        <span
+          className={cn(
+            "font-mono text-sm font-semibold tabular-nums",
+            isIncome ? "text-[#0EA5A0]" : "text-foreground",
+          )}
+        >
+          {isIncome ? "+" : "−"}
+          {formatAmount(Math.abs(Number(tx.amount)))}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function EmptyTransactions() {
+  return (
+    <div className="flex flex-col items-center gap-2 px-5 py-12 text-center">
+      <Package className="size-8 text-muted-foreground/40" />
+      <p className="text-sm text-muted-foreground">No transactions yet.</p>
+    </div>
+  );
+}
 
 export function RecentTransactions() {
   const { recentTransactions } = useTransactions();
+  const { items } = recentTransactions;
 
   return (
-    <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm font-sans">
+    <div className="flex flex-col rounded-xl border border-border bg-card overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <h2 className="text-sm font-semibold text-foreground">
@@ -28,74 +119,42 @@ export function RecentTransactions() {
         </Link>
       </div>
 
-      {/* Column headers */}
-      <div className="grid grid-cols-[1fr_140px_100px_100px] gap-4 border-b border-border px-5 py-2.5">
-        {["Description", "Category", "Date", "Amount"].map((col) => (
-          <span
-            key={col}
-            className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
-          >
-            {col}
-          </span>
-        ))}
-      </div>
-
-      {/* Rows */}
+      {/* Body */}
       <div className="divide-y divide-border">
-        {recentTransactions.items.length === 0 && (
-          <p className="px-5 py-8 text-center text-sm text-muted-foreground">
-            No transactions yet.
-          </p>
+        {items.length === 0 ? (
+          <EmptyTransactions />
+        ) : (
+          items.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
         )}
-        {recentTransactions.items.map((tx) => (
-          <div
-            key={tx.id}
-            className={cn(
-              "grid grid-cols-[1fr_140px_100px_100px] gap-4 px-5 py-3.5",
-              "hover:bg-muted/40 transition-colors",
-              tx.isAnomaly && "border-l-2 border-l-destructive",
-            )}
-          >
-            {/* Description */}
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-foreground">
-                {tx.merchant ?? tx.description}
-              </span>
-              {tx.isAnomaly && (
-                <span className="text-[11px] font-medium text-destructive">
-                  ⚠ Flagged anomaly
-                </span>
-              )}
-            </div>
-
-            {/* Category */}
-            <span
-              className={cn(
-                "self-center rounded-full px-2.5 py-0.5 text-[11px] font-medium w-fit",
-                CATEGORY_COLORS[tx.category ?? "other"] ??
-                  CATEGORY_COLORS.other,
-              )}
-            >
-              {CATEGORY_LABELS[tx.category ?? "other"] ?? "Other"}
-            </span>
-
-            {/* Date */}
-            <span className="self-center text-xs text-muted-foreground">
-              {formatDate(tx.date)}
-            </span>
-
-            {/* Amount */}
-            <span
-              className={cn(
-                "self-center font-mono text-sm font-semibold",
-                tx.type === "credit" ? "text-[#0EA5A0]" : "text-foreground",
-              )}
-            >
-              {formatAmount(+tx.amount, tx.type)}
-            </span>
-          </div>
-        ))}
       </div>
     </div>
+  );
+}
+
+export function RecentTransactionsSkeleton() {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-border px-5 py-4">
+        <Skeleton className="h-4 w-36" />
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-3 w-14" />
+          <ArrowUpRight className="size-3 text-muted-foreground/30" />
+        </div>
+      </CardHeader>
+
+      <CardContent className="divide-y divide-border p-0">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 px-5 py-3.5">
+            <Skeleton className="size-9 shrink-0 rounded-lg" />
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <Skeleton className="h-3.5 w-32" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+            <Skeleton className="hidden h-3 w-16 sm:block" />
+            <Skeleton className="h-3.5 w-16 shrink-0" />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 }

@@ -1,12 +1,9 @@
-import { auth } from "@neuralpay/auth";
-import { fromNodeHeaders } from "better-auth/node";
+import { createFastifyContext } from "@neuralpay/config/trpc";
 import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import type { BaseContext } from "@neuralpay/config/trpc";
 
-export async function createContext({
-  req,
-}: CreateFastifyContextOptions): Promise<BaseContext> {
-  const headers = fromNodeHeaders(req.headers);
-  const session = await auth.api.getSession({ headers });
-  return { session, _headers: headers };
+export async function createContext(
+  opts: CreateFastifyContextOptions,
+): Promise<BaseContext> {
+  return createFastifyContext({ req: opts.req });
 }

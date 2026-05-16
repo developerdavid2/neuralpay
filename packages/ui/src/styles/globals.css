@@ -50,6 +50,9 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Custom Color */
+  --color-main: var(--main);
 }
 
 :root {
@@ -59,7 +62,7 @@
   --card-foreground: oklch(39.767% 0.02682 287.958);
   --popover: oklch(100% 0.00011 271.152);
   --popover-foreground: oklch(39.767% 0.02682 287.958);
-  --primary: oklch(0.496 0.265 301.924);
+  --primary: oklch(54.134% 0.24669 293.012);
   --primary-foreground: oklch(0.977 0.014 308.299);
   --secondary: oklch(91.279% 0.0001 271.152 / 0.989);
   --secondary-foreground: oklch(0.21 0.006 285.885);
@@ -72,7 +75,7 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.905 0.182 98.111);
-  --chart-2: oklch(0.795 0.184 86.047);
+  --chart-2: oklch(79.769% 0.16406 82.708);
   --chart-3: oklch(0.681 0.162 75.834);
   --chart-4: oklch(0.554 0.135 66.442);
   --chart-5: oklch(0.476 0.114 61.907);
@@ -85,6 +88,9 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Custom colors */
+  --main: oklch(60.6% 0.25 292.717);
 }
 
 .dark {
@@ -94,7 +100,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(18.727% 0.01621 290.454);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.438 0.218 303.724);
+  --primary: oklch(49.067% 0.24133 292.584);
   --primary-foreground: oklch(0.977 0.014 308.299);
   --secondary: oklch(28.622% 0.01821 289.756);
   --secondary-foreground: oklch(0.985 0 0);
@@ -107,7 +113,7 @@
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.905 0.182 98.111);
-  --chart-2: oklch(0.795 0.184 86.047);
+  --chart-2: oklch(79.769% 0.16406 82.708);
   --chart-3: oklch(0.681 0.162 75.834);
   --chart-4: oklch(0.554 0.135 66.442);
   --chart-5: oklch(0.476 0.114 61.907);
@@ -119,11 +125,14 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Custom colors */
+  --main: oklch(81.1% 0.111 293.571);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50 font-sans;
   }
   body {
     @apply bg-background text-foreground;

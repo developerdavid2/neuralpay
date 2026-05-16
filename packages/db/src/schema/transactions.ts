@@ -45,6 +45,21 @@ export const categoryEnum = pgEnum("category", [
   "other",
 ]);
 
+export const insightSeverityEnum = pgEnum("insight_severity", [
+  "low",
+  "medium",
+  "high",
+  "critical",
+]);
+
+export const insightTypeEnum = pgEnum("insight_type", [
+  "anomaly",
+  "opportunity",
+  "trend",
+  "saving",
+  "warning",
+]);
+
 // Accounts table
 export const bankAccounts = pgTable("bank_accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -142,10 +157,10 @@ export const spendingInsights = pgTable("spending_insights", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  type: text("type").notNull(), // anomaly, saving, opportunity, trend
+  type: insightTypeEnum("type").notNull(), // anomaly, saving, opportunity, trend
   title: text("title").notNull(),
   description: text("description").notNull(),
-  severity: text("severity"), // low, medium, high
+  severity: insightSeverityEnum("severity"), // low, medium, high
   category: categoryEnum("category"),
   data: text("data"),
   dismissed: boolean("dismissed").default(false),

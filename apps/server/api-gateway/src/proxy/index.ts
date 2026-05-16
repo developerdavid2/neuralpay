@@ -20,16 +20,23 @@ const baseHeaders = (proxyReqOpts: any) => {
 };
 
 // Used for protected routes — injects verified user id so downstream
-
 const withUserId = (proxyReqOpts: any, srcReq: Request) => {
   proxyReqOpts.headers ??= {};
   proxyReqOpts.headers["Content-Type"] = "application/json";
   proxyReqOpts.headers["Origin"] = gatewayEnv.CORS_ORIGIN;
   proxyReqOpts.headers["x-internal-source"] = "api-gateway";
-  proxyReqOpts.headers["x-user-id"] = (srcReq as any).user?.id ?? "";
-  // Forward the session cookie so each service can also run auth.api.getSession
-  // if it needs to (belt and suspenders)
+
+  // Inject session headers from req.user (attached by authMiddleware)
+  const user = (srcReq as any).user;
+  if (user?.id) {
+    proxyReqOpts.headers["x-user-id"] = user.id;
+    proxyReqOpts.headers["x-user-email"] = user.email ?? "";
+    proxyReqOpts.headers["x-user-name"] = user.name ?? "";
+  }
+
+  // Forward the session cookie as fallback (belt and suspenders)
   proxyReqOpts.headers["cookie"] = srcReq.headers.cookie ?? "";
+
   return proxyReqOpts;
 };
 

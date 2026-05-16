@@ -8,21 +8,188 @@ import {
 } from "./src/schema/splits";
 import {
   bankAccounts,
+  budgets,
   spendingInsights,
   transactions,
 } from "./src/schema/transactions";
 import { vaultContributions, vaultMembers, vaults } from "./src/schema/vaults";
 
+// ─── Helper ───────────────────────────────────────────────────────────────────
+function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}
+
+function randomAmount(min: number, max: number): string {
+  return (Math.random() * (max - min) + min).toFixed(2);
+}
+
+const CATEGORIES = [
+  {
+    category: "food_dining" as const,
+    weight: 25,
+    min: 5,
+    max: 85,
+    merchants: [
+      "Starbucks",
+      "Chipotle",
+      "McDonald's",
+      "Pizza Hut",
+      "Local Bistro",
+      "Sushi Place",
+      "Taco Bell",
+      "Panera Bread",
+      "Five Guys",
+      "Shake Shack",
+    ],
+  },
+  {
+    category: "groceries" as const,
+    weight: 20,
+    min: 25,
+    max: 180,
+    merchants: [
+      "Whole Foods",
+      "Trader Joe's",
+      "Kroger",
+      "Safeway",
+      "Costco",
+      "Aldi",
+      "Walmart",
+      "Target Grocery",
+      "Instacart",
+    ],
+  },
+  {
+    category: "transport" as const,
+    weight: 15,
+    min: 8,
+    max: 45,
+    merchants: [
+      "Uber",
+      "Lyft",
+      "Shell",
+      "Exxon",
+      "BP",
+      "City Transit",
+      "Parking Garage",
+      "Enterprise",
+      "Hertz",
+    ],
+  },
+  {
+    category: "subscriptions" as const,
+    weight: 10,
+    min: 5,
+    max: 25,
+    merchants: [
+      "Netflix",
+      "Spotify",
+      "Amazon Prime",
+      "Disney+",
+      "Hulu",
+      "YouTube Premium",
+      "Apple Music",
+      "GitHub",
+      "Figma",
+      "Notion",
+    ],
+  },
+  {
+    category: "shopping" as const,
+    weight: 12,
+    min: 15,
+    max: 250,
+    merchants: [
+      "Amazon",
+      "Target",
+      "Best Buy",
+      "Nike",
+      "Zara",
+      "H&M",
+      "Etsy",
+      "eBay",
+      "Apple Store",
+      "Sephora",
+    ],
+  },
+  {
+    category: "entertainment" as const,
+    weight: 8,
+    min: 20,
+    max: 150,
+    merchants: [
+      "AMC Theaters",
+      "Concert Hall",
+      "Bowling Alley",
+      "Arcade",
+      "Comedy Club",
+      "Sports Bar",
+      "Netflix (event)",
+      "Spotify (event)",
+    ],
+  },
+  {
+    category: "utilities" as const,
+    weight: 5,
+    min: 60,
+    max: 200,
+    merchants: [
+      "City Power",
+      "Water Works",
+      "Gas Company",
+      "Internet Provider",
+      "Phone Company",
+      "Trash Service",
+    ],
+  },
+  {
+    category: "rent" as const,
+    weight: 3,
+    min: 800,
+    max: 1200,
+    merchants: [
+      "Landlord LLC",
+      "Property Management",
+      "Apartment Complex",
+      "Rent Office",
+    ],
+  },
+  {
+    category: "healthcare" as const,
+    weight: 2,
+    min: 25,
+    max: 120,
+    merchants: [
+      "CVS Pharmacy",
+      "Walgreens",
+      "Doctor Office",
+      "Dentist",
+      "Gym Membership",
+      "Therapy Session",
+    ],
+  },
+] as const;
+
+function weightedRandom<T>(items: { item: T; weight: number }[]): T {
+  const total = items.reduce((sum, i) => sum + i.weight, 0);
+  let random = Math.random() * total;
+  for (const { item, weight } of items) {
+    random -= weight;
+    if (random <= 0) return item;
+  }
+  return items[items.length - 1]!.item;
+}
+
 async function seed() {
   console.log("🌱 Seeding database...");
 
   // 1. Get existing user
-  const user = await db.query.user.findFirst();
-  if (!user) {
+  const existingUser = await db.query.user.findFirst();
+  if (!existingUser) {
     console.log("No user found. Please sign up first, then run seed.");
     process.exit(1);
   }
-  const userId = user.id;
+  const userId = existingUser.id;
 
   // 2. Clean existing data in dependency order
   await db.delete(notifications);
@@ -35,10 +202,11 @@ async function seed() {
   await db.delete(splitParticipants);
   await db.delete(splits);
   await db.delete(spendingInsights);
+  await db.delete(budgets);
   await db.delete(transactions);
   await db.delete(bankAccounts);
 
-  // 3. Insert accounts
+  // 3. Insert accounts (exactly 3, matching original structure)
   const [checkingAcc, , creditAcc] = await db
     .insert(bankAccounts)
     .values([
@@ -83,59 +251,135 @@ async function seed() {
     process.exit(1);
   }
 
-  // 4. Insert transactions — typed explicitly to avoid enum widening
+  // 4. Insert budgets (NEW — added to original)
   const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
 
-  const transactionsData: (typeof transactions.$inferInsert)[] = [
+  await db.insert(budgets).values([
     {
-      bankAccountId: checkingAcc.id,
       userId,
-      description: "Starbucks",
-      amount: "5.75",
-      type: "debit",
-      status: "posted",
       category: "food_dining",
-      merchant: "Starbucks",
-      date: new Date(now.getTime() - 2 * 86400000),
-      isAnomaly: false,
+      limitAmount: "350.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 80,
+      resetDay: 1,
     },
     {
-      bankAccountId: checkingAcc.id,
       userId,
-      description: "Netflix Subscription",
-      amount: "15.99",
-      type: "debit",
-      status: "posted",
-      category: "subscriptions",
-      merchant: "Netflix",
-      date: new Date(now.getTime() - 5 * 86400000),
-      isAnomaly: false,
-    },
-    {
-      bankAccountId: checkingAcc.id,
-      userId,
-      description: "Uber",
-      amount: "22.50",
-      type: "debit",
-      status: "posted",
-      category: "transport",
-      merchant: "Uber",
-      date: new Date(now.getTime() - 7 * 86400000),
-      isAnomaly: false,
-    },
-    {
-      bankAccountId: checkingAcc.id,
-      userId,
-      description: "Whole Foods",
-      amount: "67.30",
-      type: "debit",
-      status: "posted",
       category: "groceries",
-      merchant: "Whole Foods",
-      date: new Date(now.getTime() - 9 * 86400000),
-      isAnomaly: false,
+      limitAmount: "500.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 85,
+      resetDay: 1,
     },
     {
+      userId,
+      category: "transport",
+      limitAmount: "200.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 75,
+      resetDay: 1,
+    },
+    {
+      userId,
+      category: "subscriptions",
+      limitAmount: "50.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 90,
+      resetDay: 1,
+    },
+    {
+      userId,
+      category: "shopping",
+      limitAmount: "300.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 80,
+      resetDay: 1,
+    },
+    {
+      userId,
+      category: "entertainment",
+      limitAmount: "150.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 70,
+      resetDay: 1,
+    },
+    {
+      userId,
+      category: "utilities",
+      limitAmount: "250.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 90,
+      resetDay: 1,
+    },
+    {
+      userId,
+      category: "rent",
+      limitAmount: "1200.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 95,
+      resetDay: 1,
+    },
+    {
+      userId,
+      category: "healthcare",
+      limitAmount: "100.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 80,
+      resetDay: 1,
+    },
+  ]);
+
+  // 5. Insert transactions — 90 days of generated data (expanded from original 10)
+  const transactionsData: (typeof transactions.$inferInsert)[] = [];
+
+  for (let day = 90; day >= 0; day--) {
+    const date = daysAgo(day);
+    const numTransactions = Math.floor(Math.random() * 3) + 1;
+
+    for (let t = 0; t < numTransactions; t++) {
+      const catInfo = weightedRandom(
+        CATEGORIES.map((c) => ({ item: c, weight: c.weight })),
+      );
+      const merchant =
+        catInfo.merchants[Math.floor(Math.random() * catInfo.merchants.length)];
+      const amount = randomAmount(catInfo.min, catInfo.max);
+
+      const isAnomaly =
+        (catInfo.category === "entertainment" ||
+          catInfo.category === "shopping") &&
+        Math.random() < 0.05;
+
+      transactionsData.push({
+        bankAccountId: Math.random() > 0.3 ? checkingAcc.id : creditAcc.id,
+        userId,
+        description: merchant ?? "",
+        amount,
+        type: "debit",
+        status: "posted",
+        category: catInfo.category,
+        merchant,
+        date,
+        isAnomaly,
+        anomalyScore: isAnomaly ? (0.7 + Math.random() * 0.3).toFixed(2) : null,
+      });
+    }
+  }
+
+  // Add income transactions (salary every ~30 days)
+  const incomeDates = [10, 40, 70];
+  for (const days of incomeDates) {
+    transactionsData.push({
       bankAccountId: checkingAcc.id,
       userId,
       description: "Salary — Employer Inc",
@@ -144,75 +388,28 @@ async function seed() {
       status: "posted",
       category: "income",
       merchant: "Employer Inc",
-      date: new Date(now.getTime() - 10 * 86400000),
+      date: daysAgo(days),
       isAnomaly: false,
-    },
-    {
-      bankAccountId: creditAcc.id,
-      userId,
-      description: "Amazon Purchase",
-      amount: "89.99",
-      type: "debit",
-      status: "posted",
-      category: "shopping",
-      merchant: "Amazon",
-      date: new Date(now.getTime() - 12 * 86400000),
-      isAnomaly: false,
-    },
-    {
-      bankAccountId: checkingAcc.id,
-      userId,
-      description: "Club XYZ — Late Night",
-      amount: "150.00",
-      type: "debit",
-      status: "posted",
-      category: "entertainment",
-      merchant: "Club XYZ",
-      date: new Date(now.getTime() - 14 * 86400000),
-      isAnomaly: true,
-      anomalyScore: "0.92",
-    },
-    {
-      bankAccountId: checkingAcc.id,
-      userId,
-      description: "Electricity Bill",
-      amount: "85.00",
-      type: "debit",
-      status: "posted",
-      category: "utilities",
-      merchant: "City Power",
-      date: new Date(now.getTime() - 20 * 86400000),
-      isAnomaly: false,
-    },
-    {
-      bankAccountId: checkingAcc.id,
-      userId,
-      description: "Spotify Premium",
-      amount: "9.99",
-      type: "debit",
-      status: "posted",
-      category: "subscriptions",
-      merchant: "Spotify",
-      date: new Date(now.getTime() - 25 * 86400000),
-      isAnomaly: false,
-    },
-    {
-      bankAccountId: checkingAcc.id,
-      userId,
-      description: "Rent — April",
-      amount: "1200.00",
-      type: "debit",
-      status: "posted",
-      category: "rent",
-      merchant: "Landlord LLC",
-      date: new Date(now.getTime() - 30 * 86400000),
-      isAnomaly: false,
-    },
-  ];
+    });
+  }
+
+  // Add freelance payment
+  transactionsData.push({
+    bankAccountId: checkingAcc.id,
+    userId,
+    description: "Freelance Payment — Design Project",
+    amount: "850.00",
+    type: "credit",
+    status: "posted",
+    category: "income",
+    merchant: "Upwork Client",
+    date: daysAgo(25),
+    isAnomaly: false,
+  });
 
   await db.insert(transactions).values(transactionsData);
 
-  // 5. Insert spending insights
+  // 6. Insert spending insights
   await db.insert(spendingInsights).values([
     {
       userId,
@@ -222,31 +419,51 @@ async function seed() {
         "You spent $150 at Club XYZ — 3x your typical entertainment spend.",
       severity: "medium",
       category: "entertainment",
-      generatedAt: new Date(),
+      generatedAt: daysAgo(14),
     },
     {
       userId,
       type: "opportunity",
       title: "Subscription audit recommended",
       description:
-        "You're spending $25.98/month on streaming. Consider consolidating.",
+        "You're spending $45.97/month on streaming. Consider consolidating.",
       severity: "low",
       category: "subscriptions",
-      generatedAt: new Date(),
+      generatedAt: daysAgo(5),
     },
     {
       userId,
       type: "trend",
       title: "Grocery spend is on target",
       description:
-        "Your grocery spending this month is within your usual range. Keep it up.",
+        "Your grocery spending this month is within your usual range. Keep it up!",
       severity: "low",
       category: "groceries",
-      generatedAt: new Date(),
+      generatedAt: daysAgo(2),
+    },
+    {
+      userId,
+      type: "warning",
+      title: "Budget threshold approaching",
+      description:
+        "You've used 85% of your dining budget. Consider cooking at home this weekend.",
+      severity: "medium",
+      category: "food_dining",
+      generatedAt: daysAgo(1),
+    },
+    {
+      userId,
+      type: "opportunity",
+      title: "Savings opportunity detected",
+      description:
+        "You could save $120/month by switching to a lower-tier phone plan.",
+      severity: "low",
+      category: "utilities",
+      generatedAt: daysAgo(3),
     },
   ]);
 
-  // 6. Insert split
+  // 7. Insert split
   const [split1] = await db
     .insert(splits)
     .values({
@@ -267,14 +484,14 @@ async function seed() {
   await db.insert(splitParticipants).values([
     {
       splitId: split1.id,
-      userId, // registered user — paid their share
+      userId,
       shareAmount: "42.75",
       paid: true,
-      paidAt: new Date(now.getTime() - 2 * 86400000),
+      paidAt: daysAgo(2),
     },
     {
       splitId: split1.id,
-      userId: null, // guest — not registered
+      userId: null,
       guestName: "Sarah",
       guestEmail: "sarah@example.com",
       shareAmount: "42.75",
@@ -297,7 +514,7 @@ async function seed() {
     },
   ]);
 
-  // 7. Insert vault
+  // 8. Insert vault
   const [vault] = await db
     .insert(vaults)
     .values({
@@ -330,18 +547,18 @@ async function seed() {
       userId,
       amount: "200.00",
       notes: "Initial deposit",
-      createdAt: new Date(now.getTime() - 20 * 86400000),
+      createdAt: daysAgo(20),
     },
     {
       vaultId: vault.id,
       userId,
       amount: "250.00",
       notes: "Month 2 contribution",
-      createdAt: new Date(now.getTime() - 5 * 86400000),
+      createdAt: daysAgo(5),
     },
   ]);
 
-  // 8. Insert AI chat session + messages
+  // 9. Insert AI chat session + messages
   const [chatSession] = await db
     .insert(chatSessions)
     .values({
@@ -392,7 +609,7 @@ async function seed() {
     },
   ]);
 
-  // 9. Insert notifications
+  // 10. Insert notifications
   await db.insert(notifications).values([
     {
       userId,
@@ -403,7 +620,7 @@ async function seed() {
       relatedType: "transaction",
       read: false,
       dismissed: false,
-      createdAt: new Date(now.getTime() - 14 * 86400000),
+      createdAt: daysAgo(14),
     },
     {
       userId,
@@ -416,7 +633,7 @@ async function seed() {
       actionUrl: `/dashboard/splits/${split1.id}`,
       read: false,
       dismissed: false,
-      createdAt: new Date(now.getTime() - 2 * 86400000),
+      createdAt: daysAgo(2),
     },
     {
       userId,
@@ -429,19 +646,31 @@ async function seed() {
       actionUrl: `/dashboard/vaults/${vault.id}`,
       read: true,
       dismissed: false,
-      createdAt: new Date(now.getTime() - 5 * 86400000),
+      createdAt: daysAgo(5),
+    },
+    {
+      userId,
+      type: "info",
+      title: "Budget alert",
+      body: "You've used 85% of your dining budget for this month.",
+      category: "budget",
+      relatedType: "budget",
+      read: false,
+      dismissed: false,
+      createdAt: daysAgo(1),
     },
   ]);
 
   console.log("✅ Seeding complete!");
-  console.log(`   User: ${user.email}`);
+  console.log(`   User: ${existingUser.email}`);
   console.log(`   Accounts: 3 (checking, savings, credit)`);
   console.log(`   Transactions: ${transactionsData.length}`);
-  console.log(`   Insights: 3`);
+  console.log(`   Budgets: 9 categories`);
+  console.log(`   Insights: 5`);
   console.log(`   Splits: 1 (1 open, Sarah pending)`);
   console.log(`   Vaults: 1 (Bali — 22% funded)`);
   console.log(`   Chat messages: 4`);
-  console.log(`   Notifications: 3`);
+  console.log(`   Notifications: 4`);
 }
 
 seed().catch(console.error);
