@@ -44,6 +44,30 @@ export const transactionsRouter = router({
       return result.data;
     }),
 
+  spendingOverview: protectedProcedure
+    .input(
+      z.object({
+        period: z.enum(["7d", "30d", "90d", "custom"]).default("30d"),
+        from: z.string().optional(),
+        to: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const result = await TransactionsService.getSpendingOverview(
+        ctx.session.user.id,
+        input,
+      );
+
+      if (!result.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      }
+
+      return result.data;
+    }),
+
   spendingByCategory: protectedProcedure
     .input(
       z.object({

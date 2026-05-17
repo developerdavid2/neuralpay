@@ -8,13 +8,30 @@ export type CategoryTotal = {
   count: number;
 };
 
+export type OverviewTotal = {
+  totalSpending: number;
+  totalBudget: number;
+  categorySpending: Array<{
+    category: string;
+    total: number;
+    budget: number;
+  }>;
+  trendData: Array<{
+    name: string;
+    value: number;
+    budget: number;
+    dailyBudget: number;
+    date?: string;
+  }>;
+};
+
 export type TransactionPage = {
   items: TransactionRecord[];
-  nextCursor: string | null; // null means no more pages
+  nextCursor: string | null;
 };
 
 export const transactionsFilterSchema = z.object({
-  bankAccountId: z.uuid().optional(),
+  bankAccountId: z.string().uuid().optional(),
   category: z.string().optional(),
   type: z.enum(["debit", "credit"]).optional(),
   isAnomaly: z.boolean().optional(),

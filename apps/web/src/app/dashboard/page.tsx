@@ -1,16 +1,16 @@
 import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
-import { getQueryClient, HydrateClient, trpc } from "@/trpc/trpc-server";
+import {
+  getQueryClient,
+  HydrateClient,
+  prefetch,
+  trpc,
+} from "@/trpc/trpc-server";
+
 export default async function Page() {
   const queryClient = getQueryClient();
 
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1; // getMonth() returns 0-11
-  const currentYear = now.getFullYear();
-
   await Promise.allSettled([
-    queryClient.prefetchQuery(
-      trpc.payments.accounts.totalBalance.queryOptions(),
-    ),
+    prefetch(trpc.payments.accounts.totalBalance.queryOptions()),
     queryClient.prefetchQuery(trpc.payments.accounts.list.queryOptions()),
     queryClient.prefetchQuery(
       trpc.payments.transactions.currentMonthSpending.queryOptions(),
@@ -21,9 +21,18 @@ export default async function Page() {
       }),
     ),
     queryClient.prefetchQuery(
-      trpc.payments.transactions.spendingByCategory.queryOptions({
-        month: currentMonth,
-        year: currentYear,
+      trpc.payments.transactions.spendingOverview.queryOptions({
+        period: "7d",
+      }),
+    ),
+    queryClient.prefetchQuery(
+      trpc.payments.transactions.spendingOverview.queryOptions({
+        period: "30d",
+      }),
+    ),
+    queryClient.prefetchQuery(
+      trpc.payments.transactions.spendingOverview.queryOptions({
+        period: "90d",
       }),
     ),
     queryClient.prefetchQuery(

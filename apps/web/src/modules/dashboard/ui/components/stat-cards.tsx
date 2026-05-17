@@ -1,6 +1,7 @@
 "use client";
 
 import { useStatCards } from "@/hooks/dashboard/use-stat-cards";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { cardTemplates } from "../../constants";
 
@@ -9,35 +10,65 @@ export function StatCards() {
     useStatCards();
 
   // Values must be in the same order as cardTemplates
-
-  const values = [totalBalance, monthSpending, savingsRate, accountCount];
+  const values = [
+    totalBalance,
+    monthSpending,
+    Number(savingsRate.toFixed(2)),
+    accountCount,
+  ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 xl:grid-cols-4 font-sans">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4 backdrop-blur-xl rounded-xl  overflow-hidden">
+      <div
+        className={cn(
+          "absolute inset-0 bg-linear-to-tr from-white via-violet-300 from-0% via-40% to-30% to-transparent blur-[100px] sm:blur-[250px] opacity-40  overflow-hidden ",
+          "hover:shadow-[0_1px_1px_rgba(255,255,255,0.06)_inset,0_18px_40px_rgba(0,0,0,0.18)]",
+        )}
+      />
       {cardTemplates.map((card, index) => (
         <div
           key={card.label}
-          className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm"
+          className={cn(
+            "group relative overflow-hidden rounded-3xl",
+            "transition-all duration-300",
+          )}
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              {card.label}
-            </span>
-            <span className={cn("rounded-lg p-2", card.iconBg)}>
-              <card.icon className={cn("size-4", card.accent)} />
-            </span>
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 opacity-60" />
+
+          <div className="relative flex flex-col gap-5 p-6">
+            <div className="flex items-center gap-x-2 ">
+              <span
+                className={cn(
+                  "rounded-2xl border border-white/10 p-2.5",
+                  "bg-white/3",
+                  card.iconBg,
+                )}
+              >
+                <card.icon className={cn("size-4", card.accent)} />
+              </span>
+              <span className="text-xs font-medium tracking-wide text-muted-foreground">
+                {card.label}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <p className="font-mono text-3xl font-bold tracking-tight text-foreground">
+                {card.formatValue(values[index] ?? 0)}
+              </p>
+
+              <p
+                className={cn(
+                  "text-xs font-medium",
+                  card.up
+                    ? "text-green-700 dark:text-green-400"
+                    : "text-rose-600 dark:text-red-400",
+                )}
+              >
+                {card.trend}
+              </p>
+            </div>
           </div>
-          <p className="font-mono text-2xl font-bold tracking-tight text-foreground">
-            {card.formatValue(values[index] ?? 0)}
-          </p>
-          <p
-            className={cn(
-              "text-xs font-medium",
-              card.up ? "text-[#0EA5A0]" : "text-destructive",
-            )}
-          >
-            {card.trend}
-          </p>
         </div>
       ))}
     </div>
@@ -46,9 +77,24 @@ export function StatCards() {
 
 export function StatCardsSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4 border border-border bg-card dark:bg-card/50 rounded-2xl">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />
+        <div
+          key={i}
+          className={cn("group relative overflow-hidden rounded-3xl p-6")}
+        >
+          {/* Icon + label row */}
+          <div className="flex items-center gap-x-2 mb-5">
+            <Skeleton className="size-9 rounded-2xl" />
+            <Skeleton className="h-3.5 w-24" />
+          </div>
+
+          {/* Value + trend */}
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-3.5 w-20" />
+          </div>
+        </div>
       ))}
     </div>
   );

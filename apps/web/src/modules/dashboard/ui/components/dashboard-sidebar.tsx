@@ -52,10 +52,11 @@ export const DashboardSidebar = () => {
                         tooltip={item.title}
                         isActive={active}
                         className={cn(
+                          "rounded-md!",
                           // active state — brand purple tint + left border
                           active && [
-                            "bg-background! font-bold! text-[#7C3AED]!",
-                            "border-l-[3px] border-[#7C3AED]",
+                            "bg-background! font-bold! text-main!",
+                            "border-l-2 border-yellow-500/80 dark:border-yellow-300/80",
                             "pl-1.25", // compensate for the 3px border
                             "hover:bg-[rgba(124,58,237,0.20)]",
                           ],
@@ -65,7 +66,7 @@ export const DashboardSidebar = () => {
                           <item.icon
                             className={cn(
                               "size-4 shrink-0",
-                              active ? "text-[#7C3AED]" : "text-[#8B88A0]",
+                              active ? "text-main" : "text-[#8B88A0]",
                             )}
                           />
                           <span>{item.title}</span>
