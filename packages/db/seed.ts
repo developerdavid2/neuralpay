@@ -1,17 +1,12 @@
 import { db } from "./src";
-import { chatMessages, chatSessions } from "./src/schema/ai";
+import { chatMessages, chatSessions, insights } from "./src/schema/ai";
 import { notifications } from "./src/schema/notifications";
 import {
   splitChatMessages,
   splitParticipants,
   splits,
 } from "./src/schema/splits";
-import {
-  bankAccounts,
-  budgets,
-  spendingInsights,
-  transactions,
-} from "./src/schema/transactions";
+import { bankAccounts, budgets, transactions } from "./src/schema/transactions";
 import { vaultContributions, vaultMembers, vaults } from "./src/schema/vaults";
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -201,7 +196,7 @@ async function seed() {
   await db.delete(splitChatMessages);
   await db.delete(splitParticipants);
   await db.delete(splits);
-  await db.delete(spendingInsights);
+  await db.delete(insights);
   await db.delete(budgets);
   await db.delete(transactions);
   await db.delete(bankAccounts);
@@ -343,7 +338,7 @@ async function seed() {
   // 5. Insert transactions — 90 days of generated data (expanded from original 10)
   const transactionsData: (typeof transactions.$inferInsert)[] = [];
 
-  for (let day = 90; day >= 0; day--) {
+  for (let day = 89; day >= 0; day--) {
     const date = daysAgo(day);
     const numTransactions = Math.floor(Math.random() * 3) + 1;
 
@@ -410,7 +405,7 @@ async function seed() {
   await db.insert(transactions).values(transactionsData);
 
   // 6. Insert spending insights
-  await db.insert(spendingInsights).values([
+  await db.insert(insights).values([
     {
       userId,
       type: "anomaly",

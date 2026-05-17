@@ -1,3 +1,4 @@
+import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
 import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
 import {
   getQueryClient,
@@ -7,35 +8,31 @@ import {
 } from "@/trpc/trpc-server";
 
 export default async function Page() {
-  const queryClient = getQueryClient();
-
   await Promise.allSettled([
     prefetch(trpc.payments.accounts.totalBalance.queryOptions()),
-    queryClient.prefetchQuery(trpc.payments.accounts.list.queryOptions()),
-    queryClient.prefetchQuery(
-      trpc.payments.transactions.currentMonthSpending.queryOptions(),
-    ),
-    queryClient.prefetchQuery(
+    prefetch(trpc.payments.accounts.list.queryOptions()),
+    prefetch(trpc.payments.transactions.currentMonthSpending.queryOptions()),
+    prefetch(
       trpc.payments.transactions.list.queryOptions({
-        limit: 7,
+        limit: TRANSACTIONS_LIMIT,
       }),
     ),
-    queryClient.prefetchQuery(
+    prefetch(
       trpc.payments.transactions.spendingOverview.queryOptions({
         period: "7d",
       }),
     ),
-    queryClient.prefetchQuery(
+    prefetch(
       trpc.payments.transactions.spendingOverview.queryOptions({
         period: "30d",
       }),
     ),
-    queryClient.prefetchQuery(
+    prefetch(
       trpc.payments.transactions.spendingOverview.queryOptions({
         period: "90d",
       }),
     ),
-    queryClient.prefetchQuery(
+    prefetch(
       trpc.ai.insights.list.queryOptions({
         limit: 3,
       }),

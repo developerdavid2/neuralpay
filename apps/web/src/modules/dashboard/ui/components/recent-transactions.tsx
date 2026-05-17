@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, Package } from "lucide-react";
 import { formatAmount, formatTransactionDate } from "@/lib/utils";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { useTransactions } from "@/hooks/dashboard/use-transactions";
+import { useTransactions } from "@/hooks/transactions/use-transactions";
 import { CATEGORY_ICONS, CATEGORY_LABELS } from "../../constants";
 import type { Transaction } from "@/modules/transactions/types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
@@ -79,7 +79,7 @@ function TransactionRow({ tx }: { tx: Transaction }) {
         <span
           className={cn(
             "font-mono text-sm font-semibold tabular-nums",
-            isIncome ? "text-[#0EA5A0]" : "text-foreground",
+            isIncome ? "text-green-700 dark:text-green-400" : "text-foreground",
           )}
         >
           {isIncome ? "+" : "−"}

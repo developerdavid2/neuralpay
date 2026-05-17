@@ -1,32 +1,164 @@
-import { TRPCError } from "@trpc/server";
-
-import z from "zod";
-import { sendMessageSchema } from "@neuralpay/types";
+import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import {
-  protectedProcedure,
-  publicProcedure,
-  router,
-} from "@neuralpay/config/trpc";
-import { AIService } from "../services/ai.service";
+  listSessionsInputSchema,
+  startChatSessionSchema,
+} from "@neuralpay/types";
+import { TRPCError } from "@trpc/server";
+import z from "zod";
+import { AICoachService } from "../services/coach.service";
 
-// ── Coach Chat ────────────────────────────────────────────────────────────
 export const coachRouter = router({
-  health: publicProcedure.query(() => ({ ok: true, service: "ai-service" })),
-  sessions: protectedProcedure.query(async ({ ctx }) => {
-    const result = await AIService.getSessions(ctx.session.user.id);
-    if (!result.success) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: result.error,
-      });
-    }
-    return result.data;
-  }),
-
-  messages: protectedProcedure
-    .input(z.object({ sessionId: z.string().uuid() }))
+  //  * Used by: AI Chat sidebar
+  sessions: protectedProcedure
+    .input(listSessionsInputSchema.optional())
     .query(async ({ ctx, input }) => {
-      const result = await AIService.getMessages(
+      const parsed = listSessionsInputSchema.parse(input ?? {});
+
+      const result = await AICoachService.getSessions(
+        ctx.session.user.id,
+        parsed,
+      );
+      if (!result.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      }
+      return result.data;
+    }),
+
+  //  * Used by: Opening a chat session
+  sessionById: protectedProcedure
+    .input(startChatSessionSchema.pick({ sessionId: true }))
+    .query(async ({ ctx, input }) => {
+      const sessionResult = await AICoachService.getOrCreateSession(
+        ctx.session.user.id,
+        { sessionId: input.sessionId },
+      );
+      if (!sessionResult.success) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: sessionResult.error,
+        });
+      }
+
+      const messagesResult = await AICoachService.getMessages(
+        sessionResult.data.id,
+        ctx.session.user.id,
+      );
+      if (!messagesResult.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: messagesResult.error,
+        });
+      }
+
+      return {
+        session: sessionResult.data,
+        messages: messagesResult.data,
+      };
+    }),
+
+  //  * Used by: "Chat about this" from insight, new general chat
+  startSession: protectedProcedure
+    .input(startChatSessionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const result = await AICoachService.getOrCreateSession(
+        ctx.session.user.id,
+        {
+          contextType: input.contextType,
+          contextId: input.contextId,
+          title: input.title,
+          topic: input.topic,
+        },
+      );
+      if (!result.success) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: result.error,
+        });
+      }
+      return result.data;
+    }),
+
+  //  * Send message and get AI response
+  //  * Used by: Chat input
+
+  // sendMessage: protectedProcedure
+  //   .input(sendMessageSchema)
+  //   .mutation(async ({ ctx, input }) => {
+  //     // 1. Verify session belongs to user
+  //     const sessionResult = await AICoachService.getOrCreateSession(
+  //       ctx.session.user.id,
+  //       { sessionId: input.sessionId },
+  //     );
+  //     if (!sessionResult.success) {
+  //       throw new TRPCError({
+  //         code: "NOT_FOUND",
+  //         message: sessionResult.error,
+  //       });
+  //     }
+
+  //     // 2. Check rate limit
+  //     const quotaResult = await AICoachService.checkQuota(
+  //       ctx.session.user.id,
+  //       ctx.session.user.planTier ?? "free",
+  //     );
+  //     if (!quotaResult.success) {
+  //       throw new TRPCError({
+  //         code: "TOO_MANY_REQUESTS",
+  //         message: quotaResult.error,
+  //       });
+  //     }
+
+  //     // 3. Save user message
+  //     const userMessageResult = await AICoachService.saveMessage(
+  //       input.sessionId,
+  //       ctx.session.user.id,
+  //       "user",
+  //       input.content,
+  //     );
+  //     if (!userMessageResult.success) {
+  //       throw new TRPCError({
+  //         code: "INTERNAL_SERVER_ERROR",
+  //         message: userMessageResult.error,
+  //       });
+  //     }
+
+  //     // 4. TODO: Call GROQ API for AI response
+  //     // For now, return placeholder
+  //     const aiResponse =
+  //       "I'm your NeuralPay AI Coach. I can help you understand this insight and suggest actions. (GROQ integration pending)";
+  //     const tokensUsed = 0;
+
+  //     // 5. Save AI response
+  //     const aiMessageResult = await AICoachService.saveMessage(
+  //       input.sessionId,
+  //       ctx.session.user.id,
+  //       "assistant",
+  //       aiResponse,
+  //       tokensUsed,
+  //     );
+  //     if (!aiMessageResult.success) {
+  //       throw new TRPCError({
+  //         code: "INTERNAL_SERVER_ERROR",
+  //         message: aiMessageResult.error,
+  //       });
+  //     }
+
+  //     // 6. Update usage
+  //     await AICoachService.incrementAIUsage(ctx.session.user.id, tokensUsed);
+
+  //     return {
+  //       userMessage: userMessageResult.data,
+  //       aiMessage: aiMessageResult.data,
+  //     };
+  //   }),
+
+  deleteSession: protectedProcedure
+    .input(z.object({ sessionId: z.uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await AICoachService.deleteSession(
         input.sessionId,
         ctx.session.user.id,
       );
@@ -40,69 +172,35 @@ export const coachRouter = router({
       return result.data;
     }),
 
-  // Claude integration goes here — placeholder returns mock for now
-  sendMessage: protectedProcedure
-    .input(sendMessageSchema)
+  archiveSession: protectedProcedure
+    .input(z.object({ sessionId: z.uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-
-      // 1. Get or create session
-      const sessionResult = await AIService.getOrCreateSession(
-        userId,
+      const result = await AICoachService.archiveSession(
         input.sessionId,
+        ctx.session.user.id,
       );
-      if (!sessionResult.success) {
+      if (!result.success) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: sessionResult.error,
+          code:
+            result.code === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR",
+          message: result.error,
         });
       }
-      const session = sessionResult.data;
-
-      // 2. Save user message
-      const userMsgResult = await AIService.saveMessage(
-        session.id,
-        userId,
-        "user",
-        input.message,
-      );
-      if (!userMsgResult.success) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: userMsgResult.error,
-        });
-      }
-
-      // 3. TODO: call Claude here — for now return generic placeholder
-      // const claudeResponse = await callClaude(input.message, history);
-      if (process.env.NODE_ENV === "production") {
-        throw new TRPCError({
-          code: "NOT_IMPLEMENTED",
-          message: "Coach chat is not yet available.",
-        });
-      }
-      const mockReply =
-        "Coach is not connected yet. This is a development placeholder response.";
-
-      // 4. Save assistant message
-      const assistantMsgResult = await AIService.saveMessage(
-        session.id,
-        userId,
-        "assistant",
-        mockReply,
-        80, // mock token count
-      );
-      if (!assistantMsgResult.success) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: assistantMsgResult.error,
-        });
-      }
-
-      return {
-        sessionId: session.id,
-        userMessage: userMsgResult.data,
-        assistantMessage: assistantMsgResult.data,
-      };
+      return result.data;
     }),
+
+  /**
+   * Get current month's AI usage
+   * Used by: Displaying quota in chat UI
+   */
+  usage: protectedProcedure.query(async ({ ctx }) => {
+    const result = await AICoachService.getUsage(ctx.session.user.id);
+    if (!result.success) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: result.error,
+      });
+    }
+    return result.data;
+  }),
 });

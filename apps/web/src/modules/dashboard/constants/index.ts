@@ -11,6 +11,7 @@ import {
   Home,
   Landmark,
   LayoutDashboard,
+  MessageCircleMore,
   Package,
   PieChart,
   PiggyBank,
@@ -50,6 +51,11 @@ export const navGroups = [
         title: "AI Insights",
         url: "/dashboard/ai-insights",
         icon: BrainCircuit,
+      },
+      {
+        title: "AI Chat",
+        url: "/dashboard/ai-chat",
+        icon: MessageCircleMore,
       },
     ],
   },
@@ -156,20 +162,6 @@ export const CATEGORY_COLORS: Record<string, string> = {
   other: "#CBD5E1",
 };
 
-// export const SPENDING_LABELS: Record<string, string> = {
-//   food_dining: "Food & Dining",
-//   transport: "Transport",
-//   shopping: "Shopping",
-//   entertainment: "Entertainment",
-//   groceries: "Groceries",
-//   subscriptions: "Subscriptions",
-//   utilities: "Utilities",
-//   rent: "Rent",
-//   other: "Other",
-// };
-
-// PERIOD LABES
-
 export const PERIOD_LABELS: Record<Period, string> = {
   "7d": "Last 7 days",
   "30d": "Last 30 days",
@@ -204,16 +196,5 @@ export const CHART_COLORS = {
   },
 };
 
-export const INSIGHTS_TYPE_STYLES: Record<string, string> = {
-  anomaly: "bg-destructive/10 text-destructive",
-  saving: "bg-[#D1FAF8] text-[#0EA5A0]",
-  opportunity: "bg-[#EDE9FE] text-[#7C3AED]",
-  trend: "bg-[#FEF3C7] text-[#D4A017]",
-};
-
-export const INSIGHTS_TYPE_LABELS: Record<string, string> = {
-  anomaly: "Anomaly",
-  saving: "Saving",
-  opportunity: "Opportunity",
-  trend: "Trend",
-};
+// RECENT TRANSACTIONS
+export const TRANSACTIONS_LIMIT = 7;

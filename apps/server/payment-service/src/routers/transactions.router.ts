@@ -11,8 +11,6 @@ export const transactionsRouter = router({
     .query(async ({ ctx, input }) => {
       const parsed = listTransactionsInputSchema.parse(input ?? {});
 
-      console.log("TRPC input received:", parsed);
-
       const result = await TransactionsService.list(
         ctx.session.user.id,
         parsed,
@@ -28,7 +26,7 @@ export const transactionsRouter = router({
     }),
 
   getById: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.uuid() }))
     .query(async ({ ctx, input }) => {
       const result = await TransactionsService.getById(
         input.id,
@@ -46,11 +44,28 @@ export const transactionsRouter = router({
 
   spendingOverview: protectedProcedure
     .input(
-      z.object({
-        period: z.enum(["7d", "30d", "90d", "custom"]).default("30d"),
-        from: z.string().optional(),
-        to: z.string().optional(),
-      }),
+      z
+        .object({
+          period: z.enum(["7d", "30d", "90d", "custom"]).default("30d"),
+          from: z.string().datetime().optional(),
+          to: z.string().datetime().optional(),
+        })
+        .superRefine((val, ctx) => {
+          if (val.period === "custom" && (!val.from || !val.to)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "`from` and `to` are required when period is custom",
+              path: ["period"],
+            });
+          }
+          if (val.from && val.to && new Date(val.from) > new Date(val.to)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "`from` must be <= `to`",
+              path: ["from"],
+            });
+          }
+        }),
     )
     .query(async ({ ctx, input }) => {
       const result = await TransactionsService.getSpendingOverview(
@@ -67,41 +82,6 @@ export const transactionsRouter = router({
 
       return result.data;
     }),
-
-  spendingByCategory: protectedProcedure
-    .input(
-      z.object({
-        month: z.number().min(1).max(12),
-        year: z.number().min(2020).max(2100),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const result = await TransactionsService.getSpendingByCategory(
-        ctx.session.user.id,
-        input.month,
-        input.year,
-      );
-      if (!result.success) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: result.error,
-        });
-      }
-      return result.data;
-    }),
-
-  monthlySpending: protectedProcedure.query(async ({ ctx }) => {
-    const result = await TransactionsService.getMonthlySpending(
-      ctx.session.user.id,
-    );
-    if (!result.success) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: result.error,
-      });
-    }
-    return result.data;
-  }),
 
   currentMonthSpending: protectedProcedure.query(async ({ ctx }) => {
     const result = await TransactionsService.getCurrentMonthSpending(

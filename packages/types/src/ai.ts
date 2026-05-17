@@ -1,37 +1,60 @@
 import z from "zod";
-import { paginationSchema } from "./pagination";
+import {
+  CHAT_CONTEXT_TYPES,
+  CHAT_TOPICS,
+  INSIGHT_SEVERITIES,
+  INSIGHT_TYPES,
+} from "@neuralpay/db/schema";
 
-export const sendMessageSchema = z.object({
-  sessionId: z.string().uuid().optional(), // omit to start a new session
-  message: z.string().min(1).max(2000),
-});
-
-export type SendMessageInput = z.infer<typeof sendMessageSchema>;
-
-// ── Insight filters ─────────────────────────────────────────────────────────
+// ── Insight Schemas
 export const insightFilterSchema = z.object({
-  category: z.enum(["budgeting", "spending", "savings", "general"]).optional(),
-  type: z.enum(["anomaly", "summary", "recommendation"]).optional(),
-  dismissed: z.boolean().optional(),
-  dateFrom: z.iso.datetime().optional(),
-  dateTo: z.iso.datetime().optional(),
+  limit: z.number().int().min(1).max(100).default(50),
+  includeArchived: z.boolean().default(false),
+  type: z.enum(INSIGHT_TYPES).optional(),
+  severity: z.enum(INSIGHT_SEVERITIES).optional(),
 });
-
 export type InsightFilterInput = z.infer<typeof insightFilterSchema>;
 
-// Combined input for list endpoint: filters + pagination
-export const listInsightsInputSchema = insightFilterSchema.extend(
-  paginationSchema.shape,
-);
+export const insightDataSchema = z
+  .object({
+    amount: z.number().optional(),
+    percentage: z.number().optional(),
+    merchant: z.string().optional(),
+    trendDirection: z.enum(["up", "down", "stable"]).optional(),
+    comparisonPeriod: z.string().optional(),
+  })
+  .loose();
+export type InsightData = z.infer<typeof insightDataSchema>;
+
+// ── Chat Schemas
+export const chatFilterSchema = z.object({
+  includeArchived: z.boolean().default(false),
+  contextType: z.enum(CHAT_CONTEXT_TYPES).optional(),
+});
+export type ChatFilterInput = z.infer<typeof chatFilterSchema>;
+
+export const sendMessageSchema = z.object({
+  sessionId: z.uuid(),
+  content: z.string().min(1).max(4000),
+});
+export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
+export const startChatSessionSchema = z
+  .object({
+    contextType: z.enum(CHAT_CONTEXT_TYPES).default("general"),
+    sessionId: z.string().optional(),
+    contextId: z.string().optional(),
+    title: z.string().min(1).max(100).optional(),
+    topic: z.enum(CHAT_TOPICS).default("general"),
+  })
+  .refine((data) => data.contextType === "general" || !!data.contextId, {
+    message: "contextId is required when contextType is not 'general'",
+  });
+export type StartChatSessionInput = z.infer<typeof startChatSessionSchema>;
+
+// ── Combined inputs
+export const listInsightsInputSchema = insightFilterSchema;
 export type ListInsightsInput = z.infer<typeof listInsightsInputSchema>;
 
-// ── Session filters ─────────────────────────────────────────────────────────
-export const sessionFilterSchema = z.object({
-  topic: z.enum(["budgeting", "spending", "savings", "general"]).optional(),
-  isActive: z.boolean().optional(),
-  archived: z.boolean().optional(), // true = archived, false = not archived, omit = both
-  dateFrom: z.iso.datetime().optional(),
-  dateTo: z.iso.datetime().optional(),
-});
-
-export type SessionFilterInput = z.infer<typeof sessionFilterSchema>;
+export const listSessionsInputSchema = chatFilterSchema;
+export type ListSessionsInput = z.infer<typeof listSessionsInputSchema>;

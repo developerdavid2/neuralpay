@@ -11,8 +11,16 @@ import {
   type PaginatedResult,
   type ServiceResult,
 } from "@neuralpay/types";
-import { endOfMonth, startOfDay, startOfMonth, subMonths } from "date-fns";
-import { and, desc, eq, gte, ilike, lte, sql } from "drizzle-orm";
+import {
+  differenceInDays,
+  endOfDay,
+  endOfMonth,
+  startOfDay,
+  startOfMonth,
+  subDays,
+  subMonths,
+} from "date-fns";
+import { and, desc, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
 
 export const TransactionsService = {
   async list(
@@ -116,19 +124,23 @@ export const TransactionsService = {
       const { period = "30d", from, to } = input;
 
       let startDate: Date;
-      const endDate = new Date();
+      let endDate: Date;
 
       if (period === "7d") {
-        startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        startDate = startOfDay(subDays(new Date(), 7));
+        endDate = endOfDay(new Date());
       } else if (period === "30d") {
-        startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        startDate = startOfDay(subDays(new Date(), 30));
+        endDate = endOfDay(new Date());
       } else if (period === "90d") {
-        startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+        startDate = startOfDay(subDays(new Date(), 90));
+        endDate = endOfDay(new Date());
       } else if (from && to) {
-        startDate = new Date(from);
-        endDate.setTime(new Date(to).getTime());
+        startDate = startOfDay(new Date(from));
+        endDate = endOfDay(new Date(to));
       } else {
-        startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        startDate = startOfDay(subDays(new Date(), 30));
+        endDate = endOfDay(new Date());
       }
 
       // 1. Category Spending (for Pie Chart)
@@ -155,10 +167,11 @@ export const TransactionsService = {
       }));
 
       // 2. Trend Data with DAILY granularity (for Bar / Area charts)
+      const trendDay = sql<Date>`date_trunc('day', ${transactions.date})`;
       const trendResult = await db
         .select({
-          date: transactions.date,
-          name: sql<string>`to_char(${transactions.date}, 'Mon DD')`,
+          date: trendDay,
+          name: sql<string>`to_char(${trendDay}, 'Mon DD')`,
           value: sql<number>`sum(${transactions.amount}::numeric)::float`,
         })
         .from(transactions)
@@ -170,48 +183,69 @@ export const TransactionsService = {
             lte(transactions.date, endDate),
           ),
         )
-        .groupBy(
-          sql`to_char(${transactions.date}, 'Mon DD')`,
-          transactions.date,
-        )
-        .orderBy(transactions.date);
+        .groupBy(trendDay)
+        .orderBy(trendDay);
 
-      // 3. Fetch budgets for the period
-      const now = new Date();
-      const budgetResult = await db
-        .select({
-          category: budgets.category,
-          limitAmount: sql<number>`${budgets.limitAmount}::numeric`,
-        })
-        .from(budgets)
-        .where(
-          and(
-            eq(budgets.userId, userId),
-            eq(budgets.month, now.getMonth() + 1),
-            eq(budgets.year, now.getFullYear()),
-          ),
+      // 3. Generate (month, year) pairs for the query period
+      const monthYearPairs: Array<{ month: number; year: number }> = [];
+      let currentDate = startOfMonth(startDate);
+      const periodEnd = endOfMonth(endDate);
+
+      while (currentDate <= periodEnd) {
+        monthYearPairs.push({
+          month: currentDate.getMonth() + 1,
+          year: currentDate.getFullYear(),
+        });
+        currentDate = startOfMonth(subMonths(currentDate, -1)); // Move to next month
+      }
+
+      // Query budgets for all months in the period
+      let budgetResult: Array<any> = [];
+      if (monthYearPairs.length > 0) {
+        // Build OR conditions for each (month, year) pair
+        const monthYearConditions = monthYearPairs.map((p) =>
+          and(eq(budgets.month, p.month), eq(budgets.year, p.year)),
         );
 
-      // Calculate total monthly budget and daily allocation
-      const totalBudget = budgetResult.reduce(
-        (sum, b) => sum + Number(b.limitAmount),
+        const whereCondition =
+          monthYearConditions.length === 1
+            ? monthYearConditions[0]
+            : or(...monthYearConditions);
+
+        budgetResult = await db
+          .select({
+            category: budgets.category,
+            month: budgets.month,
+            year: budgets.year,
+            limitAmount: sql<number>`${budgets.limitAmount}::numeric`,
+          })
+          .from(budgets)
+          .where(and(eq(budgets.userId, userId), whereCondition));
+      }
+
+      // Aggregate budgets by category (sum limits per category across all months)
+      const categoryBudgetMap = new Map<string, number>();
+      budgetResult.forEach((b) => {
+        const current = categoryBudgetMap.get(b.category) || 0;
+        categoryBudgetMap.set(b.category, current + Number(b.limitAmount));
+      });
+
+      // Calculate budget metrics
+      const totalBudget = Array.from(categoryBudgetMap.values()).reduce(
+        (sum, amount) => sum + amount,
         0,
       );
-      const daysInPeriod = Math.ceil(
-        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
-      );
-      const dailyBudget = totalBudget / 30; // Budget is monthly, spread per day
-
-      // Build category budget map
-      const categoryBudgetMap = new Map(
-        budgetResult.map((b) => [b.category, Number(b.limitAmount)]),
-      );
+      const daysInPeriod = differenceInDays(endDate, startDate) + 1; // +1 to include both start and end days
+      const dailyBudget = daysInPeriod > 0 ? totalBudget / daysInPeriod : 0;
 
       // 4. Build trend data with spending + budget
       const trendData = trendResult.map((t) => {
-        const dayOfMonth = new Date(t.date).getDate();
-        const daysInMonth = endOfMonth(new Date(t.date)).getDate();
-        const budgetProgress = (dailyBudget * dayOfMonth) / (daysInMonth / 30);
+        // Calculate days elapsed from start of period to this date
+        const daysElapsedInRange = differenceInDays(
+          new Date(t.date),
+          startDate,
+        );
+        const budgetProgress = dailyBudget * (daysElapsedInRange + 1); // +1 to include the current day
 
         return {
           name: t.name,
