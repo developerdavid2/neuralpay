@@ -5,11 +5,11 @@ import {
   type TransactionRecord,
 } from "@neuralpay/db/schema";
 import {
-  type CategoryTotal,
   type ListTransactionsInput,
   type OverviewTotal,
   type PaginatedResult,
   type ServiceResult,
+  type TopMonthlyCategories,
 } from "@neuralpay/types";
 import {
   differenceInDays,
@@ -82,6 +82,32 @@ export const TransactionsService = {
     }
   },
 
+  async recent(
+    userId: string,
+    limit: number,
+  ): Promise<ServiceResult<TransactionRecord[]>> {
+    try {
+      const result = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.userId, userId))
+        .orderBy(desc(transactions.date))
+        .limit(limit);
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (err) {
+      console.error("[TransactionsService.list]", err);
+      return {
+        success: false,
+        error: "Failed to fetch transactions",
+        code: "DB_ERROR",
+      };
+    }
+  },
+
   async getById(
     id: string,
     userId: string,
@@ -111,7 +137,6 @@ export const TransactionsService = {
     }
   },
 
-  // ─── SPENDING OVERVIEW WITH BUDGET COMPARISON ─────────────────────────────
   async getSpendingOverview(
     userId: string,
     input: {
@@ -285,17 +310,18 @@ export const TransactionsService = {
     }
   },
 
-  // Groups spending by category for the current month
-  async getSpendingByCategory(
+  async getTopCategories(
     userId: string,
     month: number,
     year: number,
-  ): Promise<ServiceResult<CategoryTotal[]>> {
+    limit = 5,
+  ): Promise<ServiceResult<TopMonthlyCategories>> {
     try {
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0, 23, 59, 59);
 
-      const result = await db
+      // Get category totals
+      const categoryResult = await db
         .select({
           category: transactions.category,
           total: sql<number>`sum(${transactions.amount}::numeric)::float`,
@@ -311,54 +337,64 @@ export const TransactionsService = {
           ),
         )
         .groupBy(transactions.category)
-        .orderBy(desc(sql`sum(${transactions.amount}::numeric)`));
+        .orderBy(desc(sql`sum(${transactions.amount}::numeric)`))
+        .limit(limit);
 
-      return {
-        success: true,
-        data: result.map((r) => ({
-          category: r.category ?? "other",
-          total: r.total,
-          count: r.count,
-        })),
-      };
-    } catch (err) {
-      console.error("[TransactionsService.getSpendingByCategory]", err);
-      return {
-        success: false,
-        error: "Failed to aggregate spending",
-        code: "DB_ERROR",
-      };
-    }
-  },
+      if (categoryResult.length === 0) {
+        return {
+          success: true,
+          data: {
+            month,
+            year,
+            categories: [],
+            totalSpending: 0,
+            hasData: false,
+          },
+        };
+      }
 
-  // Month-over-month spending totals
-  async getMonthlySpending(
-    userId: string,
-  ): Promise<ServiceResult<{ month: string; total: number }[]>> {
-    const now = new Date();
-    try {
-      const result = await db
+      // Calculate total for percentage
+      const totalResult = await db
         .select({
-          month: sql<string>`to_char(${transactions.date}, 'YYYY-MM')`,
-          total: sql<number>`sum(${transactions.amount}::numeric)::float`,
+          total: sql<number>`coalesce(sum(${transactions.amount}::numeric), 0)::float`,
         })
         .from(transactions)
         .where(
           and(
             eq(transactions.userId, userId),
             eq(transactions.type, "debit"),
-            gte(transactions.date, startOfDay(subMonths(now, 5))),
+            gte(transactions.date, startDate),
+            lte(transactions.date, endDate),
           ),
-        )
-        .groupBy(sql`to_char(${transactions.date}, 'YYYY-MM')`)
-        .orderBy(sql`to_char(${transactions.date}, 'YYYY-MM')`);
+        );
 
-      return { success: true, data: result };
+      const totalSpending = totalResult[0]?.total ?? 0;
+
+      const categories = categoryResult.map((r) => ({
+        category: r.category ?? "other",
+        total: r.total,
+        count: r.count,
+        percentage:
+          totalSpending > 0
+            ? Math.round((r.total / totalSpending) * 1000) / 10 // 1 decimal
+            : 0,
+      }));
+
+      return {
+        success: true,
+        data: {
+          month,
+          year,
+          categories,
+          totalSpending,
+          hasData: true,
+        },
+      };
     } catch (err) {
-      console.error("[TransactionsService.getMonthlySpending]", err);
+      console.error("[TransactionsService.getTopCategories]", err);
       return {
         success: false,
-        error: "Failed to fetch monthly spending",
+        error: "Failed to fetch top categories",
         code: "DB_ERROR",
       };
     }

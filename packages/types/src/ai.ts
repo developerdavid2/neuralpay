@@ -27,6 +27,28 @@ export const insightDataSchema = z
 export type InsightData = z.infer<typeof insightDataSchema>;
 
 // ── Chat Schemas
+export const startChatSessionBaseSchema = z.object({
+  contextType: z.enum(CHAT_CONTEXT_TYPES).default("general"),
+  contextId: z.string().optional(),
+  title: z.string().min(1).max(100).optional(),
+  topic: z.enum(CHAT_TOPICS).default("general"),
+});
+
+// Refined schema for mutation input
+export const startChatSessionSchema = startChatSessionBaseSchema.refine(
+  (data) => data.contextType === "general" || !!data.contextId,
+  {
+    message: "contextId is required when contextType is not 'general'",
+  },
+);
+
+export type StartChatSessionInput = z.infer<typeof startChatSessionSchema>;
+
+export const sessionByIdSchema = z.object({
+  sessionId: z.uuid(),
+});
+export type SessionByIdInput = z.infer<typeof sessionByIdSchema>;
+
 export const chatFilterSchema = z.object({
   includeArchived: z.boolean().default(false),
   contextType: z.enum(CHAT_CONTEXT_TYPES).optional(),
@@ -38,19 +60,6 @@ export const sendMessageSchema = z.object({
   content: z.string().min(1).max(4000),
 });
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
-
-export const startChatSessionSchema = z
-  .object({
-    contextType: z.enum(CHAT_CONTEXT_TYPES).default("general"),
-    sessionId: z.string().optional(),
-    contextId: z.string().optional(),
-    title: z.string().min(1).max(100).optional(),
-    topic: z.enum(CHAT_TOPICS).default("general"),
-  })
-  .refine((data) => data.contextType === "general" || !!data.contextId, {
-    message: "contextId is required when contextType is not 'general'",
-  });
-export type StartChatSessionInput = z.infer<typeof startChatSessionSchema>;
 
 // ── Combined inputs
 export const listInsightsInputSchema = insightFilterSchema;

@@ -1,17 +1,23 @@
+import { DashboardHeader } from "@/components/dashboard-header";
+import { SectionBoundary } from "@/components/section-boundary";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { StatCards, StatCardsSkeleton } from "../components/stat-cards";
+import {
+  InsightsSummary,
+  InsightsSummarySkeleton,
+} from "../components/insights-summary";
 import {
   RecentTransactions,
   RecentTransactionsSkeleton,
 } from "../components/recent-transactions";
-import { InsightsSummary } from "../components/insights-summary";
 import {
   SpendingChart,
   SpendingChartSkeleton,
 } from "../components/spending-chart";
-import { DashboardHeader } from "@/components/dashboard-header";
-import { SectionBoundary } from "@/components/section-boundary";
+import { StatCards, StatCardsSkeleton } from "../components/stat-cards";
+import {
+  TopCategoriesCard,
+  TopCategoriesSkeleton,
+} from "../components/top-monthly-categories";
 
 export function DashboardView() {
   return (
@@ -39,31 +45,29 @@ export function DashboardView() {
           </SectionBoundary>
 
           <SectionBoundary
-            fallback={<CardSkeleton className="h-72" />}
+            fallback={<InsightsSummarySkeleton />}
             errorMessage="Could not load insights"
           >
             <InsightsSummary />
           </SectionBoundary>
         </div>
 
-        {/* Row 3 — Spending chart */}
-        <SectionBoundary
-          fallback={<RecentTransactionsSkeleton />}
-          errorMessage="Could not load transactions"
-        >
-          <RecentTransactions />
-        </SectionBoundary>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
+          <SectionBoundary
+            fallback={<RecentTransactionsSkeleton />}
+            errorMessage="Could not load transactions"
+          >
+            <RecentTransactions />
+          </SectionBoundary>
 
-        <ErrorBoundary fallback>
-          <Suspense fallback>
-            <div>Top Categories</div>
-          </Suspense>
-        </ErrorBoundary>
+          <SectionBoundary
+            fallback={<TopCategoriesSkeleton />}
+            errorMessage="Could not load categories"
+          >
+            <TopCategoriesCard />
+          </SectionBoundary>
+        </div>
       </div>
     </div>
   );
-}
-
-function CardSkeleton({ className = "h-48" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-xl bg-muted ${className}`} />;
 }

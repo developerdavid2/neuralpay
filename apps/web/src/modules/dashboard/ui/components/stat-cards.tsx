@@ -18,7 +18,7 @@ export function StatCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4 backdrop-blur-xl rounded-xl  overflow-hidden">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 backdrop-blur-xl rounded-xl  overflow-hidden">
       <div
         className={cn(
           "absolute inset-0 bg-linear-to-tr from-white via-violet-300 from-0% via-40% to-30% to-transparent blur-[100px] sm:blur-[250px] opacity-40  overflow-hidden ",

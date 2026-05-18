@@ -24,6 +24,28 @@ export const transactionsRouter = router({
 
       return result.data;
     }),
+  recent: protectedProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().int().min(1).max(20).default(7),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const result = await TransactionsService.recent(
+        ctx.session.user.id,
+        input?.limit ?? 3,
+      );
+
+      if (!result.success)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+
+      return result.data;
+    }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.uuid() }))
@@ -47,8 +69,8 @@ export const transactionsRouter = router({
       z
         .object({
           period: z.enum(["7d", "30d", "90d", "custom"]).default("30d"),
-          from: z.string().datetime().optional(),
-          to: z.string().datetime().optional(),
+          from: z.iso.datetime().optional(),
+          to: z.iso.datetime().optional(),
         })
         .superRefine((val, ctx) => {
           if (val.period === "custom" && (!val.from || !val.to)) {
@@ -80,6 +102,43 @@ export const transactionsRouter = router({
         });
       }
 
+      return result.data;
+    }),
+
+  topCategories: protectedProcedure
+    .input(
+      z
+        .object({
+          month: z
+            .number()
+            .int()
+            .min(1)
+            .max(12)
+            .default(() => new Date().getMonth() + 1),
+          year: z
+            .number()
+            .int()
+            .min(2020)
+            .max(2100)
+            .default(() => new Date().getFullYear()),
+          limit: z.number().int().min(1).max(10).default(5),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const now = new Date();
+      const result = await TransactionsService.getTopCategories(
+        ctx.session.user.id,
+        input?.month ?? now.getMonth() + 1,
+        input?.year ?? now.getFullYear(),
+        input?.limit ?? 5,
+      );
+      if (!result.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      }
       return result.data;
     }),
 

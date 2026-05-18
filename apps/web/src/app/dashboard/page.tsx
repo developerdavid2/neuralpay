@@ -1,19 +1,15 @@
 import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
 import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
-import {
-  getQueryClient,
-  HydrateClient,
-  prefetch,
-  trpc,
-} from "@/trpc/trpc-server";
+import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 
 export default async function Page() {
+  const now = new Date();
   await Promise.allSettled([
     prefetch(trpc.payments.accounts.totalBalance.queryOptions()),
     prefetch(trpc.payments.accounts.list.queryOptions()),
     prefetch(trpc.payments.transactions.currentMonthSpending.queryOptions()),
     prefetch(
-      trpc.payments.transactions.list.queryOptions({
+      trpc.payments.transactions.recent.queryOptions({
         limit: TRANSACTIONS_LIMIT,
       }),
     ),
@@ -33,8 +29,16 @@ export default async function Page() {
       }),
     ),
     prefetch(
-      trpc.ai.insights.list.queryOptions({
-        limit: 3,
+      trpc.ai.insights.recent.queryOptions({
+        limit: TRANSACTIONS_LIMIT,
+      }),
+    ),
+
+    prefetch(
+      trpc.payments.transactions.topCategories.queryOptions({
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+        limit: 5,
       }),
     ),
   ]);

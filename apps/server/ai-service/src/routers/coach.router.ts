@@ -1,6 +1,7 @@
 import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import {
   listSessionsInputSchema,
+  sessionByIdSchema,
   startChatSessionSchema,
 } from "@neuralpay/types";
 import { TRPCError } from "@trpc/server";
@@ -29,7 +30,7 @@ export const coachRouter = router({
 
   //  * Used by: Opening a chat session
   sessionById: protectedProcedure
-    .input(startChatSessionSchema.pick({ sessionId: true }))
+    .input(sessionByIdSchema)
     .query(async ({ ctx, input }) => {
       const sessionResult = await AICoachService.getOrCreateSession(
         ctx.session.user.id,

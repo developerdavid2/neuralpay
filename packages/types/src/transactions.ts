@@ -25,6 +25,19 @@ export type OverviewTotal = {
   }>;
 };
 
+export type TopMonthlyCategories = {
+  month: number;
+  year: number;
+  categories: Array<{
+    category: string;
+    total: number;
+    percentage: number;
+    count: number;
+  }>;
+  totalSpending: number;
+  hasData: boolean;
+};
+
 export type TransactionPage = {
   items: TransactionRecord[];
   nextCursor: string | null;

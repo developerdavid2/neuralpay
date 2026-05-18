@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowUpRight, Package } from "lucide-react";
+import { useRecentTransactions } from "@/hooks/transactions/use-transactions";
 import { formatAmount, formatTransactionDate } from "@/lib/utils";
-import { cn } from "@neuralpay/ui/lib/utils";
-import { useTransactions } from "@/hooks/transactions/use-transactions";
-import { CATEGORY_ICONS, CATEGORY_LABELS } from "../../constants";
 import type { Transaction } from "@/modules/transactions/types";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { cn } from "@neuralpay/ui/lib/utils";
+import { ArrowUpRight, Package } from "lucide-react";
+import Link from "next/link";
+import { CATEGORY_ICONS, CATEGORY_LABELS } from "../../constants";
 
 function TransactionIcon({ category }: { category: string | null }) {
   const Icon = CATEGORY_ICONS[category ?? "other"] ?? Package;
@@ -100,8 +100,7 @@ function EmptyTransactions() {
 }
 
 export function RecentTransactions() {
-  const { recentTransactions } = useTransactions();
-  const { items } = recentTransactions;
+  const { recentTransactions } = useRecentTransactions();
 
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card overflow-hidden">
@@ -121,10 +120,10 @@ export function RecentTransactions() {
 
       {/* Body */}
       <div className="divide-y divide-border">
-        {items.length === 0 ? (
+        {recentTransactions.length === 0 ? (
           <EmptyTransactions />
         ) : (
-          items.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
+          recentTransactions.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
         )}
       </div>
     </div>
