@@ -15,6 +15,7 @@ export const INSIGHTS_TYPE_LABELS: Record<string, string> = {
   saving: "Saving",
   opportunity: "Opportunity",
   trend: "Trend",
+  warning: "Warning",
 };
 
 export const insightData = [

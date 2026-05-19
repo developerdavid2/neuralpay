@@ -71,8 +71,21 @@ export function InsightDetails({
           "flex flex-col",
         )}
       >
-        {isLoading || !insight ? (
+        {isLoading ? (
           <InsightDetailsSkeleton onClose={() => onOpenChange(false)} />
+        ) : !insight ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+            <div className="text-sm text-muted-foreground">
+              Insight not found or has been deleted
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+            >
+              Close
+            </Button>
+          </div>
         ) : (
           <InsightDetailsContent
             insight={insight}

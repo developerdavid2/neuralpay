@@ -5,10 +5,13 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/trpc-client";
+import { useRouter } from "next/navigation";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function useChat(initialSessionId?: string) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Get or create session
   const sessionQuery = useSuspenseQuery(
@@ -23,10 +26,10 @@ export function useChat(initialSessionId?: string) {
     ...trpc.ai.coach.startSession.mutationOptions(),
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.coach.sessions.queryKey(),
+        queryKey: queryKeys.chat.sessionList(),
       });
       // Navigate to new session
-      window.history.replaceState(null, "", `/dashboard/ai-chat/${data.id}`);
+      // router.replace(`/dashboard/ai-chat/${data.id}`);
     },
   });
 

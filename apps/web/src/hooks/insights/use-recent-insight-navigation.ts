@@ -2,6 +2,7 @@ import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function useRecentInsightNavigation() {
   const trpc = useTRPC();
@@ -14,10 +15,10 @@ export function useRecentInsightNavigation() {
     ...trpc.ai.insights.dismiss.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.recent.queryKey(),
+        queryKey: queryKeys.insights.recent(),
       });
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.list.queryKey(),
+        queryKey: queryKeys.insights.lists(),
       });
     },
   });
@@ -26,10 +27,10 @@ export function useRecentInsightNavigation() {
     ...trpc.ai.insights.markRead.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.recent.queryKey(),
+        queryKey: queryKeys.insights.recent(),
       });
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.list.queryKey(),
+        queryKey: queryKeys.insights.lists(),
       });
     },
   });
@@ -37,8 +38,11 @@ export function useRecentInsightNavigation() {
   const handleDismiss = useCallback(
     async (id: string) => {
       setPendingDismissId(id);
-      await dismiss.mutateAsync({ id });
-      setPendingDismissId(null);
+      try {
+        await dismiss.mutateAsync({ id });
+      } finally {
+        setPendingDismissId(null);
+      }
     },
     [dismiss],
   );

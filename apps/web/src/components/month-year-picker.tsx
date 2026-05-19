@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { CalendarIcon, ChevronDown } from "lucide-react";
 import { format, startOfMonth } from "date-fns";
 
@@ -27,6 +27,10 @@ export function MonthYearPicker({
 }: MonthYearPickerProps) {
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(value.getFullYear());
+
+  useEffect(() => {
+    setViewYear(value.getFullYear());
+  }, [value]);
 
   const currentYear = new Date().getFullYear();
   const effectiveMaxYear = maxYear ?? currentYear;

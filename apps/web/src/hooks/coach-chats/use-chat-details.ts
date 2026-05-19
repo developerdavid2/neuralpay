@@ -1,9 +1,5 @@
 import { useState, useCallback } from "react";
-import {
-  useSuspenseQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useRouter } from "next/navigation";
 
@@ -13,7 +9,7 @@ export function useChat(initialSessionId?: string) {
   const router = useRouter();
 
   // Get or create session
-  const { data: chatSession, isLoading } = useSuspenseQuery(
+  const { data: chatSession, isLoading } = useQuery(
     trpc.ai.coach.sessionById.queryOptions(
       { sessionId: initialSessionId ?? "" },
       { enabled: !!initialSessionId },
@@ -40,10 +36,10 @@ export function useChat(initialSessionId?: string) {
   );
 
   // Combine server messages with optimistic ones
-  const messages = chatSession.messages ?? [];
+  const messages = chatSession?.messages ?? [];
 
   return {
-    session: chatSession.session,
+    session: chatSession?.session,
     // messages: allMessages,
     isLoading: isLoading,
     // isSending: sendMessageMutation.isPending || startSessionMutation.isPending,

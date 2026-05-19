@@ -2,6 +2,7 @@ import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import type { Insight } from "@/modules/insights/types";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function useInsightMutations() {
   const trpc = useTRPC();
@@ -15,14 +16,14 @@ export function useInsightMutations() {
     ...trpc.ai.insights.dismiss.mutationOptions(),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.recent.queryKey(),
+        queryKey: queryKeys.insights.recent(),
       });
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.list.queryKey(),
+        queryKey: queryKeys.insights.lists(),
       });
       // Invalidate the specific insight detail to refresh stale data
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.getInsightById.queryKey({ id }),
+        queryKey: queryKeys.insights.detail(id),
       });
     },
   });
@@ -31,14 +32,14 @@ export function useInsightMutations() {
     ...trpc.ai.insights.restore.mutationOptions(),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.recent.queryKey(),
+        queryKey: queryKeys.insights.recent(),
       });
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.list.queryKey(),
+        queryKey: queryKeys.insights.lists(),
       });
       // Invalidate the specific insight detail to refresh stale data
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.getInsightById.queryKey({ id }),
+        queryKey: queryKeys.insights.detail(id),
       });
     },
   });
@@ -47,10 +48,10 @@ export function useInsightMutations() {
     ...trpc.ai.insights.markRead.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.recent.queryKey(),
+        queryKey: queryKeys.insights.recent(),
       });
       queryClient.invalidateQueries({
-        queryKey: trpc.ai.insights.list.queryKey(),
+        queryKey: queryKeys.insights.lists(),
       });
     },
   });
@@ -58,8 +59,11 @@ export function useInsightMutations() {
   const handleDismiss = useCallback(
     async (id: string) => {
       setPendingDismissId(id);
-      await dismiss.mutateAsync({ id });
-      setPendingDismissId(null);
+      try {
+        await dismiss.mutateAsync({ id });
+      } finally {
+        setPendingDismissId(null);
+      }
     },
     [dismiss],
   );
@@ -67,8 +71,11 @@ export function useInsightMutations() {
   const handleRestore = useCallback(
     async (id: string) => {
       setPendingRestoreId(id);
-      await restore.mutateAsync({ id });
-      setPendingRestoreId(null);
+      try {
+        await restore.mutateAsync({ id });
+      } finally {
+        setPendingRestoreId(null);
+      }
     },
     [restore],
   );
@@ -76,8 +83,11 @@ export function useInsightMutations() {
   const handleMarkRead = useCallback(
     async (id: string) => {
       setPendingReadId(id);
-      await markRead.mutateAsync({ id });
-      setPendingReadId(null);
+      try {
+        await markRead.mutateAsync({ id });
+      } finally {
+        setPendingReadId(null);
+      }
     },
     [markRead],
   );
@@ -92,7 +102,9 @@ export function useInsightMutations() {
     (insight: Insight) => {
       setSelectedInsightId(insight.id);
       setDrawerOpen(true);
-      handleMarkRead(insight.id);
+      handleMarkRead(insight.id).catch(() => {
+        // Error already handled by mutation error callback
+      });
     },
     [handleMarkRead],
   );

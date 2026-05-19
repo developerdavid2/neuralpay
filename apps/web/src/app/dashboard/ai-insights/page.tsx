@@ -23,7 +23,7 @@ export default async function Page({ searchParams }: PageProps) {
         type={params.type ?? "all"}
         severity={params.severity ?? "all"}
         dismissed={params.dismissed === "true"}
-        page={Math.max(1, Number(params.page ?? 1))}
+        page={Math.max(1, parseInt(params.page ?? "1", 10) || 1)}
         focusInsightId={params.focus}
       />
     </HydrateClient>
