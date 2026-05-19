@@ -53,7 +53,6 @@ export const DashboardSidebar = () => {
                         isActive={active}
                         className={cn(
                           "rounded-md!",
-                          // active state — brand purple tint + left border
                           active && [
                             "bg-background! font-bold! text-main!",
                             "border-l-2 border-yellow-500/80 dark:border-yellow-300/80",

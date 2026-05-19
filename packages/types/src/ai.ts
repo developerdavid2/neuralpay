@@ -9,7 +9,7 @@ import {
 // ── Insight Schemas
 export const insightFilterSchema = z.object({
   limit: z.number().int().min(1).max(100).default(50),
-  includeArchived: z.boolean().default(false),
+  includeDismissed: z.boolean().default(false),
   type: z.enum(INSIGHT_TYPES).optional(),
   severity: z.enum(INSIGHT_SEVERITIES).optional(),
 });
@@ -50,7 +50,7 @@ export const sessionByIdSchema = z.object({
 export type SessionByIdInput = z.infer<typeof sessionByIdSchema>;
 
 export const chatFilterSchema = z.object({
-  includeArchived: z.boolean().default(false),
+  includeDismissed: z.boolean().default(false),
   contextType: z.enum(CHAT_CONTEXT_TYPES).optional(),
 });
 export type ChatFilterInput = z.infer<typeof chatFilterSchema>;

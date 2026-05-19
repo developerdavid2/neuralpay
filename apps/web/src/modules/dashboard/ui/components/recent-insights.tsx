@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useInsightMutations } from "@/hooks/insights/use-insight-mutations";
+
 import { useRecentInsights } from "@/hooks/insights/use-insights";
 
 import {
@@ -10,16 +10,17 @@ import {
   InsightsSkeleton,
 } from "@/modules/insights/ui/components/insight-card";
 import { ArrowUpRight } from "lucide-react";
+import { useRecentInsightNavigation } from "@/hooks/insights/use-recent-insight-navigation";
 
-export function InsightsSummary() {
+export function RecentInsights() {
   const { insights, isLoading } = useRecentInsights();
   const { handleDismiss, handleOpen, handleChat, isDismissing } =
-    useInsightMutations();
+    useRecentInsightNavigation();
 
   const hasInsights = insights.length > 0;
 
   if (isLoading) {
-    return <InsightsSummarySkeleton />;
+    return <RecentInsightsSkeleton />;
   }
 
   return (
@@ -43,7 +44,7 @@ export function InsightsSummary() {
         </Link>
       </div>
 
-      {/* Insights list */}
+      {/* Insights list — compact, navigates to full page */}
       <div className="flex flex-col divide-y divide-border">
         {!hasInsights ? (
           <EmptyState />
@@ -52,9 +53,10 @@ export function InsightsSummary() {
             <InsightCard
               key={insight.id}
               insight={insight}
+              variant="compact"
               onDismiss={handleDismiss}
               onChat={handleChat}
-              onOpen={handleOpen}
+              onOpen={handleOpen} // ← navigates to /ai-insights?focus=<id>
               isDismissing={isDismissing}
             />
           ))
@@ -64,7 +66,7 @@ export function InsightsSummary() {
   );
 }
 
-export function InsightsSummarySkeleton() {
+export function RecentInsightsSkeleton() {
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm">
       <div className="flex items-center justify-between border-b border-border px-5 py-4">

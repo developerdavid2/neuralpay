@@ -9,11 +9,11 @@ export const AIInsightsService = {
     filters: InsightFilterInput,
   ): Promise<ServiceResult<InsightRecord[]>> {
     try {
-      const { limit, includeArchived, type, severity } = filters;
+      const { limit, includeDismissed, type, severity } = filters;
 
       const conditions = [eq(insights.userId, userId)];
 
-      if (!includeArchived) {
+      if (!includeDismissed) {
         conditions.push(isNull(insights.dismissedAt));
       }
 
@@ -29,11 +29,7 @@ export const AIInsightsService = {
         .select()
         .from(insights)
         .where(and(...conditions))
-        .orderBy(
-          // Unread first, then by generated date
-          sql`${insights.readAt} IS NULL DESC`,
-          desc(insights.generatedAt),
-        )
+        .orderBy(desc(insights.generatedAt))
         .limit(limit);
 
       return {

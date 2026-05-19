@@ -1,50 +1,56 @@
 "use client";
 
-import {
-  useSuspenseQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { useTRPC } from "@/trpc/trpc-client";
 import { cn } from "@neuralpay/ui/lib/utils";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
-  ArrowUpRight,
-  X,
-  MessageCircle,
-  Sparkles,
+  Archive,
   ChevronRight,
+  MessageCircle,
+  RotateCcw,
+  Sparkles,
+  X,
 } from "lucide-react";
-import { useCallback } from "react";
-import type { Insight } from "../../types";
 import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
+import type { Insight } from "../../types";
+import { Button } from "@neuralpay/ui/components/button";
+
+export type InsightCardVariant = "compact" | "full";
 
 interface InsightCardProps {
   insight: Insight;
+  variant?: InsightCardVariant;
   onDismiss: (id: string) => void;
+  onRestore?: (id: string) => void;
   onChat: (id: string) => void;
-  onOpen: (id: string) => void;
-  isDismissing: boolean;
+  onOpen: (id: string) => void; // now triggers drawer, not router.push
+  isDismissing?: boolean;
+  isRestoring?: boolean;
+  isFocused?: boolean; // <-- NEW: visual focus ring
 }
 
 export const InsightCard = ({
   insight,
+  variant = "compact",
   onDismiss,
+  onRestore,
   onChat,
   onOpen,
   isDismissing,
+  isRestoring,
+  isFocused,
 }: InsightCardProps) => {
   const isUnread = !insight.readAt;
-  const isArchived = !!insight.dismissedAt;
+  const isDismissed = !!insight.dismissedAt;
+  const isFull = variant === "full";
 
   return (
     <div
       className={cn(
-        "group relative flex flex-col gap-2 px-5 py-4 transition-colors",
-        "hover:bg-accent/50 cursor-pointer",
+        "group relative flex flex-col transition-colors cursor-pointer",
+        isFull ? "gap-3 px-6 py-5" : "gap-2 px-5 py-4",
+        "hover:bg-accent",
         isUnread && "bg-accent/30",
-        isArchived && "opacity-60",
+        isDismissed && "opacity-60",
+        isFocused && "ring-2 ring-primary/20 ring-inset", // <-- focus ring
       )}
       onClick={() => onOpen(insight.id)}
       role="button"
@@ -60,12 +66,12 @@ export const InsightCard = ({
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-primary" />
       )}
 
-      {/* Header row: badge + actions */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
+      {/* Header: badge + actions */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
           <span
             className={cn(
-              "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+              "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
               INSIGHTS_TYPE_STYLES[
                 insight.type as keyof typeof INSIGHTS_TYPE_STYLES
               ] ?? "bg-muted text-muted-foreground",
@@ -76,75 +82,146 @@ export const InsightCard = ({
             ] ?? insight.type}
           </span>
           {isUnread && (
-            <span className="flex h-2 w-2 rounded-full bg-primary">
-              <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-primary opacity-75" />
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+            </span>
+          )}
+          {insight.severity && (
+            <span className="text-[10px] text-muted-foreground capitalize hidden sm:inline">
+              {insight.severity}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onChat(insight.id);
-            }}
-            className="shrink-0 p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-            aria-label="Chat about this insight"
-            title="Chat about this"
-          >
-            <MessageCircle className="size-3.5" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDismiss(insight.id);
-            }}
-            disabled={isDismissing}
-            className="shrink-0 p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
-            aria-label="Archive insight"
-            title="Archive"
-          >
-            <X className="size-3.5" />
-          </button>
-        </div>
+        {/* COMPACT: Icon-only actions (hover) */}
+        {!isFull && !isDismissed && (
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onChat(insight.id);
+              }}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              aria-label="Chat"
+            >
+              <MessageCircle className="size-3.5" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDismiss(insight.id);
+              }}
+              disabled={isDismissing}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
+              aria-label="Dismiss"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* COMPACT: Restore button for archived */}
+        {!isFull && isDismissed && onRestore && (
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRestore(insight.id);
+              }}
+              disabled={isRestoring}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
+              aria-label="Restore"
+            >
+              <RotateCcw className="size-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Title */}
-      <p
+      <h3
         className={cn(
           "text-sm text-foreground",
           isUnread ? "font-semibold" : "font-medium",
         )}
       >
         {insight.title}
-      </p>
+      </h3>
 
       {/* Description */}
       <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">
         {insight.description}
       </p>
 
-      {/* Action row: Chat CTA */}
-      <div className="flex items-center gap-2 mt-1">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onChat(insight.id);
-          }}
-          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-        >
-          <Sparkles className="size-3" />
-          Chat about this
-          <ChevronRight className="size-3" />
-        </button>
-      </div>
+      {/* FULL: Prominent CTAs */}
+      {isFull && (
+        <div className="flex items-center gap-2 mt-1">
+          {!isDismissed ? (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 gap-1.5 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChat(insight.id);
+                }}
+              >
+                <MessageCircle className="size-3.5" />
+                Chat about this
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDismiss(insight.id);
+                }}
+                disabled={isDismissing}
+              >
+                <Archive className="size-3.5" />
+                Dismiss
+              </Button>
+            </>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1.5 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRestore?.(insight.id);
+              }}
+              disabled={isRestoring}
+            >
+              <RotateCcw className="size-3.5" />
+              Restore
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* COMPACT: Inline chat link (mobile always-visible) */}
+      {!isFull && !isDismissed && (
+        <div className="flex items-center gap-2 mt-0.5 sm:hidden">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onChat(insight.id);
+            }}
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary"
+          >
+            <Sparkles className="size-3" />
+            Chat
+            <ChevronRight className="size-3" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
-
-/**
- * Empty state when no insights available
- */
 export function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center px-5 py-8 text-center">

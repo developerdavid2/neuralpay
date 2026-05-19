@@ -1,13 +1,13 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
+import type { Insight } from "@/modules/insights/types";
 
 export function useInsightMutations() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const router = useRouter();
 
+  // ── Mutations ──
   const dismiss = useMutation({
     ...trpc.ai.insights.dismiss.mutationOptions(),
     onSuccess: () => {
@@ -43,32 +43,54 @@ export function useInsightMutations() {
       });
     },
   });
+
+  // ── Drawer State (full page only) ──
+  const [selectedInsight, setSelectedInsight] = useState<Insight | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // ── Handlers ──
   const handleDismiss = useCallback(
-    (id: string) => dismiss.mutate({ id }),
-    [dismiss],
-  );
-  const handleChat = useCallback(
     (id: string) => {
-      // Navigate to chat page with insight context
-      // The chat page will create the session on mount
-      router.push(`/dashboard/ai-chat?contextType=insight&contextId=${id}`);
+      dismiss.mutate({ id });
+      if (selectedInsight?.id === id) {
+        setDrawerOpen(false);
+        setSelectedInsight(null);
+      }
     },
-    [router],
+    [dismiss, selectedInsight],
   );
 
-  const handleOpen = useCallback(
-    (id: string) => {
-      markRead.mutate({ id });
-      router.push(`/dashboard/ai-insights?focus=${id}`);
+  const handleRestore = useCallback(
+    (id: string) => restore.mutate({ id }),
+    [restore],
+  );
+
+  const handleMarkRead = useCallback(
+    (id: string) => markRead.mutate({ id }),
+    [markRead],
+  );
+
+  // Opens the drawer for an insight
+  const handleCardOpen = useCallback(
+    (insight: Insight) => {
+      setSelectedInsight(insight);
+      setDrawerOpen(true);
+      handleMarkRead(insight.id);
     },
-    [markRead, router],
+    [handleMarkRead], // handleMarkRead is stable via useCallback
   );
 
   return {
+    // Mutations
     handleDismiss,
-    handleOpen,
-    handleChat,
-    restore: restore.mutate,
+    handleRestore,
+    handleMarkRead,
+    // Drawer
+    selectedInsight,
+    drawerOpen,
+    setDrawerOpen,
+    handleCardOpen,
+    // Loading states
     isDismissing: dismiss.isPending,
     isRestoring: restore.isPending,
     isMarkingRead: markRead.isPending,

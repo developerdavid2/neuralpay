@@ -52,14 +52,14 @@ export const AICoachService = {
     filters: ChatFilterInput,
   ): Promise<ServiceResult<ChatSessionRecord[]>> {
     try {
-      const { includeArchived, contextType } = filters;
+      const { includeDismissed, contextType } = filters;
 
       const conditions = [
         eq(chatSessions.userId, userId),
         eq(chatSessions.isActive, true),
       ];
 
-      if (!includeArchived) {
+      if (!includeDismissed) {
         conditions.push(isNull(chatSessions.archivedAt));
       }
 

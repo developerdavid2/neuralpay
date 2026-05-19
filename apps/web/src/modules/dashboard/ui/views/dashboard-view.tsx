@@ -1,10 +1,10 @@
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
-import { Suspense } from "react";
+
 import {
-  InsightsSummary,
-  InsightsSummarySkeleton,
-} from "../components/insights-summary";
+  RecentInsights,
+  RecentInsightsSkeleton,
+} from "../components/recent-insights";
 import {
   RecentTransactions,
   RecentTransactionsSkeleton,
@@ -45,10 +45,10 @@ export function DashboardView() {
           </SectionBoundary>
 
           <SectionBoundary
-            fallback={<InsightsSummarySkeleton />}
+            fallback={<RecentInsightsSkeleton />}
             errorMessage="Could not load insights"
           >
-            <InsightsSummary />
+            <RecentInsights />
           </SectionBoundary>
         </div>
 

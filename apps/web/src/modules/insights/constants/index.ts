@@ -1,8 +1,11 @@
 export const INSIGHTS_TYPE_STYLES: Record<string, string> = {
-  anomaly: "bg-destructive/10 text-destructive",
-  saving: "bg-[#D1FAF8] text-[#0EA5A0]",
-  opportunity: "bg-[#EDE9FE] text-[#7C3AED]",
-  trend: "bg-[#FEF3C7] text-[#D4A017]",
+  anomaly: "bg-destructive/15 text-destructive border border-destructive/20",
+  saving:
+    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
+  opportunity:
+    "bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20",
+  trend:
+    "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
 };
 
 export const INSIGHTS_TYPE_LABELS: Record<string, string> = {
@@ -11,3 +14,45 @@ export const INSIGHTS_TYPE_LABELS: Record<string, string> = {
   opportunity: "Opportunity",
   trend: "Trend",
 };
+
+export const insightData = [
+  {
+    goal: 400,
+  },
+  {
+    goal: 300,
+  },
+  {
+    goal: 200,
+  },
+  {
+    goal: 300,
+  },
+  {
+    goal: 200,
+  },
+  {
+    goal: 278,
+  },
+  {
+    goal: 189,
+  },
+  {
+    goal: 239,
+  },
+  {
+    goal: 300,
+  },
+  {
+    goal: 200,
+  },
+  {
+    goal: 278,
+  },
+  {
+    goal: 189,
+  },
+  {
+    goal: 349,
+  },
+];
