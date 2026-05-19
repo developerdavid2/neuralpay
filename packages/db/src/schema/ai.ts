@@ -8,6 +8,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+import { categoryEnum } from "./transactions";
 
 // ENUMS
 export const topicEnum = pgEnum("topic", [
@@ -33,22 +34,6 @@ export const CHAT_CONTEXT_TYPES = chatContextTypeEnum.enumValues;
 export const roleEnum = pgEnum("role", ["user", "assistant"]);
 export type Role = (typeof roleEnum.enumValues)[number];
 
-export const categoryEnum = pgEnum("category", [
-  "food_dining",
-  "utilities",
-  "rent",
-  "transport",
-  "shopping",
-  "entertainment",
-  "healthcare",
-  "education",
-  "transfer",
-  "income",
-  "investment",
-  "subscriptions",
-  "groceries",
-  "other",
-]);
 export type Category = (typeof categoryEnum.enumValues)[number];
 export const CATEGORY = categoryEnum.enumValues;
 
