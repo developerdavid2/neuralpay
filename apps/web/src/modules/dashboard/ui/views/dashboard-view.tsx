@@ -1,17 +1,24 @@
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { StatCards, StatCardsSkeleton } from "../components/stat-cards";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { SectionBoundary } from "@/components/section-boundary";
+
+import {
+  RecentInsights,
+  RecentInsightsSkeleton,
+} from "../components/recent-insights";
 import {
   RecentTransactions,
   RecentTransactionsSkeleton,
 } from "../components/recent-transactions";
-import { InsightsSummary } from "../components/insights-summary";
 import {
   SpendingChart,
   SpendingChartSkeleton,
 } from "../components/spending-chart";
-import { DashboardHeader } from "@/components/dashboard-header";
-import { SectionBoundary } from "@/components/section-boundary";
+import { StatCards, StatCardsSkeleton } from "../components/stat-cards";
+import {
+  TopCategoriesCard,
+  TopCategoriesSkeleton,
+} from "../components/top-monthly-categories";
+import { ChartInsightsRow } from "../components/chart-insights-row";
 
 export function DashboardView() {
   return (
@@ -19,7 +26,6 @@ export function DashboardView() {
       <DashboardHeader
         title="Dashboard"
         description="Welcome back. Here's your financial overview."
-        action="Add me"
       />
 
       <div className="bg-background border-muted shadow rounded-2xl p-5 space-y-4">
@@ -30,40 +36,42 @@ export function DashboardView() {
           <StatCards />
         </SectionBoundary>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]">
+        {/* Shared height row — both columns constrained to same height */}
+        <ChartInsightsRow
+          chart={
+            <SectionBoundary
+              fallback={<SpendingChartSkeleton />}
+              errorMessage="Could not load spending chart"
+            >
+              <SpendingChart />
+            </SectionBoundary>
+          }
+          insights={
+            <SectionBoundary
+              fallback={<RecentInsightsSkeleton />}
+              errorMessage="Could not load insights"
+            >
+              <RecentInsights />
+            </SectionBoundary>
+          }
+        />
+
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
           <SectionBoundary
-            fallback={<SpendingChartSkeleton />}
-            errorMessage="Could not load spending chart"
+            fallback={<RecentTransactionsSkeleton />}
+            errorMessage="Could not load transactions"
           >
-            <SpendingChart />
+            <RecentTransactions />
           </SectionBoundary>
 
           <SectionBoundary
-            fallback={<CardSkeleton className="h-72" />}
-            errorMessage="Could not load insights"
+            fallback={<TopCategoriesSkeleton />}
+            errorMessage="Could not load categories"
           >
-            <InsightsSummary />
+            <TopCategoriesCard />
           </SectionBoundary>
         </div>
-
-        {/* Row 3 — Spending chart */}
-        <SectionBoundary
-          fallback={<RecentTransactionsSkeleton />}
-          errorMessage="Could not load transactions"
-        >
-          <RecentTransactions />
-        </SectionBoundary>
-
-        <ErrorBoundary fallback>
-          <Suspense fallback>
-            <div>Top Categories</div>
-          </Suspense>
-        </ErrorBoundary>
       </div>
     </div>
   );
-}
-
-function CardSkeleton({ className = "h-48" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-xl bg-muted ${className}`} />;
 }

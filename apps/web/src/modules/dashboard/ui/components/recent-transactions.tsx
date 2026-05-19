@@ -1,14 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowUpRight, Package } from "lucide-react";
-import { formatAmount, formatTransactionDate } from "@/lib/utils";
-import { cn } from "@neuralpay/ui/lib/utils";
-import { useTransactions } from "@/hooks/dashboard/use-transactions";
-import { CATEGORY_ICONS, CATEGORY_LABELS } from "../../constants";
+import { useRecentTransactions } from "@/hooks/transactions/use-transactions";
+import { formatAmount } from "@/lib/utils";
 import type { Transaction } from "@/modules/transactions/types";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { cn } from "@neuralpay/ui/lib/utils";
+import { ArrowUpRight, Package } from "lucide-react";
+import Link from "next/link";
+import { format } from "date-fns";
+import { CATEGORY_ICONS, CATEGORY_LABELS } from "../../constants";
 
 function TransactionIcon({ category }: { category: string | null }) {
   const Icon = CATEGORY_ICONS[category ?? "other"] ?? Package;
@@ -58,13 +59,13 @@ function TransactionRow({ tx }: { tx: Transaction }) {
     >
       <TransactionIcon category={tx.category} />
 
-      {/* Merchant + date */}
+      {/* Merchant + exact date/time */}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate text-sm font-medium text-foreground">
           {tx.merchant ?? tx.description}
         </span>
         <span className="text-[11px] text-muted-foreground">
-          {formatTransactionDate(tx.date)}
+          {format(new Date(tx.date), "MMM do, h:mm a")}
         </span>
       </div>
 
@@ -79,7 +80,9 @@ function TransactionRow({ tx }: { tx: Transaction }) {
         <span
           className={cn(
             "font-mono text-sm font-semibold tabular-nums",
-            isIncome ? "text-[#0EA5A0]" : "text-foreground",
+            isIncome
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-foreground",
           )}
         >
           {isIncome ? "+" : "−"}
@@ -100,8 +103,7 @@ function EmptyTransactions() {
 }
 
 export function RecentTransactions() {
-  const { recentTransactions } = useTransactions();
-  const { items } = recentTransactions;
+  const { recentTransactions } = useRecentTransactions();
 
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card overflow-hidden">
@@ -112,7 +114,7 @@ export function RecentTransactions() {
         </h2>
         <Link
           href="/dashboard/transactions"
-          className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          className="flex items-center gap-1 text-xs font-medium text-main hover:underline"
         >
           View all
           <ArrowUpRight className="size-3" />
@@ -121,10 +123,10 @@ export function RecentTransactions() {
 
       {/* Body */}
       <div className="divide-y divide-border">
-        {items.length === 0 ? (
+        {recentTransactions.length === 0 ? (
           <EmptyTransactions />
         ) : (
-          items.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
+          recentTransactions.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
         )}
       </div>
     </div>

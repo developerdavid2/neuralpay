@@ -45,21 +45,6 @@ export const categoryEnum = pgEnum("category", [
   "other",
 ]);
 
-export const insightSeverityEnum = pgEnum("insight_severity", [
-  "low",
-  "medium",
-  "high",
-  "critical",
-]);
-
-export const insightTypeEnum = pgEnum("insight_type", [
-  "anomaly",
-  "opportunity",
-  "trend",
-  "saving",
-  "warning",
-]);
-
 // Accounts table
 export const bankAccounts = pgTable("bank_accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -150,22 +135,3 @@ export const budgets = pgTable("budgets", {
   resetDay: integer("reset_day").default(1),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-
-// Spending insights (AI generated)
-export const spendingInsights = pgTable("spending_insights", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  type: insightTypeEnum("type").notNull(), // anomaly, saving, opportunity, trend
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  severity: insightSeverityEnum("severity"), // low, medium, high
-  category: categoryEnum("category"),
-  data: text("data"),
-  dismissed: boolean("dismissed").default(false),
-  generatedAt: timestamp("generated_at").defaultNow().notNull(),
-  expiresAt: timestamp("expires_at"),
-});
-
-export type InsightRecord = typeof spendingInsights.$inferSelect;

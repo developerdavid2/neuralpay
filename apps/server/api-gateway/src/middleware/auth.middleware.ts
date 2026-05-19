@@ -1,7 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
-import { auth } from "../lib/auth";
-import { logger } from "../utils/logger";
 import { fromNodeHeaders } from "better-auth/node";
+import type { NextFunction, Request, Response } from "express";
+import { auth } from "../lib/auth";
 
 export async function authMiddleware(
   req: Request,
@@ -16,14 +15,11 @@ export async function authMiddleware(
     if (session?.user) {
       // Attach user to request object so proxy decorators can access it
       (req as any).user = session.user;
-      logger.debug(`[auth] authenticated user: ${session.user.id}`);
     }
   } catch (error) {
     // Non-critical — if auth fails, we just don't attach user
     // Services can still try cookie-based auth as fallback
-    logger.debug(
-      `[auth] session extraction failed (fallback to service-level auth)`,
-    );
+    console.error("Internal Server error", error);
   }
 
   next();

@@ -29,8 +29,6 @@ import {
 } from "@neuralpay/ui/components/card";
 import { Tabs, TabsList, TabsTrigger } from "@neuralpay/ui/components/tabs";
 
-import { useSpendingOverview } from "@/hooks/dashboard/use-spending-overview";
-
 import { DateRangePicker } from "@/components/date-range-picker";
 import { formatAmount, getPeriodDays } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
@@ -44,6 +42,7 @@ import {
 } from "../../constants";
 import type { ChartType, Period } from "../../types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { useSpendingOverview } from "@/hooks/transactions/use-transactions";
 
 interface PieDataItem {
   name: string;

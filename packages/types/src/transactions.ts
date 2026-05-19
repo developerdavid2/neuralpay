@@ -1,6 +1,6 @@
-import z from "zod";
 import type { TransactionRecord } from "@neuralpay/db";
-import { paginationSchema, type PaginationInput } from "./pagination";
+import z from "zod";
+import { paginationSchema } from "./pagination";
 
 export type CategoryTotal = {
   category: string;
@@ -25,13 +25,26 @@ export type OverviewTotal = {
   }>;
 };
 
+export type TopMonthlyCategories = {
+  month: number;
+  year: number;
+  categories: Array<{
+    category: string;
+    total: number;
+    percentage: number;
+    count: number;
+  }>;
+  totalSpending: number;
+  hasData: boolean;
+};
+
 export type TransactionPage = {
   items: TransactionRecord[];
   nextCursor: string | null;
 };
 
 export const transactionsFilterSchema = z.object({
-  bankAccountId: z.string().uuid().optional(),
+  bankAccountId: z.uuid().optional(),
   category: z.string().optional(),
   type: z.enum(["debit", "credit"]).optional(),
   isAnomaly: z.boolean().optional(),
@@ -39,9 +52,6 @@ export const transactionsFilterSchema = z.object({
   dateFrom: z.iso.datetime().optional(),
   dateTo: z.iso.datetime().optional(),
 });
-
-export type transactionsFilterInput = z.infer<typeof transactionsFilterSchema> &
-  PaginationInput;
 
 export const listTransactionsInputSchema = transactionsFilterSchema.extend(
   paginationSchema.shape,

@@ -5,7 +5,6 @@ import {
   transactionTags,
   transactionTagMapping,
   budgets,
-  spendingInsights,
   bankAccounts,
 } from "./transactions";
 
@@ -18,7 +17,7 @@ import {
   vaultInvitations,
 } from "./vaults";
 
-import { chatSessions, chatMessages } from "./ai";
+import { insights, chatSessions, chatMessages } from "./ai";
 
 import { notifications, deviceTokens } from "./notifications";
 
@@ -35,7 +34,7 @@ export const userRelations = relations(user, ({ many }) => ({
   // Budgets
   budgets: many(budgets),
   // Spending insights
-  spendingInsights: many(spendingInsights),
+  insights: many(insights),
   // Splits (created)
   createdSplits: many(splits, { relationName: "creator" }),
   // Split participations
@@ -133,15 +132,12 @@ export const budgetRelations = relations(budgets, ({ one }) => ({
   }),
 }));
 
-export const spendingInsightRelations = relations(
-  spendingInsights,
-  ({ one }) => ({
-    user: one(user, {
-      fields: [spendingInsights.userId],
-      references: [user.id],
-    }),
+export const spendingInsightRelations = relations(insights, ({ one }) => ({
+  user: one(user, {
+    fields: [insights.userId],
+    references: [user.id],
   }),
-);
+}));
 
 // ========== Splits Relations ==========
 export const splitRelations = relations(splits, ({ one, many }) => ({
