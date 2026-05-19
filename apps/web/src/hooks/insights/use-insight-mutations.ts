@@ -1,33 +1,44 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import type { Insight } from "@/modules/insights/types";
 
 export function useInsightMutations() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  // ── Mutations ──
+  const [pendingDismissId, setPendingDismissId] = useState<string | null>(null);
+  const [pendingRestoreId, setPendingRestoreId] = useState<string | null>(null);
+  const [pendingReadId, setPendingReadId] = useState<string | null>(null);
+
   const dismiss = useMutation({
     ...trpc.ai.insights.dismiss.mutationOptions(),
-    onSuccess: () => {
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
         queryKey: trpc.ai.insights.recent.queryKey(),
       });
       queryClient.invalidateQueries({
         queryKey: trpc.ai.insights.list.queryKey(),
+      });
+      // Invalidate the specific insight detail to refresh stale data
+      queryClient.invalidateQueries({
+        queryKey: trpc.ai.insights.getInsightById.queryKey({ id }),
       });
     },
   });
 
   const restore = useMutation({
     ...trpc.ai.insights.restore.mutationOptions(),
-    onSuccess: () => {
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({
         queryKey: trpc.ai.insights.recent.queryKey(),
       });
       queryClient.invalidateQueries({
         queryKey: trpc.ai.insights.list.queryKey(),
+      });
+      // Invalidate the specific insight detail to refresh stale data
+      queryClient.invalidateQueries({
+        queryKey: trpc.ai.insights.getInsightById.queryKey({ id }),
       });
     },
   });
@@ -44,41 +55,52 @@ export function useInsightMutations() {
     },
   });
 
-  // ── Drawer State (full page only) ──
-  const [selectedInsight, setSelectedInsight] = useState<Insight | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // ── Handlers ──
   const handleDismiss = useCallback(
-    (id: string) => {
-      dismiss.mutate({ id });
-      if (selectedInsight?.id === id) {
-        setDrawerOpen(false);
-        setSelectedInsight(null);
-      }
+    async (id: string) => {
+      setPendingDismissId(id);
+      await dismiss.mutateAsync({ id });
+      setPendingDismissId(null);
     },
-    [dismiss, selectedInsight],
+    [dismiss],
   );
 
   const handleRestore = useCallback(
-    (id: string) => restore.mutate({ id }),
+    async (id: string) => {
+      setPendingRestoreId(id);
+      await restore.mutateAsync({ id });
+      setPendingRestoreId(null);
+    },
     [restore],
   );
 
   const handleMarkRead = useCallback(
-    (id: string) => markRead.mutate({ id }),
+    async (id: string) => {
+      setPendingReadId(id);
+      await markRead.mutateAsync({ id });
+      setPendingReadId(null);
+    },
     [markRead],
   );
 
-  // Opens the drawer for an insight
+  // Drawer state
+  const [selectedInsightId, setSelectedInsightId] = useState<string | null>(
+    null,
+  );
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const handleCardOpen = useCallback(
     (insight: Insight) => {
-      setSelectedInsight(insight);
+      setSelectedInsightId(insight.id);
       setDrawerOpen(true);
       handleMarkRead(insight.id);
     },
-    [handleMarkRead], // handleMarkRead is stable via useCallback
+    [handleMarkRead],
   );
+
+  // Check if a specific insight is pending
+  const isDismissing = (id: string) => pendingDismissId === id;
+  const isRestoring = (id: string) => pendingRestoreId === id;
+  const isMarkingRead = (id: string) => pendingReadId === id;
 
   return {
     // Mutations
@@ -86,13 +108,13 @@ export function useInsightMutations() {
     handleRestore,
     handleMarkRead,
     // Drawer
-    selectedInsight,
+    selectedInsightId,
     drawerOpen,
     setDrawerOpen,
     handleCardOpen,
-    // Loading states
-    isDismissing: dismiss.isPending,
-    isRestoring: restore.isPending,
-    isMarkingRead: markRead.isPending,
+    // Per-ID pending states
+    isDismissing,
+    isRestoring,
+    isMarkingRead,
   };
 }

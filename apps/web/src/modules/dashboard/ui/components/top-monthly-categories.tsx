@@ -130,7 +130,7 @@ export function TopCategoriesCard() {
                     {cat.percentage}% · ${cat.total.toFixed(2)}
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-1.5 rounded-full bg-accent overflow-hidden">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-500",

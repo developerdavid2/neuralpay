@@ -18,6 +18,7 @@ import {
   TopCategoriesCard,
   TopCategoriesSkeleton,
 } from "../components/top-monthly-categories";
+import { ChartInsightsRow } from "../components/chart-insights-row";
 
 export function DashboardView() {
   return (
@@ -25,7 +26,6 @@ export function DashboardView() {
       <DashboardHeader
         title="Dashboard"
         description="Welcome back. Here's your financial overview."
-        action="Add me"
       />
 
       <div className="bg-background border-muted shadow rounded-2xl p-5 space-y-4">
@@ -36,21 +36,25 @@ export function DashboardView() {
           <StatCards />
         </SectionBoundary>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]">
-          <SectionBoundary
-            fallback={<SpendingChartSkeleton />}
-            errorMessage="Could not load spending chart"
-          >
-            <SpendingChart />
-          </SectionBoundary>
-
-          <SectionBoundary
-            fallback={<RecentInsightsSkeleton />}
-            errorMessage="Could not load insights"
-          >
-            <RecentInsights />
-          </SectionBoundary>
-        </div>
+        {/* Shared height row — both columns constrained to same height */}
+        <ChartInsightsRow
+          chart={
+            <SectionBoundary
+              fallback={<SpendingChartSkeleton />}
+              errorMessage="Could not load spending chart"
+            >
+              <SpendingChart />
+            </SectionBoundary>
+          }
+          insights={
+            <SectionBoundary
+              fallback={<RecentInsightsSkeleton />}
+              errorMessage="Could not load insights"
+            >
+              <RecentInsights />
+            </SectionBoundary>
+          }
+        />
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
           <SectionBoundary

@@ -1,10 +1,11 @@
 import type { InsightsListInput } from "@/modules/insights/types";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 
-export function useInsightsList(filters: InsightsListInput = {}) {
+export function useInsightsList(filters: InsightsListInput) {
   const trpc = useTRPC();
 
+  console.log(filters);
   const { data: insights, isLoading } = useSuspenseQuery(
     trpc.ai.insights.list.queryOptions(filters),
   );
@@ -15,7 +16,7 @@ export function useInsightsList(filters: InsightsListInput = {}) {
   };
 }
 
-export function useRecentInsights(limit = 3) {
+export function useRecentInsights(limit = 5) {
   const trpc = useTRPC();
 
   const { data: insights, isLoading } = useSuspenseQuery(
@@ -35,12 +36,13 @@ export function useInsightDetail(insightId: string) {
     data: insight,
     isLoading,
     isError,
-  } = useSuspenseQuery(
-    trpc.ai.insights.getInsightById.queryOptions({ id: insightId }),
-  );
+  } = useQuery({
+    ...trpc.ai.insights.getInsightById.queryOptions({ id: insightId }),
+    enabled: !!insightId && insightId !== "",
+  });
 
   return {
-    insight,
+    insight: insight ?? null,
     isLoading,
     isError,
   };

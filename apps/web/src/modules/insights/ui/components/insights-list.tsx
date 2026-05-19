@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useEffect, useCallback } from "react";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { useInsightMutations } from "@/hooks/insights/use-insight-mutations";
 import { useInsightsList } from "@/hooks/insights/use-insights";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo } from "react";
 
 import {
   InsightCard,
@@ -14,14 +14,24 @@ import {
 
 import { Sparkles } from "lucide-react";
 import type { Route } from "next";
+import type { Insight, InsightsListInput } from "../../types";
 import { InsightDetails } from "./insight-detail";
-import type { Insight } from "../../types";
 
 interface Props {
   focusInsightId?: string;
+  currentSearch: string;
+  currentType?: InsightsListInput["type"];
+  currentSeverity?: InsightsListInput["severity"];
+  currentShowDismissed: boolean;
 }
 
-export function InsightsList({ focusInsightId }: Props) {
+export function InsightsList({
+  focusInsightId,
+  currentSearch,
+  currentType,
+  currentSeverity,
+  currentShowDismissed,
+}: Props) {
   const isMobile = useMediaQuery("(max-width: 639px)");
   const variant: InsightCardVariant = isMobile ? "compact" : "full";
 
@@ -30,18 +40,22 @@ export function InsightsList({ focusInsightId }: Props) {
   const searchParams = useSearchParams();
 
   const { insights } = useInsightsList({
-    includeDismissed: false,
+    includeDismissed: currentShowDismissed,
     limit: 50,
+    severity: currentSeverity,
+    type: currentType,
+    search: currentSearch,
   });
 
   const {
     handleDismiss,
     handleCardOpen,
-    selectedInsight,
+    selectedInsightId,
     drawerOpen,
     setDrawerOpen,
     isDismissing,
     isRestoring,
+    handleRestore,
   } = useInsightMutations();
 
   // Auto-open drawer when focusInsightId is in URL
@@ -49,20 +63,19 @@ export function InsightsList({ focusInsightId }: Props) {
     if (
       focusInsightId &&
       insights.length > 0 &&
-      selectedInsight?.id !== focusInsightId
+      selectedInsightId !== focusInsightId
     ) {
       const target = insights.find((i) => i.id === focusInsightId);
       if (target) {
         handleCardOpen(target);
       }
     }
-  }, [focusInsightId, insights, handleCardOpen, selectedInsight?.id]);
+  }, [focusInsightId, insights, handleCardOpen, selectedInsightId]);
 
   // Open drawer and add focus param to URL
   const handleCardOpenWithURL = useCallback(
     (insight: Insight) => {
       handleCardOpen(insight);
-      // Add focus param to URL
       const params = new URLSearchParams(searchParams.toString());
       params.set("focus", insight.id);
       router.replace((pathname + "?" + params.toString()) as Route, {
@@ -75,9 +88,7 @@ export function InsightsList({ focusInsightId }: Props) {
   // Remove ?focus= from URL when drawer closes
   const handleDrawerOpenChange = (open: boolean) => {
     setDrawerOpen(open);
-
     if (!open) {
-      // Clear focus param from URL without navigation flash
       const params = new URLSearchParams(searchParams.toString());
       params.delete("focus");
       const query = params.toString();
@@ -114,6 +125,7 @@ export function InsightsList({ focusInsightId }: Props) {
                 insight={insight}
                 variant={variant}
                 onDismiss={handleDismiss}
+                onRestore={handleRestore}
                 onChat={(id) => {
                   window.location.href = `/dashboard/ai-chat?contextType=insight&contextId=${id}`;
                 }}
@@ -128,13 +140,14 @@ export function InsightsList({ focusInsightId }: Props) {
       </div>
 
       <InsightDetails
-        insight={selectedInsight}
+        insightId={selectedInsightId}
         open={drawerOpen}
-        onOpenChange={handleDrawerOpenChange} // ← custom handler
+        onOpenChange={handleDrawerOpenChange}
         onChat={(id) => {
           window.location.href = `/dashboard/ai-chat?contextType=insight&contextId=${id}`;
         }}
         onDismiss={handleDismiss}
+        onRestore={handleRestore}
         isDismissing={isDismissing}
         isRestoring={isRestoring}
       />

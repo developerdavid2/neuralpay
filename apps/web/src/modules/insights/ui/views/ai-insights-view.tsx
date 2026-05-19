@@ -5,6 +5,7 @@ import {
   InsightsList,
   InsightsListSkeleton,
 } from "../components/insights-list";
+import { validateSeverity, validateType } from "../../lib/validate-filters";
 
 interface AIInsightsViewProps {
   search: string;
@@ -23,6 +24,9 @@ export function AIInsightsView({
   page,
   focusInsightId,
 }: AIInsightsViewProps) {
+  const validatedType = validateType(type);
+  const validatedSeverity = validateSeverity(severity);
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <DashboardHeader
@@ -39,10 +43,17 @@ export function AIInsightsView({
         />
 
         <SectionBoundary
+          key={`${type}-${severity}-${search}-${dismissed}`}
           fallback={<InsightsListSkeleton />}
           errorMessage="Could not load account summary"
         >
-          <InsightsList focusInsightId={focusInsightId} />
+          <InsightsList
+            focusInsightId={focusInsightId}
+            currentSearch={search}
+            currentType={validatedType!}
+            currentSeverity={validatedSeverity!}
+            currentShowDismissed={dismissed}
+          />
         </SectionBoundary>
       </div>
     </div>

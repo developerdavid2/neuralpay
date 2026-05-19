@@ -1,12 +1,14 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 export function useRecentInsightNavigation() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const router = useRouter();
+
+  const [pendingDismissId, setPendingDismissId] = useState<string | null>(null);
 
   const dismiss = useMutation({
     ...trpc.ai.insights.dismiss.mutationOptions(),
@@ -33,7 +35,11 @@ export function useRecentInsightNavigation() {
   });
 
   const handleDismiss = useCallback(
-    (id: string) => dismiss.mutate({ id }),
+    async (id: string) => {
+      setPendingDismissId(id);
+      await dismiss.mutateAsync({ id });
+      setPendingDismissId(null);
+    },
     [dismiss],
   );
 
@@ -44,7 +50,6 @@ export function useRecentInsightNavigation() {
     [router],
   );
 
-  // Dashboard: navigate to full page with focus, mark as read
   const handleOpen = useCallback(
     (id: string) => {
       markRead.mutate({ id });
@@ -53,11 +58,16 @@ export function useRecentInsightNavigation() {
     [markRead, router],
   );
 
+  const isDismissing = useCallback(
+    (id: string) => pendingDismissId === id,
+    [pendingDismissId],
+  );
+
   return {
     handleDismiss,
     handleOpen,
     handleChat,
-    isDismissing: dismiss.isPending,
+    isDismissing,
     isMarkingRead: markRead.isPending,
   };
 }

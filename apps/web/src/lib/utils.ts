@@ -1,5 +1,5 @@
 import type { Period } from "@/modules/dashboard/types";
-import { format, formatDistanceToNow, isToday, isYesterday } from "date-fns";
+import { format } from "date-fns";
 import { type DateRange } from "react-day-picker";
 
 export function formatAmount(amount: number): string {
@@ -13,22 +13,6 @@ export function formatAmount(amount: number): string {
 
 export function formatTransactionDate(date: Date | string): string {
   const d = new Date(date);
-
-  if (isToday(d)) {
-    return `Today at ${format(d, "h:mm a")}`;
-  }
-
-  if (isYesterday(d)) {
-    return `Yesterday at ${format(d, "h:mm a")}`;
-  }
-
-  // Within the last 6 days → "3 days ago"
-  const diffMs = Date.now() - d.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 7) {
-    return formatDistanceToNow(d, { addSuffix: true });
-  }
 
   // Older → "May 6" or "May 6, 2024"
   const sameYear = d.getFullYear() === new Date().getFullYear();

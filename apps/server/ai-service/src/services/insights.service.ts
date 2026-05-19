@@ -1,7 +1,7 @@
 import { db } from "@neuralpay/db";
 import { insights, type InsightRecord } from "@neuralpay/db/schema";
 import type { InsightFilterInput, ServiceResult } from "@neuralpay/types";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql, or, ilike } from "drizzle-orm";
 
 export const AIInsightsService = {
   async getInsights(
@@ -9,7 +9,7 @@ export const AIInsightsService = {
     filters: InsightFilterInput,
   ): Promise<ServiceResult<InsightRecord[]>> {
     try {
-      const { limit, includeDismissed, type, severity } = filters;
+      const { limit, includeDismissed, type, severity, search } = filters;
 
       const conditions = [eq(insights.userId, userId)];
 
@@ -23,6 +23,18 @@ export const AIInsightsService = {
 
       if (severity) {
         conditions.push(eq(insights.severity, severity));
+      }
+
+      // ← NEW: Search in title and description
+      if (search) {
+        const searchCondition = or(
+          ilike(insights.title, `%${search}%`),
+          ilike(insights.description, `%${search}%`),
+        );
+
+        if (searchCondition) {
+          conditions.push(searchCondition);
+        }
       }
 
       const result = await db

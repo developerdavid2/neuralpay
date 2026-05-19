@@ -7,11 +7,13 @@ import {
 } from "@neuralpay/db/schema";
 
 // ── Insight Schemas
+// schema.ts
 export const insightFilterSchema = z.object({
   limit: z.number().int().min(1).max(100).default(50),
   includeDismissed: z.boolean().default(false),
   type: z.enum(INSIGHT_TYPES).optional(),
   severity: z.enum(INSIGHT_SEVERITIES).optional(),
+  search: z.string().trim().optional(),
 });
 export type InsightFilterInput = z.infer<typeof insightFilterSchema>;
 

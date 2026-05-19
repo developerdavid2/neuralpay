@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@neuralpay/ui/lib/utils";
+import { formatTransactionDate } from "@/lib/utils";
 import {
   Archive,
   ChevronRight,
@@ -8,6 +9,7 @@ import {
   RotateCcw,
   Sparkles,
   X,
+  Loader2,
 } from "lucide-react";
 import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
 import type { Insight } from "../../types";
@@ -18,13 +20,13 @@ export type InsightCardVariant = "compact" | "full";
 interface InsightCardProps {
   insight: Insight;
   variant?: InsightCardVariant;
-  onDismiss: (id: string) => void;
-  onRestore?: (id: string) => void;
+  onDismiss: (id: string) => Promise<void>; // now async
+  onRestore?: (id: string) => Promise<void>;
   onChat: (id: string) => void;
-  onOpen: (id: string) => void; // now triggers drawer, not router.push
-  isDismissing?: boolean;
-  isRestoring?: boolean;
-  isFocused?: boolean; // <-- NEW: visual focus ring
+  onOpen: (id: string) => void;
+  isDismissing: (id: string) => boolean; // per-ID check
+  isRestoring: (id: string) => boolean;
+  isFocused?: boolean;
 }
 
 export const InsightCard = ({
@@ -42,6 +44,11 @@ export const InsightCard = ({
   const isDismissed = !!insight.dismissedAt;
   const isFull = variant === "full";
 
+  // Check pending state for THIS insight only
+  const dismissing = isDismissing(insight.id);
+  const restoring = isRestoring(insight.id);
+  const isPending = dismissing || restoring;
+
   return (
     <div
       className={cn(
@@ -50,20 +57,28 @@ export const InsightCard = ({
         "hover:bg-accent",
         isUnread && "bg-accent/30",
         isDismissed && "opacity-60",
-        isFocused && "ring-2 ring-primary/20 ring-inset", // <-- focus ring
+        isFocused && "ring-2 ring-primary/20 ring-inset",
+        isPending && "pointer-events-none opacity-50", // dim while pending
       )}
-      onClick={() => onOpen(insight.id)}
+      onClick={() => !isPending && onOpen(insight.id)}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+        if (!isPending && (e.key === "Enter" || e.key === " ")) {
           onOpen(insight.id);
         }
       }}
     >
       {/* Unread indicator */}
-      {isUnread && (
+      {isUnread && !isPending && (
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-primary" />
+      )}
+
+      {/* Pending spinner overlay */}
+      {isPending && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+          <Loader2 className="size-5 animate-spin text-muted-foreground" />
+        </div>
       )}
 
       {/* Header: badge + actions */}
@@ -94,7 +109,7 @@ export const InsightCard = ({
           )}
         </div>
 
-        {/* COMPACT: Icon-only actions (hover) */}
+        {/* COMPACT: Icon-only actions */}
         {!isFull && !isDismissed && (
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button
@@ -102,7 +117,8 @@ export const InsightCard = ({
                 e.stopPropagation();
                 onChat(insight.id);
               }}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              disabled={isPending}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
               aria-label="Chat"
             >
               <MessageCircle className="size-3.5" />
@@ -112,16 +128,20 @@ export const InsightCard = ({
                 e.stopPropagation();
                 onDismiss(insight.id);
               }}
-              disabled={isDismissing}
+              disabled={dismissing}
               className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-40"
               aria-label="Dismiss"
             >
-              <X className="size-3.5" />
+              {dismissing ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <X className="size-3.5" />
+              )}
             </button>
           </div>
         )}
 
-        {/* COMPACT: Restore button for archived */}
+        {/* COMPACT: Restore */}
         {!isFull && isDismissed && onRestore && (
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button
@@ -129,11 +149,15 @@ export const InsightCard = ({
                 e.stopPropagation();
                 onRestore(insight.id);
               }}
-              disabled={isRestoring}
+              disabled={restoring}
               className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
               aria-label="Restore"
             >
-              <RotateCcw className="size-3.5" />
+              {restoring ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="size-3.5" />
+              )}
             </button>
           </div>
         )}
@@ -154,6 +178,11 @@ export const InsightCard = ({
         {insight.description}
       </p>
 
+      {/* Timestamp */}
+      <p className="text-xs text-muted-foreground/70 mt-1">
+        Generated: {formatTransactionDate(insight.generatedAt)}
+      </p>
+
       {/* FULL: Prominent CTAs */}
       {isFull && (
         <div className="flex items-center gap-2 mt-1">
@@ -167,6 +196,7 @@ export const InsightCard = ({
                   e.stopPropagation();
                   onChat(insight.id);
                 }}
+                disabled={isPending}
               >
                 <MessageCircle className="size-3.5" />
                 Chat about this
@@ -179,10 +209,14 @@ export const InsightCard = ({
                   e.stopPropagation();
                   onDismiss(insight.id);
                 }}
-                disabled={isDismissing}
+                disabled={dismissing}
               >
-                <Archive className="size-3.5" />
-                Dismiss
+                {dismissing ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Archive className="size-3.5" />
+                )}
+                {dismissing ? "Dismissing..." : "Dismiss"}
               </Button>
             </>
           ) : (
@@ -194,16 +228,20 @@ export const InsightCard = ({
                 e.stopPropagation();
                 onRestore?.(insight.id);
               }}
-              disabled={isRestoring}
+              disabled={restoring}
             >
-              <RotateCcw className="size-3.5" />
-              Restore
+              {restoring ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="size-3.5" />
+              )}
+              {restoring ? "Restoring..." : "Restore"}
             </Button>
           )}
         </div>
       )}
 
-      {/* COMPACT: Inline chat link (mobile always-visible) */}
+      {/* COMPACT: Mobile chat link */}
       {!isFull && !isDismissed && (
         <div className="flex items-center gap-2 mt-0.5 sm:hidden">
           <button
@@ -211,7 +249,8 @@ export const InsightCard = ({
               e.stopPropagation();
               onChat(insight.id);
             }}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary"
+            disabled={isPending}
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary disabled:opacity-40"
           >
             <Sparkles className="size-3" />
             Chat
@@ -222,6 +261,7 @@ export const InsightCard = ({
     </div>
   );
 };
+
 export function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center px-5 py-8 text-center">
@@ -245,12 +285,12 @@ export function InsightsSkeleton() {
       {[1, 2, 3].map((i) => (
         <div key={i} className="flex flex-col gap-2 px-5 py-4 animate-pulse">
           <div className="flex items-start justify-between gap-2">
-            <div className="h-4 w-20 rounded-full bg-muted" />
-            <div className="h-4 w-4 rounded bg-muted" />
+            <div className="h-4 w-20 rounded-full bg-accent" />
+            <div className="h-4 w-4 rounded bg-accent" />
           </div>
-          <div className="h-4 w-3/4 rounded bg-muted" />
-          <div className="h-3 w-full rounded bg-muted" />
-          <div className="h-3 w-2/3 rounded bg-muted" />
+          <div className="h-4 w-3/4 rounded bg-accent" />
+          <div className="h-3 w-full rounded bg-accent" />
+          <div className="h-3 w-2/3 rounded bg-accent" />
         </div>
       ))}
     </div>

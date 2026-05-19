@@ -6,6 +6,8 @@ export const INSIGHTS_TYPE_STYLES: Record<string, string> = {
     "bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20",
   trend:
     "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+  warning:
+    "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
 };
 
 export const INSIGHTS_TYPE_LABELS: Record<string, string> = {

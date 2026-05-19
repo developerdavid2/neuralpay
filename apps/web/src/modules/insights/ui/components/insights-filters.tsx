@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { Input } from "@neuralpay/ui/components/input";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   Select,
@@ -12,8 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@neuralpay/ui/components/select";
-import { Search, Filter, Archive } from "lucide-react";
+import { Filter, Archive } from "lucide-react";
 import { INSIGHTS_TYPE_LABELS } from "../../constants";
+import { DebouncedSearchInput } from "@/components/debounced-search-input";
 import type { Route } from "next";
 
 interface Props {
@@ -52,7 +52,6 @@ export function InsightsFilters({
         params.set(key, value);
       }
 
-      // Reset pagination on filter change
       params.delete("page");
 
       const query = params.toString();
@@ -69,36 +68,39 @@ export function InsightsFilters({
 
   return (
     <div className="border-b border-border p-4 space-y-3">
+      {/* Debounced Search and Dismissed Filter Button */}
       <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Search insights..."
-            value={currentSearch}
-            onChange={(e) => updateFilter("search", e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <DebouncedSearchInput
+          value={currentSearch}
+          onSearch={(value) => updateFilter("search", value)}
+          placeholder="Search insights..."
+          debounceMs={400}
+        />
         <Button
-          variant="outline"
+          variant={currentShowDismissed ? "default" : "outline"}
           size="sm"
           onClick={() =>
-            updateFilter("archived", currentShowDismissed ? "false" : "true")
+            updateFilter("dismissed", currentShowDismissed ? "false" : "true")
           }
-          className={cn(currentShowDismissed && "bg-accent")}
         >
           <Archive className="size-4 mr-2" />
-          {currentShowDismissed ? "Hide archived" : "Show archived"}
+          {currentShowDismissed ? "Hide dismissed" : "Show dismissed"}
         </Button>
       </div>
 
       <div className="flex items-center gap-2">
         <Filter className="size-4 text-muted-foreground" />
+        {/* Insight Types filter button */}
         <Select
           value={currentType}
           onValueChange={(v) => updateFilter("type", v)}
         >
-          <SelectTrigger className="w-[140px] h-8 text-xs">
+          <SelectTrigger
+            className={cn(
+              "w-35 h-8 text-sm",
+              currentType !== "all" && "bg-primary text-white",
+            )}
+          >
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
@@ -111,11 +113,17 @@ export function InsightsFilters({
           </SelectContent>
         </Select>
 
+        {/* Insight Severity filter button */}
         <Select
           value={currentSeverity}
           onValueChange={(v) => updateFilter("severity", v)}
         >
-          <SelectTrigger className="w-[140px] h-8 text-xs">
+          <SelectTrigger
+            className={cn(
+              "w-35 h-8 text-sm",
+              currentSeverity !== "all" && "bg-primary text-white",
+            )}
+          >
             <SelectValue placeholder="Severity" />
           </SelectTrigger>
           <SelectContent>

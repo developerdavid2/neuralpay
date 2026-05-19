@@ -81,7 +81,7 @@ export function MonthYearPicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           className="gap-1.5 h-7 text-xs font-medium hover:bg-accent"
         >
