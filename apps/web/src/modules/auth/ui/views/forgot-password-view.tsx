@@ -49,10 +49,16 @@ const ForgotPasswordView = () => {
           // Store email in sessionStorage so verify-otp page can use it
           sessionStorage.setItem("reset_email", data.email);
           setStatus({ type: "success", email: data.email });
+          toast.success("Recovery code sent to your email", {
+            position: "top-center",
+          });
           setTimeout(() => router.push("/auth/verify-otp?mode=reset"), 1500);
         },
         onError: ({ error }) => {
-          setStatus({ type: "error", message: error.message });
+          const errorMsg =
+            error.message || "Failed to send recovery code. Please try again.";
+          setStatus({ type: "error", message: errorMsg });
+          toast.error(errorMsg, { position: "top-center" });
         },
       },
     );
@@ -137,20 +143,30 @@ const ForgotPasswordView = () => {
                   )}
                 />
 
-                {/* Error */}
+                {/* Error with retry */}
                 {status.type === "error" && (
-                  <Alert variant="destructive" className="py-3">
-                    <OctagonAlertIcon className="h-4 w-4" />
-                    <AlertTitle className="text-sm font-medium">
-                      {status.message}
-                    </AlertTitle>
-                  </Alert>
+                  <div className="space-y-3">
+                    <Alert variant="destructive" className="py-3">
+                      <OctagonAlertIcon className="h-4 w-4" />
+                      <AlertTitle className="text-sm font-medium">
+                        {status.message}
+                      </AlertTitle>
+                    </Alert>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-10 text-sm"
+                      onClick={() => setStatus({ type: "idle" })}
+                    >
+                      Try Again
+                    </Button>
+                  </div>
                 )}
 
                 {/* Submit */}
                 <Button
                   type="submit"
-                  disabled={pending}
+                  disabled={pending || status.type === "error"}
                   className="w-full h-11 font-semibold text-sm"
                 >
                   {pending ? (

@@ -66,7 +66,10 @@ const SignInView = () => {
             router.push("/auth/verify-otp");
             return;
           }
-          setStatus({ type: "error", message: error.message });
+          const errorMsg =
+            error.message || "Failed to sign in. Please try again.";
+          setStatus({ type: "error", message: errorMsg });
+          toast.error(errorMsg, { position: "top-center" });
         },
         ...(data.rememberMe && {
           fetchOptions: {
@@ -83,9 +86,13 @@ const SignInView = () => {
       {
         onSuccess: () => {
           setStatus({ type: "success" });
+          toast.success("Logged in Successfully", { position: "top-center" });
         },
         onError: ({ error }) => {
-          setStatus({ type: "error", message: error.message });
+          const errorMsg =
+            error.message || `Failed to sign in with ${provider}.`;
+          setStatus({ type: "error", message: errorMsg });
+          toast.error(errorMsg, { position: "top-center" });
         },
       },
     );
@@ -255,20 +262,30 @@ const SignInView = () => {
                 </Link>
               </div>
 
-              {/* Server error */}
+              {/* Server error with retry */}
               {status.type === "error" && (
-                <Alert variant="destructive" className="py-3">
-                  <OctagonAlertIcon className="h-4 w-4" />
-                  <AlertTitle className="text-sm font-medium text-foreground">
-                    {status.message}
-                  </AlertTitle>
-                </Alert>
+                <div className="space-y-3">
+                  <Alert variant="destructive" className="py-3">
+                    <OctagonAlertIcon className="h-4 w-4" />
+                    <AlertTitle className="text-sm font-medium text-foreground">
+                      {status.message}
+                    </AlertTitle>
+                  </Alert>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-10 text-sm"
+                    onClick={() => setStatus({ type: "idle" })}
+                  >
+                    Try Again
+                  </Button>
+                </div>
               )}
 
               {/* Submit */}
               <Button
                 type="submit"
-                disabled={pending}
+                disabled={pending || status.type === "error"}
                 className="w-full h-12 font-semibold text-sm uppercase tracking-wide"
               >
                 {pending ? (

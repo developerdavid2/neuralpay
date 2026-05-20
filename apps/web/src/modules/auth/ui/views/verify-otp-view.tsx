@@ -21,6 +21,7 @@ import {
 } from "@neuralpay/ui/components/input-otp";
 import { Field, FieldGroup } from "@neuralpay/ui/components/field";
 import { cn } from "@neuralpay/ui/lib/utils";
+import { toast } from "sonner";
 
 type FormStatus =
   | { type: "idle" }
@@ -103,6 +104,9 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
                 type: "success",
                 message: "OTP verified! Redirecting...",
               });
+              toast.success("OTP verified successfully", {
+                position: "top-center",
+              });
               if (redirectTimeoutRef.current)
                 clearTimeout(redirectTimeoutRef.current);
               redirectTimeoutRef.current = setTimeout(() => {
@@ -110,7 +114,10 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
               }, 1500);
             },
             onError: ({ error }) => {
-              setStatus({ type: "error", message: error.message });
+              const errorMsg =
+                error.message || "Invalid OTP. Please try again.";
+              setStatus({ type: "error", message: errorMsg });
+              toast.error(errorMsg, { position: "top-center" });
               setOtp("");
             },
           },
@@ -125,6 +132,9 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
                 type: "success",
                 message: "Email verified! Redirecting...",
               });
+              toast.success("Email verified successfully", {
+                position: "top-center",
+              });
               if (redirectTimeoutRef.current)
                 clearTimeout(redirectTimeoutRef.current);
               redirectTimeoutRef.current = setTimeout(() => {
@@ -132,20 +142,25 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
               }, 1500);
             },
             onError: ({ error }) => {
-              setStatus({ type: "error", message: error.message });
+              const errorMsg =
+                error.message || "Invalid OTP. Please try again.";
+              setStatus({ type: "error", message: errorMsg });
+              toast.error(errorMsg, { position: "top-center" });
               setOtp("");
             },
           },
         );
       }
     } catch (error) {
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Verification failed. Please try again.";
       setStatus({
         type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Verification failed. Please try again.",
+        message: errorMsg,
       });
+      toast.error(errorMsg, { position: "top-center" });
       setOtp("");
     }
   };
@@ -162,8 +177,17 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
         type: isResetMode ? "forget-password" : "email-verification",
       },
       {
+        onSuccess: () => {
+          toast.success("Code sent! Check your email", {
+            position: "top-center",
+          });
+        },
         onError: ({ error }) => {
-          setStatus({ type: "error", message: error.message });
+          const errorMsg =
+            error.message || "Failed to resend code. Please try again.";
+          setStatus({ type: "error", message: errorMsg });
+          toast.error(errorMsg, { position: "top-center" });
+          setCooldown(0);
         },
       },
     );

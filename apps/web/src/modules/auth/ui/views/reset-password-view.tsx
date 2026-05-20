@@ -19,6 +19,7 @@ import {
   FieldGroup,
 } from "@neuralpay/ui/components/field";
 import { cn } from "@neuralpay/ui/lib/utils";
+import { toast } from "sonner";
 
 type FormStatus =
   | { type: "idle" }
@@ -78,10 +79,16 @@ const ResetPasswordView = () => {
           sessionStorage.removeItem("reset_otp");
           sessionStorage.removeItem("reset_email_verified");
           setStatus({ type: "success" });
+          toast.success("Password reset successfully!", {
+            position: "top-center",
+          });
           setTimeout(() => router.push("/auth/signin"), 2000);
         },
         onError: ({ error }) => {
-          setStatus({ type: "error", message: error.message });
+          const errorMsg =
+            error.message || "Failed to reset password. Please try again.";
+          setStatus({ type: "error", message: errorMsg });
+          toast.error(errorMsg, { position: "top-center" });
         },
       },
     );
@@ -227,17 +234,27 @@ const ResetPasswordView = () => {
                 />
 
                 {status.type === "error" && (
-                  <Alert variant="destructive" className="py-3">
-                    <OctagonAlertIcon className="h-4 w-4" />
-                    <AlertTitle className="text-sm font-medium">
-                      {status.message}
-                    </AlertTitle>
-                  </Alert>
+                  <div className="space-y-3">
+                    <Alert variant="destructive" className="py-3">
+                      <OctagonAlertIcon className="h-4 w-4" />
+                      <AlertTitle className="text-sm font-medium">
+                        {status.message}
+                      </AlertTitle>
+                    </Alert>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-10 text-sm"
+                      onClick={() => setStatus({ type: "idle" })}
+                    >
+                      Try Again
+                    </Button>
+                  </div>
                 )}
 
                 <Button
                   type="submit"
-                  disabled={pending}
+                  disabled={pending || status.type === "error"}
                   className="w-full h-11 font-semibold text-sm"
                 >
                   {pending ? (
