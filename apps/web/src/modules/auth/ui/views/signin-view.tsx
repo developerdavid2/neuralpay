@@ -285,7 +285,9 @@ const SignInView = () => {
               {/* Submit */}
               <Button
                 type="submit"
-                disabled={pending || status.type === "error"}
+                disabled={
+                  pending || status.type === "error" || !form.formState.isValid
+                }
                 className="w-full h-12 font-semibold text-sm uppercase tracking-wide"
               >
                 {pending ? (

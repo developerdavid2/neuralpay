@@ -254,7 +254,11 @@ const ResetPasswordView = () => {
 
                 <Button
                   type="submit"
-                  disabled={pending || status.type === "error"}
+                  disabled={
+                    pending ||
+                    status.type === "error" ||
+                    !form.formState.isValid
+                  }
                   className="w-full h-11 font-semibold text-sm"
                 >
                   {pending ? (
