@@ -21,6 +21,7 @@ import {
   FieldError,
   FieldGroup,
 } from "@neuralpay/ui/components/field";
+import { toast } from "sonner";
 
 type FormStatus =
   | { type: "idle" }
@@ -34,6 +35,7 @@ const ForgotPasswordView = () => {
 
   const form = useForm<ForgotPasswordInput>({
     resolver: zodResolver(forgotPasswordSchema),
+    mode: "onChange",
     defaultValues: { email: "" },
   });
 

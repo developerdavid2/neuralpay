@@ -38,6 +38,7 @@ const ResetPasswordView = () => {
 
   const form = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
+    mode: "onChange",
     defaultValues: { email: "", otp: "", password: "" },
   });
   useEffect(() => {

@@ -40,6 +40,7 @@ const SignUpView = () => {
 
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       email: "",
