@@ -40,6 +40,7 @@ const SignUpView = () => {
 
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       email: "",
@@ -72,7 +73,10 @@ const SignUpView = () => {
           );
         },
         onError: ({ error }) => {
-          setStatus({ type: "error", message: error.message });
+          const errorMsg =
+            error.message || "Failed to create account. Please try again.";
+          setStatus({ type: "error", message: errorMsg });
+          toast.error(errorMsg, { position: "top-center" });
         },
       },
     );
@@ -85,9 +89,15 @@ const SignUpView = () => {
       {
         onSuccess: () => {
           setStatus({ type: "success" });
+          toast.success("Account created successfully", {
+            position: "top-center",
+          });
         },
         onError: ({ error }) => {
-          setStatus({ type: "error", message: error.message });
+          const errorMsg =
+            error.message || `Failed to sign up with ${provider}.`;
+          setStatus({ type: "error", message: errorMsg });
+          toast.error(errorMsg, { position: "top-center" });
         },
       },
     );
@@ -303,20 +313,32 @@ const SignUpView = () => {
                 )}
               />
 
-              {/* Server error — identical to sign-in */}
+              {/* Server error with retry */}
               {status.type === "error" && (
-                <Alert variant="destructive" className="py-3">
-                  <OctagonAlertIcon className="h-4 w-4" />
-                  <AlertTitle className="text-sm font-medium">
-                    {status.message}
-                  </AlertTitle>
-                </Alert>
+                <div className="space-y-3">
+                  <Alert variant="destructive" className="py-3">
+                    <OctagonAlertIcon className="h-4 w-4" />
+                    <AlertTitle className="text-sm font-medium">
+                      {status.message}
+                    </AlertTitle>
+                  </Alert>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-10 text-sm"
+                    onClick={() => setStatus({ type: "idle" })}
+                  >
+                    Try Again
+                  </Button>
+                </div>
               )}
 
               {/* Submit */}
               <Button
                 type="submit"
-                disabled={pending}
+                disabled={
+                  pending || status.type === "error" || !form.formState.isValid
+                }
                 className="w-full h-12 font-semibold text-sm uppercase tracking-wide"
               >
                 {pending ? (
