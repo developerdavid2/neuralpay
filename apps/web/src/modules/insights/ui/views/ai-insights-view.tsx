@@ -12,7 +12,6 @@ interface AIInsightsViewProps {
   type: string;
   severity: string;
   dismissed: boolean;
-  page: number;
   focusInsightId?: string;
 }
 
@@ -21,7 +20,6 @@ export function AIInsightsView({
   type,
   severity,
   dismissed,
-  page,
   focusInsightId,
 }: AIInsightsViewProps) {
   const validatedType = validateType(type);
