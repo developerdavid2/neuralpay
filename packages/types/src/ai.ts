@@ -9,13 +9,20 @@ import {
 // ── Insight Schemas
 // schema.ts
 export const insightFilterSchema = z.object({
-  limit: z.number().int().min(1).max(100).default(50),
+  limit: z.number().int().min(1).max(100).default(20),
+  cursor: z.string().optional(), // For cursor-based pagination
   includeDismissed: z.boolean().default(false),
   type: z.enum(INSIGHT_TYPES).optional(),
   severity: z.enum(INSIGHT_SEVERITIES).optional(),
   search: z.string().trim().optional(),
 });
 export type InsightFilterInput = z.infer<typeof insightFilterSchema>;
+
+export const insightPageSchema = z.object({
+  items: z.array(z.any()), // List of insights
+  nextCursor: z.string().nullable(), // null if no more pages
+});
+export type InsightPage = z.infer<typeof insightPageSchema>;
 
 export const insightDataSchema = z
   .object({

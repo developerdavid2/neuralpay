@@ -1,49 +1,65 @@
+// hooks/insights/use-insights.ts
 import type { InsightsListInput } from "@/modules/insights/types";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useQuery,
+  useSuspenseInfiniteQuery,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 
 export function useInsightsList(filters: InsightsListInput) {
   const trpc = useTRPC();
 
-  console.log(filters);
-  const { data: insights, isLoading } = useSuspenseQuery(
-    trpc.ai.insights.list.queryOptions(filters),
+  const query = useSuspenseInfiniteQuery(
+    trpc.ai.insights.list.infiniteQueryOptions(filters, {
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    }),
   );
 
   return {
-    insights: insights,
-    isLoading,
+    data: query.data,
+    insights: query.data.pages.flatMap((page) => page.items),
+    isLoading: query.isPending,
+    pages: query.data.pages,
+  };
+}
+
+export function useInsightsInfiniteScroll(filters: InsightsListInput) {
+  const trpc = useTRPC();
+  const query = useSuspenseInfiniteQuery(
+    trpc.ai.insights.list.infiniteQueryOptions(filters, {
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    }),
+  );
+
+  return {
+    ...query,
+    isLoading: query.isPending,
   };
 }
 
 export function useRecentInsights(limit = 5) {
   const trpc = useTRPC();
-
-  const { data: insights, isLoading } = useSuspenseQuery(
+  const { data: insights, isPending } = useSuspenseQuery(
     trpc.ai.insights.recent.queryOptions({ limit }),
   );
-
-  return {
-    insights,
-    isLoading,
-  };
+  return { insights, isLoading: isPending };
 }
 
 export function useInsightDetail(insightId: string) {
   const trpc = useTRPC();
-
   const {
     data: insight,
-    isLoading,
+    isPending,
     isError,
   } = useQuery({
     ...trpc.ai.insights.getInsightById.queryOptions({ id: insightId }),
-    enabled: !!insightId && insightId !== "",
+    enabled: !!insightId,
   });
 
   return {
     insight: insight ?? null,
-    isLoading,
+    isLoading: isPending,
     isError,
   };
 }

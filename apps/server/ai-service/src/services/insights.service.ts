@@ -7,9 +7,12 @@ export const AIInsightsService = {
   async getInsights(
     userId: string,
     filters: InsightFilterInput,
-  ): Promise<ServiceResult<InsightRecord[]>> {
+  ): Promise<
+    ServiceResult<{ items: InsightRecord[]; nextCursor: string | null }>
+  > {
     try {
-      const { limit, includeDismissed, type, severity, search } = filters;
+      const { limit, cursor, includeDismissed, type, severity, search } =
+        filters;
 
       const conditions = [eq(insights.userId, userId)];
 
@@ -37,16 +40,30 @@ export const AIInsightsService = {
         }
       }
 
+      // Cursor-based pagination: decode cursor to get the ID
+      if (cursor) {
+        const decodedCursor = Buffer.from(cursor, "base64").toString("utf-8");
+        conditions.push(
+          sql`${insights.generatedAt} < (SELECT ${insights.generatedAt} FROM ${insights} WHERE ${insights.id} = ${decodedCursor})`,
+        );
+      }
+
       const result = await db
         .select()
         .from(insights)
         .where(and(...conditions))
         .orderBy(desc(insights.generatedAt))
-        .limit(limit);
+        .limit(limit + 1); // Fetch one extra to determine if there's a next page
+
+      const hasMore = result.length > limit;
+      const items = result.slice(0, limit);
+      const nextCursor = hasMore
+        ? Buffer.from(items[items.length - 1]!.id).toString("base64")
+        : null;
 
       return {
         success: true,
-        data: result,
+        data: { items, nextCursor },
       };
     } catch (err) {
       console.error("[AIService.getInsights]", err);

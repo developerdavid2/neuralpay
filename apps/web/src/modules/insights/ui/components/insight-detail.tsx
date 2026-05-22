@@ -14,21 +14,8 @@ import {
 } from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
-import {
-  Archive,
-  MessageCircle,
-  Minus,
-  Plus,
-  RotateCcw,
-  X,
-  Loader2,
-} from "lucide-react";
-import { Bar, BarChart, ResponsiveContainer } from "recharts";
-import {
-  insightData,
-  INSIGHTS_TYPE_LABELS,
-  INSIGHTS_TYPE_STYLES,
-} from "../../constants";
+import { Archive, Loader2, MessageCircle, RotateCcw, X } from "lucide-react";
+import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
 import type { Insight } from "../../types";
 
 interface InsightDetailsProps {

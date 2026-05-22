@@ -57,8 +57,7 @@ export const InsightCard = ({
         "hover:bg-accent",
         isUnread && "bg-accent/30",
         isDismissed && "opacity-60",
-        isFocused && "ring-2 ring-primary/20 ring-inset",
-        isPending && "pointer-events-none opacity-50", // dim while pending
+        isPending && "pointer-events-none opacity-50",
       )}
       onClick={() => !isPending && onOpen(insight.id)}
       role="button"

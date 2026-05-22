@@ -197,4 +197,7 @@ export const CHART_COLORS = {
 };
 
 // RECENT TRANSACTIONS
-export const TRANSACTIONS_LIMIT = 7;
+export const TRANSACTIONS_LIMIT = 10;
+
+// RECENT AI INSIGHTS
+export const INSIGHTS_LIMIT = 10;

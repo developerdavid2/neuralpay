@@ -1,14 +1,9 @@
 import type { InsightsListInput } from "../types";
 
-type ValidSeverity = InsightsListInput["severity"];
-type ValidType = InsightsListInput["type"];
+type ValidSeverity = NonNullable<InsightsListInput["severity"]>;
+type ValidType = NonNullable<InsightsListInput["type"]>;
 
-const VALID_SEVERITIES = [
-  "low",
-  "medium",
-  "high",
-  "critical",
-] satisfies readonly NonNullable<ValidSeverity>[];
+const VALID_SEVERITIES = ["low", "medium", "high", "critical"] as const;
 
 const VALID_TYPES = [
   "anomaly",
@@ -16,18 +11,18 @@ const VALID_TYPES = [
   "trend",
   "saving",
   "warning",
-] satisfies readonly NonNullable<ValidType>[];
+] as const;
 
 export function validateSeverity(raw?: string): ValidSeverity | undefined {
   if (!raw || raw === "all") return undefined;
-
-  return VALID_SEVERITIES.includes(raw as any)
+  return VALID_SEVERITIES.includes(raw as ValidSeverity)
     ? (raw as ValidSeverity)
     : undefined;
 }
 
 export function validateType(raw?: string): ValidType | undefined {
   if (!raw || raw === "all") return undefined;
-
-  return VALID_TYPES.includes(raw as any) ? (raw as ValidType) : undefined;
+  return VALID_TYPES.includes(raw as ValidType)
+    ? (raw as ValidType)
+    : undefined;
 }

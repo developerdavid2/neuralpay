@@ -1,8 +1,9 @@
+// hooks/insights/use-insight-mutations.ts
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import type { Insight } from "@/modules/insights/types";
-import { queryKeys } from "@/lib/queryKeys";
+import { invalidateInsightsQueries } from "@/lib/invalidate-trpc-queries";
 
 export function useInsightMutations() {
   const trpc = useTRPC();
@@ -14,46 +15,17 @@ export function useInsightMutations() {
 
   const dismiss = useMutation({
     ...trpc.ai.insights.dismiss.mutationOptions(),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.recent(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.lists(),
-      });
-      // Invalidate the specific insight detail to refresh stale data
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.detail(id),
-      });
-    },
+    onSuccess: () => invalidateInsightsQueries(queryClient),
   });
 
   const restore = useMutation({
     ...trpc.ai.insights.restore.mutationOptions(),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.recent(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.lists(),
-      });
-      // Invalidate the specific insight detail to refresh stale data
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.detail(id),
-      });
-    },
+    onSuccess: () => invalidateInsightsQueries(queryClient),
   });
 
   const markRead = useMutation({
     ...trpc.ai.insights.markRead.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.recent(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.lists(),
-      });
-    },
+    onSuccess: () => invalidateInsightsQueries(queryClient),
   });
 
   const handleDismiss = useCallback(
@@ -92,7 +64,6 @@ export function useInsightMutations() {
     [markRead],
   );
 
-  // Drawer state
   const [selectedInsightId, setSelectedInsightId] = useState<string | null>(
     null,
   );
@@ -102,29 +73,32 @@ export function useInsightMutations() {
     (insight: Insight) => {
       setSelectedInsightId(insight.id);
       setDrawerOpen(true);
-      handleMarkRead(insight.id).catch(() => {
-        // Error already handled by mutation error callback
-      });
+      handleMarkRead(insight.id).catch(() => {});
     },
     [handleMarkRead],
   );
 
-  // Check if a specific insight is pending
-  const isDismissing = (id: string) => pendingDismissId === id;
-  const isRestoring = (id: string) => pendingRestoreId === id;
-  const isMarkingRead = (id: string) => pendingReadId === id;
+  const isDismissing = useCallback(
+    (id: string) => pendingDismissId === id,
+    [pendingDismissId],
+  );
+  const isRestoring = useCallback(
+    (id: string) => pendingRestoreId === id,
+    [pendingRestoreId],
+  );
+  const isMarkingRead = useCallback(
+    (id: string) => pendingReadId === id,
+    [pendingReadId],
+  );
 
   return {
-    // Mutations
     handleDismiss,
     handleRestore,
     handleMarkRead,
-    // Drawer
     selectedInsightId,
     drawerOpen,
     setDrawerOpen,
     handleCardOpen,
-    // Per-ID pending states
     isDismissing,
     isRestoring,
     isMarkingRead,

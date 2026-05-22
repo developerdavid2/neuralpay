@@ -1,11 +1,11 @@
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
+import { validateSeverity, validateType } from "../../lib/validate-filters";
 import { InsightsFilters } from "../components/insights-filters";
 import {
   InsightsList,
   InsightsListSkeleton,
 } from "../components/insights-list";
-import { validateSeverity, validateType } from "../../lib/validate-filters";
 
 interface AIInsightsViewProps {
   search: string;
