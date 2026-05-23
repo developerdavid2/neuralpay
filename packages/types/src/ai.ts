@@ -1,11 +1,12 @@
-import z from "zod";
 import {
   CHAT_CONTEXT_TYPES,
   CHAT_TOPICS,
   INSIGHT_SEVERITIES,
   INSIGHT_TYPES,
-  insightsSchema,
+  insightSchema,
 } from "@neuralpay/db/schema";
+import z from "zod";
+import { createPaginatedSchema } from "./pagination";
 
 // ── Insight Schemas
 export const insightFilterSchema = z.object({
@@ -19,10 +20,7 @@ export const insightFilterSchema = z.object({
 });
 export type InsightFilterInput = z.infer<typeof insightFilterSchema>;
 
-export const insightPageSchema = z.object({
-  items: z.array(insightsSchema),
-  nextCursor: z.string().nullable(),
-});
+export const insightPageSchema = createPaginatedSchema(insightSchema);
 export type InsightPage = z.infer<typeof insightPageSchema>;
 
 export const insightDataSchema = z

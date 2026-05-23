@@ -74,7 +74,7 @@ export const insights = pgTable("insights_spending", {
   generatedAt: timestamp("generated_at").defaultNow().notNull(),
   expiresAt: timestamp("expires_at"),
 });
-export const insightsSchema = createSelectSchema(insights);
+export const insightSchema = createSelectSchema(insights);
 export type InsightRecord = typeof insights.$inferSelect;
 
 export const chatSessions = pgTable("chat_sessions", {

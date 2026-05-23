@@ -1,7 +1,9 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-
-import { listTransactionsInputSchema } from "@neuralpay/types";
+import {
+  listTransactionsInputSchema,
+  updateTransactionInputSchema,
+} from "@neuralpay/types";
 import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import { TransactionsService } from "../services/transactions.service";
 
@@ -24,6 +26,7 @@ export const transactionsRouter = router({
 
       return result.data;
     }),
+
   recent: protectedProcedure
     .input(
       z
@@ -53,6 +56,24 @@ export const transactionsRouter = router({
       const result = await TransactionsService.getById(
         input.id,
         ctx.session.user.id,
+      );
+      if (!result.success) {
+        throw new TRPCError({
+          code:
+            result.code === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      }
+      return result.data;
+    }),
+
+  update: protectedProcedure
+    .input(updateTransactionInputSchema.optional())
+    .mutation(async ({ ctx, input }) => {
+      const parsed = updateTransactionInputSchema.parse(input ?? {});
+      const result = await TransactionsService.update(
+        ctx.session.user.id,
+        parsed,
       );
       if (!result.success) {
         throw new TRPCError({

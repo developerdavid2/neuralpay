@@ -10,6 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+import { createSelectSchema } from "drizzle-zod";
 
 // Enums
 export const accountTypeEnum = pgEnum("account_type", [
@@ -19,15 +20,22 @@ export const accountTypeEnum = pgEnum("account_type", [
   "investment",
   "crypto",
 ]);
+
 export const transactionTypeEnum = pgEnum("transaction_type", [
   "debit",
   "credit",
 ]);
+export const TRANSACTION_TYPE = transactionTypeEnum.enumValues;
+
 export const transactionStatusEnum = pgEnum("transaction_status", [
   "pending",
-  "posted",
-  "cancelled",
+  "successful",
+  "refunded",
+  "reversed",
+  "failed",
 ]);
+export const TRANSACTION_STATUS = transactionStatusEnum.enumValues;
+
 export const categoryEnum = pgEnum("category", [
   "food_dining",
   "utilities",
@@ -44,6 +52,7 @@ export const categoryEnum = pgEnum("category", [
   "groceries",
   "other",
 ]);
+export const TRANSACTION_CATEGORY = categoryEnum.enumValues;
 
 // Accounts table
 export const bankAccounts = pgTable("bank_accounts", {
@@ -85,7 +94,7 @@ export const transactions = pgTable("transactions", {
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 18, scale: 2 }).notNull(),
   type: transactionTypeEnum("type").notNull(),
-  status: transactionStatusEnum("status").default("posted"),
+  status: transactionStatusEnum("status").default("successful"),
   category: categoryEnum("category"),
   merchant: text("merchant"),
   date: timestamp("date").notNull(),
@@ -96,6 +105,7 @@ export const transactions = pgTable("transactions", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+export const transactionSchema = createSelectSchema(transactions);
 export type TransactionRecord = typeof transactions.$inferSelect;
 
 // Tags

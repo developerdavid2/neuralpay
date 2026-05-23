@@ -338,6 +338,30 @@ async function seed() {
   // 5. Insert transactions — 90 days of generated data (expanded from original 10)
   const transactionsData: (typeof transactions.$inferInsert)[] = [];
 
+  function getTransactionStatus(
+    date: Date,
+  ): "pending" | "successful" | "refunded" | "reversed" | "failed" {
+    const now = Date.now();
+    const ageMs = now - date.getTime();
+    const ageDays = ageMs / (1000 * 60 * 60 * 24);
+
+    const roll = Math.random();
+
+    // Recent 3 days: higher chance of pending (holds not yet settled)
+    if (ageDays <= 3) {
+      if (roll < 0.2) return "pending";
+      if (roll < 0.25) return "failed";
+      return "successful";
+    }
+
+    // Older than 3 days: pending is extremely rare (should have settled)
+    if (roll < 0.02) return "failed"; // declined transfer / voided pre-auth
+    if (roll < 0.06) return "refunded"; // merchant return
+    if (roll < 0.09) return "reversed"; // bank undo / chargeback
+    if (roll < 0.095) return "pending"; // edge case: long-running hold
+    return "successful";
+  }
+
   for (let day = 89; day >= 0; day--) {
     const date = daysAgo(day);
     const numTransactions = Math.floor(Math.random() * 3) + 1;
@@ -350,6 +374,8 @@ async function seed() {
         catInfo.merchants[Math.floor(Math.random() * catInfo.merchants.length)];
       const amount = randomAmount(catInfo.min, catInfo.max);
 
+      const status = getTransactionStatus(date);
+
       const isAnomaly =
         (catInfo.category === "entertainment" ||
           catInfo.category === "shopping") &&
@@ -361,7 +387,7 @@ async function seed() {
         description: merchant ?? "",
         amount,
         type: "debit",
-        status: "posted",
+        status, // ← now distributed across all 5 statuses
         category: catInfo.category,
         merchant,
         date,
@@ -374,28 +400,34 @@ async function seed() {
   // Add income transactions (salary every ~30 days)
   const incomeDates = [10, 40, 70];
   for (const days of incomeDates) {
+    const date = daysAgo(days);
+    const status = days <= 3 ? getTransactionStatus(date) : "successful";
+
     transactionsData.push({
       bankAccountId: checkingAcc.id,
       userId,
       description: "Salary — Employer Inc",
       amount: "4500.00",
       type: "credit",
-      status: "posted",
+      status,
       category: "income",
       merchant: "Employer Inc",
-      date: daysAgo(days),
+      date,
       isAnomaly: false,
     });
   }
 
-  // Add freelance payment
+  // Add freelance payment (successful, but one edge case)
   transactionsData.push({
     bankAccountId: checkingAcc.id,
     userId,
     description: "Freelance Payment — Design Project",
     amount: "850.00",
     type: "credit",
-    status: "posted",
+    status:
+      daysAgo(25).getTime() > Date.now() - 3 * 24 * 60 * 60 * 1000
+        ? "pending"
+        : "successful",
     category: "income",
     merchant: "Upwork Client",
     date: daysAgo(25),
