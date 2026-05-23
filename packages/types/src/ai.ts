@@ -100,3 +100,10 @@ export const sendMessageSchema = z.object({
 });
 
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
+// ── Combined inputs
+export const listInsightsInputSchema = insightFilterSchema;
+export type ListInsightsInput = z.infer<typeof listInsightsInputSchema>;
+
+export const listSessionsInputSchema = chatFilterSchema;
+export type ListSessionsInput = z.infer<typeof listSessionsInputSchema>;
