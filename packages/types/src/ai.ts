@@ -1,5 +1,4 @@
 import z from "zod";
-import { createPaginatedSchema } from "./pagination";
 
 export const INSIGHT_TYPES = [
   "anomaly",
@@ -34,22 +33,14 @@ export const CHAT_TOPICS = [
 
 export const ROLES = ["user", "assistant"] as const;
 
-// ── Insight Schemas 
-export const insightFilterSchema = z.object({
-  limit: z.number().int().min(1).max(100).default(20),
-  cursor: z.string().optional(),
-  includeDismissed: z.boolean().default(false),
-  type: z.enum(INSIGHT_TYPES).optional(),
-  severity: z.enum(INSIGHT_SEVERITIES).optional(),
-  readStatus: z.enum(["all", "read", "unread"]).default("all"),
-  search: z.string().trim().optional(),
-});
+export type InsightType = (typeof INSIGHT_TYPES)[number];
+export type InsightSeverity = (typeof INSIGHT_SEVERITIES)[number];
+export type ChatContextType = (typeof CHAT_CONTEXT_TYPES)[number];
+export type Topic = (typeof CHAT_TOPICS)[number];
+export type Role = (typeof ROLES)[number];
 
-export type InsightFilterInput = z.infer<typeof insightFilterSchema>;
-
-// Pure zod schema for paginated response (replaces imported insightSchema)
 export const insightSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   userId: z.string(),
   type: z.enum(INSIGHT_TYPES),
   title: z.string(),
@@ -63,40 +54,35 @@ export const insightSchema = z.object({
   expiresAt: z.date().nullable(),
 });
 
-export const insightPageSchema = createPaginatedSchema(insightSchema);
-export type InsightPage = z.infer<typeof insightPageSchema>;
+export type InsightRecord = z.infer<typeof insightSchema>;
 
-export const insightDataSchema = z
-  .object({
-    amount: z.number().optional(),
-    percentage: z.number().optional(),
-    merchant: z.string().optional(),
-    trendDirection: z.enum(["up", "down", "stable"]).optional(),
-    comparisonPeriod: z.string().optional(),
-  })
-  .loose();
-
-export type InsightData = z.infer<typeof insightDataSchema>;
-
-// ── Chat Schemas 
-export const startChatSessionBaseSchema = z.object({
-  contextType: z.enum(CHAT_CONTEXT_TYPES).default("general"),
-  contextId: z.string().optional(),
-  title: z.string().min(1).max(100).optional(),
-  topic: z.enum(CHAT_TOPICS).default("general"),
+export const insightFilterSchema = z.object({
+  limit: z.number().int().min(1).max(100).default(20),
+  cursor: z.string().optional(),
+  includeDismissed: z.boolean().default(false),
+  type: z.enum(INSIGHT_TYPES).optional(),
+  severity: z.enum(INSIGHT_SEVERITIES).optional(),
+  readStatus: z.enum(["all", "read", "unread"]).default("all"),
+  search: z.string().trim().optional(),
 });
 
-export const startChatSessionSchema = startChatSessionBaseSchema.refine(
-  (data) => data.contextType === "general" || !!data.contextId,
-  {
+export type InsightFilterInput = z.infer<typeof insightFilterSchema>;
+
+export const startChatSessionSchema = z
+  .object({
+    contextType: z.enum(CHAT_CONTEXT_TYPES).default("general"),
+    contextId: z.string().optional(),
+    title: z.string().min(1).max(100).optional(),
+    topic: z.enum(CHAT_TOPICS).default("general"),
+  })
+  .refine((data) => data.contextType === "general" || !!data.contextId, {
     message: "contextId is required when contextType is not 'general'",
-  },
-);
+  });
 
 export type StartChatSessionInput = z.infer<typeof startChatSessionSchema>;
 
 export const sessionByIdSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.uuid(),
 });
 
 export type SessionByIdInput = z.infer<typeof sessionByIdSchema>;
@@ -109,15 +95,8 @@ export const chatFilterSchema = z.object({
 export type ChatFilterInput = z.infer<typeof chatFilterSchema>;
 
 export const sendMessageSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.uuid(),
   content: z.string().min(1).max(4000),
 });
 
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
-
-// ── Combined inputs 
-export const listInsightsInputSchema = insightFilterSchema;
-export type ListInsightsInput = z.infer<typeof listInsightsInputSchema>;
-
-export const listSessionsInputSchema = chatFilterSchema;
-export type ListSessionsInput = z.infer<typeof listSessionsInputSchema>;

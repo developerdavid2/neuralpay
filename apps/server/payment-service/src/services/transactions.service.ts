@@ -1,15 +1,11 @@
 import { db } from "@neuralpay/db";
-import {
-  bankAccounts,
-  budgets,
-  transactions,
-  type TransactionRecord,
-} from "@neuralpay/db/schema";
+import { bankAccounts, budgets, transactions } from "@neuralpay/db/schema";
 import {
   type OverviewTotal,
   type PaginatedResult,
   type ServiceResult,
   type TopMonthlyCategories,
+  type TransactionRecord,
   type TransactionsFilterInput,
   type UpdateTransactionInput,
 } from "@neuralpay/types";
@@ -256,7 +252,7 @@ export const TransactionsService = {
       return {
         success: false,
         error: "Failed to update transaction",
-        code: "DB_ERROR",
+        code: "INTERNAL_SERVER_ERROR",
       };
     }
   },

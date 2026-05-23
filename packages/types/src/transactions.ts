@@ -1,5 +1,4 @@
 import z from "zod";
-import { createPaginatedSchema } from "./pagination";
 
 export const TRANSACTION_CATEGORY = [
   "food_dining",
@@ -28,24 +27,13 @@ export const TRANSACTION_STATUS = [
   "failed",
 ] as const;
 
-export type TransactionRecord = {
-  id: string;
-  userId: string;
-  bankAccountId: string;
-  description: string;
-  amount: string;
-  type: (typeof TRANSACTION_TYPE)[number];
-  status: (typeof TRANSACTION_STATUS)[number];
-  category: (typeof TRANSACTION_CATEGORY)[number];
-  merchant: string | null;
-  date: Date;
-  isAnomaly: boolean;
-  anomalyScore: string | null;
-  notes: string | null;
-  plaidTxId: string | null;
-  monoTxId: string | null;
-  createdAt: Date;
-};
+export const ACCOUNT_TYPE = [
+  "checking",
+  "savings",
+  "credit",
+  "investment",
+  "crypto",
+] as const;
 
 export type TransactionWithAccount = TransactionRecord & {
   bankAccountName: string | null;
@@ -96,47 +84,20 @@ export type TransactionPage = {
   nextCursor: string | null;
 };
 
-// ── Zod schemas (pure, no db imports) ─────────────────────────────────────────
-export const transactionsFilterSchema = z.object({
-  limit: z.number().int().min(1).max(100).default(20),
-  cursor: z.string().optional(),
-  bankAccountId: z.string().uuid().optional(),
-  category: z.enum(TRANSACTION_CATEGORY).optional(),
-  type: z.enum(TRANSACTION_TYPE).optional(),
-  status: z.enum(TRANSACTION_STATUS).optional(),
-  isAnomaly: z.boolean().optional(),
-  search: z.string().optional(),
-  dateFrom: z.string().datetime().optional(),
-  dateTo: z.string().datetime().optional(),
-  minAmount: z.number().min(0).optional(),
-  maxAmount: z.number().min(0).optional(),
-});
+export type AccountType = (typeof ACCOUNT_TYPE)[number];
+export type TransactionCategory = (typeof TRANSACTION_CATEGORY)[number];
+export type TransactionType = (typeof TRANSACTION_TYPE)[number];
+export type TransactionStatus = (typeof TRANSACTION_STATUS)[number];
 
-export type TransactionsFilterInput = z.infer<typeof transactionsFilterSchema>;
-
-export const listTransactionsInputSchema = transactionsFilterSchema;
-export type ListTransactionsInput = z.infer<typeof listTransactionsInputSchema>;
-
-export const updateTransactionInputSchema = z.object({
-  id: z.string().uuid(),
-  category: z.enum(TRANSACTION_CATEGORY).optional(),
-  notes: z.string().optional(),
-});
-
-export type UpdateTransactionInput = z.infer<
-  typeof updateTransactionInputSchema
->;
-
-// ── Pure zod schema for paginated response (replaces imported transactionSchema) ─
 export const transactionSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   userId: z.string(),
-  bankAccountId: z.string().uuid(),
+  bankAccountId: z.uuid(),
   description: z.string(),
   amount: z.string(),
   type: z.enum(TRANSACTION_TYPE),
-  status: z.enum(TRANSACTION_STATUS),
-  category: z.enum(TRANSACTION_CATEGORY),
+  status: z.enum(TRANSACTION_STATUS).nullable(),
+  category: z.enum(TRANSACTION_CATEGORY).nullable(),
   merchant: z.string().nullable(),
   date: z.date(),
   isAnomaly: z.boolean(),
@@ -147,5 +108,29 @@ export const transactionSchema = z.object({
   createdAt: z.date(),
 });
 
-export const transactionPageSchema = createPaginatedSchema(transactionSchema);
-export type TransactionPageSchema = z.infer<typeof transactionPageSchema>;
+export type TransactionRecord = z.infer<typeof transactionSchema>;
+
+export const transactionsFilterSchema = z.object({
+  limit: z.number().int().min(1).max(100).default(20),
+  cursor: z.string().optional(),
+  bankAccountId: z.uuid().optional(),
+  category: z.enum(TRANSACTION_CATEGORY).nullable().optional(),
+  type: z.enum(TRANSACTION_TYPE).optional(),
+  status: z.enum(TRANSACTION_STATUS).nullable().optional(),
+  isAnomaly: z.boolean().optional(),
+  search: z.string().optional(),
+  dateFrom: z.iso.datetime().optional(),
+  dateTo: z.iso.datetime().optional(),
+  minAmount: z.number().min(0).optional(),
+  maxAmount: z.number().min(0).optional(),
+});
+
+export type TransactionsFilterInput = z.infer<typeof transactionsFilterSchema>;
+
+export const updateTransactionSchema = z.object({
+  id: z.uuid(),
+  category: z.enum(TRANSACTION_CATEGORY).optional(),
+  notes: z.string().optional(),
+});
+
+export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;

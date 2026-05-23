@@ -1,17 +1,17 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
-  listTransactionsInputSchema,
-  updateTransactionInputSchema,
+  transactionsFilterSchema,
+  updateTransactionSchema,
 } from "@neuralpay/types";
 import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import { TransactionsService } from "../services/transactions.service";
 
 export const transactionsRouter = router({
   list: protectedProcedure
-    .input(listTransactionsInputSchema.optional())
+    .input(transactionsFilterSchema.optional())
     .query(async ({ ctx, input }) => {
-      const parsed = listTransactionsInputSchema.parse(input ?? {});
+      const parsed = transactionsFilterSchema.parse(input ?? {});
 
       const result = await TransactionsService.list(
         ctx.session.user.id,
@@ -68,12 +68,11 @@ export const transactionsRouter = router({
     }),
 
   update: protectedProcedure
-    .input(updateTransactionInputSchema.optional())
+    .input(updateTransactionSchema)
     .mutation(async ({ ctx, input }) => {
-      const parsed = updateTransactionInputSchema.parse(input ?? {});
       const result = await TransactionsService.update(
         ctx.session.user.id,
-        parsed,
+        input,
       );
       if (!result.success) {
         throw new TRPCError({

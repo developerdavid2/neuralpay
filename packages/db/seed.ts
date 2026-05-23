@@ -401,7 +401,7 @@ async function seed() {
   const incomeDates = [10, 40, 70];
   for (const days of incomeDates) {
     const date = daysAgo(days);
-    const status = days <= 3 ? getTransactionStatus(date) : "successful";
+    const status = getTransactionStatus(date);
 
     transactionsData.push({
       bankAccountId: checkingAcc.id,
@@ -424,10 +424,7 @@ async function seed() {
     description: "Freelance Payment — Design Project",
     amount: "850.00",
     type: "credit",
-    status:
-      daysAgo(25).getTime() > Date.now() - 3 * 24 * 60 * 60 * 1000
-        ? "pending"
-        : "successful",
+    status: getTransactionStatus(daysAgo(25)),
     category: "income",
     merchant: "Upwork Client",
     date: daysAgo(25),
