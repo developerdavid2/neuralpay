@@ -1,20 +1,19 @@
 "use client";
 
 import { useInsightMutations } from "@/hooks/insights/use-insight-mutations";
-
-import { InfiniteScroll } from "@/components/infinite-scroll";
 import { useInsightsInfiniteScroll } from "@/hooks/insights/use-insights";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { INSIGHTS_LIMIT } from "@/modules/dashboard/constants";
 import {
   InsightCard,
   InsightsSkeleton,
   type InsightCardVariant,
 } from "@/modules/insights/ui/components/insight-card";
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import { Sparkles } from "lucide-react";
-import { useCallback, useEffect, useMemo } from "react";
-import type { Insight, InsightsListInput } from "../../types";
+import { useEffect, useMemo } from "react";
+import type { InsightsListInput } from "../../types";
 import { InsightDetails } from "./insight-detail";
-import { INSIGHTS_LIMIT } from "@/modules/dashboard/constants";
 
 interface Props {
   focusInsightId?: string;
@@ -34,6 +33,7 @@ export function InsightsList({
   const isMobile = useMediaQuery("(max-width: 639px)");
   const variant: InsightCardVariant = isMobile ? "compact" : "full";
 
+  // Data + Mutations
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
     useInsightsInfiniteScroll({
       includeDismissed: currentShowDismissed,
@@ -46,6 +46,7 @@ export function InsightsList({
   const {
     handleDismiss,
     handleCardOpen,
+    handleDrawerClose,
     selectedInsightId,
     drawerOpen,
     setDrawerOpen,
@@ -59,7 +60,7 @@ export function InsightsList({
     [data.pages],
   );
 
-  // Auto-open drawer when focusInsightId is in URL
+  // Auto-open drawer when focusInsightId appears in URL
   useEffect(() => {
     if (
       focusInsightId &&
@@ -71,35 +72,7 @@ export function InsightsList({
         handleCardOpen(target);
       }
     }
-  }, [focusInsightId, allInsights, handleCardOpen, selectedInsightId]);
-
-  // Open drawer and add focus param to URL
-  const handleCardOpenWithURL = useCallback(
-    (insight: Insight) => {
-      handleCardOpen(insight);
-      const url = new URL(window.location.href);
-      url.searchParams.set("focus", insight.id);
-      window.history.replaceState(null, "", url.toString());
-    },
-    [handleCardOpen],
-  );
-
-  // Remove ?focus= from URL when drawer closes
-  const handleDrawerOpenChange = useCallback(
-    (open: boolean) => {
-      setDrawerOpen(open);
-      if (!open) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete("focus");
-        window.history.replaceState(
-          null,
-          "",
-          url.pathname + (url.search || ""),
-        );
-      }
-    },
-    [setDrawerOpen],
-  );
+  }, [focusInsightId, allInsights, selectedInsightId, handleCardOpen]);
 
   if (isLoading) {
     return <InsightsListSkeleton />;
@@ -134,7 +107,7 @@ export function InsightsList({
                 onChat={(id) => {
                   window.location.href = `/dashboard/ai-chat?contextType=insight&contextId=${id}`;
                 }}
-                onOpen={() => handleCardOpenWithURL(insight)}
+                onOpen={() => handleCardOpen(insight)}
                 isDismissing={isDismissing}
                 isRestoring={isRestoring}
               />
@@ -146,7 +119,7 @@ export function InsightsList({
             isFetchingNextPage={isFetchingNextPage}
             fetchNextPage={fetchNextPage}
             isLoading={isLoading}
-            isManual={true}
+            isManual={false}
           />
         </div>
       </div>
@@ -154,7 +127,13 @@ export function InsightsList({
       <InsightDetails
         insightId={selectedInsightId}
         open={drawerOpen}
-        onOpenChange={handleDrawerOpenChange}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleDrawerClose();
+          } else {
+            setDrawerOpen(true);
+          }
+        }}
         onChat={(id) => {
           window.location.href = `/dashboard/ai-chat?contextType=insight&contextId=${id}`;
         }}

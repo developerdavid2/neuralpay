@@ -1,18 +1,27 @@
-// hooks/insights/use-insight-mutations.ts
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import type { Insight } from "@/modules/insights/types";
 import { invalidateInsightsQueries } from "@/lib/invalidate-trpc-queries";
+import type { Route } from "next";
 
 export function useInsightMutations() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [pendingDismissId, setPendingDismissId] = useState<string | null>(null);
   const [pendingRestoreId, setPendingRestoreId] = useState<string | null>(null);
   const [pendingReadId, setPendingReadId] = useState<string | null>(null);
+  const [selectedInsightId, setSelectedInsightId] = useState<string | null>(
+    null,
+  );
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Mutations
   const dismiss = useMutation({
     ...trpc.ai.insights.dismiss.mutationOptions(),
     onSuccess: () => invalidateInsightsQueries(queryClient),
@@ -28,6 +37,28 @@ export function useInsightMutations() {
     onSuccess: () => invalidateInsightsQueries(queryClient),
   });
 
+  // URL sync helpers
+  const syncFocusToUrl = useCallback(
+    (insightId: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("focus", insightId);
+      router.replace((pathname + "?" + params.toString()) as Route, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
+
+  const removeFocusFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("focus");
+    const query = params.toString();
+    router.replace((query ? `${pathname}?${query}` : pathname) as Route, {
+      scroll: false,
+    });
+  }, [pathname, router, searchParams]);
+
+  // Action handlers
   const handleDismiss = useCallback(
     async (id: string) => {
       setPendingDismissId(id);
@@ -64,48 +95,48 @@ export function useInsightMutations() {
     [markRead],
   );
 
-  const [selectedInsightId, setSelectedInsightId] = useState<string | null>(
-    null,
-  );
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
+  // Drawer + URL management
   const handleCardOpen = useCallback(
     (insight: Insight) => {
       setSelectedInsightId(insight.id);
       setDrawerOpen(true);
+      syncFocusToUrl(insight.id);
       handleMarkRead(insight.id).catch((error) => {
-        console.error(
-          "[useInsightMutations.handleCardOpen] markRead failed",
-          error,
-        );
+        console.error("[useInsightMutations] markRead failed", error);
       });
     },
-    [handleMarkRead],
+    [syncFocusToUrl, handleMarkRead],
   );
 
+  const handleDrawerClose = useCallback(() => {
+    setDrawerOpen(false);
+    removeFocusFromUrl();
+  }, [removeFocusFromUrl]);
+
+  // Pending state checkers
   const isDismissing = useCallback(
     (id: string) => pendingDismissId === id,
     [pendingDismissId],
   );
+
   const isRestoring = useCallback(
     (id: string) => pendingRestoreId === id,
     [pendingRestoreId],
   );
-  const isMarkingRead = useCallback(
-    (id: string) => pendingReadId === id,
-    [pendingReadId],
-  );
 
   return {
+    // Mutations
     handleDismiss,
     handleRestore,
     handleMarkRead,
+    // Drawer management
+    handleCardOpen,
+    handleDrawerClose,
     selectedInsightId,
     drawerOpen,
     setDrawerOpen,
-    handleCardOpen,
+    // Pending state
     isDismissing,
     isRestoring,
-    isMarkingRead,
   };
 }
