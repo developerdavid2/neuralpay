@@ -73,7 +73,12 @@ export function useInsightMutations() {
     (insight: Insight) => {
       setSelectedInsightId(insight.id);
       setDrawerOpen(true);
-      handleMarkRead(insight.id).catch(() => {});
+      handleMarkRead(insight.id).catch((error) => {
+        console.error(
+          "[useInsightMutations.handleCardOpen] markRead failed",
+          error,
+        );
+      });
     },
     [handleMarkRead],
   );

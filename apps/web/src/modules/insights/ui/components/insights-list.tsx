@@ -14,6 +14,7 @@ import { Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import type { Insight, InsightsListInput } from "../../types";
 import { InsightDetails } from "./insight-detail";
+import { INSIGHTS_LIMIT } from "@/modules/dashboard/constants";
 
 interface Props {
   focusInsightId?: string;
@@ -36,7 +37,7 @@ export function InsightsList({
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
     useInsightsInfiniteScroll({
       includeDismissed: currentShowDismissed,
-      limit: 5,
+      limit: INSIGHTS_LIMIT,
       severity: currentSeverity,
       type: currentType,
       search: currentSearch,

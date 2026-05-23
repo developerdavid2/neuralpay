@@ -8,7 +8,7 @@ interface InfiniteScrollProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => void;
-  isLoading?: boolean; // Initial load state
+  isLoading?: boolean;
 }
 
 export const InfiniteScroll = ({

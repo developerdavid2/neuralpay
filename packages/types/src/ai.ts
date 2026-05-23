@@ -4,13 +4,13 @@ import {
   CHAT_TOPICS,
   INSIGHT_SEVERITIES,
   INSIGHT_TYPES,
+  insightsSchema,
 } from "@neuralpay/db/schema";
 
 // ── Insight Schemas
-// schema.ts
 export const insightFilterSchema = z.object({
   limit: z.number().int().min(1).max(100).default(20),
-  cursor: z.string().optional(), // For cursor-based pagination
+  cursor: z.string().optional(),
   includeDismissed: z.boolean().default(false),
   type: z.enum(INSIGHT_TYPES).optional(),
   severity: z.enum(INSIGHT_SEVERITIES).optional(),
@@ -19,8 +19,8 @@ export const insightFilterSchema = z.object({
 export type InsightFilterInput = z.infer<typeof insightFilterSchema>;
 
 export const insightPageSchema = z.object({
-  items: z.array(z.any()), // List of insights
-  nextCursor: z.string().nullable(), // null if no more pages
+  items: z.array(insightsSchema),
+  nextCursor: z.string().nullable(),
 });
 export type InsightPage = z.infer<typeof insightPageSchema>;
 

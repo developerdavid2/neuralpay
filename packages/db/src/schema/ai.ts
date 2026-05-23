@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { categoryEnum } from "./transactions";
+import { createSelectSchema } from "drizzle-zod";
 
 // ENUMS
 export const topicEnum = pgEnum("topic", [
@@ -73,7 +74,7 @@ export const insights = pgTable("insights_spending", {
   generatedAt: timestamp("generated_at").defaultNow().notNull(),
   expiresAt: timestamp("expires_at"),
 });
-
+export const insightsSchema = createSelectSchema(insights);
 export type InsightRecord = typeof insights.$inferSelect;
 
 export const chatSessions = pgTable("chat_sessions", {

@@ -28,7 +28,6 @@ export const AIInsightsService = {
         conditions.push(eq(insights.severity, severity));
       }
 
-      // ← NEW: Search in title and description
       if (search) {
         const searchCondition = or(
           ilike(insights.title, `%${search}%`),
@@ -42,18 +41,33 @@ export const AIInsightsService = {
 
       // Cursor-based pagination: decode cursor to get the ID
       if (cursor) {
-        const decodedCursor = Buffer.from(cursor, "base64").toString("utf-8");
-        conditions.push(
-          sql`${insights.generatedAt} < (SELECT ${insights.generatedAt} FROM ${insights} WHERE ${insights.id} = ${decodedCursor})`,
-        );
+        const cursorId = Buffer.from(cursor, "base64").toString("utf-8");
+        const [cursorRow] = await db
+          .select({ id: insights.id, generatedAt: insights.generatedAt })
+          .from(insights)
+          .where(and(eq(insights.id, cursorId), eq(insights.userId, userId)))
+          .limit(1);
+
+        if (cursorRow) {
+          const cursorRowCondition = or(
+            sql`${insights.generatedAt} < ${cursorRow.generatedAt}`,
+            and(
+              eq(insights.generatedAt, cursorRow.generatedAt),
+              sql`${insights.id} < ${cursorRow.id}`,
+            ),
+          );
+          if (cursorRowCondition) {
+            conditions.push(cursorRowCondition);
+          }
+        }
       }
 
       const result = await db
         .select()
         .from(insights)
         .where(and(...conditions))
-        .orderBy(desc(insights.generatedAt))
-        .limit(limit + 1); // Fetch one extra to determine if there's a next page
+        .orderBy(desc(insights.generatedAt), desc(insights.id))
+        .limit(limit + 1);
 
       const hasMore = result.length > limit;
       const items = result.slice(0, limit);
