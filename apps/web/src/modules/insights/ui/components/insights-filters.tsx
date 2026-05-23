@@ -27,7 +27,7 @@ const DEFAULTS = {
   search: "",
   type: "all",
   severity: "all",
-  archived: "false",
+  dismissed: "false",
   page: "1",
 };
 
