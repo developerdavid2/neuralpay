@@ -1,28 +1,27 @@
 "use client";
 
 import { useInsightMutations } from "@/hooks/insights/use-insight-mutations";
-import { useInsightsList } from "@/hooks/insights/use-insights";
+import { useInsightsInfiniteScroll } from "@/hooks/insights/use-insights";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo } from "react";
-
+import { INSIGHTS_LIMIT } from "@/modules/dashboard/constants";
 import {
   InsightCard,
   InsightsSkeleton,
   type InsightCardVariant,
 } from "@/modules/insights/ui/components/insight-card";
-
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import { Sparkles } from "lucide-react";
-import type { Route } from "next";
-import type { Insight, InsightsListInput } from "../../types";
+import { useEffect, useMemo } from "react";
+import type { InsightsListInput } from "../../types";
 import { InsightDetails } from "./insight-detail";
 
 interface Props {
   focusInsightId?: string;
-  currentSearch: string;
-  currentType?: InsightsListInput["type"];
-  currentSeverity?: InsightsListInput["severity"];
+  currentSearch?: NonNullable<InsightsListInput["search"]>;
+  currentType?: NonNullable<InsightsListInput["type"]>;
+  currentSeverity?: NonNullable<InsightsListInput["severity"]>;
   currentShowDismissed: boolean;
+  currentReadStatus: string;
 }
 
 export function InsightsList({
@@ -31,25 +30,26 @@ export function InsightsList({
   currentType,
   currentSeverity,
   currentShowDismissed,
+  currentReadStatus,
 }: Props) {
   const isMobile = useMediaQuery("(max-width: 639px)");
   const variant: InsightCardVariant = isMobile ? "compact" : "full";
 
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const { insights } = useInsightsList({
-    includeDismissed: currentShowDismissed,
-    limit: 50,
-    severity: currentSeverity,
-    type: currentType,
-    search: currentSearch,
-  });
+  // Data + Mutations
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
+    useInsightsInfiniteScroll({
+      includeDismissed: currentShowDismissed,
+      limit: INSIGHTS_LIMIT,
+      severity: currentSeverity,
+      type: currentType,
+      search: currentSearch,
+      readStatus: (currentReadStatus as "all" | "read" | "unread") ?? "all",
+    });
 
   const {
     handleDismiss,
     handleCardOpen,
+    handleDrawerClose,
     selectedInsightId,
     drawerOpen,
     setDrawerOpen,
@@ -58,49 +58,30 @@ export function InsightsList({
     handleRestore,
   } = useInsightMutations();
 
-  // Auto-open drawer when focusInsightId is in URL
+  const allInsights = useMemo(
+    () => data.pages.flatMap((page) => page.items),
+    [data.pages],
+  );
+
+  // Auto-open drawer when focusInsightId appears in URL
   useEffect(() => {
     if (
       focusInsightId &&
-      insights.length > 0 &&
+      allInsights.length > 0 &&
       selectedInsightId !== focusInsightId
     ) {
-      const target = insights.find((i) => i.id === focusInsightId);
+      const target = allInsights.find((i) => i.id === focusInsightId);
       if (target) {
         handleCardOpen(target);
       }
     }
-  }, [focusInsightId, insights, handleCardOpen, selectedInsightId]);
+  }, [focusInsightId, allInsights, selectedInsightId, handleCardOpen]);
 
-  // Open drawer and add focus param to URL
-  const handleCardOpenWithURL = useCallback(
-    (insight: Insight) => {
-      handleCardOpen(insight);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("focus", insight.id);
-      router.replace((pathname + "?" + params.toString()) as Route, {
-        scroll: false,
-      });
-    },
-    [handleCardOpen, pathname, router, searchParams],
-  );
+  if (isLoading) {
+    return <InsightsListSkeleton />;
+  }
 
-  // Remove ?focus= from URL when drawer closes
-  const handleDrawerOpenChange = (open: boolean) => {
-    setDrawerOpen(open);
-    if (!open) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("focus");
-      const query = params.toString();
-      router.replace((query ? `${pathname}?${query}` : pathname) as Route, {
-        scroll: false,
-      });
-    }
-  };
-
-  const filteredInsights = useMemo(() => insights, [insights]);
-
-  if (filteredInsights.length === 0) {
+  if (allInsights.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <Sparkles className="size-8 text-muted-foreground mb-3" />
@@ -119,7 +100,7 @@ export function InsightsList({
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-auto">
           <div className="divide-y divide-border rounded-xl overflow-hidden">
-            {filteredInsights.map((insight) => (
+            {allInsights.map((insight) => (
               <InsightCard
                 key={insight.id}
                 insight={insight}
@@ -129,20 +110,33 @@ export function InsightsList({
                 onChat={(id) => {
                   window.location.href = `/dashboard/ai-chat?contextType=insight&contextId=${id}`;
                 }}
-                onOpen={() => handleCardOpenWithURL(insight)}
+                onOpen={() => handleCardOpen(insight)}
                 isDismissing={isDismissing}
                 isRestoring={isRestoring}
-                isFocused={insight.id === focusInsightId}
               />
             ))}
           </div>
+
+          <InfiniteScroll
+            hasNextPage={hasNextPage ?? false}
+            isFetchingNextPage={isFetchingNextPage}
+            fetchNextPage={fetchNextPage}
+            isLoading={isLoading}
+            isManual={false}
+          />
         </div>
       </div>
 
       <InsightDetails
         insightId={selectedInsightId}
         open={drawerOpen}
-        onOpenChange={handleDrawerOpenChange}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleDrawerClose();
+          } else {
+            setDrawerOpen(true);
+          }
+        }}
         onChat={(id) => {
           window.location.href = `/dashboard/ai-chat?contextType=insight&contextId=${id}`;
         }}
@@ -154,12 +148,11 @@ export function InsightsList({
     </>
   );
 }
+
 export function InsightsListSkeleton() {
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm">
-      <div className="flex items-center justify-between border-b border-border px-5 py-4">
-        {/* <h2 className="text-sm font-semibold text-foreground">AI Insights</h2> */}
-      </div>
+      <div className="flex items-center justify-between border-b border-border px-5 py-4" />
       <InsightsSkeleton />
     </div>
   );

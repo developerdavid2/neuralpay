@@ -1,5 +1,15 @@
+import { INSIGHTS_LIMIT } from "@/modules/dashboard/constants";
 import { AIInsightsView } from "@/modules/insights/ui/views/ai-insights-view";
-import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
+import {
+  validateSeverity,
+  validateType,
+} from "@/modules/insights/lib/validate-filters";
+import {
+  HydrateClient,
+  prefetch,
+  prefetchInfinite,
+  trpc,
+} from "@/trpc/trpc-server";
 
 interface PageProps {
   searchParams: Promise<{
@@ -7,14 +17,37 @@ interface PageProps {
     type?: string;
     severity?: string;
     dismissed?: string;
-    page?: string;
+    readStatus?: string;
     focus?: string;
   }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-  void prefetch(trpc.ai.insights.list.queryOptions());
+
+  const validatedSeverity = validateSeverity(params.severity);
+  const validatedType = validateType(params.type);
+
+  const listFilters = {
+    includeDismissed: params.dismissed === "true",
+    limit: INSIGHTS_LIMIT,
+    severity: validatedSeverity,
+    type: validatedType,
+    readStatus: (params.readStatus ?? "all") as "all" | "read" | "unread",
+    search: params.search ?? "",
+  };
+
+  void prefetchInfinite(
+    trpc.ai.insights.list.infiniteQueryOptions(listFilters, {
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    }),
+  );
+
+  if (params.focus) {
+    void prefetch(
+      trpc.ai.insights.getInsightById.queryOptions({ id: params.focus }),
+    );
+  }
 
   return (
     <HydrateClient>
@@ -23,7 +56,7 @@ export default async function Page({ searchParams }: PageProps) {
         type={params.type ?? "all"}
         severity={params.severity ?? "all"}
         dismissed={params.dismissed === "true"}
-        page={Math.max(1, parseInt(params.page ?? "1", 10) || 1)}
+        readStatus={params.readStatus ?? "all"}
         focusInsightId={params.focus}
       />
     </HydrateClient>

@@ -11,4 +11,4 @@ type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export type InsightsOutputs = RouterOutputs["ai"]["insights"]["list"];
 
-export type Insight = InsightsOutputs[number];
+export type Insight = InsightsOutputs["items"][number];

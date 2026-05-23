@@ -2,7 +2,7 @@ import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { queryKeys } from "@/lib/queryKeys";
+import { invalidateInsightsQueries } from "@/lib/invalidate-trpc-queries";
 
 export function useRecentInsightNavigation() {
   const trpc = useTRPC();
@@ -14,24 +14,14 @@ export function useRecentInsightNavigation() {
   const dismiss = useMutation({
     ...trpc.ai.insights.dismiss.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.recent(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.lists(),
-      });
+      invalidateInsightsQueries(queryClient);
     },
   });
 
   const markRead = useMutation({
     ...trpc.ai.insights.markRead.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.recent(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.insights.lists(),
-      });
+      invalidateInsightsQueries(queryClient);
     },
   });
 

@@ -7,9 +7,19 @@ export const AIInsightsService = {
   async getInsights(
     userId: string,
     filters: InsightFilterInput,
-  ): Promise<ServiceResult<InsightRecord[]>> {
+  ): Promise<
+    ServiceResult<{ items: InsightRecord[]; nextCursor: string | null }>
+  > {
     try {
-      const { limit, includeDismissed, type, severity, search } = filters;
+      const {
+        limit,
+        cursor,
+        includeDismissed,
+        type,
+        severity,
+        readStatus,
+        search,
+      } = filters;
 
       const conditions = [eq(insights.userId, userId)];
 
@@ -25,7 +35,12 @@ export const AIInsightsService = {
         conditions.push(eq(insights.severity, severity));
       }
 
-      // ← NEW: Search in title and description
+      if (readStatus === "read") {
+        conditions.push(sql`${insights.readAt} IS NOT NULL`);
+      } else if (readStatus === "unread") {
+        conditions.push(isNull(insights.readAt));
+      }
+
       if (search) {
         const searchCondition = or(
           ilike(insights.title, `%${search}%`),
@@ -37,16 +52,45 @@ export const AIInsightsService = {
         }
       }
 
+      // Cursor-based pagination: decode cursor to get the ID
+      if (cursor) {
+        const cursorId = Buffer.from(cursor, "base64").toString("utf-8");
+        const [cursorRow] = await db
+          .select({ id: insights.id, generatedAt: insights.generatedAt })
+          .from(insights)
+          .where(and(eq(insights.id, cursorId), eq(insights.userId, userId)))
+          .limit(1);
+
+        if (cursorRow) {
+          const cursorRowCondition = or(
+            sql`${insights.generatedAt} < ${cursorRow.generatedAt}`,
+            and(
+              eq(insights.generatedAt, cursorRow.generatedAt),
+              sql`${insights.id} < ${cursorRow.id}`,
+            ),
+          );
+          if (cursorRowCondition) {
+            conditions.push(cursorRowCondition);
+          }
+        }
+      }
+
       const result = await db
         .select()
         .from(insights)
         .where(and(...conditions))
-        .orderBy(desc(insights.generatedAt))
-        .limit(limit);
+        .orderBy(desc(insights.generatedAt), desc(insights.id))
+        .limit(limit + 1);
+
+      const hasMore = result.length > limit;
+      const items = result.slice(0, limit);
+      const nextCursor = hasMore
+        ? Buffer.from(items[items.length - 1]!.id).toString("base64")
+        : null;
 
       return {
         success: true,
-        data: result,
+        data: { items, nextCursor },
       };
     } catch (err) {
       console.error("[AIService.getInsights]", err);

@@ -21,13 +21,15 @@ interface Props {
   currentType: string;
   currentSeverity: string;
   currentShowDismissed: boolean;
+  currentReadStatus: string;
 }
 
 const DEFAULTS = {
   search: "",
   type: "all",
   severity: "all",
-  archived: "false",
+  dismissed: "false",
+  readStatus: "all",
   page: "1",
 };
 
@@ -36,6 +38,7 @@ export function InsightsFilters({
   currentType,
   currentSeverity,
   currentShowDismissed,
+  currentReadStatus,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -64,7 +67,8 @@ export function InsightsFilters({
     currentType !== "all" ||
     currentSeverity !== "all" ||
     currentSearch !== "" ||
-    currentShowDismissed;
+    currentShowDismissed ||
+    currentReadStatus !== "all";
 
   return (
     <div className="border-b border-border p-4 space-y-3">
@@ -132,6 +136,26 @@ export function InsightsFilters({
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="high">High</SelectItem>
             <SelectItem value="critical">Critical</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Insight Read filter button */}
+        <Select
+          value={currentReadStatus}
+          onValueChange={(v) => updateFilter("readStatus", v)}
+        >
+          <SelectTrigger
+            className={cn(
+              "w-40 h-8 text-sm",
+              currentReadStatus !== "all" && "bg-primary text-white",
+            )}
+          >
+            <SelectValue placeholder="Read Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All read status</SelectItem>
+            <SelectItem value="read">Read</SelectItem>
+            <SelectItem value="unread">Unread</SelectItem>
           </SelectContent>
         </Select>
 

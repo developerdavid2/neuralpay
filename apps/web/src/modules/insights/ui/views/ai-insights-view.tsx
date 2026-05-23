@@ -1,18 +1,18 @@
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
+import { validateSeverity, validateType } from "../../lib/validate-filters";
 import { InsightsFilters } from "../components/insights-filters";
 import {
   InsightsList,
   InsightsListSkeleton,
 } from "../components/insights-list";
-import { validateSeverity, validateType } from "../../lib/validate-filters";
 
 interface AIInsightsViewProps {
   search: string;
   type: string;
   severity: string;
   dismissed: boolean;
-  page: number;
+  readStatus: string;
   focusInsightId?: string;
 }
 
@@ -21,7 +21,7 @@ export function AIInsightsView({
   type,
   severity,
   dismissed,
-  page,
+  readStatus,
   focusInsightId,
 }: AIInsightsViewProps) {
   const validatedType = validateType(type);
@@ -40,10 +40,11 @@ export function AIInsightsView({
           currentType={type}
           currentSeverity={severity}
           currentShowDismissed={dismissed}
+          currentReadStatus={readStatus}
         />
 
         <SectionBoundary
-          key={`${type}-${severity}-${search}-${dismissed}`}
+          key={`${type}-${severity}-${search}-${dismissed}-${readStatus}`}
           fallback={<InsightsListSkeleton />}
           errorMessage="Could not load account summary"
         >
@@ -53,6 +54,7 @@ export function AIInsightsView({
             currentType={validatedType!}
             currentSeverity={validatedSeverity!}
             currentShowDismissed={dismissed}
+            currentReadStatus={readStatus}
           />
         </SectionBoundary>
       </div>
