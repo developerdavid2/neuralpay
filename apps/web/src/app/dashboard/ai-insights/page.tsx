@@ -17,7 +17,7 @@ interface PageProps {
     type?: string;
     severity?: string;
     dismissed?: string;
-
+    readStatus?: string;
     focus?: string;
   }>;
 }
@@ -33,6 +33,7 @@ export default async function Page({ searchParams }: PageProps) {
     limit: INSIGHTS_LIMIT,
     severity: validatedSeverity,
     type: validatedType,
+    readStatus: (params.readStatus ?? "all") as "all" | "read" | "unread",
     search: params.search ?? "",
   };
 
@@ -55,6 +56,7 @@ export default async function Page({ searchParams }: PageProps) {
         type={params.type ?? "all"}
         severity={params.severity ?? "all"}
         dismissed={params.dismissed === "true"}
+        readStatus={params.readStatus ?? "all"}
         focusInsightId={params.focus}
       />
     </HydrateClient>

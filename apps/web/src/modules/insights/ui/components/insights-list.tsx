@@ -21,6 +21,7 @@ interface Props {
   currentType?: NonNullable<InsightsListInput["type"]>;
   currentSeverity?: NonNullable<InsightsListInput["severity"]>;
   currentShowDismissed: boolean;
+  currentReadStatus: string;
 }
 
 export function InsightsList({
@@ -29,6 +30,7 @@ export function InsightsList({
   currentType,
   currentSeverity,
   currentShowDismissed,
+  currentReadStatus,
 }: Props) {
   const isMobile = useMediaQuery("(max-width: 639px)");
   const variant: InsightCardVariant = isMobile ? "compact" : "full";
@@ -41,6 +43,7 @@ export function InsightsList({
       severity: currentSeverity,
       type: currentType,
       search: currentSearch,
+      readStatus: (currentReadStatus as "all" | "read" | "unread") ?? "all",
     });
 
   const {

@@ -14,6 +14,7 @@ export const insightFilterSchema = z.object({
   includeDismissed: z.boolean().default(false),
   type: z.enum(INSIGHT_TYPES).optional(),
   severity: z.enum(INSIGHT_SEVERITIES).optional(),
+  readStatus: z.enum(["all", "read", "unread"]).default("all"),
   search: z.string().trim().optional(),
 });
 export type InsightFilterInput = z.infer<typeof insightFilterSchema>;

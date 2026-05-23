@@ -11,8 +11,15 @@ export const AIInsightsService = {
     ServiceResult<{ items: InsightRecord[]; nextCursor: string | null }>
   > {
     try {
-      const { limit, cursor, includeDismissed, type, severity, search } =
-        filters;
+      const {
+        limit,
+        cursor,
+        includeDismissed,
+        type,
+        severity,
+        readStatus,
+        search,
+      } = filters;
 
       const conditions = [eq(insights.userId, userId)];
 
@@ -26,6 +33,12 @@ export const AIInsightsService = {
 
       if (severity) {
         conditions.push(eq(insights.severity, severity));
+      }
+
+      if (readStatus === "read") {
+        conditions.push(sql`${insights.readAt} IS NOT NULL`);
+      } else if (readStatus === "unread") {
+        conditions.push(isNull(insights.readAt));
       }
 
       if (search) {

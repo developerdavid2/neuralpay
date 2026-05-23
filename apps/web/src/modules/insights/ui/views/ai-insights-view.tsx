@@ -12,6 +12,7 @@ interface AIInsightsViewProps {
   type: string;
   severity: string;
   dismissed: boolean;
+  readStatus: string;
   focusInsightId?: string;
 }
 
@@ -20,6 +21,7 @@ export function AIInsightsView({
   type,
   severity,
   dismissed,
+  readStatus,
   focusInsightId,
 }: AIInsightsViewProps) {
   const validatedType = validateType(type);
@@ -38,10 +40,11 @@ export function AIInsightsView({
           currentType={type}
           currentSeverity={severity}
           currentShowDismissed={dismissed}
+          currentReadStatus={readStatus}
         />
 
         <SectionBoundary
-          key={`${type}-${severity}-${search}-${dismissed}`}
+          key={`${type}-${severity}-${search}-${dismissed}-${readStatus}`}
           fallback={<InsightsListSkeleton />}
           errorMessage="Could not load account summary"
         >
@@ -51,6 +54,7 @@ export function AIInsightsView({
             currentType={validatedType!}
             currentSeverity={validatedSeverity!}
             currentShowDismissed={dismissed}
+            currentReadStatus={readStatus}
           />
         </SectionBoundary>
       </div>
