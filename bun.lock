@@ -246,10 +246,11 @@
     },
     "packages/db": {
       "name": "@neuralpay/db",
+      "version": "0.0.0",
       "dependencies": {
         "@neuralpay/env": "workspace:*",
+        "@neuralpay/types": "workspace:*",
         "drizzle-orm": "catalog:",
-        "drizzle-zod": "0.7.0",
         "pg": "^8.17.1",
         "server-only": "^0.0.1",
         "zod": "catalog:",
@@ -259,6 +260,7 @@
         "@types/pg": "^8.16.0",
         "dotenv": "catalog:",
         "drizzle-kit": "^0.31.8",
+        "drizzle-zod": "0.7.0",
         "typescript": "catalog:",
       },
     },

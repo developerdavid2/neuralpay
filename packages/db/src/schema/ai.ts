@@ -9,18 +9,21 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { categoryEnum } from "./transactions";
-import { createSelectSchema } from "drizzle-zod";
 
-// ENUMS
-export const topicEnum = pgEnum("topic", [
-  "budgeting",
-  "spending",
-  "savings",
-  "general",
+// Inlined for drizzle-kit CJS compatibility — source of truth is @neuralpay/types
+export const insightTypeEnum = pgEnum("insight_type", [
+  "anomaly",
+  "opportunity",
+  "trend",
+  "saving",
+  "warning",
 ]);
-export type Topic = (typeof topicEnum.enumValues)[number];
-export const CHAT_TOPICS = topicEnum.enumValues;
-
+export const insightSeverityEnum = pgEnum("insight_severity", [
+  "low",
+  "medium",
+  "high",
+  "critical",
+]);
 export const chatContextTypeEnum = pgEnum("chat_context_type", [
   "insight",
   "transaction",
@@ -29,35 +32,39 @@ export const chatContextTypeEnum = pgEnum("chat_context_type", [
   "split",
   "general",
 ]);
-export type ChatContextType = (typeof chatContextTypeEnum.enumValues)[number];
-export const CHAT_CONTEXT_TYPES = chatContextTypeEnum.enumValues;
-
+export const topicEnum = pgEnum("topic", [
+  "budgeting",
+  "spending",
+  "savings",
+  "general",
+]);
 export const roleEnum = pgEnum("role", ["user", "assistant"]);
-export type Role = (typeof roleEnum.enumValues)[number];
 
-export type Category = (typeof categoryEnum.enumValues)[number];
-export const CATEGORY = categoryEnum.enumValues;
+// // Compile-time drift guards
+// type _CheckInsightType =
+//   (typeof insightTypeEnum.enumValues)[number] extends InsightType
+//     ? true
+//     : never;
+// type _CheckSeverity =
+//   (typeof insightSeverityEnum.enumValues)[number] extends InsightSeverity
+//     ? true
+//     : never;
+// type _CheckContext =
+//   (typeof chatContextTypeEnum.enumValues)[number] extends ChatContextType
+//     ? true
+//     : never;
+// type _CheckTopic = (typeof topicEnum.enumValues)[number] extends Topic
+//   ? true
+//   : never;
+// type _CheckRole = (typeof roleEnum.enumValues)[number] extends Role
+//   ? true
+//   : never;
+// const _1: _CheckInsightType = true;
+// const _2: _CheckSeverity = true;
+// const _3: _CheckContext = true;
+// const _4: _CheckTopic = true;
+// const _5: _CheckRole = true;
 
-export const insightSeverityEnum = pgEnum("insight_severity", [
-  "low",
-  "medium",
-  "high",
-  "critical",
-]);
-export type InsightSeverity = (typeof insightSeverityEnum.enumValues)[number];
-export const INSIGHT_SEVERITIES = insightSeverityEnum.enumValues;
-
-export const insightTypeEnum = pgEnum("insight_type", [
-  "anomaly",
-  "opportunity",
-  "trend",
-  "saving",
-  "warning",
-]);
-export type InsightType = (typeof insightTypeEnum.enumValues)[number];
-export const INSIGHT_TYPES = insightTypeEnum.enumValues;
-
-//INSIGHTS
 export const insights = pgTable("insights_spending", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
@@ -74,8 +81,6 @@ export const insights = pgTable("insights_spending", {
   generatedAt: timestamp("generated_at").defaultNow().notNull(),
   expiresAt: timestamp("expires_at"),
 });
-export const insightsSchema = createSelectSchema(insights);
-export type InsightRecord = typeof insights.$inferSelect;
 
 export const chatSessions = pgTable("chat_sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -91,6 +96,7 @@ export const chatSessions = pgTable("chat_sessions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
 export type ChatSessionRecord = typeof chatSessions.$inferSelect;
 
 export const chatMessages = pgTable("chat_messages", {
@@ -109,13 +115,12 @@ export const chatMessages = pgTable("chat_messages", {
 
 export type ChatMessageRecord = typeof chatMessages.$inferSelect;
 
-// AI Usage tracking for rate limiting
 export const aiUsage = pgTable("ai_usage", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  month: integer("month").notNull(), // 1-12
+  month: integer("month").notNull(),
   year: integer("year").notNull(),
   queryCount: integer("query_count").notNull().default(0),
   tokenCount: integer("token_count").notNull().default(0),

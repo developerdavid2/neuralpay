@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
-// Enums
+// Inlined for drizzle-kit CJS compatibility — source of truth is @neuralpay/types
 export const accountTypeEnum = pgEnum("account_type", [
   "checking",
   "savings",
@@ -25,8 +25,10 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
 ]);
 export const transactionStatusEnum = pgEnum("transaction_status", [
   "pending",
-  "posted",
-  "cancelled",
+  "successful",
+  "refunded",
+  "reversed",
+  "failed",
 ]);
 export const categoryEnum = pgEnum("category", [
   "food_dining",
@@ -45,17 +47,33 @@ export const categoryEnum = pgEnum("category", [
   "other",
 ]);
 
-// Accounts table
+// // Compile-time check: ensures db enums stay in sync with @neuralpay/types
+// type _CheckType =
+//   (typeof transactionTypeEnum.enumValues)[number] extends TransactionType
+//     ? true
+//     : never;
+// type _CheckStatus =
+//   (typeof transactionStatusEnum.enumValues)[number] extends TransactionStatus
+//     ? true
+//     : never;
+// type _CheckCategory =
+//   (typeof categoryEnum.enumValues)[number] extends TransactionCategory
+//     ? true
+//     : never;
+// const _t: _CheckType = true;
+// const _s: _CheckStatus = true;
+// const _c: _CheckCategory = true;
+
 export const bankAccounts = pgTable("bank_accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  source: text("source").notNull(), // "plaid", "mono", "manual"
+  source: text("source").notNull(),
   sourceItemId: text("source_item_id"),
-  sourceAccountId: text("source_account_id"), //  plaid's account_id or mono's accountId
-  accessToken: text("access_token"), // encrypted, needed for sync
-  cursor: text("cursor"), // Plaid incremental sync cursor
+  sourceAccountId: text("source_account_id"),
+  accessToken: text("access_token"),
+  cursor: text("cursor"),
   name: text("name").notNull(),
   type: accountTypeEnum("type").notNull(),
   balance: decimal("balance", { precision: 18, scale: 2 })
@@ -64,16 +82,15 @@ export const bankAccounts = pgTable("bank_accounts", {
   currency: text("currency").notNull().default("USD"),
   maskedNumber: text("masked_number"),
   bankName: text("bank_name"),
-  isVerified: boolean("is_verified").default(false),
+  isVerified: boolean("is_verified").default(false).notNull(),
   lastSync: timestamp("last_sync"),
-  status: text("status").default("active"), //  active, disconnected, needs_update
+  status: text("status").default("active"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export type AccountRecord = typeof bankAccounts.$inferSelect;
 
-// Transactions table
 export const transactions = pgTable("transactions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
@@ -85,20 +102,18 @@ export const transactions = pgTable("transactions", {
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 18, scale: 2 }).notNull(),
   type: transactionTypeEnum("type").notNull(),
-  status: transactionStatusEnum("status").default("posted"),
+  status: transactionStatusEnum("status").default("successful"),
   category: categoryEnum("category"),
   merchant: text("merchant"),
   date: timestamp("date").notNull(),
   plaidTxId: text("plaid_tx_id").unique(),
   monoTxId: text("mono_tx_id").unique(),
-  isAnomaly: boolean("is_anomaly").default(false),
+  isAnomaly: boolean("is_anomaly").default(false).notNull(),
   anomalyScore: decimal("anomaly_score", { precision: 5, scale: 2 }),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-export type TransactionRecord = typeof transactions.$inferSelect;
 
-// Tags
 export const transactionTags = pgTable("transaction_tags", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
@@ -121,7 +136,6 @@ export const transactionTagMapping = pgTable(
   (t) => [primaryKey({ columns: [t.transactionId, t.tagId] })],
 );
 
-// Budgets
 export const budgets = pgTable("budgets", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")

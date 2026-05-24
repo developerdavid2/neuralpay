@@ -1,15 +1,13 @@
 import { db } from "@neuralpay/db";
+import { bankAccounts, budgets, transactions } from "@neuralpay/db/schema";
 import {
-  budgets,
-  transactions,
-  type TransactionRecord,
-} from "@neuralpay/db/schema";
-import {
-  type ListTransactionsInput,
   type OverviewTotal,
   type PaginatedResult,
   type ServiceResult,
   type TopMonthlyCategories,
+  type TransactionRecord,
+  type TransactionsFilterInput,
+  type UpdateTransactionInput,
 } from "@neuralpay/types";
 import {
   differenceInDays,
@@ -20,48 +18,122 @@ import {
   subDays,
   subMonths,
 } from "date-fns";
-import { and, desc, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
+  ilike,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm";
 
 export const TransactionsService = {
   async list(
     userId: string,
-    input: ListTransactionsInput,
+    input: TransactionsFilterInput,
   ): Promise<ServiceResult<PaginatedResult<TransactionRecord>>> {
     try {
+      const {
+        bankAccountId,
+        category,
+        type,
+        status,
+        isAnomaly,
+        search,
+        dateFrom,
+        dateTo,
+        minAmount,
+        maxAmount,
+        limit,
+        cursor,
+      } = input;
       const conditions = [eq(transactions.userId, userId)];
 
       // ── Filters
-      if (input.bankAccountId) {
-        conditions.push(eq(transactions.bankAccountId, input.bankAccountId));
+      if (bankAccountId) {
+        conditions.push(eq(transactions.bankAccountId, bankAccountId));
       }
-      if (input.category) {
-        conditions.push(eq(transactions.category, input.category as any));
+      if (category) {
+        conditions.push(eq(transactions.category, category));
       }
-      if (input.type) {
-        conditions.push(eq(transactions.type, input.type));
+      if (type) {
+        conditions.push(eq(transactions.type, type));
       }
-      if (input.isAnomaly !== undefined) {
-        conditions.push(eq(transactions.isAnomaly, input.isAnomaly));
+      if (status) {
+        conditions.push(eq(transactions.status, status));
       }
-      if (input.search) {
-        conditions.push(ilike(transactions.description, `%${input.search}%`));
+      if (isAnomaly !== undefined) {
+        conditions.push(eq(transactions.isAnomaly, isAnomaly));
       }
-      if (input.dateFrom) {
-        conditions.push(gte(transactions.date, new Date(input.dateFrom)));
+
+      if (search) {
+        const searchCondition = or(
+          ilike(transactions.description, `%${search}%`),
+          ilike(transactions.merchant, `%${search}%`),
+        );
+        if (searchCondition) {
+          conditions.push(searchCondition);
+        }
       }
-      if (input.dateTo) {
-        conditions.push(lte(transactions.date, new Date(input.dateTo)));
+      if (dateFrom) {
+        conditions.push(gte(transactions.date, new Date(dateFrom)));
+      }
+      if (dateTo) {
+        conditions.push(lte(transactions.date, new Date(dateTo)));
+      }
+      if (minAmount !== undefined) {
+        conditions.push(gte(transactions.amount, minAmount.toString()));
+      }
+      if (maxAmount !== undefined) {
+        conditions.push(lte(transactions.amount, maxAmount.toString()));
+      }
+
+      // Cursor-based pagination: decode cursor to get the ID
+      if (cursor) {
+        const cursorId = Buffer.from(cursor, "base64").toString("utf-8");
+        const [cursorRow] = await db
+          .select({ id: transactions.id, date: transactions.date })
+          .from(transactions)
+          .where(
+            and(eq(transactions.id, cursorId), eq(transactions.userId, userId)),
+          )
+          .limit(1);
+
+        if (cursorRow) {
+          const cursorRowCondition = or(
+            sql`${transactions.date} < ${cursorRow.date}`,
+            and(
+              eq(transactions.date, cursorRow.date),
+              sql`${transactions.id} < ${cursorRow.id}`,
+            ),
+          );
+          if (cursorRowCondition) {
+            conditions.push(cursorRowCondition);
+          }
+        }
       }
 
       // ── TOTAL (no cursor)
-      const data = await db
-        .select()
+      const rows = await db
+        .select({
+          ...getTableColumns(transactions),
+          bankAccountName: bankAccounts.name,
+          maskedAccountNumber: bankAccounts.maskedNumber,
+          bankAccountType: bankAccounts.type,
+          bankName: bankAccounts.bankName,
+          currency: bankAccounts.currency,
+        })
         .from(transactions)
+        .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
         .where(and(...conditions))
-        .limit(input.limit);
+        .orderBy(desc(transactions.date), desc(transactions.id))
+        .limit(limit + 1);
 
-      const hasMore = data.length > input.limit;
-      const items = hasMore ? data.slice(0, -1) : data;
+      const hasMore = rows.length > limit;
+      const items = hasMore ? rows.slice(0, -1) : rows;
       const lastItem = items[items.length - 1];
       const nextCursor = hasMore ? lastItem?.id : null;
 
@@ -77,7 +149,7 @@ export const TransactionsService = {
       return {
         success: false,
         error: "Failed to fetch transactions",
-        code: "DB_ERROR",
+        code: "INTERNAL_SERVER_ERROR",
       };
     }
   },
@@ -103,7 +175,7 @@ export const TransactionsService = {
       return {
         success: false,
         error: "Failed to fetch transactions",
-        code: "DB_ERROR",
+        code: "INTERNAL_SERVER_ERROR",
       };
     }
   },
@@ -113,26 +185,74 @@ export const TransactionsService = {
     userId: string,
   ): Promise<ServiceResult<TransactionRecord>> {
     try {
-      const result = await db
-        .select()
+      const [existingTransaction] = await db
+        .select({
+          ...getTableColumns(transactions),
+          bankAccountName: bankAccounts.name,
+          maskedAccountNumber: bankAccounts.maskedNumber,
+          bankAccountType: bankAccounts.type,
+          bankName: bankAccounts.bankName,
+          currency: bankAccounts.currency,
+        })
         .from(transactions)
+        .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
         .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
         .limit(1);
 
-      if (!result[0]) {
+      if (!existingTransaction) {
         return {
           success: false,
           error: "Transaction not found",
           code: "NOT_FOUND",
         };
       }
-      return { success: true, data: result[0] };
+      return { success: true, data: existingTransaction };
     } catch (err) {
       console.error("[TransactionsService.getById]", err);
       return {
         success: false,
         error: "Failed to fetch transaction",
-        code: "DB_ERROR",
+        code: "INTERNAL_SERVER_ERROR",
+      };
+    }
+  },
+
+  async update(
+    userId: string,
+    input: UpdateTransactionInput,
+  ): Promise<ServiceResult<TransactionRecord>> {
+    try {
+      const updateData: Partial<TransactionRecord> = {};
+
+      if (input.category) {
+        updateData.category = input.category;
+      }
+      if (input.notes !== undefined) {
+        updateData.notes = input.notes;
+      }
+
+      const [updatedTransaction] = await db
+        .update(transactions)
+        .set(updateData)
+        .where(
+          and(eq(transactions.id, input.id), eq(transactions.userId, userId)),
+        )
+        .returning();
+
+      if (!updatedTransaction) {
+        return {
+          success: false,
+          error: "Transaction not found",
+          code: "NOT_FOUND",
+        };
+      }
+      return { success: true, data: updatedTransaction };
+    } catch (err) {
+      console.error("[TransactionsService.update]", err);
+      return {
+        success: false,
+        error: "Failed to update transaction",
+        code: "INTERNAL_SERVER_ERROR",
       };
     }
   },
@@ -305,7 +425,7 @@ export const TransactionsService = {
       return {
         success: false,
         error: "Failed to fetch spending overview",
-        code: "DB_ERROR",
+        code: "INTERNAL_SERVER_ERROR",
       };
     }
   },
@@ -395,7 +515,7 @@ export const TransactionsService = {
       return {
         success: false,
         error: "Failed to fetch top categories",
-        code: "DB_ERROR",
+        code: "INTERNAL_SERVER_ERROR",
       };
     }
   },
@@ -429,7 +549,7 @@ export const TransactionsService = {
       return {
         success: false,
         error: "Failed to calculate spending",
-        code: "DB_ERROR",
+        code: "INTERNAL_SERVER_ERROR",
       };
     }
   },

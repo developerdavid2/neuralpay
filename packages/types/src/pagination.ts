@@ -1,13 +1,14 @@
 import { z } from "zod";
 
-export const paginationSchema = z.object({
-  limit: z.coerce.number().min(1).max(100).optional().default(10),
-  cursor: z.string().optional(),
-});
+export const createPaginatedSchema = <T extends z.ZodTypeAny>(
+  itemSchema: T,
+) => {
+  return z.object({
+    items: z.array(itemSchema),
+    nextCursor: z.string().nullable(),
+  });
+};
 
-export type PaginationInput = z.infer<typeof paginationSchema>;
-
-// ── Generic paginated result
 export type PaginatedResult<T> = {
   items: T[];
   nextCursor: string | null;

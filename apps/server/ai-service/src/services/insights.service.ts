@@ -1,6 +1,10 @@
 import { db } from "@neuralpay/db";
-import { insights, type InsightRecord } from "@neuralpay/db/schema";
-import type { InsightFilterInput, ServiceResult } from "@neuralpay/types";
+import { insights } from "@neuralpay/db/schema";
+import type {
+  InsightFilterInput,
+  InsightRecord,
+  ServiceResult,
+} from "@neuralpay/types";
 import { and, desc, eq, isNull, sql, or, ilike } from "drizzle-orm";
 
 export const AIInsightsService = {
