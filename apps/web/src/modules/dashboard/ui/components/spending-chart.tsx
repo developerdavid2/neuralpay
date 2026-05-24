@@ -453,8 +453,7 @@ function AreaChartView({ data }: { data: TimeSeriesItem[] }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
+// ─── Main Component
 export function SpendingChart() {
   const [period, setPeriod] = useState<Period>("30d");
   const [chartType, setChartType] = useState<ChartType>("area");
