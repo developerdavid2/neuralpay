@@ -2,51 +2,48 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   transactionsFilterSchema,
+  createTransactionSchema,
   updateTransactionSchema,
+  batchDeleteSchema,
+  csvColumnMappingSchema,
 } from "@neuralpay/types";
 import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import { TransactionsService } from "../services/transactions.service";
+import { CSVService } from "../services/csv.service";
 
 export const transactionsRouter = router({
   list: protectedProcedure
     .input(transactionsFilterSchema.optional())
     .query(async ({ ctx, input }) => {
       const parsed = transactionsFilterSchema.parse(input ?? {});
-
       const result = await TransactionsService.list(
         ctx.session.user.id,
         parsed,
       );
-
       if (!result.success)
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: result.error,
         });
-
       return result.data;
     }),
 
   recent: protectedProcedure
     .input(
       z
-        .object({
-          limit: z.number().int().min(1).max(20).default(7),
-        })
+        .object({ limit: z.number().int().min(1).max(20).default(7) })
         .optional(),
     )
     .query(async ({ ctx, input }) => {
       const result = await TransactionsService.recent(
         ctx.session.user.id,
-        input?.limit ?? 3,
+        input?.limit ?? 7,
       );
-
       if (!result.success)
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: result.error,
         });
-
       return result.data;
     }),
 
@@ -57,13 +54,28 @@ export const transactionsRouter = router({
         input.id,
         ctx.session.user.id,
       );
-      if (!result.success) {
+      if (!result.success)
         throw new TRPCError({
           code:
             result.code === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR",
           message: result.error,
         });
-      }
+      return result.data;
+    }),
+
+  create: protectedProcedure
+    .input(createTransactionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const result = await TransactionsService.create(
+        ctx.session.user.id,
+        input,
+      );
+      if (!result.success)
+        throw new TRPCError({
+          code:
+            result.code === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
       return result.data;
     }),
 
@@ -74,13 +86,92 @@ export const transactionsRouter = router({
         ctx.session.user.id,
         input,
       );
-      if (!result.success) {
+      if (!result.success)
         throw new TRPCError({
           code:
             result.code === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR",
           message: result.error,
         });
-      }
+      return result.data;
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await TransactionsService.delete(
+        input.id,
+        ctx.session.user.id,
+      );
+      if (!result.success)
+        throw new TRPCError({
+          code:
+            result.code === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      return result.data;
+    }),
+
+  batchDelete: protectedProcedure
+    .input(batchDeleteSchema)
+    .mutation(async ({ ctx, input }) => {
+      const result = await TransactionsService.batchDelete(
+        ctx.session.user.id,
+        input,
+      );
+      if (!result.success)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      return result.data;
+    }),
+
+  // Preview CSV before committing — returns parsed rows, no DB write
+  previewCsv: protectedProcedure
+    .input(
+      z.object({
+        filename: z.string(),
+        rows: z.array(z.array(z.string())).max(10000),
+        mapping: csvColumnMappingSchema,
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const result = await CSVService.previewCsv(
+        input.filename,
+        input.rows,
+        input.mapping,
+      );
+      if (!result.success)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      return result.data;
+    }),
+
+  // Commit the import — writes to DB
+  importCsv: protectedProcedure
+    .input(
+      z.object({
+        bankAccountId: z.uuid(),
+        filename: z.string(),
+        rows: z.array(z.array(z.string())).max(10000),
+        mapping: csvColumnMappingSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await CSVService.importCsv(
+        ctx.session.user.id,
+        input.bankAccountId,
+        input.filename,
+        input.rows,
+        input.mapping,
+      );
+      if (!result.success)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
       return result.data;
     }),
 
@@ -96,32 +187,23 @@ export const transactionsRouter = router({
           if (val.period === "custom" && (!val.from || !val.to)) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: "`from` and `to` are required when period is custom",
+              message: "`from` and `to` required for custom period",
               path: ["period"],
             });
           }
-          if (val.from && val.to && new Date(val.from) > new Date(val.to)) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: "`from` must be <= `to`",
-              path: ["from"],
-            });
-          }
-        }),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       const result = await TransactionsService.getSpendingOverview(
         ctx.session.user.id,
-        input,
+        input ?? { period: "30d" },
       );
-
-      if (!result.success) {
+      if (!result.success)
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: result.error,
         });
-      }
-
       return result.data;
     }),
 
@@ -153,12 +235,11 @@ export const transactionsRouter = router({
         input?.year ?? now.getFullYear(),
         input?.limit ?? 5,
       );
-      if (!result.success) {
+      if (!result.success)
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: result.error,
         });
-      }
       return result.data;
     }),
 
@@ -166,12 +247,11 @@ export const transactionsRouter = router({
     const result = await TransactionsService.getCurrentMonthSpending(
       ctx.session.user.id,
     );
-    if (!result.success) {
+    if (!result.success)
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: result.error,
       });
-    }
     return result.data;
   }),
 });

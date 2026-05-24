@@ -3,6 +3,7 @@ export * from "./users";
 export * from "./transactions";
 export * from "./ai";
 export * from "./pagination";
+export * from "./accounts";
 export {};
 
 export type ServiceResult<T> =
@@ -19,6 +20,7 @@ export type ServiceResult<T> =
         | "RATE_LIMITED"
         | "AI_ERROR"
         | "VALIDATION_ERROR"
+        | "PARSE_ERROR"
         | "UNAUTHORIZED"
         | "CONFLICT";
     };

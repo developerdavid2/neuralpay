@@ -8,14 +8,8 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+import { categoryEnum } from "./categories";
 
-export const splitCategoryEnum = pgEnum("split_category", [
-  "dining",
-  "travel",
-  "entertainment",
-  "household",
-  "other",
-]);
 export const splitStatusEnum = pgEnum("split_status", [
   "open",
   "settled",
@@ -31,7 +25,7 @@ export const splits = pgTable("splits", {
   description: text("description"),
   totalAmount: decimal("total_amount", { precision: 18, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("USD"),
-  category: splitCategoryEnum("category").default("other"),
+  category: categoryEnum("category").default("other"),
   paidById: text("paid_by_id").references(() => user.id),
   status: splitStatusEnum("status").default("open"),
   settledAt: timestamp("settled_at"),

@@ -1,14 +1,18 @@
 // apps/web/src/app/dashboard/accounts/page.tsx
 import { AccountView } from "@/modules/accounts/account-view";
-import { getQueryClient, HydrateClient, trpc } from "@/trpc/trpc-server";
+import {
+  getQueryClient,
+  HydrateClient,
+  prefetch,
+  trpc,
+} from "@/trpc/trpc-server";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 export const dynamic = "force-dynamic";
 
 const Page = async () => {
-  const queryClient = getQueryClient();
-  await queryClient.prefetchQuery(trpc.users.profile.me.queryOptions());
+  prefetch(trpc.payments.accounts.list.queryOptions());
 
   return (
     <HydrateClient>
