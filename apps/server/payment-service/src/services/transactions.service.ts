@@ -13,7 +13,7 @@ import {
   type ServiceResult,
   type TopMonthlyCategories,
   type TransactionsFilterInput,
-  type TransactionWithAccount,
+  type Transaction,
   type UpdateTransactionInput,
 } from "@neuralpay/types";
 import {
@@ -163,7 +163,7 @@ export const TransactionsService = {
 
       return {
         success: true,
-        data: { items: items as TransactionWithAccount[], nextCursor },
+        data: { items: items as Transaction[], nextCursor },
       };
     } catch (err) {
       console.error("[TransactionsService.list]", err);
@@ -179,7 +179,7 @@ export const TransactionsService = {
   async recent(
     userId: string,
     limit = 7,
-  ): Promise<ServiceResult<TransactionWithAccount[]>> {
+  ): Promise<ServiceResult<Transaction[]>> {
     try {
       const rows = await db
         .select(transactionSelect())
@@ -193,7 +193,7 @@ export const TransactionsService = {
         .orderBy(desc(transactions.date))
         .limit(limit);
 
-      return { success: true, data: rows as TransactionWithAccount[] };
+      return { success: true, data: rows as Transaction[] };
     } catch (err) {
       console.error("[TransactionsService.recent]", err);
       return {
@@ -208,7 +208,7 @@ export const TransactionsService = {
   async getById(
     id: string,
     userId: string,
-  ): Promise<ServiceResult<TransactionWithAccount>> {
+  ): Promise<ServiceResult<Transaction>> {
     try {
       const [row] = await db
         .select(transactionSelect())
@@ -227,7 +227,7 @@ export const TransactionsService = {
           error: "Transaction not found",
           code: "NOT_FOUND",
         };
-      return { success: true, data: row as TransactionWithAccount };
+      return { success: true, data: row as Transaction };
     } catch (err) {
       console.error("[TransactionsService.getById]", err);
       return {
@@ -242,7 +242,7 @@ export const TransactionsService = {
   async create(
     userId: string,
     input: CreateTransactionInput,
-  ): Promise<ServiceResult<TransactionWithAccount>> {
+  ): Promise<ServiceResult<Transaction>> {
     try {
       // Verify the bank account belongs to this user
       const [account] = await db
@@ -299,7 +299,7 @@ export const TransactionsService = {
   async update(
     userId: string,
     input: UpdateTransactionInput,
-  ): Promise<ServiceResult<TransactionWithAccount>> {
+  ): Promise<ServiceResult<Transaction>> {
     try {
       const updateData: Record<string, unknown> = {};
 

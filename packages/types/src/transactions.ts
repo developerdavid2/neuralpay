@@ -150,7 +150,7 @@ export type UpdateCustomCategoryInput = z.infer<
   typeof updateCustomCategorySchema
 >;
 
-export type TransactionWithAccount = {
+export type Transaction = {
   id: string;
   userId: string;
   bankAccountId: string;
@@ -181,9 +181,8 @@ export type TransactionWithAccount = {
   customCategoryIcon: string | null;
   customCategoryColor: string | null;
 };
-
 export type PaginatedTransactions = {
-  items: TransactionWithAccount[];
+  items: Transaction[];
   nextCursor: string | null;
   total?: number;
 };
@@ -226,6 +225,19 @@ export type CsvPreviewRow = {
   isValid: boolean;
   errors: string[];
 };
+
+export interface TransactionFormValues {
+  bankAccountId: string;
+  description: string;
+  amount: string;
+  type: TransactionType;
+  category: TransactionCategory | null;
+  customCategoryId: string | null;
+  merchant: string;
+  date: Date;
+  notes: string;
+  tags: string[];
+}
 
 export type CsvImportPreview = {
   filename: string;

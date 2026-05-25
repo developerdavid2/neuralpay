@@ -1,6 +1,9 @@
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
-import { validateSeverity, validateType } from "../../lib/validate-filters";
+import {
+  validateInsightSeverity,
+  validateInsightType,
+} from "../../lib/validate-insights-enums";
 import { InsightsFilters } from "../components/insights-filters";
 import {
   InsightsList,
@@ -24,8 +27,8 @@ export function AIInsightsView({
   readStatus,
   focusInsightId,
 }: AIInsightsViewProps) {
-  const validatedType = validateType(type);
-  const validatedSeverity = validateSeverity(severity);
+  const validatedType = validateInsightType(type);
+  const validatedSeverity = validateInsightSeverity(severity);
 
   return (
     <div className="flex flex-col gap-6 p-6">

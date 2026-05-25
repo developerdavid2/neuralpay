@@ -1,0 +1,187 @@
+import { formatAmount } from "@/lib/utils";
+import { CATEGORY_ICONS, CATEGORY_LABELS } from "@/modules/dashboard/constants";
+import type { Transaction } from "@neuralpay/types";
+import { Button } from "@neuralpay/ui/components/button";
+import { Checkbox } from "@neuralpay/ui/components/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@neuralpay/ui/components/dropdown-menu";
+import type { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import { Ban, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { SourceBadge, StatusBadge } from "./transaction-badges";
+
+interface ColumnProps {
+  onView: (tx: Transaction) => void;
+  onEdit: (tx: Transaction) => void;
+}
+
+export function transactionColumns({
+  onView,
+  onEdit,
+}: ColumnProps): ColumnDef<Transaction>[] {
+  return [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(val) => table.toggleAllPageRowsSelected(!!val)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => {
+        const tx = row.original;
+        const isDisabled = !tx.isManual;
+        return (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(val) => row.toggleSelected(!!val)}
+            disabled={isDisabled}
+            title={
+              isDisabled
+                ? "Synced transactions cannot be batch deleted"
+                : undefined
+            }
+          />
+        );
+      },
+      size: 40,
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <span className="text-sm">
+            {format(new Date(row.original.date), "MMM dd")}
+          </span>
+          <span className="text-[10px] text-muted-foreground tabular-nums">
+            {format(new Date(row.original.date), "HH:mm")}
+          </span>
+        </div>
+      ),
+      size: 80,
+    },
+    {
+      accessorKey: "merchant",
+      header: "Merchant / Description",
+      cell: ({ row }) => {
+        const tx = row.original;
+        const Icon = CATEGORY_ICONS[tx.category ?? "other"];
+        return (
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-accent">
+              <Icon className="size-3.5 text-muted-foreground" />
+            </span>
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium">
+                {tx.merchant ?? tx.description}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <SourceBadge tx={tx} />
+                {tx.isAnomaly && (
+                  <span className="text-[10px] text-destructive font-medium">
+                    Flagged
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "category",
+      header: "Category",
+      cell: ({ row }) => (
+        <span className="text-xs text-muted-foreground">
+          {row.original.customCategoryName ??
+            CATEGORY_LABELS[row.original.category ?? "other"] ??
+            "Other"}
+        </span>
+      ),
+      size: 120,
+    },
+    {
+      accessorKey: "amount",
+      header: ({ column }) => (
+        <div
+          className="text-right cursor-pointer select-none"
+          onClick={() => column.toggleSorting()}
+        >
+          Amount
+        </div>
+      ),
+      cell: ({ row }) => {
+        const isIncome = row.original.type === "credit";
+        return (
+          <div
+            className={`text-right font-mono text-sm font-semibold tabular-nums ${isIncome ? "text-emerald-600" : ""}`}
+          >
+            {isIncome ? "+" : "−"}
+            {formatAmount(Math.abs(Number(row.original.amount)))}
+          </div>
+        );
+      },
+      size: 120,
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => (
+        <div
+          className="cursor-pointer select-none"
+          onClick={() => column.toggleSorting()}
+        >
+          Status
+        </div>
+      ),
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      size: 100,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const tx = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onView(tx)}>
+                <Eye className="size-4 mr-2" /> View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onEdit(tx)}>
+                <Pencil className="size-4 mr-2" />
+                {tx.isManual ? "Edit" : "Edit Category & Notes"}
+              </DropdownMenuItem>
+              {tx.isManual ? (
+                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                  <Trash2 className="size-4 mr-2" /> Delete
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem>
+                  <Ban className="size-4 mr-2" /> Exclude from Analysis
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+      size: 50,
+      enableSorting: false,
+      enableHiding: false,
+    },
+  ];
+}

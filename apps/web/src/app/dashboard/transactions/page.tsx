@@ -1,11 +1,105 @@
-import { Demo } from "@/components/demo";
+import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
+import {
+  validateTransactionCategories,
+  validateTransactionStatuses,
+  validateTransactionTypes,
+} from "@/modules/transactions/lib/validate-transaction-enums";
+import { TransactionsView } from "@/modules/transactions/ui/views/transactions-view";
+import {
+  HydrateClient,
+  prefetch,
+  prefetchInfinite,
+  trpc,
+} from "@/trpc/trpc-server";
 
-const Page = () => {
-  return (
-    <div>
-      <Demo />
-    </div>
+interface PageProps {
+  searchParams: Promise<{
+    search?: string;
+    type?: string;
+    statuses?: string | string[];
+    accountType?: string;
+    accountId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    categories?: string | string[];
+    isManual?: string;
+    isAnomaly?: string;
+    amountMin?: string;
+    amountMax?: string;
+    focus?: string;
+    limit?: string;
+  }>;
+}
+
+export default async function Page({ searchParams }: PageProps) {
+  const params = await searchParams;
+
+  const limit = Math.min(
+    Math.max(Number(params.limit ?? TRANSACTIONS_LIMIT), 1),
+    100,
   );
-};
 
-export default Page;
+  const validatedType = validateTransactionTypes(params.type);
+  const validatedStatuses = validateTransactionStatuses(params.statuses);
+  const validatedCategories = validateTransactionCategories(params.categories);
+
+  const listFilters = {
+    limit,
+    search: params.search?.trim() || undefined,
+    type: validatedType,
+    status: validatedStatuses?.[0],
+    bankAccountId: params.accountId || undefined,
+    category: validatedCategories?.[0],
+    isManual: params.isManual === "true" ? true : undefined,
+    isAnomaly: params.isAnomaly === "true" ? true : undefined,
+    dateFrom: params.dateFrom || undefined,
+    dateTo: params.dateTo || undefined,
+    minAmount: params.amountMin ? Number(params.amountMin) : undefined,
+    maxAmount: params.amountMax ? Number(params.amountMax) : undefined,
+  };
+
+  void prefetchInfinite(
+    trpc.payments.transactions.list.infiniteQueryOptions(listFilters, {
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    }),
+  );
+
+  if (params.focus) {
+    void prefetch(
+      trpc.payments.transactions.getById.queryOptions({ id: params.focus }),
+    );
+  }
+
+  return (
+    <HydrateClient>
+      <TransactionsView
+        search={params.search ?? ""}
+        type={params.type ?? "all"}
+        statuses={
+          Array.isArray(params.statuses)
+            ? params.statuses
+            : params.statuses
+              ? [params.statuses]
+              : []
+        }
+        accountType={params.accountType ?? "all"}
+        accountId={params.accountId ?? ""}
+        dateFrom={params.dateFrom ?? ""}
+        dateTo={params.dateTo ?? ""}
+        categories={
+          Array.isArray(params.categories)
+            ? params.categories
+            : params.categories
+              ? [params.categories]
+              : []
+        }
+        isManual={params.isManual === "true"}
+        isAnomaly={params.isAnomaly === "true"}
+        amountMin={params.amountMin ?? ""}
+        amountMax={params.amountMax ?? ""}
+        focusTransactionId={params.focus}
+        limit={limit}
+      />
+    </HydrateClient>
+  );
+}

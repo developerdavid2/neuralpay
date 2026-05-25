@@ -35,3 +35,7 @@ export function invalidateTRPCQueries(
 export function invalidateInsightsQueries(queryClient: QueryClient) {
   invalidateTRPCQueries(queryClient, ["ai", "insights"]);
 }
+export function invalidateTransactionQueries(queryClient: QueryClient) {
+  invalidateTRPCQueries(queryClient, ["payments", "transactions"]);
+  invalidateTRPCQueries(queryClient, ["ai", "insights"]);
+}

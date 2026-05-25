@@ -17,6 +17,7 @@ interface MonthYearPickerProps {
   onChange: (date: Date) => void;
   minYear?: number;
   maxYear?: number;
+  earliestDate?: Date;
 }
 
 export function MonthYearPicker({
@@ -24,6 +25,7 @@ export function MonthYearPicker({
   onChange,
   minYear = 2020,
   maxYear,
+  earliestDate,
 }: MonthYearPickerProps) {
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(value.getFullYear());
@@ -68,7 +70,12 @@ export function MonthYearPicker({
   const isMonthDisabled = (monthIndex: number) => {
     const target = new Date(viewYear, monthIndex, 1);
     const now = startOfMonth(new Date());
-    return target > now;
+    if (target > now) return true;
+    if (earliestDate) {
+      const earliest = startOfMonth(earliestDate);
+      if (target < earliest) return true;
+    }
+    return false;
   };
 
   const isMonthSelected = (monthIndex: number) => {

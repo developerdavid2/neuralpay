@@ -1,9 +1,10 @@
 import { INSIGHTS_LIMIT } from "@/modules/dashboard/constants";
-import { AIInsightsView } from "@/modules/insights/ui/views/ai-insights-view";
 import {
-  validateSeverity,
-  validateType,
-} from "@/modules/insights/lib/validate-filters";
+  validateInsightSeverity,
+  validateInsightType,
+} from "@/modules/insights/lib/validate-insights-enums";
+import { AIInsightsView } from "@/modules/insights/ui/views/ai-insights-view";
+
 import {
   HydrateClient,
   prefetch,
@@ -25,8 +26,8 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
 
-  const validatedSeverity = validateSeverity(params.severity);
-  const validatedType = validateType(params.type);
+  const validatedSeverity = validateInsightSeverity(params.severity);
+  const validatedType = validateInsightType(params.type);
 
   const listFilters = {
     includeDismissed: params.dismissed === "true",

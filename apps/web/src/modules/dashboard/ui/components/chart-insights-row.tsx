@@ -56,7 +56,7 @@ export function ChartInsightsRow({
       </div>
 
       <div
-        className="w-full xl:w-[340px] xl:shrink-0 overflow-hidden"
+        className="w-full xl:w-125 xl:shrink-0 overflow-hidden"
         style={height !== undefined ? { height: `${height}px` } : {}}
       >
         {insights}

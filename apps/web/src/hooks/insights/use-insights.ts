@@ -17,10 +17,8 @@ export function useInsightsList(filters: InsightsListInput) {
   );
 
   return {
-    data: query.data,
-    insights: query.data.pages.flatMap((page) => page.items),
+    ...query,
     isLoading: query.isPending,
-    pages: query.data.pages,
   };
 }
 
