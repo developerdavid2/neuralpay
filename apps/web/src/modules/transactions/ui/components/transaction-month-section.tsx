@@ -12,8 +12,18 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
-import { forwardRef, useState } from "react";
+import { forwardRef, useCallback, useState } from "react";
 import { transactionColumns } from "./columns";
+import { useRouter } from "next/navigation";
+import type { Route } from "next";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@neuralpay/ui/components/table";
 
 interface Props {
   monthKey: string;
@@ -23,85 +33,88 @@ interface Props {
   onView: (tx: Transaction) => void;
   onEdit: (tx: Transaction) => void;
   columnVisibility: Record<string, boolean>;
-  onMonthChange: (date: Date) => void;
 }
 
-export const TransactionMonthSection = forwardRef<
-  HTMLTableSectionElement,
-  Props
->(function TransactionMonthSection(
-  {
-    monthKey,
-    transactions,
-    globalSelection,
-    onSelectionChange,
-    onView,
-    onEdit,
-    columnVisibility,
-    onMonthChange,
-  },
-  ref,
-) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "date", desc: true },
-  ]);
-
-  const date = parseISO(`${monthKey}-01`);
-
-  const totalSpent = transactions
-    .filter((t) => t.type === "debit")
-    .reduce((sum, t) => sum + Number(t.amount), 0);
-
-  const table = useReactTable({
-    data: transactions,
-    columns: transactionColumns({ onView, onEdit }),
-    state: {
-      sorting,
+export const TransactionMonthSection = forwardRef<HTMLDivElement, Props>(
+  function TransactionMonthSection(
+    {
+      monthKey,
+      transactions,
+      globalSelection,
+      onSelectionChange,
+      onView,
+      onEdit,
       columnVisibility,
-      rowSelection: Object.fromEntries(
-        transactions.map((t) => [t.id, globalSelection.has(t.id)]),
-      ),
     },
-    onSortingChange: setSorting,
-    onRowSelectionChange: (updater) => {
-      const currentSelection = Object.fromEntries(
-        transactions.map((t) => [t.id, globalSelection.has(t.id)]),
-      );
-      const newSelection =
-        typeof updater === "function" ? updater(currentSelection) : updater;
-      const selectedIds = new Set(globalSelection);
-      transactions.forEach((tx) => {
-        if (newSelection[tx.id]) selectedIds.add(tx.id);
-        else selectedIds.delete(tx.id);
-      });
-      onSelectionChange(selectedIds);
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    enableRowSelection: true,
-    getRowId: (row) => row.id,
-  });
+    ref,
+  ) {
+    const [sorting, setSorting] = useState<SortingState>([
+      { id: "date", desc: true },
+    ]);
 
-  const visibleColCount =
-    1 + // checkbox
-    (columnVisibility["date"] !== false ? 1 : 0) +
-    (columnVisibility["merchant"] !== false ? 1 : 0) +
-    (columnVisibility["category"] !== false ? 1 : 0) +
-    (columnVisibility["amount"] !== false ? 1 : 0) +
-    (columnVisibility["status"] !== false ? 1 : 0) +
-    1; // actions
+    const router = useRouter();
+    const date = parseISO(`${monthKey}-01`);
 
-  return (
-    <tbody ref={ref}>
-      {/* Month Header: sticky under toolbar (101 + 53 = 154px) */}
-      <tr className="sticky top-[114px] z-20">
-        <td
-          colSpan={visibleColCount}
-          className="bg-accent/50 border-y border-border px-4 py-4 backdrop-blur-md"
-        >
+    const totalSpent = transactions
+      .filter((t) => t.type === "debit")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const table = useReactTable({
+      data: transactions,
+      columns: transactionColumns({ onView, onEdit }),
+      state: {
+        sorting,
+        columnVisibility,
+        rowSelection: Object.fromEntries(
+          transactions.map((t) => [t.id, globalSelection.has(t.id)]),
+        ),
+      },
+      onSortingChange: setSorting,
+      onRowSelectionChange: (updater) => {
+        const currentSelection = Object.fromEntries(
+          transactions.map((t) => [t.id, globalSelection.has(t.id)]),
+        );
+        const newSelection =
+          typeof updater === "function" ? updater(currentSelection) : updater;
+        const selectedIds = new Set(globalSelection);
+        transactions.forEach((tx) => {
+          if (newSelection[tx.id]) selectedIds.add(tx.id);
+          else selectedIds.delete(tx.id);
+        });
+        onSelectionChange(selectedIds);
+      },
+      getCoreRowModel: getCoreRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      enableRowSelection: true,
+      getRowId: (row) => row.id,
+    });
+
+    const handleMonthChange = useCallback(
+      (date: Date) => {
+        const monthStartDate = new Date(
+          Date.UTC(date.getFullYear(), date.getMonth(), 1),
+        );
+        const monthEndDate = new Date(
+          Date.UTC(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999),
+        );
+
+        const params = new URLSearchParams(window.location.search);
+        params.set("dateFrom", monthStartDate.toISOString());
+        params.set("dateTo", monthEndDate.toISOString());
+        router.push(
+          `${window.location.pathname}?${params.toString()}` as Route,
+        );
+      },
+      [router],
+    );
+
+    return (
+      <div ref={ref} className="relative">
+        {/* Month Header — sticky within the scroll container */}
+        <div className="sticky top-0 z-20 bg-accent/50 border-y border-border px-4 py-3 backdrop-blur-md">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <MonthYearPicker value={date} onChange={onMonthChange} />
+              <MonthYearPicker value={date} onChange={handleMonthChange} />
               <span className="text-xs text-muted-foreground">
                 {transactions.length} transactions
               </span>
@@ -110,57 +123,58 @@ export const TransactionMonthSection = forwardRef<
               {formatAmount(totalSpent)} spent
             </span>
           </div>
-        </td>
-      </tr>
+        </div>
 
-      {/* Column Headers: sticky under month header (101 + 53 + 41 = 195px) */}
-      <tr className="sticky top-[174px] z-10 bg-secondary border-b border-border">
-        <th className="px-4 py-2.5 w-10" />
-        {columnVisibility["date"] !== false && (
-          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[100px]">
-            Date
-          </th>
-        )}
-        {columnVisibility["merchant"] !== false && (
-          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">
-            Merchant / Description
-          </th>
-        )}
-        {columnVisibility["category"] !== false && (
-          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">
-            Category
-          </th>
-        )}
-        {columnVisibility["amount"] !== false && (
-          <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">
-            Amount
-          </th>
-        )}
-        {columnVisibility["status"] !== false && (
-          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">
-            Status
-          </th>
-        )}
-        <th className="px-4 py-2.5 w-12" />
-      </tr>
+        <Table noWrapper>
+          <TableHeader className="sticky top-[7%] z-20 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary">
+            {table.getHeaderGroups().map((headerGroup) =>
+              headerGroup.headers.map((header) => {
+                if (!header.column.getIsVisible()) return null;
+                return (
+                  <TableHead
+                    key={header.id}
+                    className={cn(
+                      "text-xs font-medium text-muted-foreground uppercase tracking-wider",
+                      header.id === "select" && "w-10",
+                      header.id === "date" && "w-[100px]",
+                      header.id === "category" && "w-[140px]",
+                      header.id === "amount" && "w-[140px] text-right",
+                      header.id === "status" && "w-[140px]",
+                      header.id === "actions" && "w-12",
+                    )}
+                    style={{ width: header.getSize() }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                );
+              }),
+            )}
+          </TableHeader>
 
-      {/* Transaction rows */}
-      {table.getRowModel().rows.map((row) => (
-        <tr
-          key={row.id}
-          className={cn(
-            "border-b border-border transition-colors hover:bg-accent/30",
-            row.getIsSelected() && "bg-primary/5",
-            row.original.isAnomaly && "border-l-2 border-l-destructive",
-          )}
-        >
-          {row.getVisibleCells().map((cell) => (
-            <td key={cell.id} className="px-4 py-3">
-              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-            </td>
-          ))}
-        </tr>
-      ))}
-    </tbody>
-  );
-});
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className={cn(
+                  row.getIsSelected() && "bg-primary/5",
+                  row.original.isAnomaly && "border-l-2 border-l-destructive",
+                )}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  },
+);

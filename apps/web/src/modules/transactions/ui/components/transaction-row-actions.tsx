@@ -3,11 +3,11 @@ import type { Transaction } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@neuralpay/ui/components/dropdown-menu";
-import { MoreHorizontal, Eye, Pencil, Trash2, Ban } from "lucide-react";
+import { Ban, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 export function TransactionRowActions({
   transaction,

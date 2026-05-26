@@ -162,19 +162,20 @@ export function transactionColumns({
               <DropdownMenuItem onClick={() => onView(tx)}>
                 <Eye className="size-4 mr-2" /> View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(tx)}>
+              <DropdownMenuItem
+                onClick={() => onEdit(tx)}
+                disabled={!tx.isManual}
+              >
                 <Pencil className="size-4 mr-2" />
-                {tx.isManual ? "Edit" : "Edit Category & Notes"}
+                Edit
               </DropdownMenuItem>
-              {tx.isManual ? (
-                <DropdownMenuItem className="text-destructive focus:text-destructive">
-                  <Trash2 className="size-4 mr-2" /> Delete
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem>
-                  <Ban className="size-4 mr-2" /> Exclude from Analysis
-                </DropdownMenuItem>
-              )}
+
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                disabled={!tx.isManual}
+              >
+                <Trash2 className="size-4 mr-2" /> Delete
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );

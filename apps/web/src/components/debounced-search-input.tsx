@@ -18,7 +18,7 @@ export function DebouncedSearchInput({
   value,
   onSearch,
   placeholder = "Search...",
-  debounceMs = 400,
+  debounceMs = 500,
   className,
   autoFocus = false,
 }: DebouncedSearchInputProps) {

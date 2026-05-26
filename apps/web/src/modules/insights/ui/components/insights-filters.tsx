@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Button } from "@neuralpay/ui/components/button";
 import {
@@ -14,65 +12,22 @@ import {
 import { Filter, Archive } from "lucide-react";
 import { INSIGHTS_TYPE_LABELS } from "../../constants";
 import { DebouncedSearchInput } from "@/components/debounced-search-input";
-import type { Route } from "next";
+import { useInsightFilters } from "@/hooks/insights/use-insight-filters";
 
-interface Props {
-  currentSearch: string;
-  currentType: string;
-  currentSeverity: string;
-  currentShowDismissed: boolean;
-  currentReadStatus: string;
-}
-
-const DEFAULTS = {
-  search: "",
-  type: "all",
-  severity: "all",
-  dismissed: "false",
-  readStatus: "all",
-  page: "1",
-};
-
-export function InsightsFilters({
-  currentSearch,
-  currentType,
-  currentSeverity,
-  currentShowDismissed,
-  currentReadStatus,
-}: Props) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const updateFilter = useCallback(
-    (key: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      const defaultValue = DEFAULTS[key as keyof typeof DEFAULTS];
-
-      if (value === defaultValue || value.trim() === "") {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
-
-      params.delete("page");
-
-      const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
-    },
-    [pathname, router, searchParams],
-  );
-
-  const hasActiveFilters =
-    currentType !== "all" ||
-    currentSeverity !== "all" ||
-    currentSearch !== "" ||
-    currentShowDismissed ||
-    currentReadStatus !== "all";
+export function InsightsFilters() {
+  const {
+    currentSearch,
+    currentType,
+    currentSeverity,
+    currentShowDismissed,
+    currentReadStatus,
+    updateFilter,
+    hasActiveFilters,
+    handleClearAll,
+  } = useInsightFilters();
 
   return (
     <div className="border-b border-border p-4 space-y-3">
-      {/* Debounced Search and Dismissed Filter Button */}
       <div className="flex items-center gap-2">
         <DebouncedSearchInput
           value={currentSearch}
@@ -94,7 +49,7 @@ export function InsightsFilters({
 
       <div className="flex items-center gap-2">
         <Filter className="size-4 text-muted-foreground" />
-        {/* Insight Types filter button */}
+
         <Select
           value={currentType}
           onValueChange={(v) => updateFilter("type", v)}
@@ -117,7 +72,6 @@ export function InsightsFilters({
           </SelectContent>
         </Select>
 
-        {/* Insight Severity filter button */}
         <Select
           value={currentSeverity}
           onValueChange={(v) => updateFilter("severity", v)}
@@ -139,7 +93,6 @@ export function InsightsFilters({
           </SelectContent>
         </Select>
 
-        {/* Insight Read filter button */}
         <Select
           value={currentReadStatus}
           onValueChange={(v) => updateFilter("readStatus", v)}
@@ -160,15 +113,7 @@ export function InsightsFilters({
         </Select>
 
         {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              const params = new URLSearchParams();
-              const query = params.toString();
-              router.push((query ? `${pathname}?${query}` : pathname) as Route);
-            }}
-          >
+          <Button variant="ghost" size="sm" onClick={handleClearAll}>
             Clear filters
           </Button>
         )}

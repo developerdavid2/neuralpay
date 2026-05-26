@@ -22,3 +22,8 @@ export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
   debit: "Debit",
   credit: "Credit",
 };
+
+export const TRANSACTION_TYPES = [
+  { value: "debit", label: "Debit" },
+  { value: "credit", label: "Credit" },
+] as const;

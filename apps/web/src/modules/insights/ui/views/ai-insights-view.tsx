@@ -38,13 +38,7 @@ export function AIInsightsView({
       />
 
       <div className="bg-card border-muted shadow rounded-2xl p-5 space-y-4">
-        <InsightsFilters
-          currentSearch={search}
-          currentType={type}
-          currentSeverity={severity}
-          currentShowDismissed={dismissed}
-          currentReadStatus={readStatus}
-        />
+        <InsightsFilters />
 
         <SectionBoundary
           key={`${type}-${severity}-${search}-${dismissed}-${readStatus}`}

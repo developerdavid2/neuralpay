@@ -3,11 +3,11 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import type { Transaction } from "@/modules/transactions/types";
 import {
   invalidateTransactionQueries,
   invalidateTRPCQueries,
 } from "@/lib/invalidate-trpc-queries";
+import type { Transaction } from "@neuralpay/types";
 
 export function useTransactionMutations() {
   const trpc = useTRPC();

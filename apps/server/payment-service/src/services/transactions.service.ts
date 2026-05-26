@@ -15,6 +15,10 @@ import {
   type TransactionsFilterInput,
   type Transaction,
   type UpdateTransactionInput,
+  TRANSACTION_STATUS,
+  type TransactionCategory,
+  TRANSACTION_CATEGORY,
+  TRANSACTION_TYPE,
 } from "@neuralpay/types";
 import {
   differenceInDays,
@@ -35,6 +39,7 @@ import {
   inArray,
   lte,
   or,
+  SQL,
   sql,
 } from "drizzle-orm";
 
@@ -88,8 +93,31 @@ export const TransactionsService = {
 
       if (bankAccountId)
         conditions.push(eq(transactions.bankAccountId, bankAccountId));
-      if (type) conditions.push(eq(transactions.type, type));
-      if (status) conditions.push(eq(transactions.status, status));
+      if (type) {
+        const types = Array.isArray(type) ? type : [type];
+        if (types.length > 0 && types.length < TRANSACTION_TYPE.length) {
+          conditions.push(
+            inArray(
+              transactions.type,
+              types as (typeof TRANSACTION_TYPE)[number][],
+            ),
+          );
+        }
+      }
+      if (status) {
+        const statuses = Array.isArray(status) ? status : [status];
+        if (
+          statuses.length > 0 &&
+          statuses.length < TRANSACTION_STATUS.length
+        ) {
+          conditions.push(
+            inArray(
+              transactions.status,
+              statuses as (typeof TRANSACTION_STATUS)[number][],
+            ),
+          );
+        }
+      }
       if (isAnomaly !== undefined)
         conditions.push(eq(transactions.isAnomaly, isAnomaly));
       if (isManual !== undefined)
@@ -111,11 +139,36 @@ export const TransactionsService = {
       }
 
       if (category) {
-        if (isCategoryUuid(category)) {
-          conditions.push(eq(transactions.customCategoryId, category));
-        } else {
-          // Safe cast — validated by Zod upstream
-          conditions.push(eq(transactions.category, category as any));
+        const cats = Array.isArray(category) ? category : [category];
+        if (cats.length > 0) {
+          const systemCats = cats
+            .filter((c) => !isCategoryUuid(c as string))
+            .filter((c): c is TransactionCategory =>
+              TRANSACTION_CATEGORY.includes(c as TransactionCategory),
+            );
+          const customCats = cats.filter((c) => isCategoryUuid(c as string));
+
+          const catConditions: SQL<unknown>[] = [];
+
+          if (systemCats.length > 0) {
+            catConditions.push(
+              inArray(
+                transactions.category,
+                systemCats as (typeof TRANSACTION_CATEGORY)[number][],
+              ),
+            );
+          }
+          if (customCats.length > 0) {
+            catConditions.push(
+              inArray(transactions.customCategoryId, customCats as string[]),
+            );
+          }
+
+          if (catConditions.length === 1) {
+            conditions.push(catConditions[0]!);
+          } else if (catConditions.length >= 2) {
+            conditions.push(or(...catConditions)!);
+          }
         }
       }
 

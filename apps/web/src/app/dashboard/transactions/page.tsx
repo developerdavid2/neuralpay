@@ -15,7 +15,7 @@ import {
 interface PageProps {
   searchParams: Promise<{
     search?: string;
-    type?: string;
+    types?: string | string[];
     statuses?: string | string[];
     accountType?: string;
     accountId?: string;
@@ -39,7 +39,7 @@ export default async function Page({ searchParams }: PageProps) {
     100,
   );
 
-  const validatedType = validateTransactionTypes(params.type);
+  const validatedType = validateTransactionTypes(params.types);
   const validatedStatuses = validateTransactionStatuses(params.statuses);
   const validatedCategories = validateTransactionCategories(params.categories);
 
@@ -47,9 +47,9 @@ export default async function Page({ searchParams }: PageProps) {
     limit,
     search: params.search?.trim() || undefined,
     type: validatedType,
-    status: validatedStatuses?.[0],
+    status: validatedStatuses,
     bankAccountId: params.accountId || undefined,
-    category: validatedCategories?.[0],
+    category: validatedCategories,
     isManual: params.isManual === "true" ? true : undefined,
     isAnomaly: params.isAnomaly === "true" ? true : undefined,
     dateFrom: params.dateFrom || undefined,
@@ -74,25 +74,13 @@ export default async function Page({ searchParams }: PageProps) {
     <HydrateClient>
       <TransactionsView
         search={params.search ?? ""}
-        type={params.type ?? "all"}
-        statuses={
-          Array.isArray(params.statuses)
-            ? params.statuses
-            : params.statuses
-              ? [params.statuses]
-              : []
-        }
+        types={validatedType ?? []}
+        statuses={validatedStatuses ?? []}
+        categories={validatedCategories ?? []}
         accountType={params.accountType ?? "all"}
         accountId={params.accountId ?? ""}
         dateFrom={params.dateFrom ?? ""}
         dateTo={params.dateTo ?? ""}
-        categories={
-          Array.isArray(params.categories)
-            ? params.categories
-            : params.categories
-              ? [params.categories]
-              : []
-        }
         isManual={params.isManual === "true"}
         isAnomaly={params.isAnomaly === "true"}
         amountMin={params.amountMin ?? ""}

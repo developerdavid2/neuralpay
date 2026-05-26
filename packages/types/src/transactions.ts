@@ -37,15 +37,21 @@ export const categoryFilterSchema = z
 export const transactionsFilterSchema = z.object({
   limit: z.number().int().min(1).max(100).default(20),
   cursor: z.string().optional(),
-  bankAccountId: z.uuid().optional(),
-  category: categoryFilterSchema,
-  type: z.enum(TRANSACTION_TYPE).optional(),
-  status: z.enum(TRANSACTION_STATUS).optional(),
+  bankAccountId: z.string().uuid().optional(),
+  category: z
+    .union([categoryFilterSchema, z.array(categoryFilterSchema)])
+    .optional(),
+  type: z
+    .union([z.enum(TRANSACTION_TYPE), z.array(z.enum(TRANSACTION_TYPE))])
+    .optional(),
+  status: z
+    .union([z.enum(TRANSACTION_STATUS), z.array(z.enum(TRANSACTION_STATUS))])
+    .optional(),
   isAnomaly: z.boolean().optional(),
   isManual: z.boolean().optional(),
   search: z.string().max(200).optional(),
-  dateFrom: z.iso.datetime().optional(),
-  dateTo: z.iso.datetime().optional(),
+  dateFrom: z.string().datetime().optional(),
+  dateTo: z.string().datetime().optional(),
   minAmount: z.number().min(0).optional(),
   maxAmount: z.number().min(0).optional(),
 });
@@ -225,19 +231,6 @@ export type CsvPreviewRow = {
   isValid: boolean;
   errors: string[];
 };
-
-export interface TransactionFormValues {
-  bankAccountId: string;
-  description: string;
-  amount: string;
-  type: TransactionType;
-  category: TransactionCategory | null;
-  customCategoryId: string | null;
-  merchant: string;
-  date: Date;
-  notes: string;
-  tags: string[];
-}
 
 export type CsvImportPreview = {
   filename: string;

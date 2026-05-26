@@ -1,35 +1,29 @@
 "use client";
-
+import { useMemo, useState } from "react";
+import { Package } from "lucide-react";
+import type { TransactionStatus, TransactionType } from "@neuralpay/types";
+import { useTransactionFilters } from "@/hooks/transactions/use-transaction-filters";
 import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
 import { useTransactionsList } from "@/hooks/transactions/use-transactions";
 import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
-import type { Transaction, TransactionStatus } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@neuralpay/ui/components/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@neuralpay/ui/components/select";
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { format } from "date-fns";
-import { Package, Settings2, Trash2 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
 import { TransactionDrawer } from "./transaction-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
-import { InfiniteScroll } from "@/components/infinite-scroll";
+import { TransactionToolbar } from "./transaction-toolbar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@neuralpay/ui/components/table";
 
 interface Props {
   focusTransactionId?: string;
   currentSearch: string;
-  currentType?: string;
+  currentTypes?: string[];
   currentStatuses?: string[];
   currentAccountType: string;
   currentAccountId: string;
@@ -43,24 +37,10 @@ interface Props {
   currentLimit: number;
 }
 
-function groupTransactionsByMonth(
-  transactions: Transaction[],
-): Map<string, Transaction[]> {
-  const grouped = new Map<string, Transaction[]>();
-  for (const tx of transactions) {
-    const monthKey = format(new Date(tx.date), "yyyy-MM");
-    if (!grouped.has(monthKey)) {
-      grouped.set(monthKey, []);
-    }
-    grouped.get(monthKey)!.push(tx);
-  }
-  return grouped;
-}
-
 export function TransactionsList({
   focusTransactionId,
   currentSearch,
-  currentType,
+  currentTypes,
   currentStatuses,
   currentAccountType,
   currentAccountId,
@@ -80,13 +60,19 @@ export function TransactionsList({
     drawerMode,
     selectedTransactionId,
     closeDrawer,
+    handleBatchDelete,
   } = useTransactionMutations();
 
   const filters = useMemo(
     () => ({
       search: currentSearch || undefined,
-      type: currentType as "debit" | "credit" | undefined,
-      status: currentStatuses?.[0] as TransactionStatus | undefined,
+      type: currentTypes?.length
+        ? (currentTypes as TransactionType[])
+        : undefined,
+      status: currentStatuses?.length
+        ? (currentStatuses as TransactionStatus[])
+        : undefined,
+      category: currentCategories?.length ? currentCategories : undefined,
       bankAccountId: currentAccountId || undefined,
       isManual: currentIsManual || undefined,
       isAnomaly: currentIsAnomaly || undefined,
@@ -94,13 +80,13 @@ export function TransactionsList({
       dateTo: currentDateTo || undefined,
       minAmount: currentAmountMin ? Number(currentAmountMin) : undefined,
       maxAmount: currentAmountMax ? Number(currentAmountMax) : undefined,
-      category: currentCategories[0] || undefined,
       limit: currentLimit || TRANSACTIONS_LIMIT,
     }),
     [
       currentSearch,
-      currentType,
+      currentTypes,
       currentStatuses,
+      currentCategories,
       currentAccountId,
       currentIsManual,
       currentIsAnomaly,
@@ -108,10 +94,20 @@ export function TransactionsList({
       currentDateTo,
       currentAmountMin,
       currentAmountMax,
-      currentCategories,
       currentLimit,
     ],
   );
+
+  const {
+    allTransactions,
+    grouped,
+    sortedMonths,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isLoading,
+  } = useTransactionsList(filters);
+  const { hasActiveFilters } = useTransactionFilters();
 
   const [globalSelection, setGlobalSelection] = useState<Set<string>>(
     new Set(),
@@ -120,157 +116,45 @@ export function TransactionsList({
     Record<string, boolean>
   >({});
 
-  const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
-    useTransactionsList(filters);
-
-  const allTransactions = useMemo(() => {
-    const txs = data?.pages.flatMap((page) => page.items) ?? [];
-
-    // Deduplicate by transaction ID, keeping first occurrence
-    const seen = new Set<string>();
-    return txs.filter((tx) => {
-      if (seen.has(tx.id)) return false;
-      seen.add(tx.id);
-      return true;
-    });
-  }, [data?.pages]);
-
-  const { grouped, sortedMonths } = useMemo(() => {
-    const grouped = groupTransactionsByMonth(allTransactions);
-    const sortedMonths = Array.from(grouped.keys()).sort().reverse();
-    return { grouped, sortedMonths };
-  }, [allTransactions]);
-
-  const handleBatchDelete = useCallback(() => {
-    const deletable = Array.from(globalSelection)
-      .map((id) => allTransactions.find((t) => t.id === id))
-      .filter((tx): tx is Transaction => !!tx && tx.isManual);
-    console.log(
-      "Batch delete:",
-      deletable.map((t) => t.id),
-    );
-  }, [globalSelection, allTransactions]);
-
-  const handleMonthChange = useCallback((date: Date) => {
-    const yearMonth = format(date, "yyyy-MM");
-    const monthStartDate = new Date(date.getFullYear(), date.getMonth(), 1);
-    const monthEndDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-    const dateFromStr = format(monthStartDate, "yyyy-MM-dd");
-    const dateToStr = format(monthEndDate, "yyyy-MM-dd");
-
-    const params = new URLSearchParams(window.location.search);
-    params.set("dateFrom", dateFromStr);
-    params.set("dateTo", dateToStr);
-    window.history.pushState({}, "", `?${params.toString()}`);
-  }, []);
-
-  const selectedCount = globalSelection.size;
-  const deletableCount = Array.from(globalSelection).filter((id) => {
-    const tx = allTransactions.find((t) => t.id === id);
-    return tx?.isManual;
-  }).length;
-
-  if (isLoading) return <TransactionsListSkeleton />;
+  const deletableIds = Array.from(globalSelection).filter(
+    (id) => allTransactions.find((t) => t.id === id)?.isManual,
+  );
 
   if (allTransactions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-center">
+      <div className="flex flex-col items-center justify-center h-64 text-center px-6">
         <Package className="size-8 text-muted-foreground mb-3" />
-        <p className="text-sm font-medium">No transactions found</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Try adjusting your filters or add a new transaction
+        <p className="text-sm font-medium">
+          No transactions match your filters
+        </p>
+        <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+          {hasActiveFilters
+            ? "Some filter combinations may have no results. Try removing a filter to broaden your search."
+            : "You have no transactions yet."}
         </p>
       </div>
     );
   }
 
   return (
-    <>
-      {/* Toolbar: sticky under the 101px page header */}
-      <div className="sticky top-[61px] z-30 bg-background border-b border-border px-6 py-2 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Select
-            value={String(currentLimit)}
-            onValueChange={(v) => {
-              const params = new URLSearchParams(window.location.search);
-              params.set("limit", v);
-              window.history.pushState({}, "", `?${params.toString()}`);
-            }}
-          >
-            <SelectTrigger className="h-7 w-[90px] text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {["10", "20", "50", "100"].map((n) => (
-                <SelectItem key={n} value={n} className="text-xs">
-                  {n} rows
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="flex flex-col h-full">
+      <TransactionToolbar
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+        selectedCount={globalSelection.size}
+        deletableCount={deletableIds.length}
+        onClearSelection={() => setGlobalSelection(new Set())}
+        onBatchDelete={() =>
+          handleBatchDelete(deletableIds).then(() =>
+            setGlobalSelection(new Set()),
+          )
+        }
+      />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 gap-1.5 text-xs"
-              >
-                <Settings2 className="size-3.5" /> Columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {["date", "merchant", "category", "amount", "status"].map(
-                (col) => (
-                  <DropdownMenuCheckboxItem
-                    key={col}
-                    checked={columnVisibility[col] !== false}
-                    onCheckedChange={(val) =>
-                      setColumnVisibility((prev) => ({ ...prev, [col]: val }))
-                    }
-                  >
-                    {col.charAt(0).toUpperCase() + col.slice(1)}
-                  </DropdownMenuCheckboxItem>
-                ),
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      {/* Single table wrapping all month sections */}
 
-        {selectedCount > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">
-              {selectedCount} selected
-            </span>
-            {deletableCount > 0 && (
-              <span className="text-xs text-muted-foreground">
-                ({deletableCount} deletable)
-              </span>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setGlobalSelection(new Set())}
-            >
-              Clear
-            </Button>
-            {deletableCount > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBatchDelete}
-              >
-                <Trash2 className="size-3.5 mr-1" />
-                Delete {deletableCount}
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="px-6">
-        <table className="w-full border-collapse">
+      <div className="px-6 pb-6 overflow-y-auto scrollbar-hide flex-1 min-h-0">
+        <Table noWrapper>
           {sortedMonths.map((monthKey) => (
             <TransactionMonthSection
               key={monthKey}
@@ -281,19 +165,17 @@ export function TransactionsList({
               onView={openView}
               onEdit={openEdit}
               columnVisibility={columnVisibility}
-              onMonthChange={handleMonthChange}
             />
           ))}
-        </table>
+          <InfiniteScroll
+            hasNextPage={hasNextPage ?? false}
+            isFetchingNextPage={isFetchingNextPage}
+            fetchNextPage={fetchNextPage}
+            isLoading={isLoading}
+            isManual={false}
+          />
+        </Table>
       </div>
-
-      <InfiniteScroll
-        hasNextPage={hasNextPage ?? false}
-        isFetchingNextPage={isFetchingNextPage}
-        fetchNextPage={fetchNextPage}
-        isLoading={isLoading}
-        isManual={false}
-      />
 
       <TransactionDrawer
         transactionId={selectedTransactionId}
@@ -303,7 +185,7 @@ export function TransactionsList({
           if (!open) closeDrawer();
         }}
       />
-    </>
+    </div>
   );
 }
 

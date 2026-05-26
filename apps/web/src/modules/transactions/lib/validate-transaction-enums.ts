@@ -15,35 +15,37 @@ export function validateTransactionStatuses(
   raw?: string | string[],
 ): TransactionStatus[] | undefined {
   if (!raw) return undefined;
-  const arr = Array.isArray(raw) ? raw : [raw];
+  const arr = Array.isArray(raw) ? raw : raw.split(",").filter(Boolean);
   if (arr.length === 0 || arr[0] === "all") return undefined;
-  return arr.filter((s): s is TransactionStatus =>
+  const valid = arr.filter((s): s is TransactionStatus =>
     VALID_STATUSES.includes(s as TransactionStatus),
   );
+  return valid.length > 0 ? valid : undefined;
 }
 
 export function validateTransactionTypes(
-  raw?: string,
-): TransactionType | undefined {
-  if (!raw || raw === "all") return undefined;
-  return VALID_TYPES.includes(raw as TransactionType)
-    ? (raw as TransactionType)
-    : undefined;
+  raw?: string | string[],
+): TransactionType[] | undefined {
+  if (!raw) return undefined;
+  const arr = Array.isArray(raw) ? raw : raw.split(",").filter(Boolean);
+  if (arr.length === 0 || arr[0] === "all") return undefined;
+  const valid = arr.filter((s): s is TransactionType =>
+    VALID_TYPES.includes(s as TransactionType),
+  );
+  return valid.length > 0 ? valid : undefined;
 }
 
 export function validateTransactionCategories(
   raw?: string | string[],
-): (TransactionCategory | string)[] | undefined {
+): TransactionCategory[] | undefined {
   if (!raw) return undefined;
-  const arr = Array.isArray(raw) ? raw : [raw];
-  if (arr.length === 0 || arr[0] === "all") return undefined;
-  return arr.filter((c) => {
-    // Allow system categories OR custom category UUIDs
-    return (
+  const arr = Array.isArray(raw) ? raw : raw.split(",").filter(Boolean);
+  const valid = arr.filter(
+    (c): c is TransactionCategory =>
       VALID_CATEGORIES.includes(c as TransactionCategory) ||
-      /^[0-9a-f-]{36}$/i.test(c)
-    );
-  });
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(c),
+  );
+  return valid.length > 0 ? valid : undefined;
 }
 
 export function validateAccountType(
