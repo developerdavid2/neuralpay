@@ -23,9 +23,7 @@ interface Props {
   onView: (tx: Transaction) => void;
   onEdit: (tx: Transaction) => void;
   columnVisibility: Record<string, boolean>;
-  isActiveMonth: boolean;
   onMonthChange: (date: Date) => void;
-  "data-month-key"?: string;
 }
 
 export const TransactionMonthSection = forwardRef<
@@ -40,9 +38,7 @@ export const TransactionMonthSection = forwardRef<
     onView,
     onEdit,
     columnVisibility,
-    isActiveMonth,
     onMonthChange,
-    ...rest
   },
   ref,
 ) {
@@ -86,7 +82,6 @@ export const TransactionMonthSection = forwardRef<
     getRowId: (row) => row.id,
   });
 
-  // Count visible columns for the colspan on the month label row
   const visibleColCount =
     1 + // checkbox
     (columnVisibility["date"] !== false ? 1 : 0) +
@@ -97,35 +92,16 @@ export const TransactionMonthSection = forwardRef<
     1; // actions
 
   return (
-    /*
-        Renders as <tbody> so it lives inside the single <table> in transaction-list.tsx.
-        This is what keeps columns aligned — one table, shared column widths.
-      */
-    <tbody ref={ref} {...rest}>
-      {/*
-          LAYER 4 — Month sub-header row.
-          sticky top-[131px] = Layer 1 (57) + Layer 2 (41) + Layer 3 (33).
-          bg-background ensures rows scrolling under it are hidden.
-
-          Only the active (topmost) month shows the MonthYearPicker.
-          All others show plain text. This matches the OPay/PalmPay pattern
-          you described — the picker is always at the top, and updates as
-          you scroll to a new month.
-        */}
-      <tr className="sticky top-[131px] z-[5]">
+    <tbody ref={ref}>
+      {/* Month Header: sticky under toolbar (101 + 53 = 154px) */}
+      <tr className="sticky top-[114px] z-20">
         <td
           colSpan={visibleColCount}
-          className="bg-background border-y border-border px-4 py-1.5"
+          className="bg-accent/50 border-y border-border px-4 py-4 backdrop-blur-md"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {isActiveMonth ? (
-                <MonthYearPicker value={date} onChange={onMonthChange} />
-              ) : (
-                <span className="text-sm font-semibold text-foreground">
-                  {format(date, "MMMM yyyy")}
-                </span>
-              )}
+              <MonthYearPicker value={date} onChange={onMonthChange} />
               <span className="text-xs text-muted-foreground">
                 {transactions.length} transactions
               </span>
@@ -135,6 +111,37 @@ export const TransactionMonthSection = forwardRef<
             </span>
           </div>
         </td>
+      </tr>
+
+      {/* Column Headers: sticky under month header (101 + 53 + 41 = 195px) */}
+      <tr className="sticky top-[174px] z-10 bg-secondary border-b border-border">
+        <th className="px-4 py-2.5 w-10" />
+        {columnVisibility["date"] !== false && (
+          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[100px]">
+            Date
+          </th>
+        )}
+        {columnVisibility["merchant"] !== false && (
+          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">
+            Merchant / Description
+          </th>
+        )}
+        {columnVisibility["category"] !== false && (
+          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">
+            Category
+          </th>
+        )}
+        {columnVisibility["amount"] !== false && (
+          <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">
+            Amount
+          </th>
+        )}
+        {columnVisibility["status"] !== false && (
+          <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">
+            Status
+          </th>
+        )}
+        <th className="px-4 py-2.5 w-12" />
       </tr>
 
       {/* Transaction rows */}

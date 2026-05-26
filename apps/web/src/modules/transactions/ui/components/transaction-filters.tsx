@@ -38,6 +38,7 @@ import type { DateRange } from "react-day-picker";
 import type { Route } from "next";
 import { TRANSACTION_STATUS_LABELS } from "@/modules/transactions/constants";
 import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
+import { ScrollArea } from "@neuralpay/ui/components/scroll-area";
 
 interface Props {
   currentSearch: string;
@@ -417,7 +418,7 @@ export function TransactionFilters({
 
       {/* More Filters Drawer */}
       <Sheet open={moreFiltersOpen} onOpenChange={setMoreFiltersOpen}>
-        <SheetContent className="w-full sm:max-w-md flex flex-col gap-0">
+        <SheetContent className="w-full sm:max-w-md flex flex-col gap-0 p-4">
           <SheetHeader className="pb-4">
             <SheetTitle className="flex items-center gap-2">
               <Filter className="size-5" />
@@ -425,7 +426,7 @@ export function TransactionFilters({
             </SheetTitle>
           </SheetHeader>
 
-          <div className="flex-1 overflow-auto space-y-6 py-4">
+          <div className="flex-1 space-y-6 py-4">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Tag className="size-4 text-muted-foreground" />

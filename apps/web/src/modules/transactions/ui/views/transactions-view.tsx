@@ -71,7 +71,7 @@ export function TransactionsView({
         they stick relative to THIS element, not the page.
         min-h-0 is required so flex-1 actually constrains height in a flex column.
       */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
         {/*
           LAYER 1 — Filter bar.
           sticky top-0 inside the overflow-y-auto container above.

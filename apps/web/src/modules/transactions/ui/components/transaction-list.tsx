@@ -21,9 +21,10 @@ import {
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { format } from "date-fns";
 import { Package, Settings2, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { TransactionDrawer } from "./transaction-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
+import { InfiniteScroll } from "@/components/infinite-scroll";
 
 interface Props {
   focusTransactionId?: string;
@@ -40,7 +41,6 @@ interface Props {
   currentAmountMin: string;
   currentAmountMax: string;
   currentLimit: number;
-  onActiveMonthChange?: (month: string) => void;
 }
 
 function groupTransactionsByMonth(
@@ -72,7 +72,6 @@ export function TransactionsList({
   currentAmountMin,
   currentAmountMax,
   currentLimit,
-  onActiveMonthChange,
 }: Props) {
   const {
     openView,
@@ -114,61 +113,33 @@ export function TransactionsList({
     ],
   );
 
-  // All state declared before any early returns
   const [globalSelection, setGlobalSelection] = useState<Set<string>>(
     new Set(),
   );
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >({});
-  const [activeMonth, setActiveMonth] = useState<string>("");
-  const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
 
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
     useTransactionsList(filters);
 
-  const allTransactions = useMemo(
-    () => data?.pages.flatMap((page) => page.items) ?? [],
-    [data?.pages],
-  );
+  const allTransactions = useMemo(() => {
+    const txs = data?.pages.flatMap((page) => page.items) ?? [];
+
+    // Deduplicate by transaction ID, keeping first occurrence
+    const seen = new Set<string>();
+    return txs.filter((tx) => {
+      if (seen.has(tx.id)) return false;
+      seen.add(tx.id);
+      return true;
+    });
+  }, [data?.pages]);
 
   const { grouped, sortedMonths } = useMemo(() => {
     const grouped = groupTransactionsByMonth(allTransactions);
     const sortedMonths = Array.from(grouped.keys()).sort().reverse();
     return { grouped, sortedMonths };
   }, [allTransactions]);
-
-  // Set initial active month once data loads
-  useEffect(() => {
-    if (sortedMonths.length > 0 && !activeMonth) {
-      setActiveMonth(sortedMonths[0]!);
-    }
-  }, [sortedMonths, activeMonth]);
-
-  // IntersectionObserver to auto-update active month on scroll
-  useEffect(() => {
-    if (sortedMonths.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Find the topmost intersecting section
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible[0]) {
-          const key = (visible[0].target as HTMLElement).dataset.monthKey;
-          if (key) {
-            setActiveMonth(key);
-            onActiveMonthChange?.(key);
-          }
-        }
-      },
-      { threshold: 0.1, rootMargin: "-130px 0px 0px 0px" },
-    );
-
-    sectionRefs.current.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [sortedMonths, onActiveMonthChange]);
 
   const handleBatchDelete = useCallback(() => {
     const deletable = Array.from(globalSelection)
@@ -179,6 +150,20 @@ export function TransactionsList({
       deletable.map((t) => t.id),
     );
   }, [globalSelection, allTransactions]);
+
+  const handleMonthChange = useCallback((date: Date) => {
+    const yearMonth = format(date, "yyyy-MM");
+    const monthStartDate = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEndDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+    const dateFromStr = format(monthStartDate, "yyyy-MM-dd");
+    const dateToStr = format(monthEndDate, "yyyy-MM-dd");
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("dateFrom", dateFromStr);
+    params.set("dateTo", dateToStr);
+    window.history.pushState({}, "", `?${params.toString()}`);
+  }, []);
 
   const selectedCount = globalSelection.size;
   const deletableCount = Array.from(globalSelection).filter((id) => {
@@ -202,12 +187,8 @@ export function TransactionsList({
 
   return (
     <>
-      {/*
-        LAYER 2 — Controls bar.
-        sticky top-[57px] = directly below the filter bar (Layer 1 ≈ 57px tall).
-        Adjust this value if your filter bar height differs.
-      */}
-      <div className="sticky top-[57px] z-20 bg-background border-b border-border px-6 py-2 flex items-center justify-between gap-4">
+      {/* Toolbar: sticky under the 101px page header */}
+      <div className="sticky top-[61px] z-30 bg-background border-b border-border px-6 py-2 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Select
             value={String(currentLimit)}
@@ -288,55 +269,8 @@ export function TransactionsList({
         )}
       </div>
 
-      {/*
-        Single table — no wrapper div with overflow.
-        noWrapper removes the overflow-x-auto div that shadcn adds,
-        which would otherwise kill sticky on the thead.
-      */}
       <div className="px-6">
         <table className="w-full border-collapse">
-          {/*
-            LAYER 3 — Column headers.
-            sticky top-[98px] = Layer 1 (57px) + Layer 2 (41px).
-            bg-background needed so rows don't show through when scrolling.
-          */}
-          <thead className="sticky top-[98px] z-10 bg-background">
-            <tr className="border-b border-border">
-              <th className="px-4 py-2.5 w-10" />
-              {columnVisibility["date"] !== false && (
-                <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[100px]">
-                  Date
-                </th>
-              )}
-              {columnVisibility["merchant"] !== false && (
-                <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Merchant / Description
-                </th>
-              )}
-              {columnVisibility["category"] !== false && (
-                <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">
-                  Category
-                </th>
-              )}
-              {columnVisibility["amount"] !== false && (
-                <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-[120px]">
-                  Amount
-                </th>
-              )}
-              {columnVisibility["status"] !== false && (
-                <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-[110px]">
-                  Status
-                </th>
-              )}
-              <th className="px-4 py-2.5 w-12" />
-            </tr>
-          </thead>
-
-          {/*
-            Month groups — each TransactionMonthSection renders as a <tbody>.
-            The month sub-header row inside each tbody is sticky top-[131px]
-            = Layer 1 (57) + Layer 2 (41) + Layer 3 (33).
-          */}
           {sortedMonths.map((monthKey) => (
             <TransactionMonthSection
               key={monthKey}
@@ -347,35 +281,19 @@ export function TransactionsList({
               onView={openView}
               onEdit={openEdit}
               columnVisibility={columnVisibility}
-              isActiveMonth={monthKey === activeMonth}
-              onMonthChange={(date) => {
-                const key = format(date, "yyyy-MM");
-                const el = sectionRefs.current.get(key);
-                el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                setActiveMonth(key);
-              }}
-              ref={(el: HTMLElement | null) => {
-                if (el) sectionRefs.current.set(monthKey, el);
-                else sectionRefs.current.delete(monthKey);
-              }}
-              data-month-key={monthKey}
+              onMonthChange={handleMonthChange}
             />
           ))}
         </table>
       </div>
 
-      {hasNextPage && (
-        <div className="flex justify-center px-6 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-          >
-            {isFetchingNextPage ? "Loading..." : "Load more"}
-          </Button>
-        </div>
-      )}
+      <InfiniteScroll
+        hasNextPage={hasNextPage ?? false}
+        isFetchingNextPage={isFetchingNextPage}
+        fetchNextPage={fetchNextPage}
+        isLoading={isLoading}
+        isManual={false}
+      />
 
       <TransactionDrawer
         transactionId={selectedTransactionId}
