@@ -13,6 +13,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Ban, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { SourceBadge, StatusBadge } from "./transaction-badges";
+import { isSyncedSource } from "../../lib/utils";
 
 interface ColumnProps {
   onView: (tx: Transaction) => void;
@@ -84,10 +85,10 @@ export function transactionColumns({
             </span>
             <div className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-medium">
-                {tx.merchant ?? tx.description}
+                {tx.merchant}
               </span>
               <div className="flex items-center gap-1.5">
-                <SourceBadge tx={tx} />
+                <SourceBadge tx={tx} variant="text" />
                 {tx.isAnomaly && (
                   <span className="text-[10px] text-destructive font-medium">
                     Flagged
@@ -164,7 +165,7 @@ export function transactionColumns({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onEdit(tx)}
-                disabled={!tx.isManual}
+                disabled={isSyncedSource(tx)}
               >
                 <Pencil className="size-4 mr-2" />
                 Edit
@@ -172,7 +173,7 @@ export function transactionColumns({
 
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
-                disabled={!tx.isManual}
+                disabled={isSyncedSource(tx)}
               >
                 <Trash2 className="size-4 mr-2" /> Delete
               </DropdownMenuItem>

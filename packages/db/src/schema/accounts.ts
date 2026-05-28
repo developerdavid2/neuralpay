@@ -18,6 +18,10 @@ export const accountTypeEnum = pgEnum("account_type", [
   "investment",
   "crypto",
 ]);
+export const accountStatusEnum = pgEnum("account_status", [
+  "active",
+  "disconnected",
+]);
 
 export const bankAccounts = pgTable(
   "bank_accounts",
@@ -26,17 +30,16 @@ export const bankAccounts = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    name: text("name").notNull(), // user-defined: "My Ajo Group", "GTBank Salary"
-    type: accountTypeEnum("type").notNull(), // structural: checking, savings, credit, investment, crypto
-    subtype: text("subtype"), // user label: "Ajo", "FD", "Retirement", "Esusu"
-    tags: text("tags").array().default([]).notNull(), // ["Nigeria", "Business", "Joint"]
+    name: text("name").notNull(),
+    type: accountTypeEnum("type").notNull(),
+    subtype: text("subtype"),
+    tags: text("tags").array().default([]).notNull(),
     bankName: text("bank_name"),
     maskedNumber: text("masked_number"),
     balance: numeric("balance", { precision: 18, scale: 2 }).default("0"),
     currency: text("currency").default("USD").notNull(),
-    isManual: boolean("is_manual").default(true).notNull(), // true = user-created, false = Plaid/Mono
-    status: text("status").default("active").notNull(), // "active" | "disconnected" | "archived"
-    // Plaid/Mono fields
+    isManual: boolean("is_manual").default(true).notNull(),
+    status: accountStatusEnum("status").default("active").notNull(),
     plaidItemId: text("plaid_item_id"),
     plaidAccountId: text("plaid_account_id"),
     monoAccountId: text("mono_account_id"),
@@ -55,5 +58,3 @@ export const bankAccounts = pgTable(
 
 export const bankAccountSelectSchema = createSelectSchema(bankAccounts);
 export const bankAccountInsertSchema = createInsertSchema(bankAccounts);
-
-export type BankAccountRecord = typeof bankAccounts.$inferSelect;

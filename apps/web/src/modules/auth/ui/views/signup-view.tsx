@@ -69,7 +69,7 @@ const SignUpView = () => {
             position: "top-center",
           });
           router.push(
-            `/auth/verify-otp?email=${encodeURIComponent(payload.email)}`,
+            `/auth/verify-otp?email=${encodeURIComponent(payload.email)}` as never,
           );
         },
         onError: ({ error }) => {

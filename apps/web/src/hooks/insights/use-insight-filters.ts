@@ -45,7 +45,7 @@ export function useInsightFilters() {
       params.delete("page");
 
       const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
+      router.push((query ? `${pathname}?${query}` : pathname) as never);
     },
     [pathname, router, searchParams],
   );
@@ -60,7 +60,7 @@ export function useInsightFilters() {
   const handleClearAll = useCallback(() => {
     const params = new URLSearchParams();
     const query = params.toString();
-    router.push((query ? `${pathname}?${query}` : pathname) as Route);
+    router.push((query ? `${pathname}?${query}` : pathname) as never);
   }, [pathname, router]);
 
   return {

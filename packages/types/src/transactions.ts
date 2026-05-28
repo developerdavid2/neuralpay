@@ -30,16 +30,15 @@ export type TransactionCategory = (typeof TRANSACTION_CATEGORY)[number];
 export type TransactionType = (typeof TRANSACTION_TYPE)[number];
 export type TransactionStatus = (typeof TRANSACTION_STATUS)[number];
 
-export const categoryFilterSchema = z
-  .union([z.enum(TRANSACTION_CATEGORY), z.uuid()])
-  .optional();
-
 export const transactionsFilterSchema = z.object({
-  limit: z.number().int().min(1).max(100).default(20),
+  limit: z.number().int().min(1).max(50).default(20),
   cursor: z.string().optional(),
-  bankAccountId: z.string().uuid().optional(),
+  bankAccountId: z.uuid().optional(),
   category: z
-    .union([categoryFilterSchema, z.array(categoryFilterSchema)])
+    .union([
+      z.enum(TRANSACTION_CATEGORY),
+      z.array(z.enum(TRANSACTION_CATEGORY)),
+    ])
     .optional(),
   type: z
     .union([z.enum(TRANSACTION_TYPE), z.array(z.enum(TRANSACTION_TYPE))])
@@ -56,40 +55,30 @@ export const transactionsFilterSchema = z.object({
   maxAmount: z.number().min(0).optional(),
 });
 
-export const createTransactionSchema = z
-  .object({
-    bankAccountId: z.uuid(),
-    description: z.string().min(1).max(500),
-    amount: z.number().positive(),
-    type: z.enum(TRANSACTION_TYPE),
-    status: z.enum(TRANSACTION_STATUS).default("successful"),
-    // One of these, not both
-    category: z.enum(TRANSACTION_CATEGORY).optional(),
-    customCategoryId: z.uuid().optional(),
-    merchant: z.string().max(200).optional(),
-    date: z.iso.datetime(),
-    notes: z.string().max(1000).optional(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.category && val.customCategoryId) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Provide either category or customCategoryId, not both",
-        path: ["category"],
-      });
-    }
-  });
+export const createTransactionSchema = z.object({
+  bankAccountId: z.uuid(),
+  description: z.string().min(1).max(500),
+  amount: z.number().positive("Amount must be greater than 0"),
+  type: z.enum(TRANSACTION_TYPE),
+  status: z.enum(TRANSACTION_STATUS),
+  category: z.enum(TRANSACTION_CATEGORY),
+  merchant: z.string().max(200).optional(),
+  date: z.date(),
+  notes: z.string().max(1000).optional(),
+  isManual: z.literal(true).default(true),
+});
 
 export const updateTransactionSchema = z.object({
   id: z.uuid(),
+  bankAccountId: z.uuid().optional(),
   description: z.string().min(1).max(500).optional(),
-  category: z.enum(TRANSACTION_CATEGORY).optional(),
-  customCategoryId: z.uuid().optional().nullable(),
-  merchant: z.string().max(200).optional(),
-  notes: z.string().max(1000).optional().nullable(),
-  date: z.iso.datetime().optional(),
   amount: z.number().positive().optional(),
   type: z.enum(TRANSACTION_TYPE).optional(),
+  status: z.enum(TRANSACTION_STATUS).optional(),
+  category: z.enum(TRANSACTION_CATEGORY).optional(),
+  merchant: z.string().max(200).optional(),
+  notes: z.string().max(1000).optional().nullable(),
+  date: z.date().optional(),
 });
 
 export const batchDeleteSchema = z.object({
@@ -102,59 +91,28 @@ export const csvColumnMappingSchema = z.object({
   description: z.number().int().min(0),
   merchant: z.number().int().min(0).optional(),
   type: z.number().int().min(0).optional(),
-  // If no type column, infer from amount sign (negative = debit)
   inferTypeFromSign: z.boolean().default(true),
-  // Date format hint: "MM/DD/YYYY" | "DD/MM/YYYY" | "YYYY-MM-DD"
   dateFormat: z
     .enum(["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"])
     .default("YYYY-MM-DD"),
-  // Amount format: some CSVs use parentheses for negatives
   amountFormat: z.enum(["standard", "parentheses"]).default("standard"),
-  // Skip header row
   hasHeader: z.boolean().default(true),
 });
 
 export const csvImportSchema = z.object({
   bankAccountId: z.uuid(),
   filename: z.string(),
-  // rows is the parsed CSV — array of string arrays
-  // Each inner array is one row, each element is a cell value
   rows: z.array(z.array(z.string())),
   mapping: csvColumnMappingSchema,
 });
 
-export const createCustomCategorySchema = z.object({
-  name: z.string().min(1).max(50),
-  icon: z.string().max(50).optional(), // lucide icon name
-  color: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
-    .optional(),
-});
-
-export const updateCustomCategorySchema = z.object({
-  id: z.uuid(),
-  name: z.string().min(1).max(50).optional(),
-  icon: z.string().max(50).optional(),
-  color: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/)
-    .optional(),
-});
-
 export type TransactionsFilterInput = z.infer<typeof transactionsFilterSchema>;
 export type ListTransactionsInput = z.infer<typeof transactionsFilterSchema>;
-export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
-export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
+export type CreateTransactionInput = z.input<typeof createTransactionSchema>;
+export type UpdateTransactionInput = z.input<typeof updateTransactionSchema>;
 export type BatchDeleteInput = z.infer<typeof batchDeleteSchema>;
 export type CsvImportInput = z.infer<typeof csvImportSchema>;
 export type CsvColumnMapping = z.infer<typeof csvColumnMappingSchema>;
-export type CreateCustomCategoryInput = z.infer<
-  typeof createCustomCategorySchema
->;
-export type UpdateCustomCategoryInput = z.infer<
-  typeof updateCustomCategorySchema
->;
 
 export type Transaction = {
   id: string;

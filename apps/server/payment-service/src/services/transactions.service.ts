@@ -1,10 +1,5 @@
 import { db } from "@neuralpay/db";
-import {
-  bankAccounts,
-  budgets,
-  customCategories,
-  transactions,
-} from "@neuralpay/db/schema";
+import { bankAccounts, budgets, transactions } from "@neuralpay/db/schema";
 import {
   type BatchDeleteInput,
   type CreateTransactionInput,
@@ -12,12 +7,11 @@ import {
   type PaginatedTransactions,
   type ServiceResult,
   type TopMonthlyCategories,
-  type TransactionsFilterInput,
   type Transaction,
+  type TransactionsFilterInput,
   type UpdateTransactionInput,
-  TRANSACTION_STATUS,
-  type TransactionCategory,
   TRANSACTION_CATEGORY,
+  TRANSACTION_STATUS,
   TRANSACTION_TYPE,
 } from "@neuralpay/types";
 import {
@@ -39,17 +33,8 @@ import {
   inArray,
   lte,
   or,
-  SQL,
   sql,
 } from "drizzle-orm";
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-// Determines if a category filter value is a UUID (custom) or enum (system)
-function isCategoryUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-    value,
-  );
-}
 
 // Build the joined select columns (transaction + account + custom category)
 function transactionSelect() {
@@ -60,14 +45,11 @@ function transactionSelect() {
     bankName: bankAccounts.bankName,
     currency: bankAccounts.currency,
     maskedNumber: bankAccounts.maskedNumber,
-    customCategoryName: customCategories.name,
-    customCategoryIcon: customCategories.icon,
-    customCategoryColor: customCategories.color,
   };
 }
 
 export const TransactionsService = {
-  // ── LIST (cursor-paginated, filterable) ────────────────────────────────────
+  // ── LIST (cursor-paginated, filterable)
   async list(
     userId: string,
     input: TransactionsFilterInput,
@@ -139,39 +121,19 @@ export const TransactionsService = {
       }
 
       if (category) {
-        const cats = Array.isArray(category) ? category : [category];
-        if (cats.length > 0) {
-          const systemCats = cats
-            .filter((c) => !isCategoryUuid(c as string))
-            .filter((c): c is TransactionCategory =>
-              TRANSACTION_CATEGORY.includes(c as TransactionCategory),
-            );
-          const customCats = cats.filter((c) => isCategoryUuid(c as string));
-
-          const catConditions: SQL<unknown>[] = [];
-
-          if (systemCats.length > 0) {
-            catConditions.push(
-              inArray(
-                transactions.category,
-                systemCats as (typeof TRANSACTION_CATEGORY)[number][],
-              ),
-            );
-          }
-          if (customCats.length > 0) {
-            catConditions.push(
-              inArray(transactions.customCategoryId, customCats as string[]),
-            );
-          }
-
-          if (catConditions.length === 1) {
-            conditions.push(catConditions[0]!);
-          } else if (catConditions.length >= 2) {
-            conditions.push(or(...catConditions)!);
-          }
+        const categories = Array.isArray(category) ? category : [category];
+        if (
+          categories.length > 0 &&
+          categories.length < TRANSACTION_CATEGORY.length
+        ) {
+          conditions.push(
+            inArray(
+              transactions.category,
+              categories as (typeof TRANSACTION_CATEGORY)[number][],
+            ),
+          );
         }
       }
-
       if (cursor) {
         const cursorId = Buffer.from(cursor, "base64url").toString("utf-8");
         const [cursorRow] = await db
@@ -198,10 +160,6 @@ export const TransactionsService = {
         .select(transactionSelect())
         .from(transactions)
         .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
-        .leftJoin(
-          customCategories,
-          eq(transactions.customCategoryId, customCategories.id),
-        )
         .where(and(...conditions))
         .orderBy(desc(transactions.date), desc(transactions.id))
         .limit(limit + 1);
@@ -238,10 +196,6 @@ export const TransactionsService = {
         .select(transactionSelect())
         .from(transactions)
         .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
-        .leftJoin(
-          customCategories,
-          eq(transactions.customCategoryId, customCategories.id),
-        )
         .where(eq(transactions.userId, userId))
         .orderBy(desc(transactions.date))
         .limit(limit);
@@ -267,10 +221,6 @@ export const TransactionsService = {
         .select(transactionSelect())
         .from(transactions)
         .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
-        .leftJoin(
-          customCategories,
-          eq(transactions.customCategoryId, customCategories.id),
-        )
         .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
         .limit(1);
 
@@ -326,8 +276,7 @@ export const TransactionsService = {
           amount: input.amount.toString(),
           type: input.type,
           status: input.status,
-          category: input.category ?? null,
-          customCategoryId: input.customCategoryId ?? null,
+          category: input.category,
           merchant: input.merchant ?? null,
           date: new Date(input.date),
           isManual: true,
@@ -356,6 +305,8 @@ export const TransactionsService = {
     try {
       const updateData: Record<string, unknown> = {};
 
+      if (input.bankAccountId !== undefined)
+        updateData.bankAccountId = input.bankAccountId;
       if (input.description !== undefined)
         updateData.description = input.description;
       if (input.merchant !== undefined) updateData.merchant = input.merchant;
@@ -364,15 +315,9 @@ export const TransactionsService = {
       if (input.amount !== undefined)
         updateData.amount = input.amount.toString();
       if (input.type !== undefined) updateData.type = input.type;
-
-      // Category update: setting one clears the other
+      if (input.status !== undefined) updateData.status = input.status;
       if (input.category !== undefined) {
         updateData.category = input.category;
-        updateData.customCategoryId = null; // clear custom
-      }
-      if (input.customCategoryId !== undefined) {
-        updateData.customCategoryId = input.customCategoryId;
-        updateData.category = null; // clear system
       }
 
       if (Object.keys(updateData).length === 0) {
@@ -405,7 +350,7 @@ export const TransactionsService = {
     }
   },
 
-  // ── DELETE (single) ────────────────────────────────────────────────────────
+  // ── DELETE (single)
   async delete(
     id: string,
     userId: string,

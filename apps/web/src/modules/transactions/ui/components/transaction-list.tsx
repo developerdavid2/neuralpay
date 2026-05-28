@@ -1,24 +1,25 @@
 "use client";
-import { useMemo, useState } from "react";
-import { Package } from "lucide-react";
-import type { TransactionStatus, TransactionType } from "@neuralpay/types";
+
+import { InfiniteScroll } from "@/components/infinite-scroll";
+import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionFilters } from "@/hooks/transactions/use-transaction-filters";
 import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
 import { useTransactionsList } from "@/hooks/transactions/use-transactions";
 import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
-import { InfiniteScroll } from "@/components/infinite-scroll";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { TransactionDrawer } from "./transaction-drawer";
+import type {
+  Transaction,
+  TransactionCategory,
+  TransactionStatus,
+  TransactionType,
+} from "@neuralpay/types";
+import { Table } from "@neuralpay/ui/components/table";
+import { Package } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { TransactionFormDrawer } from "./transaction-form-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
 import { TransactionToolbar } from "./transaction-toolbar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@neuralpay/ui/components/table";
+import { TransactionViewDrawer } from "./transaction-view-drawer";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
 
 interface Props {
   focusTransactionId?: string;
@@ -38,11 +39,9 @@ interface Props {
 }
 
 export function TransactionsList({
-  focusTransactionId,
   currentSearch,
   currentTypes,
   currentStatuses,
-  currentAccountType,
   currentAccountId,
   currentDateFrom,
   currentDateTo,
@@ -53,16 +52,31 @@ export function TransactionsList({
   currentAmountMax,
   currentLimit,
 }: Props) {
-  const {
-    openView,
-    openEdit,
-    drawerOpen,
-    drawerMode,
-    selectedTransactionId,
-    closeDrawer,
-    handleBatchDelete,
-  } = useTransactionMutations();
+  const [globalSelection, setGlobalSelection] = useState<Set<string>>(
+    new Set(),
+  );
+  const [columnVisibility, setColumnVisibility] = useState<
+    Record<string, boolean>
+  >({});
+  const { hasActiveFilters } = useTransactionFilters();
+  const { onOpenView, onOpenEdit } = useTransactionDrawer();
+  const { handleBatchDelete } = useTransactionMutations();
+  const handleView = useCallback(
+    (tx: Transaction) => {
+      onOpenView(tx.id);
+    },
+    [onOpenView],
+  );
 
+  const handleEdit = useCallback(
+    (tx: Transaction) => {
+      onOpenEdit(tx.id);
+    },
+    [onOpenEdit],
+  );
+
+  const clampedLimit = Math.min(currentLimit || TRANSACTIONS_LIMIT, 50);
+  console.log("Client limit:", clampedLimit, "currentLimit:", currentLimit);
   const filters = useMemo(
     () => ({
       search: currentSearch || undefined,
@@ -72,7 +86,9 @@ export function TransactionsList({
       status: currentStatuses?.length
         ? (currentStatuses as TransactionStatus[])
         : undefined,
-      category: currentCategories?.length ? currentCategories : undefined,
+      category: currentCategories?.length
+        ? (currentCategories as TransactionCategory[])
+        : undefined,
       bankAccountId: currentAccountId || undefined,
       isManual: currentIsManual || undefined,
       isAnomaly: currentIsAnomaly || undefined,
@@ -80,7 +96,7 @@ export function TransactionsList({
       dateTo: currentDateTo || undefined,
       minAmount: currentAmountMin ? Number(currentAmountMin) : undefined,
       maxAmount: currentAmountMax ? Number(currentAmountMax) : undefined,
-      limit: currentLimit || TRANSACTIONS_LIMIT,
+      limit: clampedLimit,
     }),
     [
       currentSearch,
@@ -107,14 +123,6 @@ export function TransactionsList({
     fetchNextPage,
     isLoading,
   } = useTransactionsList(filters);
-  const { hasActiveFilters } = useTransactionFilters();
-
-  const [globalSelection, setGlobalSelection] = useState<Set<string>>(
-    new Set(),
-  );
-  const [columnVisibility, setColumnVisibility] = useState<
-    Record<string, boolean>
-  >({});
 
   const deletableIds = Array.from(globalSelection).filter(
     (id) => allTransactions.find((t) => t.id === id)?.isManual,
@@ -151,8 +159,6 @@ export function TransactionsList({
         }
       />
 
-      {/* Single table wrapping all month sections */}
-
       <div className="px-6 pb-6 overflow-y-auto scrollbar-hide flex-1 min-h-0">
         <Table noWrapper>
           {sortedMonths.map((monthKey) => (
@@ -162,29 +168,23 @@ export function TransactionsList({
               transactions={grouped.get(monthKey)!}
               globalSelection={globalSelection}
               onSelectionChange={setGlobalSelection}
-              onView={openView}
-              onEdit={openEdit}
+              onView={handleView}
+              onEdit={handleEdit}
               columnVisibility={columnVisibility}
             />
           ))}
-          <InfiniteScroll
-            hasNextPage={hasNextPage ?? false}
-            isFetchingNextPage={isFetchingNextPage}
-            fetchNextPage={fetchNextPage}
-            isLoading={isLoading}
-            isManual={false}
-          />
         </Table>
+        <InfiniteScroll
+          hasNextPage={hasNextPage ?? false}
+          isFetchingNextPage={isFetchingNextPage}
+          fetchNextPage={fetchNextPage}
+          isLoading={isLoading}
+          isManual={false}
+        />
       </div>
 
-      <TransactionDrawer
-        transactionId={selectedTransactionId}
-        mode={drawerMode}
-        open={drawerOpen}
-        onOpenChange={(open) => {
-          if (!open) closeDrawer();
-        }}
-      />
+      <TransactionViewDrawer />
+      <TransactionFormDrawer />
     </div>
   );
 }

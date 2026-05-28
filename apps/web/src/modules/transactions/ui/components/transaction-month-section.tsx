@@ -1,21 +1,8 @@
 "use client";
 
-import { formatAmount } from "@/lib/utils";
 import { MonthYearPicker } from "@/components/month-year-picker";
+import { formatAmount } from "@/lib/utils";
 import type { Transaction } from "@neuralpay/types";
-import { cn } from "@neuralpay/ui/lib/utils";
-import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type SortingState,
-} from "@tanstack/react-table";
-import { format, parseISO } from "date-fns";
-import { forwardRef, useCallback, useState } from "react";
-import { transactionColumns } from "./columns";
-import { useRouter } from "next/navigation";
-import type { Route } from "next";
 import {
   Table,
   TableBody,
@@ -24,6 +11,18 @@ import {
   TableHeader,
   TableRow,
 } from "@neuralpay/ui/components/table";
+import { cn } from "@neuralpay/ui/lib/utils";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type SortingState,
+} from "@tanstack/react-table";
+import { parseISO } from "date-fns";
+import { useRouter } from "next/navigation";
+import { forwardRef, useCallback, useState } from "react";
+import { transactionColumns } from "./columns";
 
 interface Props {
   monthKey: string;
@@ -102,14 +101,14 @@ export const TransactionMonthSection = forwardRef<HTMLDivElement, Props>(
         params.set("dateFrom", monthStartDate.toISOString());
         params.set("dateTo", monthEndDate.toISOString());
         router.push(
-          `${window.location.pathname}?${params.toString()}` as Route,
+          `${window.location.pathname}?${params.toString()}` as never,
         );
       },
       [router],
     );
 
     return (
-      <div ref={ref} className="relative">
+      <div ref={ref}>
         {/* Month Header — sticky within the scroll container */}
         <div className="sticky top-0 z-20 bg-accent/50 border-y border-border px-4 py-3 backdrop-blur-md">
           <div className="flex items-center justify-between">
@@ -126,34 +125,36 @@ export const TransactionMonthSection = forwardRef<HTMLDivElement, Props>(
         </div>
 
         <Table noWrapper>
-          <TableHeader className="sticky top-[7%] z-20 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary">
-            {table.getHeaderGroups().map((headerGroup) =>
-              headerGroup.headers.map((header) => {
-                if (!header.column.getIsVisible()) return null;
-                return (
-                  <TableHead
-                    key={header.id}
-                    className={cn(
-                      "text-xs font-medium text-muted-foreground uppercase tracking-wider",
-                      header.id === "select" && "w-10",
-                      header.id === "date" && "w-[100px]",
-                      header.id === "category" && "w-[140px]",
-                      header.id === "amount" && "w-[140px] text-right",
-                      header.id === "status" && "w-[140px]",
-                      header.id === "actions" && "w-12",
-                    )}
-                    style={{ width: header.getSize() }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                );
-              }),
-            )}
+          <TableHeader className="sticky top-[53.6px] z-20 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary">
+            <TableRow>
+              {table.getHeaderGroups().map((headerGroup) =>
+                headerGroup.headers.map((header) => {
+                  if (!header.column.getIsVisible()) return null;
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={cn(
+                        "text-xs font-medium text-muted-foreground uppercase tracking-wider",
+                        header.id === "select" && "w-10",
+                        header.id === "date" && "w-[100px]",
+                        header.id === "category" && "w-[140px]",
+                        header.id === "amount" && "w-[140px] text-right",
+                        header.id === "status" && "w-[140px]",
+                        header.id === "actions" && "w-12",
+                      )}
+                      style={{ width: header.getSize() }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                }),
+              )}
+            </TableRow>
           </TableHeader>
 
           <TableBody>

@@ -54,7 +54,10 @@ const ForgotPasswordView = () => {
           toast.success("Recovery code sent to your email", {
             position: "top-center",
           });
-          setTimeout(() => router.push("/auth/verify-otp?mode=reset"), 1500);
+          setTimeout(
+            () => router.push("/auth/verify-otp?mode=reset" as never),
+            1500,
+          );
         },
         onError: ({ error }) => {
           const errorMsg =

@@ -22,7 +22,6 @@ function groupTransactionsByMonth(
   return grouped;
 }
 
-// LIST / PAGINATION
 export function useTransactionsList(filters: TransactionsFilterInput) {
   const trpc = useTRPC();
 

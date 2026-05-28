@@ -2,7 +2,6 @@ import { db } from "./src";
 import { bankAccounts } from "./src/schema/accounts";
 import { chatMessages, chatSessions, insights } from "./src/schema/ai";
 import { budgets } from "./src/schema/budgets";
-import { customCategories } from "./src/schema/categories";
 import { notifications } from "./src/schema/notifications";
 import {
   splitChatMessages,
@@ -256,7 +255,6 @@ async function seed() {
   await db.delete(csvImports);
   await db.delete(insights);
   await db.delete(budgets);
-  await db.delete(customCategories);
   await db.delete(bankAccounts);
   await db.delete(notifications);
 
@@ -274,7 +272,7 @@ async function seed() {
           balance: "5420.75",
           currency: "USD",
           bankName: "Chase",
-          maskedNumber: "****1234",
+          maskedNumber: "1234",
           isManual: true,
           status: "active",
         },
@@ -287,7 +285,7 @@ async function seed() {
           balance: "12350.00",
           currency: "USD",
           bankName: "Chase",
-          maskedNumber: "****5678",
+          maskedNumber: "5678",
           isManual: true,
           status: "active",
         },
@@ -300,7 +298,7 @@ async function seed() {
           balance: "-230.45",
           currency: "USD",
           bankName: "Amex",
-          maskedNumber: "****9012",
+          maskedNumber: "9012",
           isManual: true,
           status: "active",
         },
@@ -313,7 +311,7 @@ async function seed() {
           balance: "8750.00",
           currency: "USD",
           bankName: "Fidelity",
-          maskedNumber: "****3456",
+          maskedNumber: "3456",
           isManual: true,
           status: "active",
         },
@@ -326,7 +324,7 @@ async function seed() {
           balance: "1200.50",
           currency: "USD",
           bankName: "Coinbase",
-          maskedNumber: "****7890",
+          maskedNumber: "7890",
           isManual: true,
           status: "active",
         },
@@ -338,16 +336,7 @@ async function seed() {
     process.exit(1);
   }
 
-  // 4. Insert custom categories
-  const [customCat1, customCat2] = await db
-    .insert(customCategories)
-    .values([
-      { userId, name: "Side Hustle Gear", icon: "wrench", color: "#FF5733" },
-      { userId, name: "Pet Supplies", icon: "dog", color: "#33FF57" },
-    ])
-    .returning();
-
-  // 5. Insert budgets for ALL 14 system category enum values
+  // 4. Insert budgets for ALL 14 system category enum values
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
@@ -466,7 +455,7 @@ async function seed() {
         type: "debit",
         status,
         category: catInfo.category,
-        customCategoryId: null,
+
         merchant,
         date,
         isAnomaly,
@@ -524,50 +513,6 @@ async function seed() {
     monoTxId: `mono_fl_${Date.now()}`,
     csvImportId: null,
   });
-
-  // Custom-category transactions (category null when using customCategoryId)
-  if (customCat1 && customCat2) {
-    transactionsData.push(
-      {
-        bankAccountId: checkingAcc.id,
-        userId,
-        description: "New drill set",
-        amount: "120.00",
-        type: "debit",
-        status: "successful",
-        category: null,
-        customCategoryId: customCat1.id,
-        merchant: "Home Depot",
-        date: daysAgo(15),
-        isAnomaly: false,
-        anomalyScore: null,
-        notes: "For side hustle project",
-        isManual: true,
-        plaidTxId: null,
-        monoTxId: null,
-        csvImportId: null,
-      },
-      {
-        bankAccountId: creditAcc.id,
-        userId,
-        description: "Dog food & treats",
-        amount: "45.67",
-        type: "debit",
-        status: "successful",
-        category: null,
-        customCategoryId: customCat2.id,
-        merchant: "PetSmart",
-        date: daysAgo(8),
-        isAnomaly: false,
-        anomalyScore: null,
-        notes: "Monthly pet supplies",
-        isManual: true,
-        plaidTxId: null,
-        monoTxId: null,
-        csvImportId: null,
-      },
-    );
-  }
 
   // CSV-imported transactions
   if (csvImport1) {

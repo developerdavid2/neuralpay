@@ -3,18 +3,15 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import {
-  invalidateTransactionQueries,
-  invalidateTRPCQueries,
-} from "@/lib/invalidate-trpc-queries";
+import { invalidateTransactionQueries } from "@/lib/invalidate-trpc-queries";
 import type { Transaction } from "@neuralpay/types";
+import type { TransactionDrawerMode } from "@/modules/transactions/types";
 
 export function useTransactionMutations() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [pendingExcludeId, setPendingExcludeId] = useState<string | null>(null);
   const [pendingUpdateId, setPendingUpdateId] = useState<string | null>(null);
   const [pendingCreate, setPendingCreate] = useState(false);
 
@@ -22,7 +19,7 @@ export function useTransactionMutations() {
     string | null
   >(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<"view" | "edit" | "add">("view");
+  const [drawerMode, setDrawerMode] = useState<TransactionDrawerMode>("view");
 
   const createTx = useMutation({
     ...trpc.payments.transactions.create.mutationOptions(),
@@ -101,21 +98,6 @@ export function useTransactionMutations() {
     [batchDelete],
   );
 
-  // "Exclude" is a soft-delete / hide from analysis for synced transactions
-  const handleExclude = useCallback(
-    async (id: string) => {
-      setPendingExcludeId(id);
-      try {
-        // This calls a dedicated exclude endpoint or updates with excludedAt
-        await updateTx.mutateAsync({ id, excludedFromAnalysis: true } as any);
-        setDrawerOpen(false);
-      } finally {
-        setPendingExcludeId(null);
-      }
-    },
-    [updateTx],
-  );
-
   const openView = useCallback((tx: Transaction) => {
     setSelectedTransactionId(tx.id);
     setDrawerMode("view");
@@ -136,26 +118,8 @@ export function useTransactionMutations() {
 
   const closeDrawer = useCallback(() => {
     setDrawerOpen(false);
-    // Delay clearing selection so exit animation completes
     setTimeout(() => setSelectedTransactionId(null), 300);
   }, []);
-
-  // ─── Pending State Checkers ────────────────────────────────────────────────
-
-  const isDeleting = useCallback(
-    (id: string) => pendingDeleteId === id,
-    [pendingDeleteId],
-  );
-
-  const isExcluding = useCallback(
-    (id: string) => pendingExcludeId === id,
-    [pendingExcludeId],
-  );
-
-  const isUpdating = useCallback(
-    (id: string) => pendingUpdateId === id,
-    [pendingUpdateId],
-  );
 
   return {
     // Mutations
@@ -163,7 +127,6 @@ export function useTransactionMutations() {
     handleUpdate,
     handleDelete,
     handleBatchDelete,
-    handleExclude,
     // Drawer state
     selectedTransactionId,
     drawerOpen,
@@ -173,10 +136,9 @@ export function useTransactionMutations() {
     openEdit,
     openAdd,
     closeDrawer,
-    // Pending states
-    isDeleting,
-    isExcluding,
-    isUpdating,
+    // Pending states — simple booleans
+    isDeleting: pendingDeleteId !== null,
+    isUpdating: pendingUpdateId !== null,
     isCreating: pendingCreate,
   };
 }

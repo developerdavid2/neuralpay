@@ -49,7 +49,7 @@ export function TransactionsView({
   const validatedCategories = validateTransactionCategories(categories);
 
   return (
-    <div className="flex flex-col w-full gap-6 p-6 h-screen">
+    <div className="flex flex-col w-full gap-6 p-6 h-[105vh]">
       <DashboardHeader
         title="Transactions"
         description="Track, filter, and manage all your financial activity"

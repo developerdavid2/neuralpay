@@ -4,6 +4,7 @@ import {
   getQueryClient,
   HydrateClient,
   prefetch,
+  prefetchInfinite,
   trpc,
 } from "@/trpc/trpc-server";
 import { Suspense } from "react";
@@ -12,7 +13,13 @@ import { ErrorBoundary } from "react-error-boundary";
 export const dynamic = "force-dynamic";
 
 const Page = async () => {
-  prefetch(trpc.payments.accounts.list.queryOptions());
+  const listFilters = {};
+
+  void prefetchInfinite(
+    trpc.payments.accounts.list.infiniteQueryOptions(listFilters, {
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    }),
+  );
 
   return (
     <HydrateClient>

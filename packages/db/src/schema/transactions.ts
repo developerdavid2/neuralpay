@@ -12,7 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { bankAccounts } from "./accounts";
 import { user } from "./auth";
-import { categoryEnum, customCategories } from "./categories";
+import { categoryEnum } from "./categories";
 
 export const transactionTypeEnum = pgEnum("transaction_type", [
   "debit",
@@ -42,10 +42,6 @@ export const transactions = pgTable(
     status: transactionStatusEnum("status").default("successful"),
     // Category is either a system enum OR a custom category (never both)
     category: categoryEnum("category"),
-    customCategoryId: uuid("custom_category_id").references(
-      () => customCategories.id,
-      { onDelete: "set null" },
-    ),
     merchant: text("merchant"),
     date: timestamp("date").notNull(),
     isAnomaly: boolean("is_anomaly").default(false).notNull(),

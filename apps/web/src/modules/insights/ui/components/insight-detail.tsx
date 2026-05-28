@@ -9,6 +9,7 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerDescription,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
 } from "@neuralpay/ui/components/drawer";
@@ -176,47 +177,49 @@ function InsightDetailsContent({
       </div>
 
       {/* Footer actions */}
-      <div className="border-t p-6 space-y-3">
-        {!isDismissed ? (
-          <>
-            <Button
-              className="w-full gap-2"
-              onClick={() => onChat(insight.id)}
-              disabled={isPending}
-            >
-              <MessageCircle className="size-4" />
-              Chat about this
-            </Button>
+      <DrawerFooter>
+        <div className="border-t p-6 space-y-3">
+          {!isDismissed ? (
+            <>
+              <Button
+                className="w-full gap-2"
+                onClick={() => onChat(insight.id)}
+                disabled={isPending}
+              >
+                <MessageCircle className="size-4" />
+                Chat about this
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full gap-2 text-muted-foreground hover:text-destructive"
+                onClick={handleDismiss}
+                disabled={dismissing}
+              >
+                {dismissing ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Archive className="size-4" />
+                )}
+                {dismissing ? "Dismissing..." : "Dismiss"}
+              </Button>
+            </>
+          ) : (
             <Button
               variant="outline"
-              className="w-full gap-2 text-muted-foreground hover:text-destructive"
-              onClick={handleDismiss}
-              disabled={dismissing}
+              className="w-full gap-2"
+              onClick={handleRestore}
+              disabled={restoring}
             >
-              {dismissing ? (
+              {restoring ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
-                <Archive className="size-4" />
+                <RotateCcw className="size-4" />
               )}
-              {dismissing ? "Dismissing..." : "Dismiss"}
+              {restoring ? "Restoring..." : "Restore Insight"}
             </Button>
-          </>
-        ) : (
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={handleRestore}
-            disabled={restoring}
-          >
-            {restoring ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <RotateCcw className="size-4" />
-            )}
-            {restoring ? "Restoring..." : "Restore Insight"}
-          </Button>
-        )}
-      </div>
+          )}
+        </div>
+      </DrawerFooter>
     </>
   );
 }

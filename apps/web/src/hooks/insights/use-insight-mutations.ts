@@ -42,7 +42,7 @@ export function useInsightMutations() {
     (insightId: string) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set("focus", insightId);
-      router.replace((pathname + "?" + params.toString()) as Route, {
+      router.replace((pathname + "?" + params.toString()) as never, {
         scroll: false,
       });
     },
@@ -53,7 +53,7 @@ export function useInsightMutations() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("focus");
     const query = params.toString();
-    router.replace((query ? `${pathname}?${query}` : pathname) as Route, {
+    router.replace((query ? `${pathname}?${query}` : pathname) as never, {
       scroll: false,
     });
   }, [pathname, router, searchParams]);

@@ -95,7 +95,7 @@ export function useTransactionFilters() {
 
       params.delete("page");
       const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
+      router.push((query ? `${pathname}?${query}` : pathname) as never);
     },
     [pathname, router, searchParams],
   );
@@ -126,7 +126,7 @@ export function useTransactionFilters() {
         params.delete("dateTo");
       }
       const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
+      router.push((query ? `${pathname}?${query}` : pathname) as never);
     },
     [pathname, router, searchParams],
   );
@@ -141,7 +141,7 @@ export function useTransactionFilters() {
         params.set("types", values.join(","));
       }
       const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
+      router.push((query ? `${pathname}?${query}` : pathname) as never);
     },
     [searchParams, pathname, router],
   );
@@ -156,7 +156,7 @@ export function useTransactionFilters() {
         params.set("statuses", values.join(","));
       }
       const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
+      router.push((query ? `${pathname}?${query}` : pathname) as never);
     },
     [searchParams, pathname, router],
   );
@@ -171,7 +171,7 @@ export function useTransactionFilters() {
         params.set("categories", values.join(","));
       }
       const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
+      router.push((query ? `${pathname}?${query}` : pathname) as never);
     },
     [searchParams, pathname, router],
   );
@@ -303,7 +303,7 @@ export function useTransactionFilters() {
     }
 
     const query = params.toString();
-    router.push((query ? `${pathname}?${query}` : pathname) as Route);
+    router.push((query ? `${pathname}?${query}` : pathname) as never);
     setMoreFiltersOpen(false);
   }, [
     searchParams,
@@ -333,7 +333,7 @@ export function useTransactionFilters() {
     if (search) params.set("search", search);
 
     const query = params.toString();
-    router.push((query ? `${pathname}?${query}` : pathname) as Route);
+    router.push((query ? `${pathname}?${query}` : pathname) as never);
     setMoreFiltersOpen(false);
   }, [pathname, router, searchParams]);
 
@@ -345,7 +345,7 @@ export function useTransactionFilters() {
     setDraftIsAnomaly(false);
     setDraftAmountMin("");
     setDraftAmountMax("");
-    router.push(pathname as Route);
+    router.push(pathname as never);
   }, [pathname, router]);
 
   return {
