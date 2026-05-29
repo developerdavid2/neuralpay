@@ -1,3 +1,6 @@
+"use client";
+
+import { useWatch } from "react-hook-form";
 import {
   Tooltip,
   TooltipContent,
@@ -14,6 +17,9 @@ type Props = {
   disabled?: boolean;
   placeholder?: string;
   id?: string;
+  type?: "debit" | "credit";
+  control?: any;
+  name?: string;
 };
 
 export const AmountInput = ({
@@ -22,10 +28,16 @@ export const AmountInput = ({
   disabled,
   placeholder,
   id,
+  type: typeProp,
+  control,
+  name = "type",
 }: Props) => {
+  const watchedType = control ? useWatch({ control, name }) : undefined;
+  const type = typeProp ?? watchedType ?? "debit";
+
   const parsedValue = parseFloat(value);
-  const isIncome = parsedValue > 0; // type = credit
-  const isExpense = parsedValue < 0; // type = debit (shouldn't happen but guard anyway)
+  const hasValue = !isNaN(parsedValue) && parsedValue !== 0;
+  const isIncome = type === "credit";
 
   return (
     <div className="relative">
@@ -34,16 +46,13 @@ export const AmountInput = ({
           <TooltipTrigger asChild>
             <div
               className={cn(
-                "absolute left-1.5 top-1.5 rounded-md p-2 flex items-center justify-center",
-                "bg-slate-400",
-                isIncome && "bg-emerald-500",
-                !isIncome &&
-                  parsedValue !== 0 &&
-                  !isNaN(parsedValue) &&
-                  "bg-rose-500",
+                "absolute left-1.5 top-1.5 rounded-md p-2 flex items-center justify-center transition-colors",
+                !hasValue && "bg-slate-400",
+                hasValue && isIncome && "bg-emerald-500",
+                hasValue && !isIncome && "bg-destructive/70",
               )}
             >
-              {!parsedValue || isNaN(parsedValue) ? (
+              {!hasValue ? (
                 <Info className="size-3 text-white" />
               ) : isIncome ? (
                 <PlusCircle className="size-3 text-white" />
@@ -53,15 +62,16 @@ export const AmountInput = ({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            Amount is always positive — use the Type field to set debit or
-            credit
+            {isIncome
+              ? "Income transaction — amount will be recorded as credit"
+              : "Expense transaction — amount will be recorded as debit"}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <CurrencyInput
         id={id}
         prefix="$"
-        className="pl-10 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="pl-10 flex h-10 w-full rounded-xl border border-input bg-secondary px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         value={value}
         onValueChange={onChange}
         placeholder={placeholder}

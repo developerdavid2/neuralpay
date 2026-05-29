@@ -10,6 +10,7 @@ import {
   TransactionsList,
   TransactionsListSkeleton,
 } from "../components/transaction-list";
+import { NewTransactionButton } from "../components/new-transaction-button";
 
 interface TransactionsViewProps {
   search?: string;
@@ -53,11 +54,10 @@ export function TransactionsView({
       <DashboardHeader
         title="Transactions"
         description="Track, filter, and manage all your financial activity"
+        action={<NewTransactionButton />}
       />
 
-      {/* Card with constrained height — this is the scroll container */}
       <div className="flex flex-col bg-card border border-muted shadow rounded-2xl flex-1 min-h-0 overflow-hidden">
-        {/* Filters — static */}
         <div className="shrink-0 px-6 py-3 border-b border-border">
           <TransactionFilters />
         </div>

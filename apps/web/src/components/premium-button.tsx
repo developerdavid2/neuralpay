@@ -25,11 +25,11 @@ export function PremiumButton({
         // OUTER SHELL
         "group relative overflow-hidden rounded-xl p-px",
 
-        // BRAND SURFACE
-        "bg-[linear-gradient(180deg,oklch(0.58_0.22_302)_0%,oklch(0.42_0.18_302)_100%)]",
+        // BRAND SURFACE (Updated from blue OKLCH to true violet RGBA)
+        "bg-[linear-gradient(180deg,rgba(141,68,245,1)_0%,rgba(81,30,154,1)_100%)]",
 
-        // DEPTH
-        "shadow-[0px_0px_8px_rgba(88,28,135,0.12),0px_0px_24px_rgba(168,85,247,0.18)]",
+        // DEPTH (Updated shadow tints from blue/indigo to rich violet)
+        "shadow-[0px_0px_8px_rgba(141,68,245,0.15),0px_0px_24px_rgba(81,30,154,0.25)]",
 
         // LIGHT MODE
         "border border-white/10",
@@ -50,13 +50,13 @@ export function PremiumButton({
       {...props}
     >
       {/* TOP MOVING LIGHT */}
-      <span className="pointer-events-none absolute left-[40%] top-0 z-20 h-px w-[60%] opacity-0 transition-all duration-500 group-hover:left-4 group-hover:opacity-70 bg-linear-to-r from-transparent via-fuchsia-200 to-transparent" />
+      <span className="pointer-events-none absolute left-[40%] top-0 z-20 h-px w-[60%] opacity-0 transition-all duration-500 group-hover:left-4 group-hover:opacity-70 bg-linear-to-r from-transparent via-violet-200 to-transparent" />
 
       {/* BOTTOM MOVING LIGHT */}
-      <span className="pointer-events-none absolute bottom-0 left-4 z-20 h-px w-[35%] opacity-0 transition-all duration-500 group-hover:left-[60%] group-hover:opacity-70 bg-linear-to-r from-transparent via-violet-200 to-transparent" />
+      <span className="pointer-events-none absolute bottom-0 left-4 z-20 h-px w-[35%] opacity-0 transition-all duration-500 group-hover:left-[60%] group-hover:opacity-70 bg-linear-to-r from-transparent via-violet-300 to-transparent" />
 
       {/* INNER SURFACE */}
-      <span className="relative flex min-h-15 items-center justify-center overflow-hidden rounded-[15px] px-6 py-4 bg-[linear-gradient(180deg,oklch(0.56_0.21_302)_0%,oklch(0.40_0.16_302)_100%)]">
+      <span className="relative flex min-h-15 items-center justify-center overflow-hidden rounded-[15px] px-6 py-4 bg-[linear-gradient(180deg,rgba(141,68,245,1)_0%,rgba(81,30,154,1)_100%)]">
         {/* DARKER HOVER LAYER */}
         <span className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[linear-gradient(180deg,rgba(20,10,40,0.08)_0%,rgba(10,5,25,0.35)_100%)]" />
 
@@ -69,7 +69,7 @@ export function PremiumButton({
         {/* CONTENT */}
         <span className="relative z-10 flex items-center gap-3">
           {Icon && (
-            <Icon className="size-5 text-fuchsia-100 transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-105" />
+            <Icon className="size-5 text-violet-100 transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-105" />
           )}
 
           <span className="text-sm capitalize tracking-[0.03em] text-white">

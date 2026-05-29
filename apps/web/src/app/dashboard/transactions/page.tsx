@@ -38,14 +38,6 @@ export default async function Page({ searchParams }: PageProps) {
     Math.max(Number(params.limit ?? TRANSACTIONS_LIMIT), 1),
     50,
   );
-  console.log(
-    "Server limit:",
-    limit,
-    "params.limit:",
-    params.limit,
-    "constant:",
-    TRANSACTIONS_LIMIT,
-  );
 
   const validatedType = validateTransactionTypes(params.types);
   const validatedStatuses = validateTransactionStatuses(params.statuses);

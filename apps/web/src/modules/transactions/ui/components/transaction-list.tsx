@@ -75,8 +75,6 @@ export function TransactionsList({
     [onOpenEdit],
   );
 
-  const clampedLimit = Math.min(currentLimit || TRANSACTIONS_LIMIT, 50);
-  console.log("Client limit:", clampedLimit, "currentLimit:", currentLimit);
   const filters = useMemo(
     () => ({
       search: currentSearch || undefined,
@@ -96,7 +94,7 @@ export function TransactionsList({
       dateTo: currentDateTo || undefined,
       minAmount: currentAmountMin ? Number(currentAmountMin) : undefined,
       maxAmount: currentAmountMax ? Number(currentAmountMax) : undefined,
-      limit: clampedLimit,
+      limit: Math.min(currentLimit || TRANSACTIONS_LIMIT, 50),
     }),
     [
       currentSearch,

@@ -29,7 +29,7 @@ export function DashboardHeader({
         )}
       </div>
 
-      {action && <PremiumButton icon={icon}>{action}</PremiumButton>}
+      {action && <div>{action}</div>}
     </div>
   );
 }

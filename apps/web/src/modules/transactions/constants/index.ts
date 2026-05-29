@@ -18,6 +18,13 @@ export const TRANSACTION_STATUS_STYLES: Record<string, string> = {
   failed: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
+export const TRANSACTION_STATUSES = [
+  { label: "Successful", value: "successful" },
+  { label: "Pending", value: "pending" },
+  { label: "Failed", value: "failed" },
+  { label: "Cancelled", value: "cancelled" },
+];
+
 export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
   debit: "Debit",
   credit: "Credit",

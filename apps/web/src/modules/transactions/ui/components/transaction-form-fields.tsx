@@ -2,6 +2,7 @@
 
 import { AmountInput } from "@/components/amount-input";
 import { DatePicker } from "@/components/date-picker";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 import { TRANSACTION_CATEGORY } from "@neuralpay/types";
 import {
   Field,
@@ -19,6 +20,7 @@ import {
 } from "@neuralpay/ui/components/select";
 import { Textarea } from "@neuralpay/ui/components/textarea";
 import { Controller, type UseFormReturn } from "react-hook-form";
+import { TRANSACTION_STATUSES, TRANSACTION_TYPES } from "../../constants";
 import type { FormValues } from "../../types";
 
 interface Props {
@@ -34,31 +36,28 @@ export function TransactionFormFields({
 }: Props) {
   const pending = disabled || form.formState.isSubmitting;
 
+  const categoryOptions = TRANSACTION_CATEGORY.map((cat) => ({
+    label: cat.replace(/_/g, " "),
+    value: cat,
+  }));
+
   return (
     <FieldGroup className="gap-4">
-      {/* Bank Account */}
+      {/* Bank Account — base-ui Combobox */}
       <Controller
         name="bankAccountId"
         control={form.control}
         render={({ field, fieldState }) => (
           <Field>
             <FieldLabel>Bank Account *</FieldLabel>
-            <Select
-              value={field.value}
-              onValueChange={field.onChange}
+            <SearchableCombobox
+              options={bankAccountOptions}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              placeholder="Select account..."
               disabled={pending}
-            >
-              <SelectTrigger aria-invalid={fieldState.invalid}>
-                <SelectValue placeholder="Select account" />
-              </SelectTrigger>
-              <SelectContent>
-                {bankAccountOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              ariaInvalid={fieldState.invalid}
+            />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
@@ -76,6 +75,7 @@ export function TransactionFormFields({
               placeholder="What was this for?"
               disabled={pending}
               aria-invalid={fieldState.invalid}
+              className="rounded-xl"
             />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
@@ -95,6 +95,8 @@ export function TransactionFormFields({
                 onChange={(v) => field.onChange(v ? Number(v) : 0)}
                 disabled={pending}
                 placeholder="0.00"
+                control={form.control}
+                name="type"
               />
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -111,13 +113,17 @@ export function TransactionFormFields({
                 value={field.value}
                 onValueChange={field.onChange}
                 disabled={pending}
+                defaultValue={TRANSACTION_TYPES[0].label}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="debit">Debit</SelectItem>
-                  <SelectItem value="credit">Credit</SelectItem>
+                  {TRANSACTION_TYPES.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </Field>
@@ -136,31 +142,33 @@ export function TransactionFormFields({
               value={field.value}
               onChange={(date) => date && field.onChange(date)}
               disabled={pending}
+              className="rounded-xl"
             />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
       />
 
-      {/* Category */}
+      {/* Status */}
       <Controller
-        name="category"
+        name="status"
         control={form.control}
         render={({ field }) => (
           <Field>
-            <FieldLabel>Category</FieldLabel>
+            <FieldLabel>Status</FieldLabel>
             <Select
-              value={field.value ?? ""}
-              onValueChange={(v) => field.onChange(v || undefined)}
+              value={field.value}
+              onValueChange={field.onChange}
               disabled={pending}
+              defaultValue={TRANSACTION_STATUSES[0].value}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select category" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {TRANSACTION_CATEGORY.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat.replace(/_/g, " ")}
+                {TRANSACTION_STATUSES.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -169,19 +177,39 @@ export function TransactionFormFields({
         )}
       />
 
+      {/* Category */}
+      <Controller
+        name="category"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field>
+            <FieldLabel>Category</FieldLabel>
+            <SearchableCombobox
+              options={categoryOptions}
+              value={field.value ?? ""}
+              onChange={(v) => field.onChange(v || undefined)}
+              placeholder="Select category..."
+              disabled={pending}
+            />
+            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
       {/* Merchant */}
       <Controller
         name="merchant"
         control={form.control}
-        render={({ field }) => (
+        render={({ field, fieldState }) => (
           <Field>
-            <FieldLabel>Merchant (optional)</FieldLabel>
+            <FieldLabel>Merchant</FieldLabel>
             <Input
               {...field}
               placeholder="e.g. Amazon"
               disabled={pending}
               value={field.value ?? ""}
+              className="rounded-xl"
             />
+            {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
       />

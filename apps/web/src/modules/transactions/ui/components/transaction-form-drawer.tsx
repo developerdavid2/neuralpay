@@ -19,7 +19,8 @@ import {
   DrawerTitle,
 } from "@neuralpay/ui/components/drawer";
 import { Button } from "@neuralpay/ui/components/button";
-import { Loader2, X } from "lucide-react";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Loader2, Trash2, X } from "lucide-react";
 
 import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionDetail } from "@/hooks/transactions/use-transactions";
@@ -50,7 +51,8 @@ export function TransactionFormDrawer() {
   } = useTransactionMutations();
   const [ConfirmDialog, confirm] = useConfirm(
     "Delete transaction",
-    "Are you sure you want to delete this transaction?",
+    "Are you sure you want to delete this transaction? This action cannot be undone.",
+    "destructive",
   );
 
   const isLoading = isLoadingDetail || isLoadingAccounts;
@@ -106,11 +108,17 @@ export function TransactionFormDrawer() {
     }
   }, [transaction, isEdit, isAdd, isOpen, form]);
 
-  const onSubmit = (values: FormValues) => {
+  const onSubmit = async (values: FormValues) => {
     if (isEdit && transactionId) {
-      handleUpdate({ id: transactionId, ...values } as UpdateTransactionInput);
+      await handleUpdate({
+        id: transactionId,
+        ...values,
+      } as UpdateTransactionInput);
     } else {
-      handleCreate({ ...values, isManual: true } as CreateTransactionInput);
+      await handleCreate({
+        ...values,
+        isManual: true,
+      } as CreateTransactionInput);
     }
     onClose();
   };
@@ -136,53 +144,69 @@ export function TransactionFormDrawer() {
       >
         <DrawerContent
           className="
-            data-[vaul-drawer-direction=right]:inset-y-0 
-            data-[vaul-drawer-direction=right]:right-0 
-            data-[vaul-drawer-direction=right]:h-full 
-            data-[vaul-drawer-direction=right]:w-full 
-            data-[vaul-drawer-direction=right]:max-w-[420px]
-            flex flex-col
-          "
+    data-[vaul-drawer-direction=right]:inset-y-0 
+    data-[vaul-drawer-direction=right]:right-0 
+    data-[vaul-drawer-direction=right]:h-full 
+    data-[vaul-drawer-direction=right]:w-full 
+    data-[vaul-drawer-direction=right]:max-w-[420px]
+    flex flex-col
+    focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0
+  "
         >
-          {/* Header */}
-          <DrawerHeader className="px-6 py-4 border-b space-y-1 shrink-0">
-            <div className="flex items-start justify-between">
-              <div>
-                <DrawerTitle className="text-lg">
-                  {isEdit ? "Edit Transaction" : "New Transaction"}
-                </DrawerTitle>
-                <DrawerDescription>
-                  {isEdit
-                    ? "Update your transaction details"
-                    : "Add a manual transaction"}
-                </DrawerDescription>
-              </div>
-
-              <DrawerClose asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="-mr-2 -mt-2"
-                  onClick={onClose}
-                  disabled={isPending || form.formState.isSubmitting}
-                >
-                  <X className="size-4" />
-                </Button>
-              </DrawerClose>
-            </div>
-          </DrawerHeader>
-
-          {/* Loading */}
-          {isLoading ? (
-            <div className="flex flex-1 items-center justify-center">
-              <Loader2 className="size-6 animate-spin text-muted-foreground" />
-            </div>
+          {isEdit && isLoading ? (
+            <FormDrawerSkeleton />
           ) : (
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               noValidate
               className="flex flex-col flex-1 min-h-0"
             >
+              {/* Header: title + delete icon (edit only) + close */}
+              <DrawerHeader className="px-6 py-4 border-b space-y-1 shrink-0">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <DrawerTitle className="text-lg">
+                      {isEdit ? "Edit Transaction" : "New Transaction"}
+                    </DrawerTitle>
+                    <DrawerDescription>
+                      {isEdit
+                        ? "Update your transaction details"
+                        : "Add a manual transaction"}
+                    </DrawerDescription>
+                  </div>
+
+                  <div className="flex items-center gap-1 -mr-2 -mt-2">
+                    {/* Delete icon — only in edit mode */}
+                    {isEdit && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 text-muted-foreground hover:text-destructive"
+                        onClick={onDelete}
+                        disabled={isPending}
+                        title="Delete transaction"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    )}
+
+                    <DrawerClose asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={onClose}
+                        disabled={isPending || form.formState.isSubmitting}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </DrawerClose>
+                  </div>
+                </div>
+              </DrawerHeader>
+
+              {/* Scrollable fields */}
               <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5 scrollbar-thin">
                 <TransactionFormFields
                   form={form}
@@ -191,7 +215,8 @@ export function TransactionFormDrawer() {
                 />
               </div>
 
-              <DrawerFooter className="px-6 py-4 border-t space-y-3 shrink-0">
+              {/* Footer: 2 buttons only */}
+              <DrawerFooter className="px-6 py-4 border-t shrink-0">
                 <Button
                   type="submit"
                   disabled={isPending || !form.formState.isValid}
@@ -219,23 +244,88 @@ export function TransactionFormDrawer() {
                     Cancel
                   </Button>
                 </DrawerClose>
-
-                {isEdit && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full text-destructive hover:bg-destructive/10"
-                    onClick={onDelete}
-                    disabled={isPending || form.formState.isSubmitting}
-                  >
-                    Delete Transaction
-                  </Button>
-                )}
               </DrawerFooter>
             </form>
           )}
         </DrawerContent>
       </Drawer>
+    </>
+  );
+}
+
+// Skeleton mimicking header + fields + footer structure
+function FormDrawerSkeleton() {
+  return (
+    <>
+      {/* Header skeleton */}
+      <div className="px-6 py-4 border-b space-y-3 shrink-0">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-56" />
+          </div>
+          <div className="flex items-center gap-1">
+            <Skeleton className="size-8 rounded-md" />
+            <Skeleton className="size-8 rounded-md" />
+          </div>
+        </div>
+      </div>
+
+      {/* Body skeleton — mimics form fields */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+        {/* Bank Account combobox */}
+        <div className="space-y-1.5">
+          <Skeleton className="h-3.5 w-24" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+        {/* Description */}
+        <div className="space-y-1.5">
+          <Skeleton className="h-3.5 w-20" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+        {/* Amount + Type row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Skeleton className="h-3.5 w-16" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+          <div className="space-y-1.5">
+            <Skeleton className="h-3.5 w-12" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        </div>
+        {/* Date */}
+        <div className="space-y-1.5">
+          <Skeleton className="h-3.5 w-10" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+        {/* Status */}
+        <div className="space-y-1.5">
+          <Skeleton className="h-3.5 w-14" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+        {/* Category */}
+        <div className="space-y-1.5">
+          <Skeleton className="h-3.5 w-16" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+        {/* Merchant */}
+        <div className="space-y-1.5">
+          <Skeleton className="h-3.5 w-20" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+        {/* Notes */}
+        <div className="space-y-1.5">
+          <Skeleton className="h-3.5 w-14" />
+          <Skeleton className="h-20 w-full rounded-md" />
+        </div>
+      </div>
+
+      {/* Footer skeleton */}
+      <div className="px-6 py-4 border-t space-y-3 shrink-0">
+        <Skeleton className="h-10 w-full rounded-md" />
+        <Skeleton className="h-10 w-full rounded-md" />
+      </div>
     </>
   );
 }
