@@ -63,7 +63,7 @@ export function SearchableCombobox({
           aria-invalid={ariaInvalid}
           disabled={disabled}
           className={cn(
-            "w-full justify-between rounded-xl font-normal capitalize",
+            "w-full justify-between rounded-xl font-normal capitalize bg-secondary/50",
             !selected && "text-muted-foreground",
             className,
           )}

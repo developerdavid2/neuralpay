@@ -1,6 +1,7 @@
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
 import {
+  validateInsightReadStatus,
   validateInsightSeverity,
   validateInsightType,
 } from "../../lib/validate-insights-enums";
@@ -29,6 +30,7 @@ export function AIInsightsView({
 }: AIInsightsViewProps) {
   const validatedType = validateInsightType(type);
   const validatedSeverity = validateInsightSeverity(severity);
+  const validatedReadStatus = validateInsightReadStatus(readStatus);
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -51,7 +53,7 @@ export function AIInsightsView({
             currentType={validatedType!}
             currentSeverity={validatedSeverity!}
             currentShowDismissed={dismissed}
-            currentReadStatus={readStatus}
+            currentReadStatus={validatedReadStatus}
           />
         </SectionBoundary>
       </div>

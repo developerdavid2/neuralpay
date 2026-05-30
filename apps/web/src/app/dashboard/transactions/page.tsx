@@ -27,6 +27,7 @@ interface PageProps {
     amountMin?: string;
     amountMax?: string;
     focus?: string;
+    mode?: string;
     limit?: string;
   }>;
 }
@@ -34,8 +35,18 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
 
+  const parseOptionalNumber = (value?: string) => {
+    if (!value) return undefined;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
+  const parsedLimit = Number(params.limit ?? TRANSACTIONS_LIMIT);
+
   const limit = Math.min(
-    Math.max(Number(params.limit ?? TRANSACTIONS_LIMIT), 1),
+    Math.max(
+      Number.isFinite(parsedLimit) ? parsedLimit : TRANSACTIONS_LIMIT,
+      1,
+    ),
     50,
   );
 
@@ -54,8 +65,8 @@ export default async function Page({ searchParams }: PageProps) {
     isAnomaly: params.isAnomaly === "true" ? true : undefined,
     dateFrom: params.dateFrom || undefined,
     dateTo: params.dateTo || undefined,
-    minAmount: params.amountMin ? Number(params.amountMin) : undefined,
-    maxAmount: params.amountMax ? Number(params.amountMax) : undefined,
+    minAmount: parseOptionalNumber(params.amountMin),
+    maxAmount: parseOptionalNumber(params.amountMax),
   };
 
   void prefetchInfinite(
@@ -86,6 +97,7 @@ export default async function Page({ searchParams }: PageProps) {
         amountMin={params.amountMin ?? ""}
         amountMax={params.amountMax ?? ""}
         focusTransactionId={params.focus}
+        focusMode={params.mode}
         limit={limit}
       />
     </HydrateClient>

@@ -211,7 +211,7 @@ export const TransactionsService = {
     }
   },
 
-  // ── GET BY ID ──────────────────────────────────────────────────────────────
+  // ── GET BY ID
   async getById(
     id: string,
     userId: string,
@@ -241,7 +241,7 @@ export const TransactionsService = {
     }
   },
 
-  // ── CREATE ─────────────────────────────────────────────────────────────────
+  // ── CREATE
   async create(
     userId: string,
     input: CreateTransactionInput,
@@ -297,7 +297,7 @@ export const TransactionsService = {
     }
   },
 
-  // ── UPDATE ─────────────────────────────────────────────────────────────────
+  // ── UPDATE
   async update(
     userId: string,
     input: UpdateTransactionInput,
@@ -305,8 +305,25 @@ export const TransactionsService = {
     try {
       const updateData: Record<string, unknown> = {};
 
-      if (input.bankAccountId !== undefined)
+      if (input.bankAccountId !== undefined) {
+        const [acct] = await db
+          .select({ id: bankAccounts.id })
+          .from(bankAccounts)
+          .where(
+            and(
+              eq(bankAccounts.id, input.bankAccountId),
+              eq(bankAccounts.userId, userId),
+            ),
+          )
+          .limit(1);
+        if (!acct)
+          return {
+            success: false,
+            error: "Bank account not found",
+            code: "NOT_FOUND",
+          };
         updateData.bankAccountId = input.bankAccountId;
+      }
       if (input.description !== undefined)
         updateData.description = input.description;
       if (input.merchant !== undefined) updateData.merchant = input.merchant;

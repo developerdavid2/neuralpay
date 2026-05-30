@@ -24,7 +24,7 @@ interface InsightDetailsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onChat: (id: string) => void;
-  onDismiss: (id: string) => Promise<void>; // async
+  onDismiss: (id: string) => Promise<void>;
   onRestore?: (id: string) => Promise<void>;
   isDismissing: (id: string) => boolean;
   isRestoring: (id: string) => boolean;
@@ -112,15 +112,14 @@ function InsightDetailsContent({
   const restoring = isRestoring(insight.id);
   const isPending = dismissing || restoring;
 
-  // Handle dismiss/restore with drawer close after completion
   const handleDismiss = async () => {
     await onDismiss(insight.id);
-    onClose(); // close after success
+    onClose();
   };
 
   const handleRestore = async () => {
     await onRestore?.(insight.id);
-    onClose(); // close after success
+    onClose();
   };
 
   return (

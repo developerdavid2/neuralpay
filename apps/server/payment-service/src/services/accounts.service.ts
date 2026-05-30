@@ -93,7 +93,7 @@ export const AccountsService = {
         .select(getTableColumns(bankAccounts))
         .from(bankAccounts)
         .where(and(...conditions))
-        .orderBy(asc(bankAccounts.bankName), desc(bankAccounts.id))
+        .orderBy(desc(bankAccounts.createdAt), desc(bankAccounts.id))
         .limit(limit + 1);
 
       const hasMore = rows.length > limit;

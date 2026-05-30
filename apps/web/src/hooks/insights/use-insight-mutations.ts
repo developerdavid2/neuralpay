@@ -1,10 +1,9 @@
+import { invalidateInsightsQueries } from "@/lib/invalidate-trpc-queries";
+import type { Insight } from "@/modules/insights/types";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import type { Insight } from "@/modules/insights/types";
-import { invalidateInsightsQueries } from "@/lib/invalidate-trpc-queries";
-import type { Route } from "next";
 
 export function useInsightMutations() {
   const trpc = useTRPC();
@@ -37,26 +36,27 @@ export function useInsightMutations() {
     onSuccess: () => invalidateInsightsQueries(queryClient),
   });
 
-  // URL sync helpers
-  const syncFocusToUrl = useCallback(
-    (insightId: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("focus", insightId);
-      router.replace((pathname + "?" + params.toString()) as never, {
-        scroll: false,
-      });
-    },
-    [pathname, router, searchParams],
-  );
+  const syncFocusToUrl = useCallback((insightId: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("focus", insightId);
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      query ? `${window.location.pathname}?${query}` : window.location.pathname,
+    );
+  }, []);
 
   const removeFocusFromUrl = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("focus");
     const query = params.toString();
-    router.replace((query ? `${pathname}?${query}` : pathname) as never, {
-      scroll: false,
-    });
-  }, [pathname, router, searchParams]);
+    window.history.replaceState(
+      null,
+      "",
+      query ? `${window.location.pathname}?${query}` : window.location.pathname,
+    );
+  }, []);
 
   // Action handlers
   const handleDismiss = useCallback(

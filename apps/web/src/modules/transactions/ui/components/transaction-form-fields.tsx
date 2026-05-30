@@ -106,28 +106,29 @@ export function TransactionFormFields({
         <Controller
           name="type"
           control={form.control}
-          render={({ field }) => (
-            <Field>
-              <FieldLabel>Type</FieldLabel>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={pending}
-                defaultValue={TRANSACTION_TYPES[0].label}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TRANSACTION_TYPES.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          )}
+          render={({ field }) => {
+            return (
+              <Field>
+                <FieldLabel>Type</FieldLabel>
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                  disabled={pending}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TRANSACTION_TYPES.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            );
+          }}
         />
       </div>
 
@@ -157,10 +158,9 @@ export function TransactionFormFields({
           <Field>
             <FieldLabel>Status</FieldLabel>
             <Select
-              value={field.value}
+              value={field.value ?? ""}
               onValueChange={field.onChange}
               disabled={pending}
-              defaultValue={TRANSACTION_STATUSES[0].value}
             >
               <SelectTrigger>
                 <SelectValue />

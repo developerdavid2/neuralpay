@@ -20,3 +20,9 @@ export function validateInsightType(raw?: string): InsightType | undefined {
     ? (raw as InsightType)
     : undefined;
 }
+
+export function validateInsightReadStatus(
+  raw?: string,
+): "all" | "read" | "unread" {
+  return raw === "read" || raw === "unread" ? raw : "all";
+}

@@ -26,6 +26,7 @@ interface TransactionsViewProps {
   amountMin?: string;
   amountMax?: string;
   focusTransactionId?: string;
+  focusMode?: string;
   limit?: number;
 }
 
@@ -42,8 +43,9 @@ export function TransactionsView({
   isAnomaly = false,
   amountMin = "",
   amountMax = "",
-  focusTransactionId,
   limit = 20,
+  focusMode = "view",
+  focusTransactionId,
 }: TransactionsViewProps) {
   const validatedTypes = validateTransactionTypes(types);
   const validatedStatuses = validateTransactionStatuses(statuses);
@@ -51,6 +53,9 @@ export function TransactionsView({
 
   return (
     <div className="flex flex-col w-full gap-6 p-6 h-[105vh]">
+      {/* Client component for URL sync — renders nothing, just runs hook */}
+      {/* <TransactionDrawerSync /> */}
+
       <DashboardHeader
         title="Transactions"
         description="Track, filter, and manage all your financial activity"
@@ -70,7 +75,6 @@ export function TransactionsView({
             errorMessage="Could not load transactions"
           >
             <TransactionsList
-              focusTransactionId={focusTransactionId}
               currentSearch={search}
               currentTypes={validatedTypes!}
               currentStatuses={validatedStatuses!}
@@ -84,6 +88,8 @@ export function TransactionsView({
               currentAmountMin={amountMin}
               currentAmountMax={amountMax}
               currentLimit={limit}
+              focusTransactionId={focusTransactionId}
+              focusMode={focusMode}
             />
           </SectionBoundary>
         </div>

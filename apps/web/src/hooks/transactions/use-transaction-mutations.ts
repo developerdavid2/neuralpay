@@ -1,11 +1,10 @@
 "use client";
 
+import { invalidateTransactionQueries } from "@/lib/invalidate-trpc-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { invalidateTransactionQueries } from "@/lib/invalidate-trpc-queries";
-import type { Transaction } from "@neuralpay/types";
-import type { TransactionDrawerMode } from "@/modules/transactions/types";
+import { toast } from "sonner";
 
 export function useTransactionMutations() {
   const trpc = useTRPC();
@@ -15,37 +14,31 @@ export function useTransactionMutations() {
   const [pendingUpdateId, setPendingUpdateId] = useState<string | null>(null);
   const [pendingCreate, setPendingCreate] = useState(false);
 
-  const [selectedTransactionId, setSelectedTransactionId] = useState<
-    string | null
-  >(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<TransactionDrawerMode>("view");
-
   const createTx = useMutation({
     ...trpc.payments.transactions.create.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries(queryClient);
+    onSuccess: async () => {
+      await invalidateTransactionQueries(queryClient);
     },
   });
 
   const updateTx = useMutation({
     ...trpc.payments.transactions.update.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries(queryClient);
+    onSuccess: async () => {
+      await invalidateTransactionQueries(queryClient);
     },
   });
 
   const deleteTx = useMutation({
     ...trpc.payments.transactions.delete.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries(queryClient);
+    onSuccess: async () => {
+      await invalidateTransactionQueries(queryClient);
     },
   });
 
   const batchDelete = useMutation({
     ...trpc.payments.transactions.batchDelete.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries(queryClient);
+    onSuccess: async () => {
+      await invalidateTransactionQueries(queryClient);
     },
   });
 
@@ -54,8 +47,15 @@ export function useTransactionMutations() {
       setPendingCreate(true);
       try {
         const result = await createTx.mutateAsync(values);
-        setDrawerOpen(false);
+        toast.success("Transaction created successfully");
         return result;
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to create transaction";
+        toast.error(message);
+        throw error; // re-throw so caller can handle if needed
       } finally {
         setPendingCreate(false);
       }
@@ -68,8 +68,15 @@ export function useTransactionMutations() {
       setPendingUpdateId(values.id);
       try {
         const result = await updateTx.mutateAsync(values);
-        setDrawerOpen(false);
+        toast.success("Transaction updated successfully");
         return result;
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to update transaction";
+        toast.error(message);
+        throw error;
       } finally {
         setPendingUpdateId(null);
       }
@@ -82,8 +89,14 @@ export function useTransactionMutations() {
       setPendingDeleteId(id);
       try {
         await deleteTx.mutateAsync({ id });
-        setDrawerOpen(false);
-        setSelectedTransactionId(null);
+        toast.success("Transaction deleted successfully");
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to delete transaction";
+        toast.error(message);
+        throw error;
       } finally {
         setPendingDeleteId(null);
       }
@@ -93,50 +106,28 @@ export function useTransactionMutations() {
 
   const handleBatchDelete = useCallback(
     async (ids: string[]) => {
-      await batchDelete.mutateAsync({ ids });
+      try {
+        await batchDelete.mutateAsync({ ids });
+        toast.success(
+          `${ids.length} transaction${ids.length > 1 ? "s" : ""} deleted`,
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to delete transactions";
+        toast.error(message);
+        throw error;
+      }
     },
     [batchDelete],
   );
 
-  const openView = useCallback((tx: Transaction) => {
-    setSelectedTransactionId(tx.id);
-    setDrawerMode("view");
-    setDrawerOpen(true);
-  }, []);
-
-  const openEdit = useCallback((tx: Transaction) => {
-    setSelectedTransactionId(tx.id);
-    setDrawerMode("edit");
-    setDrawerOpen(true);
-  }, []);
-
-  const openAdd = useCallback(() => {
-    setSelectedTransactionId(null);
-    setDrawerMode("add");
-    setDrawerOpen(true);
-  }, []);
-
-  const closeDrawer = useCallback(() => {
-    setDrawerOpen(false);
-    setTimeout(() => setSelectedTransactionId(null), 300);
-  }, []);
-
   return {
-    // Mutations
     handleCreate,
     handleUpdate,
     handleDelete,
     handleBatchDelete,
-    // Drawer state
-    selectedTransactionId,
-    drawerOpen,
-    drawerMode,
-    setDrawerOpen,
-    openView,
-    openEdit,
-    openAdd,
-    closeDrawer,
-    // Pending states — simple booleans
     isDeleting: pendingDeleteId !== null,
     isUpdating: pendingUpdateId !== null,
     isCreating: pendingCreate,

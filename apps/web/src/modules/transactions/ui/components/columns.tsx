@@ -11,18 +11,20 @@ import {
 } from "@neuralpay/ui/components/dropdown-menu";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { Ban, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpDown, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { SourceBadge, StatusBadge } from "./transaction-badges";
 import { isSyncedSource } from "../../lib/utils";
 
 interface ColumnProps {
   onView: (tx: Transaction) => void;
   onEdit: (tx: Transaction) => void;
+  onDelete: (tx: Transaction) => void;
 }
 
 export function transactionColumns({
   onView,
   onEdit,
+  onDelete,
 }: ColumnProps): ColumnDef<Transaction>[] {
   return [
     {
@@ -59,7 +61,17 @@ export function transactionColumns({
     },
     {
       accessorKey: "date",
-      header: "Date",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-3 h-8 data-[state=open]:bg-accent uppercase text-[12px]"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Date
+          <ArrowUpDown className="ml-2 size-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <div className="flex flex-col">
           <span className="text-sm">
@@ -102,7 +114,17 @@ export function transactionColumns({
     },
     {
       accessorKey: "category",
-      header: "Category",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-3 h-8 data-[state=open]:bg-accent uppercase text-[12px]"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Category
+          <ArrowUpDown className="ml-2 size-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground">
           {row.original.customCategoryName ??
@@ -114,12 +136,28 @@ export function transactionColumns({
     },
     {
       accessorKey: "amount",
+      sortingFn: (rowA, rowB) => {
+        const a =
+          rowA.original.type === "credit"
+            ? Number(rowA.original.amount)
+            : -Number(rowA.original.amount);
+        const b =
+          rowB.original.type === "credit"
+            ? Number(rowB.original.amount)
+            : -Number(rowB.original.amount);
+        return a - b;
+      },
       header: ({ column }) => (
-        <div
-          className="text-right cursor-pointer select-none"
-          onClick={() => column.toggleSorting()}
-        >
-          Amount
+        <div className="text-right">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-3 h-8 data-[state=open]:bg-accent uppercase text-[12px]"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Amount
+            <ArrowUpDown className="ml-2 size-4" />
+          </Button>
         </div>
       ),
       cell: ({ row }) => {
@@ -138,12 +176,15 @@ export function transactionColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <div
-          className="cursor-pointer select-none"
-          onClick={() => column.toggleSorting()}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-3 h-8 data-[state=open]:bg-accent uppercase text-[12px]"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
-        </div>
+          <ArrowUpDown className="ml-2 size-4" />
+        </Button>
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       size: 100,
@@ -173,6 +214,7 @@ export function transactionColumns({
 
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
+                onClick={() => onDelete(tx)}
                 disabled={isSyncedSource(tx)}
               >
                 <Trash2 className="size-4 mr-2" /> Delete

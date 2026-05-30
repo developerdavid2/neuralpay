@@ -3,19 +3,18 @@
 import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
 import { useTransactionDetail } from "@/hooks/transactions/use-transactions";
+import { useConfirm } from "@/hooks/use-confirm";
 import { formatAmount } from "@/lib/utils";
-import { ScrollArea } from "@neuralpay/ui/components/scroll-area";
-import { Separator } from "@neuralpay/ui/components/separator";
+import { Button } from "@neuralpay/ui/components/button";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
   DrawerFooter,
+  DrawerHeader,
 } from "@neuralpay/ui/components/drawer";
-import { Button } from "@neuralpay/ui/components/button";
+import { ScrollArea } from "@neuralpay/ui/components/scroll-area";
+import { Separator } from "@neuralpay/ui/components/separator";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { format } from "date-fns";
@@ -35,9 +34,10 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { StatusBadge, SourceBadge } from "./transaction-badges";
 import { isSyncedSource } from "../../lib/utils";
-import { useConfirm } from "@/hooks/use-confirm";
+import { SourceBadge, StatusBadge } from "./transaction-badges";
+import { useEffect } from "react";
+import { useTransactionUrlSync } from "@/hooks/transactions/use-transaction-url-sync";
 
 function DetailField({
   label,
@@ -70,6 +70,7 @@ function DetailField({
 export function TransactionViewDrawer() {
   const { isOpen, mode, onClose, transactionId, onOpenEdit } =
     useTransactionDrawer();
+  const { clearUrl, syncToUrl } = useTransactionUrlSync();
   const { transaction, isLoading } = useTransactionDetail(transactionId ?? "");
   const { handleDelete, isDeleting } = useTransactionMutations();
   const [ConfirmDialog, confirm] = useConfirm(
@@ -92,6 +93,7 @@ export function TransactionViewDrawer() {
     const ok = await confirm();
     if (!ok) return;
     handleDelete(tx.id);
+    clearUrl();
     onClose();
   };
 
@@ -101,7 +103,12 @@ export function TransactionViewDrawer() {
       <Drawer
         direction="right"
         open={isOpen}
-        onOpenChange={(open) => !open && onClose()}
+        onOpenChange={(open) => {
+          if (!open) {
+            clearUrl();
+            onClose();
+          }
+        }}
       >
         <DrawerContent
           className="
@@ -134,7 +141,10 @@ export function TransactionViewDrawer() {
                         variant="ghost"
                         size="icon"
                         className="size-8"
-                        onClick={() => onOpenEdit(tx.id)}
+                        onClick={() => {
+                          syncToUrl("edit", tx.id);
+                          onOpenEdit(tx.id);
+                        }}
                         title={
                           tx.isManual
                             ? "Edit Transaction"
@@ -150,7 +160,10 @@ export function TransactionViewDrawer() {
                         variant="ghost"
                         size="icon"
                         className="size-8"
-                        onClick={onClose}
+                        onClick={() => {
+                          clearUrl();
+                          onClose();
+                        }}
                       >
                         <X className="size-4" />
                       </Button>

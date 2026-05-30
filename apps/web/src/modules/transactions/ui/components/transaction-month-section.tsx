@@ -31,6 +31,7 @@ interface Props {
   onSelectionChange: (ids: Set<string>) => void;
   onView: (tx: Transaction) => void;
   onEdit: (tx: Transaction) => void;
+  onDelete: (tx: Transaction) => void;
   columnVisibility: Record<string, boolean>;
 }
 
@@ -43,6 +44,7 @@ export const TransactionMonthSection = forwardRef<HTMLDivElement, Props>(
       onSelectionChange,
       onView,
       onEdit,
+      onDelete,
       columnVisibility,
     },
     ref,
@@ -60,7 +62,7 @@ export const TransactionMonthSection = forwardRef<HTMLDivElement, Props>(
 
     const table = useReactTable({
       data: transactions,
-      columns: transactionColumns({ onView, onEdit }),
+      columns: transactionColumns({ onView, onEdit, onDelete }),
       state: {
         sorting,
         columnVisibility,

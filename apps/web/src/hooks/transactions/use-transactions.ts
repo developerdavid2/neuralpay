@@ -28,6 +28,7 @@ export function useTransactionsList(filters: TransactionsFilterInput) {
   const query = useSuspenseInfiniteQuery(
     trpc.payments.transactions.list.infiniteQueryOptions(filters, {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+      staleTime: 30_000,
     }),
   );
 
@@ -106,6 +107,7 @@ export function useTransactionDetail(transactionId: string) {
   } = useQuery({
     ...trpc.payments.transactions.getById.queryOptions({ id: transactionId }),
     enabled: !!transactionId,
+    staleTime: 30_000,
   });
 
   return {

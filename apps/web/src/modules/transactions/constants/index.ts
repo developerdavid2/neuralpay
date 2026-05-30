@@ -19,10 +19,11 @@ export const TRANSACTION_STATUS_STYLES: Record<string, string> = {
 };
 
 export const TRANSACTION_STATUSES = [
-  { label: "Successful", value: "successful" },
   { label: "Pending", value: "pending" },
+  { label: "Successful", value: "successful" },
+  { label: "Refunded", value: "refunded" },
+  { label: "Reversed", value: "reversed" },
   { label: "Failed", value: "failed" },
-  { label: "Cancelled", value: "cancelled" },
 ];
 
 export const TRANSACTION_TYPE_LABELS: Record<string, string> = {

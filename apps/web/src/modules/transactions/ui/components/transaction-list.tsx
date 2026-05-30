@@ -4,6 +4,7 @@ import { InfiniteScroll } from "@/components/infinite-scroll";
 import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionFilters } from "@/hooks/transactions/use-transaction-filters";
 import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
+import { useTransactionUrlSync } from "@/hooks/transactions/use-transaction-url-sync";
 import { useTransactionsList } from "@/hooks/transactions/use-transactions";
 import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
 import type {
@@ -12,17 +13,18 @@ import type {
   TransactionStatus,
   TransactionType,
 } from "@neuralpay/types";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Table } from "@neuralpay/ui/components/table";
 import { Package } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TransactionFormDrawer } from "./transaction-form-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
 import { TransactionToolbar } from "./transaction-toolbar";
 import { TransactionViewDrawer } from "./transaction-view-drawer";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
 
 interface Props {
   focusTransactionId?: string;
+  focusMode?: string;
   currentSearch: string;
   currentTypes?: string[];
   currentStatuses?: string[];
@@ -39,6 +41,8 @@ interface Props {
 }
 
 export function TransactionsList({
+  focusTransactionId,
+  focusMode,
   currentSearch,
   currentTypes,
   currentStatuses,
@@ -60,20 +64,23 @@ export function TransactionsList({
   >({});
   const { hasActiveFilters } = useTransactionFilters();
   const { onOpenView, onOpenEdit } = useTransactionDrawer();
-  const { handleBatchDelete } = useTransactionMutations();
-  const handleView = useCallback(
-    (tx: Transaction) => {
-      onOpenView(tx.id);
-    },
-    [onOpenView],
-  );
+  const { syncToUrl } = useTransactionUrlSync();
+  const { handleBatchDelete, handleDelete: runDelete } =
+    useTransactionMutations();
 
-  const handleEdit = useCallback(
-    (tx: Transaction) => {
-      onOpenEdit(tx.id);
-    },
-    [onOpenEdit],
-  );
+  const handleView = (tx: Transaction) => {
+    onOpenView(tx.id);
+    syncToUrl("view", tx.id);
+  };
+
+  const handleEdit = (tx: Transaction) => {
+    onOpenEdit(tx.id);
+    syncToUrl("edit", tx.id);
+  };
+
+  const handleDelete = async (tx: Transaction) => {
+    await runDelete(tx.id);
+  };
 
   const filters = useMemo(
     () => ({
@@ -122,6 +129,23 @@ export function TransactionsList({
     isLoading,
   } = useTransactionsList(filters);
 
+  useEffect(() => {
+    if (!focusTransactionId || allTransactions.length === 0) return;
+
+    const target = allTransactions.find((t) => t.id === focusTransactionId);
+    console.log({ target });
+    if (!target) return;
+
+    const { isOpen, transactionId } = useTransactionDrawer.getState();
+    if (isOpen && transactionId === focusTransactionId) return;
+
+    if (focusMode === "edit") {
+      onOpenEdit(focusTransactionId);
+    } else {
+      onOpenView(focusTransactionId);
+    }
+  }, [focusTransactionId, focusMode, allTransactions, onOpenView, onOpenEdit]);
+
   const deletableIds = Array.from(globalSelection).filter(
     (id) => allTransactions.find((t) => t.id === id)?.isManual,
   );
@@ -168,6 +192,7 @@ export function TransactionsList({
               onSelectionChange={setGlobalSelection}
               onView={handleView}
               onEdit={handleEdit}
+              onDelete={handleDelete}
               columnVisibility={columnVisibility}
             />
           ))}
