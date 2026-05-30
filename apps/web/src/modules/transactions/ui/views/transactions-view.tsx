@@ -76,13 +76,13 @@ export function TransactionsView({
           >
             <TransactionsList
               currentSearch={search}
-              currentTypes={validatedTypes!}
-              currentStatuses={validatedStatuses!}
+              currentTypes={validatedTypes}
+              currentStatuses={validatedStatuses}
               currentAccountType={accountType}
               currentAccountId={accountId}
               currentDateFrom={dateFrom}
               currentDateTo={dateTo}
-              currentCategories={validatedCategories!}
+              currentCategories={validatedCategories}
               currentIsManual={isManual}
               currentIsAnomaly={isAnomaly}
               currentAmountMin={amountMin}

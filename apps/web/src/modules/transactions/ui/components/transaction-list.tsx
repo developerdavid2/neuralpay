@@ -32,7 +32,7 @@ interface Props {
   currentAccountId: string;
   currentDateFrom: string;
   currentDateTo: string;
-  currentCategories: string[];
+  currentCategories?: string[];
   currentIsManual: boolean;
   currentIsAnomaly: boolean;
   currentAmountMin: string;
@@ -46,6 +46,7 @@ export function TransactionsList({
   currentSearch,
   currentTypes,
   currentStatuses,
+  currentAccountType,
   currentAccountId,
   currentDateFrom,
   currentDateTo,
@@ -94,6 +95,10 @@ export function TransactionsList({
       category: currentCategories?.length
         ? (currentCategories as TransactionCategory[])
         : undefined,
+      accountType:
+        currentAccountType && currentAccountType !== "all"
+          ? currentAccountType
+          : undefined,
       bankAccountId: currentAccountId || undefined,
       isManual: currentIsManual || undefined,
       isAnomaly: currentIsAnomaly || undefined,
@@ -108,6 +113,7 @@ export function TransactionsList({
       currentTypes,
       currentStatuses,
       currentCategories,
+      currentAccountType,
       currentAccountId,
       currentIsManual,
       currentIsAnomaly,
@@ -133,7 +139,6 @@ export function TransactionsList({
     if (!focusTransactionId || allTransactions.length === 0) return;
 
     const target = allTransactions.find((t) => t.id === focusTransactionId);
-    console.log({ target });
     if (!target) return;
 
     const { isOpen, transactionId } = useTransactionDrawer.getState();

@@ -26,7 +26,7 @@ export function useTransactionUrlSync() {
           : window.location.pathname,
       );
     },
-    [],
+    [searchParams],
   );
 
   const clearUrl = useCallback(() => {
@@ -39,7 +39,7 @@ export function useTransactionUrlSync() {
       "",
       query ? `${window.location.pathname}?${query}` : window.location.pathname,
     );
-  }, []);
+  }, [searchParams]);
 
   return { syncToUrl, clearUrl };
 }
