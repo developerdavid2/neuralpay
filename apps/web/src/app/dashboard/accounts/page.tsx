@@ -1,14 +1,25 @@
 // apps/web/src/app/dashboard/accounts/page.tsx
 import { AccountView } from "@/modules/accounts/account-view";
-import { getQueryClient, HydrateClient, trpc } from "@/trpc/trpc-server";
+import {
+  getQueryClient,
+  HydrateClient,
+  prefetch,
+  prefetchInfinite,
+  trpc,
+} from "@/trpc/trpc-server";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 export const dynamic = "force-dynamic";
 
 const Page = async () => {
-  const queryClient = getQueryClient();
-  await queryClient.prefetchQuery(trpc.users.profile.me.queryOptions());
+  const listFilters = {};
+
+  void prefetchInfinite(
+    trpc.payments.accounts.list.infiniteQueryOptions(listFilters, {
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    }),
+  );
 
   return (
     <HydrateClient>

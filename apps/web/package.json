@@ -18,6 +18,7 @@
     "@polar-sh/better-auth": "catalog:",
     "@tanstack/react-form": "^1.28.0",
     "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-table": "^8.21.3",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "^11.16.0",
@@ -31,6 +32,7 @@
     "next-themes": "catalog:",
     "radix-ui": "latest",
     "react": "catalog:",
+    "react-currency-input-field": "^4.0.5",
     "react-day-picker": "^10.0.1",
     "react-dom": "catalog:",
     "react-error-boundary": "^6.1.1",
@@ -40,7 +42,8 @@
     "sonner": "catalog:",
     "superjson": "^2.2.6",
     "tailwind-scrollbar-hide": "^4.0.0",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@neuralpay/config": "workspace:*",

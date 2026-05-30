@@ -4,8 +4,6 @@ import {
   transactions,
   transactionTags,
   transactionTagMapping,
-  budgets,
-  bankAccounts,
 } from "./transactions";
 
 import { splits, splitParticipants, splitChatMessages } from "./splits";
@@ -20,6 +18,8 @@ import {
 import { insights, chatSessions, chatMessages } from "./ai";
 
 import { notifications, deviceTokens } from "./notifications";
+import { bankAccounts } from "./accounts";
+import { budgets } from "./budgets";
 
 // ========== Auth Relations ==========
 export const userRelations = relations(user, ({ many }) => ({

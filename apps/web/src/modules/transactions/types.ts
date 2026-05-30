@@ -1,8 +1,7 @@
-import type { AppRouter } from "@neuralpay/api-gateway/router";
-import type { inferRouterOutputs } from "@trpc/server";
-
-type RouterOutputs = inferRouterOutputs<AppRouter>;
-
-export type TransactionsOutputs =
-  RouterOutputs["payments"]["transactions"]["list"];
-export type Transaction = TransactionsOutputs["items"][number];
+import type {
+  CreateTransactionInput,
+  UpdateTransactionInput,
+} from "@neuralpay/types";
+export type CreateFormValues = Omit<CreateTransactionInput, "isManual">;
+export type UpdateFormValues = Omit<UpdateTransactionInput, "id">;
+export type FormValues = CreateFormValues | UpdateFormValues;

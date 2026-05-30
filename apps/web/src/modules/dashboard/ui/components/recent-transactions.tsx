@@ -2,7 +2,7 @@
 
 import { useRecentTransactions } from "@/hooks/transactions/use-transactions";
 import { formatAmount } from "@/lib/utils";
-import type { Transaction } from "@/modules/transactions/types";
+import type { Transaction } from "@neuralpay/types";
 import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";

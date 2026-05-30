@@ -1,6 +1,10 @@
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
-import { validateSeverity, validateType } from "../../lib/validate-filters";
+import {
+  validateInsightReadStatus,
+  validateInsightSeverity,
+  validateInsightType,
+} from "../../lib/validate-insights-enums";
 import { InsightsFilters } from "../components/insights-filters";
 import {
   InsightsList,
@@ -24,8 +28,9 @@ export function AIInsightsView({
   readStatus,
   focusInsightId,
 }: AIInsightsViewProps) {
-  const validatedType = validateType(type);
-  const validatedSeverity = validateSeverity(severity);
+  const validatedType = validateInsightType(type);
+  const validatedSeverity = validateInsightSeverity(severity);
+  const validatedReadStatus = validateInsightReadStatus(readStatus);
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -35,13 +40,7 @@ export function AIInsightsView({
       />
 
       <div className="bg-card border-muted shadow rounded-2xl p-5 space-y-4">
-        <InsightsFilters
-          currentSearch={search}
-          currentType={type}
-          currentSeverity={severity}
-          currentShowDismissed={dismissed}
-          currentReadStatus={readStatus}
-        />
+        <InsightsFilters />
 
         <SectionBoundary
           key={`${type}-${severity}-${search}-${dismissed}-${readStatus}`}
@@ -54,7 +53,7 @@ export function AIInsightsView({
             currentType={validatedType!}
             currentSeverity={validatedSeverity!}
             currentShowDismissed={dismissed}
-            currentReadStatus={readStatus}
+            currentReadStatus={validatedReadStatus}
           />
         </SectionBoundary>
       </div>

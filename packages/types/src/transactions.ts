@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 
 export const TRANSACTION_CATEGORY = [
   "food_dining",
@@ -18,7 +18,6 @@ export const TRANSACTION_CATEGORY = [
 ] as const;
 
 export const TRANSACTION_TYPE = ["debit", "credit"] as const;
-
 export const TRANSACTION_STATUS = [
   "pending",
   "successful",
@@ -27,42 +26,140 @@ export const TRANSACTION_STATUS = [
   "failed",
 ] as const;
 
-export const ACCOUNT_TYPE = [
-  "checking",
-  "savings",
-  "credit",
-  "investment",
-  "crypto",
-] as const;
+export type TransactionCategory = (typeof TRANSACTION_CATEGORY)[number];
+export type TransactionType = (typeof TRANSACTION_TYPE)[number];
+export type TransactionStatus = (typeof TRANSACTION_STATUS)[number];
 
-export type TransactionWithAccount = TransactionRecord & {
+export const transactionsFilterSchema = z.object({
+  limit: z.number().int().min(1).max(50).default(20),
+  cursor: z.string().optional(),
+  bankAccountId: z.uuid().optional(),
+  category: z
+    .union([
+      z.enum(TRANSACTION_CATEGORY),
+      z.array(z.enum(TRANSACTION_CATEGORY)),
+    ])
+    .optional(),
+  type: z
+    .union([z.enum(TRANSACTION_TYPE), z.array(z.enum(TRANSACTION_TYPE))])
+    .optional(),
+  status: z
+    .union([z.enum(TRANSACTION_STATUS), z.array(z.enum(TRANSACTION_STATUS))])
+    .optional(),
+  isAnomaly: z.boolean().optional(),
+  isManual: z.boolean().optional(),
+  search: z.string().max(200).optional(),
+  dateFrom: z.string().datetime().optional(),
+  dateTo: z.string().datetime().optional(),
+  minAmount: z.number().min(0).optional(),
+  maxAmount: z.number().min(0).optional(),
+});
+
+export const createTransactionSchema = z.object({
+  bankAccountId: z.uuid(),
+  description: z.string().min(1).max(500),
+  amount: z.number().positive("Amount must be greater than 0"),
+  type: z.enum(TRANSACTION_TYPE),
+  status: z.enum(TRANSACTION_STATUS),
+  category: z.enum(TRANSACTION_CATEGORY),
+  merchant: z.string().max(200).optional(),
+  date: z.date(),
+  notes: z.string().max(1000).optional(),
+  isManual: z.literal(true).default(true),
+});
+
+export const updateTransactionSchema = z.object({
+  id: z.uuid(),
+  bankAccountId: z.uuid().optional(),
+  description: z.string().min(1).max(500).optional(),
+  amount: z.number().positive().optional(),
+  type: z.enum(TRANSACTION_TYPE).optional(),
+  status: z.enum(TRANSACTION_STATUS).optional(),
+  category: z.enum(TRANSACTION_CATEGORY).optional(),
+  merchant: z.string().max(200).optional(),
+  notes: z.string().max(1000).optional().nullable(),
+  date: z.date().optional(),
+});
+
+export const batchDeleteSchema = z.object({
+  ids: z.array(z.uuid()).min(1).max(100),
+});
+
+export const csvColumnMappingSchema = z.object({
+  date: z.number().int().min(0),
+  amount: z.number().int().min(0),
+  description: z.number().int().min(0),
+  merchant: z.number().int().min(0).optional(),
+  type: z.number().int().min(0).optional(),
+  inferTypeFromSign: z.boolean().default(true),
+  dateFormat: z
+    .enum(["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"])
+    .default("YYYY-MM-DD"),
+  amountFormat: z.enum(["standard", "parentheses"]).default("standard"),
+  hasHeader: z.boolean().default(true),
+});
+
+export const csvImportSchema = z.object({
+  bankAccountId: z.uuid(),
+  filename: z.string(),
+  rows: z.array(z.array(z.string())),
+  mapping: csvColumnMappingSchema,
+});
+
+export type TransactionsFilterInput = z.infer<typeof transactionsFilterSchema>;
+export type ListTransactionsInput = z.infer<typeof transactionsFilterSchema>;
+export type CreateTransactionInput = z.input<typeof createTransactionSchema>;
+export type UpdateTransactionInput = z.input<typeof updateTransactionSchema>;
+export type BatchDeleteInput = z.infer<typeof batchDeleteSchema>;
+export type CsvImportInput = z.infer<typeof csvImportSchema>;
+export type CsvColumnMapping = z.infer<typeof csvColumnMappingSchema>;
+
+export type Transaction = {
+  id: string;
+  userId: string;
+  bankAccountId: string;
+  description: string;
+  amount: string;
+  type: TransactionType;
+  status: TransactionStatus | null;
+  category: TransactionCategory | null;
+  customCategoryId: string | null;
+  merchant: string | null;
+  date: Date;
+  isAnomaly: boolean;
+  anomalyScore: string | null;
+  notes: string | null;
+  isManual: boolean;
+  plaidTxId: string | null;
+  monoTxId: string | null;
+  csvImportId: string | null;
+  createdAt: Date;
+  // Joined from bankAccounts
   bankAccountName: string | null;
   bankAccountType: string | null;
   bankName: string | null;
   currency: string | null;
-  maskedNumber?: string | null;
+  maskedNumber: string | null;
+  // Joined from customCategories
+  customCategoryName: string | null;
+  customCategoryIcon: string | null;
+  customCategoryColor: string | null;
 };
-
-export type CategoryTotal = {
-  category: string;
-  total: number;
-  count: number;
+export type PaginatedTransactions = {
+  items: Transaction[];
+  nextCursor: string | null;
+  total?: number;
 };
 
 export type OverviewTotal = {
   totalSpending: number;
   totalBudget: number;
-  categorySpending: Array<{
-    category: string;
-    total: number;
-    budget: number;
-  }>;
+  categorySpending: Array<{ category: string; total: number; budget: number }>;
   trendData: Array<{
     name: string;
     value: number;
     budget: number;
     dailyBudget: number;
-    date?: string;
   }>;
 };
 
@@ -79,58 +176,32 @@ export type TopMonthlyCategories = {
   hasData: boolean;
 };
 
-export type TransactionPage = {
-  items: TransactionWithAccount[];
-  nextCursor: string | null;
+export type CsvPreviewRow = {
+  rowIndex: number;
+  raw: string[];
+  parsed: {
+    date: string | null;
+    description: string | null;
+    merchant: string | null;
+    amount: number | null;
+    type: TransactionType | null;
+  };
+  isValid: boolean;
+  errors: string[];
 };
 
-export type AccountType = (typeof ACCOUNT_TYPE)[number];
-export type TransactionCategory = (typeof TRANSACTION_CATEGORY)[number];
-export type TransactionType = (typeof TRANSACTION_TYPE)[number];
-export type TransactionStatus = (typeof TRANSACTION_STATUS)[number];
+export type CsvImportPreview = {
+  filename: string;
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  preview: CsvPreviewRow[];
+  headers: string[];
+};
 
-export const transactionSchema = z.object({
-  id: z.uuid(),
-  userId: z.string(),
-  bankAccountId: z.uuid(),
-  description: z.string(),
-  amount: z.string(),
-  type: z.enum(TRANSACTION_TYPE),
-  status: z.enum(TRANSACTION_STATUS).nullable(),
-  category: z.enum(TRANSACTION_CATEGORY).nullable(),
-  merchant: z.string().nullable(),
-  date: z.date(),
-  isAnomaly: z.boolean(),
-  anomalyScore: z.string().nullable(),
-  notes: z.string().nullable(),
-  plaidTxId: z.string().nullable(),
-  monoTxId: z.string().nullable(),
-  createdAt: z.date(),
-});
-
-export type TransactionRecord = z.infer<typeof transactionSchema>;
-
-export const transactionsFilterSchema = z.object({
-  limit: z.number().int().min(1).max(100).default(20),
-  cursor: z.string().optional(),
-  bankAccountId: z.uuid().optional(),
-  category: z.enum(TRANSACTION_CATEGORY).nullable().optional(),
-  type: z.enum(TRANSACTION_TYPE).optional(),
-  status: z.enum(TRANSACTION_STATUS).nullable().optional(),
-  isAnomaly: z.boolean().optional(),
-  search: z.string().optional(),
-  dateFrom: z.iso.datetime().optional(),
-  dateTo: z.iso.datetime().optional(),
-  minAmount: z.number().min(0).optional(),
-  maxAmount: z.number().min(0).optional(),
-});
-
-export type TransactionsFilterInput = z.infer<typeof transactionsFilterSchema>;
-
-export const updateTransactionSchema = z.object({
-  id: z.uuid(),
-  category: z.enum(TRANSACTION_CATEGORY).optional(),
-  notes: z.string().optional(),
-});
-
-export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
+export type CsvImportResult = {
+  importId: string;
+  imported: number;
+  skipped: number;
+  errors: Array<{ row: number; reason: string }>;
+};

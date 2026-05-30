@@ -1,15 +1,22 @@
 import { db } from "./src";
+import { bankAccounts } from "./src/schema/accounts";
 import { chatMessages, chatSessions, insights } from "./src/schema/ai";
+import { budgets } from "./src/schema/budgets";
 import { notifications } from "./src/schema/notifications";
 import {
   splitChatMessages,
   splitParticipants,
   splits,
 } from "./src/schema/splits";
-import { bankAccounts, budgets, transactions } from "./src/schema/transactions";
+import {
+  csvImports,
+  transactionTagMapping,
+  transactionTags,
+  transactions,
+} from "./src/schema/transactions";
 import { vaultContributions, vaultMembers, vaults } from "./src/schema/vaults";
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 function daysAgo(days: number): Date {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 }
@@ -18,7 +25,8 @@ function randomAmount(min: number, max: number): string {
   return (Math.random() * (max - min) + min).toFixed(2);
 }
 
-const CATEGORIES = [
+// Covers all system category enum values except "income" (handled separately)
+const CATEGORY_SEEDS = [
   {
     category: "food_dining" as const,
     weight: 25,
@@ -119,8 +127,6 @@ const CATEGORIES = [
       "Arcade",
       "Comedy Club",
       "Sports Bar",
-      "Netflix (event)",
-      "Spotify (event)",
     ],
   },
   {
@@ -163,6 +169,54 @@ const CATEGORIES = [
       "Therapy Session",
     ],
   },
+  {
+    category: "education" as const,
+    weight: 2,
+    min: 15,
+    max: 300,
+    merchants: [
+      "Coursera",
+      "Udemy",
+      "University Bookstore",
+      "LinkedIn Learning",
+      "Skillshare",
+      "Pluralsight",
+    ],
+  },
+  {
+    category: "transfer" as const,
+    weight: 4,
+    min: 50,
+    max: 500,
+    merchants: [
+      "Internal Transfer",
+      "Zelle Payment",
+      "Wire Transfer",
+      "ACH Transfer",
+      "Venmo",
+    ],
+  },
+  {
+    category: "investment" as const,
+    weight: 3,
+    min: 100,
+    max: 1000,
+    merchants: [
+      "Robinhood",
+      "Fidelity",
+      "Vanguard",
+      "Coinbase",
+      "E*Trade",
+      "Charles Schwab",
+    ],
+  },
+  {
+    category: "other" as const,
+    weight: 2,
+    min: 10,
+    max: 100,
+    merchants: ["Miscellaneous", "Unknown Merchant", "Adjustments", "Fees"],
+  },
 ] as const;
 
 function weightedRandom<T>(items: { item: T; weight: number }[]): T {
@@ -186,8 +240,9 @@ async function seed() {
   }
   const userId = existingUser.id;
 
-  // 2. Clean existing data in dependency order
-  await db.delete(notifications);
+  // 2. Clean existing data in dependency order (respect FKs)
+  await db.delete(transactionTagMapping);
+  await db.delete(transactionTags);
   await db.delete(chatMessages);
   await db.delete(chatSessions);
   await db.delete(vaultContributions);
@@ -196,146 +251,158 @@ async function seed() {
   await db.delete(splitChatMessages);
   await db.delete(splitParticipants);
   await db.delete(splits);
+  await db.delete(transactions);
+  await db.delete(csvImports);
   await db.delete(insights);
   await db.delete(budgets);
-  await db.delete(transactions);
   await db.delete(bankAccounts);
+  await db.delete(notifications);
 
-  // 3. Insert accounts (exactly 3, matching original structure)
-  const [checkingAcc, , creditAcc] = await db
-    .insert(bankAccounts)
-    .values([
-      {
-        userId,
-        name: "Main Checking",
-        type: "checking" as const,
-        balance: "5420.75",
-        currency: "USD",
-        bankName: "Chase",
-        source: "manual",
-        isVerified: true,
-        status: "active",
-      },
-      {
-        userId,
-        name: "Savings",
-        type: "savings" as const,
-        balance: "12350.00",
-        currency: "USD",
-        bankName: "Chase",
-        source: "manual",
-        isVerified: true,
-        status: "active",
-      },
-      {
-        userId,
-        name: "Credit Card",
-        type: "credit" as const,
-        balance: "-230.45",
-        currency: "USD",
-        bankName: "Amex",
-        source: "manual",
-        isVerified: true,
-        status: "active",
-      },
-    ])
-    .returning();
+  // 3. Insert bank accounts (all 5 account_type enum values)
+  const [checkingAcc, savingsAcc, creditAcc, investmentAcc, cryptoAcc] =
+    await db
+      .insert(bankAccounts)
+      .values([
+        {
+          userId,
+          name: "Main Checking",
+          type: "checking" as const,
+          subtype: "Primary",
+          tags: ["primary", "usa"],
+          balance: "5420.75",
+          currency: "USD",
+          bankName: "Chase",
+          maskedNumber: "1234",
+          isManual: true,
+          status: "active",
+        },
+        {
+          userId,
+          name: "Savings",
+          type: "savings" as const,
+          subtype: "Emergency Fund",
+          tags: ["savings", "usa"],
+          balance: "12350.00",
+          currency: "USD",
+          bankName: "Chase",
+          maskedNumber: "5678",
+          isManual: true,
+          status: "active",
+        },
+        {
+          userId,
+          name: "Credit Card",
+          type: "credit" as const,
+          subtype: "Rewards",
+          tags: ["credit", "usa"],
+          balance: "-230.45",
+          currency: "USD",
+          bankName: "Amex",
+          maskedNumber: "9012",
+          isManual: true,
+          status: "active",
+        },
+        {
+          userId,
+          name: "Brokerage",
+          type: "investment" as const,
+          subtype: "ETF Portfolio",
+          tags: ["investment", "usa"],
+          balance: "8750.00",
+          currency: "USD",
+          bankName: "Fidelity",
+          maskedNumber: "3456",
+          isManual: true,
+          status: "active",
+        },
+        {
+          userId,
+          name: "Crypto Wallet",
+          type: "crypto" as const,
+          subtype: "DeFi",
+          tags: ["crypto", "web3"],
+          balance: "1200.50",
+          currency: "USD",
+          bankName: "Coinbase",
+          maskedNumber: "7890",
+          isManual: true,
+          status: "active",
+        },
+      ])
+      .returning();
 
   if (!checkingAcc || !creditAcc) {
-    console.error("Failed to insert bank accounts");
+    console.error("Failed to insert essential bank accounts");
     process.exit(1);
   }
 
-  // 4. Insert budgets (NEW — added to original)
+  // 4. Insert budgets for ALL 14 system category enum values
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
-  await db.insert(budgets).values([
-    {
-      userId,
-      category: "food_dining",
-      limitAmount: "350.00",
-      month: currentMonth,
-      year: currentYear,
-      alertThreshold: 80,
-      resetDay: 1,
-    },
-    {
-      userId,
-      category: "groceries",
-      limitAmount: "500.00",
-      month: currentMonth,
-      year: currentYear,
-      alertThreshold: 85,
-      resetDay: 1,
-    },
-    {
-      userId,
-      category: "transport",
-      limitAmount: "200.00",
-      month: currentMonth,
-      year: currentYear,
-      alertThreshold: 75,
-      resetDay: 1,
-    },
-    {
-      userId,
-      category: "subscriptions",
-      limitAmount: "50.00",
-      month: currentMonth,
-      year: currentYear,
-      alertThreshold: 90,
-      resetDay: 1,
-    },
-    {
-      userId,
-      category: "shopping",
-      limitAmount: "300.00",
-      month: currentMonth,
-      year: currentYear,
-      alertThreshold: 80,
-      resetDay: 1,
-    },
-    {
-      userId,
-      category: "entertainment",
-      limitAmount: "150.00",
-      month: currentMonth,
-      year: currentYear,
-      alertThreshold: 70,
-      resetDay: 1,
-    },
-    {
-      userId,
-      category: "utilities",
-      limitAmount: "250.00",
-      month: currentMonth,
-      year: currentYear,
-      alertThreshold: 90,
-      resetDay: 1,
-    },
-    {
-      userId,
-      category: "rent",
-      limitAmount: "1200.00",
-      month: currentMonth,
-      year: currentYear,
-      alertThreshold: 95,
-      resetDay: 1,
-    },
-    {
-      userId,
-      category: "healthcare",
-      limitAmount: "100.00",
-      month: currentMonth,
-      year: currentYear,
-      alertThreshold: 80,
-      resetDay: 1,
-    },
-  ]);
+  const allSystemCategories = [
+    "food_dining",
+    "utilities",
+    "rent",
+    "transport",
+    "shopping",
+    "entertainment",
+    "healthcare",
+    "education",
+    "transfer",
+    "income",
+    "investment",
+    "subscriptions",
+    "groceries",
+    "other",
+  ] as const;
 
-  // 5. Insert transactions — 90 days of generated data (expanded from original 10)
+  await db.insert(budgets).values(
+    allSystemCategories.map((cat) => ({
+      userId,
+      category: cat,
+      limitAmount:
+        cat === "rent"
+          ? "1200.00"
+          : cat === "income"
+            ? "5000.00"
+            : cat === "investment"
+              ? "1000.00"
+              : "300.00",
+      month: currentMonth,
+      year: currentYear,
+      alertThreshold: 80,
+      resetDay: 1,
+    })),
+  );
+
+  // 6. Insert CSV imports (demonstrates csvImportId linkage)
+  const [csvImport1] = await db
+    .insert(csvImports)
+    .values({
+      userId,
+      bankAccountId: checkingAcc.id,
+      filename: "q1_statement.csv",
+      totalRows: 150,
+      importedRows: 148,
+      skippedRows: 2,
+      status: "completed",
+      columnMapping: JSON.stringify({ date: 0, description: 1, amount: 2 }),
+    })
+    .returning();
+
+  // 7. Insert transaction tags
+  const [tagWork, tagPersonal, tagTax] = await db
+    .insert(transactionTags)
+    .values([
+      { userId, name: "Work", color: "#2563EB" },
+      { userId, name: "Personal", color: "#DB2777" },
+      { userId, name: "Tax-Deductible", color: "#059669" },
+    ])
+    .returning();
+
+  // 8. Insert transactions — 90 days covering all categories, statuses & new fields
   const transactionsData: (typeof transactions.$inferInsert)[] = [];
 
   function getTransactionStatus(
@@ -344,36 +411,35 @@ async function seed() {
     const now = Date.now();
     const ageMs = now - date.getTime();
     const ageDays = ageMs / (1000 * 60 * 60 * 24);
-
     const roll = Math.random();
 
-    // Recent 3 days: higher chance of pending (holds not yet settled)
+    // Recent 3 days: higher chance of pending / failed
     if (ageDays <= 3) {
       if (roll < 0.2) return "pending";
       if (roll < 0.25) return "failed";
       return "successful";
     }
 
-    // Older than 3 days: pending is extremely rare (should have settled)
-    if (roll < 0.02) return "failed"; // declined transfer / voided pre-auth
-    if (roll < 0.06) return "refunded"; // merchant return
-    if (roll < 0.09) return "reversed"; // bank undo / chargeback
-    if (roll < 0.095) return "pending"; // edge case: long-running hold
+    // Older than 3 days: settled transactions
+    if (roll < 0.02) return "failed";
+    if (roll < 0.06) return "refunded";
+    if (roll < 0.09) return "reversed";
+    if (roll < 0.095) return "pending";
     return "successful";
   }
 
+  // Daily randomized transactions
   for (let day = 89; day >= 0; day--) {
     const date = daysAgo(day);
     const numTransactions = Math.floor(Math.random() * 3) + 1;
 
     for (let t = 0; t < numTransactions; t++) {
       const catInfo = weightedRandom(
-        CATEGORIES.map((c) => ({ item: c, weight: c.weight })),
+        CATEGORY_SEEDS.map((c) => ({ item: c, weight: c.weight })),
       );
       const merchant =
         catInfo.merchants[Math.floor(Math.random() * catInfo.merchants.length)];
       const amount = randomAmount(catInfo.min, catInfo.max);
-
       const status = getTransactionStatus(date);
 
       const isAnomaly =
@@ -387,22 +453,27 @@ async function seed() {
         description: merchant ?? "",
         amount,
         type: "debit",
-        status, // ← now distributed across all 5 statuses
+        status,
         category: catInfo.category,
+
         merchant,
         date,
         isAnomaly,
-        anomalyScore: isAnomaly ? (0.7 + Math.random() * 0.3).toFixed(2) : null,
+        anomalyScore: isAnomaly ? (0.7 + Math.random() * 0.3).toFixed(4) : null,
+        notes: Math.random() > 0.7 ? `Note: ${merchant} purchase` : null,
+        isManual: Math.random() > 0.8, // 20% manual entries
+        plaidTxId: null,
+        monoTxId: null,
+        csvImportId: null,
       });
     }
   }
 
-  // Add income transactions (salary every ~30 days)
+  // Income transactions (salary every ~30 days)
   const incomeDates = [10, 40, 70];
   for (const days of incomeDates) {
     const date = daysAgo(days);
     const status = getTransactionStatus(date);
-
     transactionsData.push({
       bankAccountId: checkingAcc.id,
       userId,
@@ -414,10 +485,16 @@ async function seed() {
       merchant: "Employer Inc",
       date,
       isAnomaly: false,
+      anomalyScore: null,
+      notes: "Monthly salary deposit",
+      isManual: false,
+      plaidTxId: `plaid_salary_${days}`,
+      monoTxId: null,
+      csvImportId: null,
     });
   }
 
-  // Add freelance payment (successful, but one edge case)
+  // Freelance income
   transactionsData.push({
     bankAccountId: checkingAcc.id,
     userId,
@@ -429,11 +506,107 @@ async function seed() {
     merchant: "Upwork Client",
     date: daysAgo(25),
     isAnomaly: false,
+    anomalyScore: null,
+    notes: "Invoice #2049",
+    isManual: false,
+    plaidTxId: null,
+    monoTxId: `mono_fl_${Date.now()}`,
+    csvImportId: null,
   });
 
-  await db.insert(transactions).values(transactionsData);
+  // CSV-imported transactions
+  if (csvImport1) {
+    transactionsData.push(
+      {
+        bankAccountId: checkingAcc.id,
+        userId,
+        description: "Imported Grocery Run",
+        amount: "67.89",
+        type: "debit",
+        status: "successful",
+        category: "groceries",
+        merchant: "Imported Store",
+        date: daysAgo(12),
+        isAnomaly: false,
+        anomalyScore: null,
+        notes: "From CSV import",
+        isManual: false,
+        plaidTxId: null,
+        monoTxId: null,
+        csvImportId: csvImport1.id,
+      },
+      {
+        bankAccountId: checkingAcc.id,
+        userId,
+        description: "Imported Utility",
+        amount: "95.00",
+        type: "debit",
+        status: "successful",
+        category: "utilities",
+        merchant: "Imported Utility Co",
+        date: daysAgo(11),
+        isAnomaly: false,
+        anomalyScore: null,
+        notes: "From CSV import",
+        isManual: false,
+        plaidTxId: null,
+        monoTxId: null,
+        csvImportId: csvImport1.id,
+      },
+    );
+  }
 
-  // 6. Insert spending insights
+  // Explicit status coverage (ensure every enum value appears at least once)
+  const explicitStatuses: Array<
+    "pending" | "successful" | "refunded" | "reversed" | "failed"
+  > = ["pending", "successful", "refunded", "reversed", "failed"];
+  explicitStatuses.forEach((st, idx) => {
+    transactionsData.push({
+      bankAccountId: checkingAcc.id,
+      userId,
+      description: `Status demo: ${st}`,
+      amount: (50 + idx * 10).toFixed(2),
+      type: "debit",
+      status: st,
+      category: "other",
+      merchant: "Test Merchant",
+      date: daysAgo(5 + idx),
+      isAnomaly: st === "failed" || st === "reversed",
+      anomalyScore: st === "failed" || st === "reversed" ? "0.8500" : null,
+      notes: `Explicitly seeded to demonstrate ${st} status`,
+      isManual: true,
+      plaidTxId: null,
+      monoTxId: null,
+      csvImportId: null,
+    });
+  });
+
+  const insertedTxs = await db
+    .insert(transactions)
+    .values(transactionsData)
+    .returning();
+
+  // 9. Map tags to transactions
+  if (insertedTxs.length > 0 && tagWork && tagPersonal) {
+    const tagMappings: { transactionId: string; tagId: string }[] = [];
+    const incomeTxs = insertedTxs
+      .filter((t) => t.category === "income")
+      .slice(0, 2);
+    for (const tx of incomeTxs) {
+      tagMappings.push({ transactionId: tx.id, tagId: tagWork.id });
+    }
+    const shoppingTxs = insertedTxs
+      .filter((t) => t.category === "shopping")
+      .slice(0, 2);
+    for (const tx of shoppingTxs) {
+      tagMappings.push({ transactionId: tx.id, tagId: tagPersonal.id });
+    }
+    if (tagMappings.length > 0) {
+      await db.insert(transactionTagMapping).values(tagMappings);
+    }
+  }
+
+  // 10. Insert spending insights
   await db.insert(insights).values([
     {
       userId,
@@ -487,58 +660,137 @@ async function seed() {
     },
   ]);
 
-  // 7. Insert split
-  const [split1] = await db
+  // 11. Insert split
+  const [splitOpen, splitSettled, splitCancelled] = await db
     .insert(splits)
-    .values({
-      creatorId: userId,
-      title: "Dinner with Friends",
-      totalAmount: "85.50",
-      currency: "USD",
-      category: "dining",
-      status: "open",
-    })
+    .values([
+      {
+        creatorId: userId,
+        title: "Dinner with Friends",
+        description: "Friday night group dinner at Italian place",
+        totalAmount: "85.50",
+        currency: "USD",
+        category: "food_dining", // ← valid categoryEnum value
+        paidById: userId, // ← who fronted the bill
+        status: "open",
+        settledAt: null,
+      },
+      {
+        creatorId: userId,
+        title: "Uber to Airport",
+        description: "Shared ride to JFK — already settled",
+        totalAmount: "45.00",
+        currency: "USD",
+        category: "transport",
+        paidById: userId,
+        status: "settled",
+        settledAt: daysAgo(5),
+      },
+      {
+        creatorId: userId,
+        title: "Concert Tickets",
+        description: "Cancelled — event was postponed",
+        totalAmount: "120.00",
+        currency: "USD",
+        category: "entertainment",
+        paidById: userId,
+        status: "cancelled",
+        settledAt: null,
+      },
+    ])
     .returning();
 
-  if (!split1) {
-    console.error("Failed to insert split");
+  if (!splitOpen || !splitSettled) {
+    console.error("Failed to insert splits");
     process.exit(1);
   }
 
+  // Participants for OPEN split (1 paid, 1 pending)
   await db.insert(splitParticipants).values([
     {
-      splitId: split1.id,
+      splitId: splitOpen.id,
       userId,
       shareAmount: "42.75",
       paid: true,
       paidAt: daysAgo(2),
+      notes: "Paid via Venmo",
     },
     {
-      splitId: split1.id,
+      splitId: splitOpen.id,
       userId: null,
       guestName: "Sarah",
       guestEmail: "sarah@example.com",
       shareAmount: "42.75",
       paid: false,
+      notes: null,
     },
   ]);
 
+  // Participants for SETTLED split (both paid)
+  await db.insert(splitParticipants).values([
+    {
+      splitId: splitSettled.id,
+      userId,
+      shareAmount: "22.50",
+      paid: true,
+      paidAt: daysAgo(6),
+      notes: "Paid cash",
+    },
+    {
+      splitId: splitSettled.id,
+      userId: null,
+      guestName: "Mike",
+      guestEmail: "mike@example.com",
+      shareAmount: "22.50",
+      paid: true,
+      paidAt: daysAgo(5),
+      notes: "Zelle transfer",
+    },
+  ]);
+
+  // No participants for CANCELLED split (or add refunded ones)
+
+  // Chat messages with full timestamp coverage
   await db.insert(splitChatMessages).values([
     {
-      splitId: split1.id,
+      splitId: splitOpen.id,
       userId,
       content: "Hey everyone! I've created the split for dinner 🍽️",
       isSystemMessage: false,
+      createdAt: daysAgo(3),
+      editedAt: null,
+      deletedAt: null,
     },
     {
-      splitId: split1.id,
+      splitId: splitOpen.id,
       userId,
       content: "Split created: Dinner with Friends — $85.50 total",
       isSystemMessage: true,
+      createdAt: daysAgo(3),
+      editedAt: null,
+      deletedAt: null,
+    },
+    {
+      splitId: splitOpen.id,
+      userId,
+      content: "Sarah, please send your share when you can!",
+      isSystemMessage: false,
+      createdAt: daysAgo(1),
+      editedAt: null,
+      deletedAt: null,
+    },
+    {
+      splitId: splitSettled.id,
+      userId,
+      content: "Airport ride settled — thanks Mike!",
+      isSystemMessage: false,
+      createdAt: daysAgo(5),
+      editedAt: null,
+      deletedAt: null,
     },
   ]);
 
-  // 8. Insert vault
+  // 12. Insert vault
   const [vault] = await db
     .insert(vaults)
     .values({
@@ -582,7 +834,7 @@ async function seed() {
     },
   ]);
 
-  // 9. Insert AI chat session + messages
+  // 13. Insert AI chat session + messages
   const [chatSession] = await db
     .insert(chatSessions)
     .values({
@@ -633,7 +885,7 @@ async function seed() {
     },
   ]);
 
-  // 10. Insert notifications
+  // 14. Insert notifications
   await db.insert(notifications).values([
     {
       userId,
@@ -653,8 +905,8 @@ async function seed() {
       body: "Your split 'Dinner with Friends' has 1 pending payment from Sarah.",
       category: "split",
       relatedType: "split",
-      relatedId: split1.id,
-      actionUrl: `/dashboard/splits/${split1.id}`,
+      relatedId: splitOpen.id, // ← use the actual splitOpen.id
+      actionUrl: `/dashboard/splits/${splitOpen.id}`,
       read: false,
       dismissed: false,
       createdAt: daysAgo(2),
@@ -687,14 +939,17 @@ async function seed() {
 
   console.log("✅ Seeding complete!");
   console.log(`   User: ${existingUser.email}`);
-  console.log(`   Accounts: 3 (checking, savings, credit)`);
+  console.log(`   Accounts: 5 (checking, savings, credit, investment, crypto)`);
+  console.log(`   Custom Categories: 2`);
   console.log(`   Transactions: ${transactionsData.length}`);
-  console.log(`   Budgets: 9 categories`);
+  console.log(`   Budgets: 14 categories`);
   console.log(`   Insights: 5`);
   console.log(`   Splits: 1 (1 open, Sarah pending)`);
   console.log(`   Vaults: 1 (Bali — 22% funded)`);
   console.log(`   Chat messages: 4`);
   console.log(`   Notifications: 4`);
+  console.log(`   CSV Imports: 1`);
+  console.log(`   Transaction Tags: 3`);
 }
 
 seed().catch(console.error);

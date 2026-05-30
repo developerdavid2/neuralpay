@@ -8,7 +8,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-import { categoryEnum } from "./transactions";
+import { categoryEnum } from "./categories";
 
 // Inlined for drizzle-kit CJS compatibility — source of truth is @neuralpay/types
 export const insightTypeEnum = pgEnum("insight_type", [
@@ -39,31 +39,6 @@ export const topicEnum = pgEnum("topic", [
   "general",
 ]);
 export const roleEnum = pgEnum("role", ["user", "assistant"]);
-
-// // Compile-time drift guards
-// type _CheckInsightType =
-//   (typeof insightTypeEnum.enumValues)[number] extends InsightType
-//     ? true
-//     : never;
-// type _CheckSeverity =
-//   (typeof insightSeverityEnum.enumValues)[number] extends InsightSeverity
-//     ? true
-//     : never;
-// type _CheckContext =
-//   (typeof chatContextTypeEnum.enumValues)[number] extends ChatContextType
-//     ? true
-//     : never;
-// type _CheckTopic = (typeof topicEnum.enumValues)[number] extends Topic
-//   ? true
-//   : never;
-// type _CheckRole = (typeof roleEnum.enumValues)[number] extends Role
-//   ? true
-//   : never;
-// const _1: _CheckInsightType = true;
-// const _2: _CheckSeverity = true;
-// const _3: _CheckContext = true;
-// const _4: _CheckTopic = true;
-// const _5: _CheckRole = true;
 
 export const insights = pgTable("insights_spending", {
   id: uuid("id").defaultRandom().primaryKey(),

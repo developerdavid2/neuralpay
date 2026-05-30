@@ -39,7 +39,9 @@ export function useRecentInsightNavigation() {
 
   const handleChat = useCallback(
     (id: string) => {
-      router.push(`/dashboard/ai-chat?contextType=insight&contextId=${id}`);
+      router.push(
+        `/dashboard/ai-chat?contextType=insight&contextId=${id}` as never,
+      );
     },
     [router],
   );
@@ -47,7 +49,7 @@ export function useRecentInsightNavigation() {
   const handleOpen = useCallback(
     (id: string) => {
       markRead.mutate({ id });
-      router.push(`/dashboard/ai-insights?focus=${id}`);
+      router.push(`/dashboard/ai-insights?focus=${id}` as never);
     },
     [markRead, router],
   );

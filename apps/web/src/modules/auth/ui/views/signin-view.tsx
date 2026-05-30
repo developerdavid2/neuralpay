@@ -1,28 +1,28 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signInSchema, type SignInInput } from "@neuralpay/types";
 import { Eye, EyeOff, OctagonAlertIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaGoogle, FaApple } from "react-icons/fa";
-import { signInSchema, type SignInInput } from "@neuralpay/types";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { FaApple } from "react-icons/fa";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { Input } from "@neuralpay/ui/components/input";
-import { Checkbox } from "@neuralpay/ui/components/checkbox";
+import GoogleIconIcon from "@/public/assets/icons/google";
 import { Alert, AlertTitle } from "@neuralpay/ui/components/alert";
+import { Button } from "@neuralpay/ui/components/button";
+import { Checkbox } from "@neuralpay/ui/components/checkbox";
 import {
   Field,
-  FieldLabel,
   FieldError,
   FieldGroup,
+  FieldLabel,
   FieldSeparator,
 } from "@neuralpay/ui/components/field";
+import { Input } from "@neuralpay/ui/components/input";
 import { cn } from "@neuralpay/ui/lib/utils";
-import GoogleIconIcon from "@/public/assets/icons/google";
 import { toast } from "sonner";
 
 type FormStatus =
@@ -63,7 +63,7 @@ const SignInView = () => {
         onError: ({ error }) => {
           if (error.code === "EMAIL_NOT_VERIFIED") {
             sessionStorage.setItem("verify_email", data.email);
-            router.push("/auth/verify-otp");
+            router.push("/auth/verify-otp" as never);
             return;
           }
           const errorMsg =

@@ -1,9 +1,11 @@
 import { INSIGHTS_LIMIT } from "@/modules/dashboard/constants";
-import { AIInsightsView } from "@/modules/insights/ui/views/ai-insights-view";
 import {
-  validateSeverity,
-  validateType,
-} from "@/modules/insights/lib/validate-filters";
+  validateInsightReadStatus,
+  validateInsightSeverity,
+  validateInsightType,
+} from "@/modules/insights/lib/validate-insights-enums";
+import { AIInsightsView } from "@/modules/insights/ui/views/ai-insights-view";
+
 import {
   HydrateClient,
   prefetch,
@@ -25,15 +27,16 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
 
-  const validatedSeverity = validateSeverity(params.severity);
-  const validatedType = validateType(params.type);
+  const validatedSeverity = validateInsightSeverity(params.severity);
+  const validatedType = validateInsightType(params.type);
+  const validatedReadStatus = validateInsightReadStatus(params.readStatus);
 
   const listFilters = {
     includeDismissed: params.dismissed === "true",
     limit: INSIGHTS_LIMIT,
     severity: validatedSeverity,
     type: validatedType,
-    readStatus: (params.readStatus ?? "all") as "all" | "read" | "unread",
+    readStatus: validatedReadStatus,
     search: params.search ?? "",
   };
 
@@ -53,10 +56,10 @@ export default async function Page({ searchParams }: PageProps) {
     <HydrateClient>
       <AIInsightsView
         search={params.search ?? ""}
-        type={params.type ?? "all"}
-        severity={params.severity ?? "all"}
+        type={validatedType ?? "all"}
+        severity={validatedSeverity ?? "all"}
         dismissed={params.dismissed === "true"}
-        readStatus={params.readStatus ?? "all"}
+        readStatus={validatedReadStatus ?? "all"}
         focusInsightId={params.focus}
       />
     </HydrateClient>

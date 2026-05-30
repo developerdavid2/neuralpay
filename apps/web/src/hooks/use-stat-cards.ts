@@ -1,5 +1,6 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 // hooks/dashboard/use-stat-cards.ts
 export function useStatCards() {
@@ -15,8 +16,9 @@ export function useStatCards() {
     trpc.payments.transactions.currentMonthSpending.queryOptions(),
   );
 
+  const allAccounts = accounts.items;
   const totalBalance = balance.totalBalance;
-  const savingsBalance = accounts
+  const savingsBalance = allAccounts
     .filter((a) => a.type === "savings")
     .reduce((sum, account) => sum + parseFloat(account.balance ?? "0"), 0);
   const savingsRate =

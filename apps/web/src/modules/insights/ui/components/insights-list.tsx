@@ -1,7 +1,8 @@
 "use client";
 
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import { useInsightMutations } from "@/hooks/insights/use-insight-mutations";
-import { useInsightsInfiniteScroll } from "@/hooks/insights/use-insights";
+import { useInsightsList } from "@/hooks/insights/use-insights";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { INSIGHTS_LIMIT } from "@/modules/dashboard/constants";
 import {
@@ -9,7 +10,6 @@ import {
   InsightsSkeleton,
   type InsightCardVariant,
 } from "@/modules/insights/ui/components/insight-card";
-import { InfiniteScroll } from "@/components/infinite-scroll";
 import { Sparkles } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import type { InsightsListInput } from "../../types";
@@ -37,7 +37,7 @@ export function InsightsList({
 
   // Data + Mutations
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
-    useInsightsInfiniteScroll({
+    useInsightsList({
       includeDismissed: currentShowDismissed,
       limit: INSIGHTS_LIMIT,
       severity: currentSeverity,
@@ -76,10 +76,6 @@ export function InsightsList({
       }
     }
   }, [focusInsightId, allInsights, selectedInsightId, handleCardOpen]);
-
-  if (isLoading) {
-    return <InsightsListSkeleton />;
-  }
 
   if (allInsights.length === 0) {
     return (

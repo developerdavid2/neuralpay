@@ -1,13 +1,18 @@
 import { db } from "@neuralpay/db";
 import { bankAccounts, budgets, transactions } from "@neuralpay/db/schema";
 import {
+  type BatchDeleteInput,
+  type CreateTransactionInput,
   type OverviewTotal,
-  type PaginatedResult,
+  type PaginatedTransactions,
   type ServiceResult,
   type TopMonthlyCategories,
-  type TransactionRecord,
+  type Transaction,
   type TransactionsFilterInput,
   type UpdateTransactionInput,
+  TRANSACTION_CATEGORY,
+  TRANSACTION_STATUS,
+  TRANSACTION_TYPE,
 } from "@neuralpay/types";
 import {
   differenceInDays,
@@ -25,16 +30,30 @@ import {
   getTableColumns,
   gte,
   ilike,
+  inArray,
   lte,
   or,
   sql,
 } from "drizzle-orm";
 
+// Build the joined select columns (transaction + account + custom category)
+function transactionSelect() {
+  return {
+    ...getTableColumns(transactions),
+    bankAccountName: bankAccounts.name,
+    bankAccountType: bankAccounts.type,
+    bankName: bankAccounts.bankName,
+    currency: bankAccounts.currency,
+    maskedNumber: bankAccounts.maskedNumber,
+  };
+}
+
 export const TransactionsService = {
+  // ── LIST (cursor-paginated, filterable)
   async list(
     userId: string,
     input: TransactionsFilterInput,
-  ): Promise<ServiceResult<PaginatedResult<TransactionRecord>>> {
+  ): Promise<ServiceResult<PaginatedTransactions>> {
     try {
       const {
         bankAccountId,
@@ -42,6 +61,7 @@ export const TransactionsService = {
         type,
         status,
         isAnomaly,
+        isManual,
         search,
         dateFrom,
         dateTo,
@@ -50,50 +70,72 @@ export const TransactionsService = {
         limit,
         cursor,
       } = input;
+
       const conditions = [eq(transactions.userId, userId)];
 
-      // ── Filters
-      if (bankAccountId) {
+      if (bankAccountId)
         conditions.push(eq(transactions.bankAccountId, bankAccountId));
-      }
-      if (category) {
-        conditions.push(eq(transactions.category, category));
-      }
       if (type) {
-        conditions.push(eq(transactions.type, type));
-      }
-      if (status) {
-        conditions.push(eq(transactions.status, status));
-      }
-      if (isAnomaly !== undefined) {
-        conditions.push(eq(transactions.isAnomaly, isAnomaly));
-      }
-
-      if (search) {
-        const searchCondition = or(
-          ilike(transactions.description, `%${search}%`),
-          ilike(transactions.merchant, `%${search}%`),
-        );
-        if (searchCondition) {
-          conditions.push(searchCondition);
+        const types = Array.isArray(type) ? type : [type];
+        if (types.length > 0 && types.length < TRANSACTION_TYPE.length) {
+          conditions.push(
+            inArray(
+              transactions.type,
+              types as (typeof TRANSACTION_TYPE)[number][],
+            ),
+          );
         }
       }
-      if (dateFrom) {
-        conditions.push(gte(transactions.date, new Date(dateFrom)));
+      if (status) {
+        const statuses = Array.isArray(status) ? status : [status];
+        if (
+          statuses.length > 0 &&
+          statuses.length < TRANSACTION_STATUS.length
+        ) {
+          conditions.push(
+            inArray(
+              transactions.status,
+              statuses as (typeof TRANSACTION_STATUS)[number][],
+            ),
+          );
+        }
       }
-      if (dateTo) {
-        conditions.push(lte(transactions.date, new Date(dateTo)));
-      }
-      if (minAmount !== undefined) {
+      if (isAnomaly !== undefined)
+        conditions.push(eq(transactions.isAnomaly, isAnomaly));
+      if (isManual !== undefined)
+        conditions.push(eq(transactions.isManual, isManual));
+      if (dateFrom) conditions.push(gte(transactions.date, new Date(dateFrom)));
+      if (dateTo) conditions.push(lte(transactions.date, new Date(dateTo)));
+      if (minAmount !== undefined)
         conditions.push(gte(transactions.amount, minAmount.toString()));
-      }
-      if (maxAmount !== undefined) {
+      if (maxAmount !== undefined)
         conditions.push(lte(transactions.amount, maxAmount.toString()));
+
+      if (search) {
+        const s = `%${search}%`;
+        const searchCond = or(
+          ilike(transactions.description, s),
+          ilike(transactions.merchant, s),
+        );
+        if (searchCond) conditions.push(searchCond);
       }
 
-      // Cursor-based pagination: decode cursor to get the ID
+      if (category) {
+        const categories = Array.isArray(category) ? category : [category];
+        if (
+          categories.length > 0 &&
+          categories.length < TRANSACTION_CATEGORY.length
+        ) {
+          conditions.push(
+            inArray(
+              transactions.category,
+              categories as (typeof TRANSACTION_CATEGORY)[number][],
+            ),
+          );
+        }
+      }
       if (cursor) {
-        const cursorId = Buffer.from(cursor, "base64").toString("utf-8");
+        const cursorId = Buffer.from(cursor, "base64url").toString("utf-8");
         const [cursorRow] = await db
           .select({ id: transactions.id, date: transactions.date })
           .from(transactions)
@@ -110,22 +152,12 @@ export const TransactionsService = {
               sql`${transactions.id} < ${cursorRow.id}`,
             ),
           );
-          if (cursorRowCondition) {
-            conditions.push(cursorRowCondition);
-          }
+          if (cursorRowCondition) conditions.push(cursorRowCondition);
         }
       }
 
-      // ── TOTAL (no cursor)
       const rows = await db
-        .select({
-          ...getTableColumns(transactions),
-          bankAccountName: bankAccounts.name,
-          maskedAccountNumber: bankAccounts.maskedNumber,
-          bankAccountType: bankAccounts.type,
-          bankName: bankAccounts.bankName,
-          currency: bankAccounts.currency,
-        })
+        .select(transactionSelect())
         .from(transactions)
         .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
         .where(and(...conditions))
@@ -134,129 +166,270 @@ export const TransactionsService = {
 
       const hasMore = rows.length > limit;
       const items = hasMore ? rows.slice(0, -1) : rows;
-      const lastItem = items[items.length - 1];
-      const nextCursor = hasMore ? lastItem?.id : null;
+      const last = items[items.length - 1];
+
+      // Encode cursor as base64url of the transaction ID
+      const nextCursor =
+        hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
 
       return {
         success: true,
-        data: {
-          items,
-          nextCursor: nextCursor!,
-        },
+        data: { items: items as Transaction[], nextCursor },
       };
     } catch (err) {
       console.error("[TransactionsService.list]", err);
       return {
         success: false,
         error: "Failed to fetch transactions",
-        code: "INTERNAL_SERVER_ERROR",
+        code: "DB_ERROR",
       };
     }
   },
 
+  // ── RECENT (no pagination, just latest N) ──────────────────────────────────
   async recent(
     userId: string,
-    limit: number,
-  ): Promise<ServiceResult<TransactionRecord[]>> {
+    limit = 7,
+  ): Promise<ServiceResult<Transaction[]>> {
     try {
-      const result = await db
-        .select()
+      const rows = await db
+        .select(transactionSelect())
         .from(transactions)
+        .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
         .where(eq(transactions.userId, userId))
         .orderBy(desc(transactions.date))
         .limit(limit);
 
-      return {
-        success: true,
-        data: result,
-      };
+      return { success: true, data: rows as Transaction[] };
     } catch (err) {
-      console.error("[TransactionsService.list]", err);
+      console.error("[TransactionsService.recent]", err);
       return {
         success: false,
-        error: "Failed to fetch transactions",
-        code: "INTERNAL_SERVER_ERROR",
+        error: "Failed to fetch recent transactions",
+        code: "DB_ERROR",
       };
     }
   },
 
+  // ── GET BY ID
   async getById(
     id: string,
     userId: string,
-  ): Promise<ServiceResult<TransactionRecord>> {
+  ): Promise<ServiceResult<Transaction>> {
     try {
-      const [existingTransaction] = await db
-        .select({
-          ...getTableColumns(transactions),
-          bankAccountName: bankAccounts.name,
-          maskedAccountNumber: bankAccounts.maskedNumber,
-          bankAccountType: bankAccounts.type,
-          bankName: bankAccounts.bankName,
-          currency: bankAccounts.currency,
-        })
+      const [row] = await db
+        .select(transactionSelect())
         .from(transactions)
         .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
         .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
         .limit(1);
 
-      if (!existingTransaction) {
+      if (!row)
         return {
           success: false,
           error: "Transaction not found",
           code: "NOT_FOUND",
         };
-      }
-      return { success: true, data: existingTransaction };
+      return { success: true, data: row as Transaction };
     } catch (err) {
       console.error("[TransactionsService.getById]", err);
       return {
         success: false,
         error: "Failed to fetch transaction",
-        code: "INTERNAL_SERVER_ERROR",
+        code: "DB_ERROR",
       };
     }
   },
 
+  // ── CREATE
+  async create(
+    userId: string,
+    input: CreateTransactionInput,
+  ): Promise<ServiceResult<Transaction>> {
+    try {
+      // Verify the bank account belongs to this user
+      const [account] = await db
+        .select({ id: bankAccounts.id })
+        .from(bankAccounts)
+        .where(
+          and(
+            eq(bankAccounts.id, input.bankAccountId),
+            eq(bankAccounts.userId, userId),
+          ),
+        )
+        .limit(1);
+
+      if (!account) {
+        return {
+          success: false,
+          error: "Bank account not found",
+          code: "NOT_FOUND",
+        };
+      }
+
+      const [created] = await db
+        .insert(transactions)
+        .values({
+          userId,
+          bankAccountId: input.bankAccountId,
+          description: input.description,
+          amount: input.amount.toString(),
+          type: input.type,
+          status: input.status,
+          category: input.category,
+          merchant: input.merchant ?? null,
+          date: new Date(input.date),
+          isManual: true,
+          notes: input.notes ?? null,
+          isAnomaly: false,
+        })
+        .returning();
+
+      // Fetch with joins for consistent return shape
+      return this.getById(created!.id, userId);
+    } catch (err) {
+      console.error("[TransactionsService.create]", err);
+      return {
+        success: false,
+        error: "Failed to create transaction",
+        code: "DB_ERROR",
+      };
+    }
+  },
+
+  // ── UPDATE
   async update(
     userId: string,
     input: UpdateTransactionInput,
-  ): Promise<ServiceResult<TransactionRecord>> {
+  ): Promise<ServiceResult<Transaction>> {
     try {
-      const updateData: Partial<TransactionRecord> = {};
+      const updateData: Record<string, unknown> = {};
 
-      if (input.category) {
+      if (input.bankAccountId !== undefined) {
+        const [acct] = await db
+          .select({ id: bankAccounts.id })
+          .from(bankAccounts)
+          .where(
+            and(
+              eq(bankAccounts.id, input.bankAccountId),
+              eq(bankAccounts.userId, userId),
+            ),
+          )
+          .limit(1);
+        if (!acct)
+          return {
+            success: false,
+            error: "Bank account not found",
+            code: "NOT_FOUND",
+          };
+        updateData.bankAccountId = input.bankAccountId;
+      }
+      if (input.description !== undefined)
+        updateData.description = input.description;
+      if (input.merchant !== undefined) updateData.merchant = input.merchant;
+      if (input.notes !== undefined) updateData.notes = input.notes;
+      if (input.date !== undefined) updateData.date = new Date(input.date);
+      if (input.amount !== undefined)
+        updateData.amount = input.amount.toString();
+      if (input.type !== undefined) updateData.type = input.type;
+      if (input.status !== undefined) updateData.status = input.status;
+      if (input.category !== undefined) {
         updateData.category = input.category;
       }
-      if (input.notes !== undefined) {
-        updateData.notes = input.notes;
+
+      if (Object.keys(updateData).length === 0) {
+        return this.getById(input.id, userId);
       }
 
-      const [updatedTransaction] = await db
+      const [updated] = await db
         .update(transactions)
         .set(updateData)
         .where(
           and(eq(transactions.id, input.id), eq(transactions.userId, userId)),
         )
-        .returning();
+        .returning({ id: transactions.id });
 
-      if (!updatedTransaction) {
+      if (!updated)
         return {
           success: false,
           error: "Transaction not found",
           code: "NOT_FOUND",
         };
-      }
-      return { success: true, data: updatedTransaction };
+
+      return this.getById(input.id, userId);
     } catch (err) {
       console.error("[TransactionsService.update]", err);
       return {
         success: false,
         error: "Failed to update transaction",
-        code: "INTERNAL_SERVER_ERROR",
+        code: "DB_ERROR",
       };
     }
   },
 
+  // ── DELETE (single)
+  async delete(
+    id: string,
+    userId: string,
+  ): Promise<ServiceResult<{ id: string }>> {
+    try {
+      const [deleted] = await db
+        .delete(transactions)
+        .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+        .returning({ id: transactions.id });
+
+      if (!deleted)
+        return {
+          success: false,
+          error: "Transaction not found",
+          code: "NOT_FOUND",
+        };
+      return { success: true, data: { id: deleted.id } };
+    } catch (err) {
+      console.error("[TransactionsService.delete]", err);
+      return {
+        success: false,
+        error: "Failed to delete transaction",
+        code: "DB_ERROR",
+      };
+    }
+  },
+
+  // ── BATCH DELETE ───────────────────────────────────────────────────────────
+  async batchDelete(
+    userId: string,
+    input: BatchDeleteInput,
+  ): Promise<ServiceResult<{ deleted: number; ids: string[] }>> {
+    try {
+      const deleted = await db
+        .delete(transactions)
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            inArray(transactions.id, input.ids),
+            // Only allow deleting manual transactions + CSV imports
+            // Plaid/Mono transactions should be soft-deleted or not deletable
+            // Comment this out if you want to allow deleting synced transactions
+            eq(transactions.isManual, true),
+          ),
+        )
+        .returning({ id: transactions.id });
+
+      return {
+        success: true,
+        data: { deleted: deleted.length, ids: deleted.map((d) => d.id) },
+      };
+    } catch (err) {
+      console.error("[TransactionsService.batchDelete]", err);
+      return {
+        success: false,
+        error: "Failed to delete transactions",
+        code: "DB_ERROR",
+      };
+    }
+  },
+
+  // ── SPENDING OVERVIEW ──────────────────────────────────────────────────────
   async getSpendingOverview(
     userId: string,
     input: {
@@ -430,6 +603,7 @@ export const TransactionsService = {
     }
   },
 
+  // ── TOP CATEGORIES ─────────────────────────────────────────────────────────
   async getTopCategories(
     userId: string,
     month: number,
@@ -440,27 +614,44 @@ export const TransactionsService = {
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0, 23, 59, 59);
 
-      // Get category totals
-      const categoryResult = await db
-        .select({
-          category: transactions.category,
-          total: sql<number>`sum(${transactions.amount}::numeric)::float`,
-          count: sql<number>`count(*)::int`,
-        })
-        .from(transactions)
-        .where(
-          and(
-            eq(transactions.userId, userId),
-            eq(transactions.type, "debit"),
-            gte(transactions.date, startDate),
-            lte(transactions.date, endDate),
-          ),
-        )
-        .groupBy(transactions.category)
-        .orderBy(desc(sql`sum(${transactions.amount}::numeric)`))
-        .limit(limit);
+      const [categoryResult, totalResult] = await Promise.all([
+        db
+          .select({
+            category: transactions.category,
+            total: sql<number>`sum(${transactions.amount}::numeric)::float`,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(transactions)
+          .where(
+            and(
+              eq(transactions.userId, userId),
+              eq(transactions.type, "debit"),
+              gte(transactions.date, startDate),
+              lte(transactions.date, endDate),
+            ),
+          )
+          .groupBy(transactions.category)
+          .orderBy(desc(sql`sum(${transactions.amount}::numeric)`))
+          .limit(limit),
 
-      if (categoryResult.length === 0) {
+        db
+          .select({
+            total: sql<number>`coalesce(sum(${transactions.amount}::numeric), 0)::float`,
+          })
+          .from(transactions)
+          .where(
+            and(
+              eq(transactions.userId, userId),
+              eq(transactions.type, "debit"),
+              gte(transactions.date, startDate),
+              lte(transactions.date, endDate),
+            ),
+          ),
+      ]);
+
+      const totalSpending = totalResult[0]?.total ?? 0;
+
+      if (!categoryResult.length) {
         return {
           success: true,
           data: {
@@ -473,39 +664,20 @@ export const TransactionsService = {
         };
       }
 
-      // Calculate total for percentage
-      const totalResult = await db
-        .select({
-          total: sql<number>`coalesce(sum(${transactions.amount}::numeric), 0)::float`,
-        })
-        .from(transactions)
-        .where(
-          and(
-            eq(transactions.userId, userId),
-            eq(transactions.type, "debit"),
-            gte(transactions.date, startDate),
-            lte(transactions.date, endDate),
-          ),
-        );
-
-      const totalSpending = totalResult[0]?.total ?? 0;
-
-      const categories = categoryResult.map((r) => ({
-        category: r.category ?? "other",
-        total: r.total,
-        count: r.count,
-        percentage:
-          totalSpending > 0
-            ? Math.round((r.total / totalSpending) * 1000) / 10 // 1 decimal
-            : 0,
-      }));
-
       return {
         success: true,
         data: {
           month,
           year,
-          categories,
+          categories: categoryResult.map((r) => ({
+            category: r.category ?? "other",
+            total: r.total,
+            count: r.count,
+            percentage:
+              totalSpending > 0
+                ? Math.round((r.total / totalSpending) * 1000) / 10
+                : 0,
+          })),
           totalSpending,
           hasData: true,
         },
@@ -515,21 +687,18 @@ export const TransactionsService = {
       return {
         success: false,
         error: "Failed to fetch top categories",
-        code: "INTERNAL_SERVER_ERROR",
+        code: "DB_ERROR",
       };
     }
   },
 
-  // Current month spending total
+  // ── CURRENT MONTH SPENDING ─────────────────────────────────────────────────
   async getCurrentMonthSpending(
     userId: string,
   ): Promise<ServiceResult<number>> {
     try {
       const now = new Date();
-      const startDate = startOfMonth(now);
-      const endDate = endOfMonth(now);
-
-      const result = await db
+      const [result] = await db
         .select({
           total: sql<number>`coalesce(sum(${transactions.amount}::numeric), 0)::float`,
         })
@@ -538,18 +707,18 @@ export const TransactionsService = {
           and(
             eq(transactions.userId, userId),
             eq(transactions.type, "debit"),
-            gte(transactions.date, startDate),
-            lte(transactions.date, endDate),
+            gte(transactions.date, startOfMonth(now)),
+            lte(transactions.date, endOfMonth(now)),
           ),
         );
 
-      return { success: true, data: result[0]?.total ?? 0 };
+      return { success: true, data: result?.total ?? 0 };
     } catch (err) {
       console.error("[TransactionsService.getCurrentMonthSpending]", err);
       return {
         success: false,
         error: "Failed to calculate spending",
-        code: "INTERNAL_SERVER_ERROR",
+        code: "DB_ERROR",
       };
     }
   },

@@ -9,6 +9,7 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerDescription,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
 } from "@neuralpay/ui/components/drawer";
@@ -23,7 +24,7 @@ interface InsightDetailsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onChat: (id: string) => void;
-  onDismiss: (id: string) => Promise<void>; // async
+  onDismiss: (id: string) => Promise<void>;
   onRestore?: (id: string) => Promise<void>;
   isDismissing: (id: string) => boolean;
   isRestoring: (id: string) => boolean;
@@ -111,15 +112,14 @@ function InsightDetailsContent({
   const restoring = isRestoring(insight.id);
   const isPending = dismissing || restoring;
 
-  // Handle dismiss/restore with drawer close after completion
   const handleDismiss = async () => {
     await onDismiss(insight.id);
-    onClose(); // close after success
+    onClose();
   };
 
   const handleRestore = async () => {
     await onRestore?.(insight.id);
-    onClose(); // close after success
+    onClose();
   };
 
   return (
@@ -176,47 +176,49 @@ function InsightDetailsContent({
       </div>
 
       {/* Footer actions */}
-      <div className="border-t p-6 space-y-3">
-        {!isDismissed ? (
-          <>
-            <Button
-              className="w-full gap-2"
-              onClick={() => onChat(insight.id)}
-              disabled={isPending}
-            >
-              <MessageCircle className="size-4" />
-              Chat about this
-            </Button>
+      <DrawerFooter>
+        <div className="border-t p-6 space-y-3">
+          {!isDismissed ? (
+            <>
+              <Button
+                className="w-full gap-2"
+                onClick={() => onChat(insight.id)}
+                disabled={isPending}
+              >
+                <MessageCircle className="size-4" />
+                Chat about this
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full gap-2 text-muted-foreground hover:text-destructive"
+                onClick={handleDismiss}
+                disabled={dismissing}
+              >
+                {dismissing ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Archive className="size-4" />
+                )}
+                {dismissing ? "Dismissing..." : "Dismiss"}
+              </Button>
+            </>
+          ) : (
             <Button
               variant="outline"
-              className="w-full gap-2 text-muted-foreground hover:text-destructive"
-              onClick={handleDismiss}
-              disabled={dismissing}
+              className="w-full gap-2"
+              onClick={handleRestore}
+              disabled={restoring}
             >
-              {dismissing ? (
+              {restoring ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
-                <Archive className="size-4" />
+                <RotateCcw className="size-4" />
               )}
-              {dismissing ? "Dismissing..." : "Dismiss"}
+              {restoring ? "Restoring..." : "Restore Insight"}
             </Button>
-          </>
-        ) : (
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={handleRestore}
-            disabled={restoring}
-          >
-            {restoring ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <RotateCcw className="size-4" />
-            )}
-            {restoring ? "Restoring..." : "Restore Insight"}
-          </Button>
-        )}
-      </div>
+          )}
+        </div>
+      </DrawerFooter>
     </>
   );
 }
