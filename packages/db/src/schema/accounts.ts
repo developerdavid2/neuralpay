@@ -8,7 +8,6 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { user } from "./auth";
 
 export const accountTypeEnum = pgEnum("account_type", [
@@ -55,6 +54,3 @@ export const bankAccounts = pgTable(
     index("bank_accounts_plaid_idx").on(t.plaidAccountId),
   ],
 );
-
-export const bankAccountSelectSchema = createSelectSchema(bankAccounts);
-export const bankAccountInsertSchema = createInsertSchema(bankAccounts);

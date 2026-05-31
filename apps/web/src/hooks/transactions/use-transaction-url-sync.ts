@@ -3,8 +3,6 @@ import { useCallback } from "react";
 import type { TransactionDrawerMode } from "./use-transaction-drawer";
 
 export function useTransactionUrlSync() {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const syncToUrl = useCallback(

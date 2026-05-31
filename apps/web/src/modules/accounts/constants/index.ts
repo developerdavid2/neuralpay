@@ -22,3 +22,5 @@ export const SUGGESTED_SUBTYPES = [
   "HODL",
   "Trading",
 ] as const;
+
+export const ACCOUNTS_LIMIT = 20;

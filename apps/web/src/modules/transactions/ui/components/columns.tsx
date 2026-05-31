@@ -11,7 +11,13 @@ import {
 } from "@neuralpay/ui/components/dropdown-menu";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { ArrowUpDown, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  ChevronsUpDown,
+  Eye,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { SourceBadge, StatusBadge } from "./transaction-badges";
 import { isSyncedSource } from "../../lib/utils";
 
@@ -69,7 +75,7 @@ export function transactionColumns({
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Date
-          <ArrowUpDown className="ml-2 size-4" />
+          <ChevronsUpDown className="ml-2 size-4" />
         </Button>
       ),
       cell: ({ row }) => (
@@ -122,7 +128,7 @@ export function transactionColumns({
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Category
-          <ArrowUpDown className="ml-2 size-4" />
+          <ChevronsUpDown className="ml-2 size-4" />
         </Button>
       ),
       cell: ({ row }) => (
@@ -156,7 +162,7 @@ export function transactionColumns({
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Amount
-            <ArrowUpDown className="ml-2 size-4" />
+            <ChevronsUpDown className="ml-2 size-4" />
           </Button>
         </div>
       ),
@@ -183,7 +189,7 @@ export function transactionColumns({
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
-          <ArrowUpDown className="ml-2 size-4" />
+          <ChevronsUpDown className="ml-2 size-4" />
         </Button>
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,

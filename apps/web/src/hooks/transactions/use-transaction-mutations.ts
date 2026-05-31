@@ -55,7 +55,7 @@ export function useTransactionMutations() {
             ? error.message
             : "Failed to create transaction";
         toast.error(message);
-        throw error; // re-throw so caller can handle if needed
+        throw error;
       } finally {
         setPendingCreate(false);
       }

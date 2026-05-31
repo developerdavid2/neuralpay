@@ -53,9 +53,6 @@ export function TransactionsView({
 
   return (
     <div className="flex flex-col w-full gap-6 p-6 h-[105vh]">
-      {/* Client component for URL sync — renders nothing, just runs hook */}
-      {/* <TransactionDrawerSync /> */}
-
       <DashboardHeader
         title="Transactions"
         description="Track, filter, and manage all your financial activity"
