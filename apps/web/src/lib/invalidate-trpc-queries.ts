@@ -16,6 +16,12 @@ export function invalidateTRPCQueries(
 }
 
 // CHANGE invalidateTransactionQueries to await both:
+export async function invalidateAccountsQueries(queryClient: QueryClient) {
+  await Promise.all([
+    invalidateTRPCQueries(queryClient, ["payments", "accounts"]),
+    invalidateTRPCQueries(queryClient, ["payments", "transactions"]),
+  ]);
+}
 export async function invalidateTransactionQueries(queryClient: QueryClient) {
   await Promise.all([
     invalidateTRPCQueries(queryClient, ["payments", "transactions"]),

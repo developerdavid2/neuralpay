@@ -8,12 +8,12 @@ export function useTransactionUrlSync() {
   const syncToUrl = useCallback(
     (mode: TransactionDrawerMode, txId: string | null) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (txId) {
+      if (mode === "add") {
+        params.set("mode", "add");
+        params.delete("focus");
+      } else if (txId) {
         params.set("mode", mode);
         params.set("focus", txId);
-      } else {
-        params.delete("focus");
-        params.delete("mode");
       }
       const query = params.toString();
       window.history.replaceState(

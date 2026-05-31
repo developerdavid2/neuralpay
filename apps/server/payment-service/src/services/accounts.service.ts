@@ -1,17 +1,17 @@
 import { db } from "@neuralpay/db";
 import { bankAccounts } from "@neuralpay/db/schema";
 import {
+  ACCOUNT_STATUSES,
+  ACCOUNT_TYPES,
   type AccountsFilterInput,
   type BankAccountRecord,
   type CreateAccountInput,
   type PaginatedAccounts,
   type ServiceResult,
   type UpdateAccountInput,
-  ACCOUNT_TYPE,
 } from "@neuralpay/types";
 import {
   and,
-  asc,
   desc,
   eq,
   getTableColumns,
@@ -32,30 +32,33 @@ export const AccountsService = {
 
       const conditions = [eq(bankAccounts.userId, userId)];
 
-      // ── Type filter ──
       if (type) {
         const types = Array.isArray(type) ? type : [type];
-        if (types.length > 0 && types.length < ACCOUNT_TYPE.length) {
+        if (types.length > 0 && types.length < ACCOUNT_TYPES.length) {
           conditions.push(
             inArray(
               bankAccounts.type,
-              types as (typeof ACCOUNT_TYPE)[number][],
+              types as (typeof ACCOUNT_TYPES)[number][],
+            ),
+          );
+        }
+      }
+      if (status) {
+        const statuses = Array.isArray(status) ? status : [status];
+        if (statuses.length > 0 && statuses.length < ACCOUNT_STATUSES.length) {
+          conditions.push(
+            inArray(
+              bankAccounts.status,
+              statuses as (typeof ACCOUNT_STATUSES)[number][],
             ),
           );
         }
       }
 
-      // ── Status filter ──
-      if (status) {
-        conditions.push(eq(bankAccounts.status, status));
-      }
-
-      // ── Tags filter (overlap: account has ANY of these tags) ──
       if (tags?.length) {
         conditions.push(sql`${bankAccounts.tags} && ${tags}`);
       }
 
-      // ── Search: name, bankName, or maskedNumber ──
       if (search) {
         const s = `%${search}%`;
         const searchCond = or(
@@ -117,7 +120,7 @@ export const AccountsService = {
     }
   },
 
-  // ── GET BY ID ──────────────────────────────────────────────────────────────
+  // ── GET BY ID
   async getById(
     id: string,
     userId: string,
@@ -146,7 +149,7 @@ export const AccountsService = {
     }
   },
 
-  // ── CREATE ─────────────────────────────────────────────────────────────────
+  // ── CREATE
   async create(
     userId: string,
     input: CreateAccountInput,
@@ -180,7 +183,7 @@ export const AccountsService = {
     }
   },
 
-  // ── UPDATE ─────────────────────────────────────────────────────────────────
+  // ── UPDATE
   async update(
     userId: string,
     input: UpdateAccountInput,
@@ -221,7 +224,7 @@ export const AccountsService = {
     }
   },
 
-  // ── DISCONNECT (soft-delete for synced accounts) ───────────────────────────
+  // ── DISCONNECT (soft-delete for synced accounts)
   async disconnect(
     id: string,
     userId: string,
@@ -250,7 +253,7 @@ export const AccountsService = {
     }
   },
 
-  // ── DELETE (hard delete — manual accounts only) ────────────────────────────
+  // ── DELETE (hard delete — manual accounts only)
   async delete(
     id: string,
     userId: string,
@@ -294,7 +297,7 @@ export const AccountsService = {
     }
   },
 
-  // ── GET TOTAL BALANCE ──────────────────────────────────────────────────────
+  // ── GET TOTAL BALANCE
   async getTotalBalance(
     userId: string,
   ): Promise<ServiceResult<{ totalBalance: number; accountCount: number }>> {
@@ -328,8 +331,8 @@ export const AccountsService = {
     }
   },
 
-  // ── GET BALANCE BY TYPE (for stats cards) ──────────────────────────────────
-  async getBalanceByType(userId: string): Promise<
+  // ── GET AGGREGATED BALANCE BY TYPE (for stats cards)
+  async getAggregateBalanceByType(userId: string): Promise<
     ServiceResult<
       Array<{
         type: string;
