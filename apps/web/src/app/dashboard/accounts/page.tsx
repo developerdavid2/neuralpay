@@ -1,14 +1,15 @@
-// apps/web/src/app/dashboard/accounts/page.tsx
-import { AccountView } from "@/modules/accounts/account-view";
+import { AccountsView } from "@/modules/accounts/ui/views/accounts-view";
 import { ACCOUNTS_LIMIT } from "@/modules/accounts/constants";
 import {
   validateAccountStatuses,
   validateAccountTypes,
 } from "@/modules/accounts/lib/validate-accounts-enums";
-import { validateAccountType } from "@/modules/transactions/lib/validate-transaction-enums";
-import { HydrateClient, prefetchInfinite, trpc } from "@/trpc/trpc-server";
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import {
+  HydrateClient,
+  prefetch,
+  prefetchInfinite,
+  trpc,
+} from "@/trpc/trpc-server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,23 +17,17 @@ interface PageProps {
   searchParams: Promise<{
     search?: string;
     types?: string | string[];
-    tags?: string | string[];
+    tags?: string[];
     statuses?: string | string[];
     isManual?: string;
     limit?: string;
-    focus?: string;
+    focusId?: string;
     mode?: string;
   }>;
 }
 
 const Page = async ({ searchParams }: PageProps) => {
   const params = await searchParams;
-
-  const parseOptionalNumber = (value?: string) => {
-    if (!value) return undefined;
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  };
   const parsedLimit = Number(params.limit ?? ACCOUNTS_LIMIT);
 
   const limit = Math.min(
@@ -57,13 +52,20 @@ const Page = async ({ searchParams }: PageProps) => {
     }),
   );
 
+  void prefetch(trpc.payments.accounts.aggregateByType.queryOptions());
+
   return (
     <HydrateClient>
-      <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <AccountView />
-        </Suspense>
-      </ErrorBoundary>
+      <AccountsView
+        search={params.search ?? ""}
+        types={validatedTypes ?? []}
+        statuses={validatedStatuses ?? []}
+        tags={params.tags ?? []}
+        isManual={params.isManual === "true"}
+        focusAccountId={params.focusId}
+        focusMode={params.mode}
+        limit={limit}
+      />
     </HydrateClient>
   );
 };
