@@ -1,30 +1,19 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import type { AccountsFilterInput } from "@neuralpay/types";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useAccountsList(filters: AccountsFilterInput) {
   const trpc = useTRPC();
 
-  const query = useSuspenseInfiniteQuery(
-    trpc.payments.accounts.list.infiniteQueryOptions(filters, {
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    }),
+  const query = useSuspenseQuery(
+    trpc.payments.accounts.list.queryOptions(filters),
   );
-
-  const allAccounts = useMemo(() => {
-    const accounts = query.data?.pages.flatMap((page) => page.items) ?? [];
-    const seen = new Set<string>();
-    return accounts.filter((tx) => {
-      if (seen.has(tx.id)) return false;
-      seen.add(tx.id);
-      return true;
-    });
-  }, [query.data?.pages]);
 
   return {
     ...query,
-    bankAccounts: allAccounts,
+    bankAccounts: query.data?.items ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    pageCount: query.data?.pageCount ?? 1,
     isLoading: query.isPending,
   };
 }

@@ -23,6 +23,7 @@ export const createAccountSchema = z.object({
   maskedNumber: z.string().max(30).optional(),
   balance: z.number().default(0),
   currency: z.string().length(3).default("USD"),
+  isManual: z.literal(true).default(true),
 });
 
 export const updateAccountSchema = z.object({
@@ -37,7 +38,7 @@ export const updateAccountSchema = z.object({
 
 export const accountsFilterSchema = z.object({
   limit: z.number().int().min(1).max(50).default(20),
-  cursor: z.string().optional(),
+  page: z.number().int().min(1).default(1),
   search: z.string().min(1).max(100).optional(),
   type: z
     .union([z.enum(ACCOUNT_TYPES), z.array(z.enum(ACCOUNT_TYPES))])
@@ -50,13 +51,23 @@ export const accountsFilterSchema = z.object({
 
 export type AccountsFilterInput = z.infer<typeof accountsFilterSchema>;
 
-export type BankAccountRecord = {
+export const accountsListAllSchema = z.object({
+  search: z.string().optional(),
+  type: z.array(z.enum(ACCOUNT_TYPES)).optional(),
+  status: z.array(z.enum(ACCOUNT_STATUSES)).optional(),
+  tags: z.array(z.string()).optional(),
+  isManual: z.boolean().optional(),
+});
+
+export type AccountsListAllInput = z.infer<typeof accountsListAllSchema>;
+
+export type BankAccount = {
   id: string;
   name: string;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
-  type: "checking" | "savings" | "credit" | "investment" | "crypto";
+  type: AccountType;
   subtype: string | null;
   tags: string[];
   bankName: string | null;
@@ -64,14 +75,14 @@ export type BankAccountRecord = {
   balance: string | null;
   currency: string;
   isManual: boolean;
-  status: string;
+  status: AccountStatus | null;
   plaidItemId: string | null;
   plaidAccountId: string | null;
   monoAccountId: string | null;
   lastSyncedAt: Date | null;
 };
 
-export type PaginatedAccounts = PaginatedResult<BankAccountRecord>;
+export type PaginatedAccounts = PaginatedResult<BankAccount>;
 
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;

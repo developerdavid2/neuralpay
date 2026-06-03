@@ -217,7 +217,6 @@ export function transactionColumns({
                 <Pencil className="size-4 mr-2" />
                 Edit
               </DropdownMenuItem>
-
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => onDelete(tx)}

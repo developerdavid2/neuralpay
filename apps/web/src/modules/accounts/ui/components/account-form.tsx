@@ -12,6 +12,7 @@ import {
 import { Trash2, X, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { AccountFormFields } from "./account-form-fields";
+import type { FormValues } from "../../types";
 
 export function AccountForm({
   defaultValues,
@@ -34,13 +35,11 @@ export function AccountForm({
     ? updateAccountSchema.omit({ id: true })
     : createAccountSchema.omit({ isManual: true });
 
-  const form =
-    useForm << FormValues >
-    {
-      resolver: zodResolver(schema),
-      mode: "all",
-      defaultValues,
-    };
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    mode: "all",
+    defaultValues,
+  });
 
   return (
     <form

@@ -21,6 +21,7 @@ interface PageProps {
     statuses?: string | string[];
     isManual?: string;
     limit?: string;
+    page?: string;
     focusId?: string;
     mode?: string;
   }>;
@@ -29,6 +30,7 @@ interface PageProps {
 const Page = async ({ searchParams }: PageProps) => {
   const params = await searchParams;
   const parsedLimit = Number(params.limit ?? ACCOUNTS_LIMIT);
+  const page = Math.max(Number(params.page ?? 1), 1);
 
   const limit = Math.min(
     Math.max(Number.isFinite(parsedLimit) ? parsedLimit : ACCOUNTS_LIMIT, 1),
@@ -40,17 +42,14 @@ const Page = async ({ searchParams }: PageProps) => {
 
   const listFilters = {
     limit,
+    page,
     search: params.search?.trim() || undefined,
     type: validatedTypes,
     status: validatedStatuses,
     isManual: params.isManual === "true" ? true : undefined,
   };
 
-  void prefetchInfinite(
-    trpc.payments.accounts.list.infiniteQueryOptions(listFilters, {
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    }),
-  );
+  void prefetch(trpc.payments.accounts.list.queryOptions(listFilters));
 
   void prefetch(trpc.payments.accounts.aggregateByType.queryOptions());
 
@@ -65,6 +64,7 @@ const Page = async ({ searchParams }: PageProps) => {
         focusAccountId={params.focusId}
         focusMode={params.mode}
         limit={limit}
+        currentPage={page}
       />
     </HydrateClient>
   );

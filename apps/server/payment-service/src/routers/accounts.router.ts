@@ -4,6 +4,7 @@ import { z } from "zod";
 import { AccountsService } from "../services/accounts.service";
 import {
   accountsFilterSchema,
+  accountsListAllSchema,
   createAccountSchema,
   updateAccountSchema,
 } from "@neuralpay/types";
@@ -14,6 +15,23 @@ export const accountsRouter = router({
     .query(async ({ ctx, input }) => {
       const parsed = accountsFilterSchema.parse(input ?? {});
       const result = await AccountsService.listByUser(
+        ctx.session.user.id,
+        parsed,
+      );
+      if (!result.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      }
+      return result.data;
+    }),
+
+  listAll: protectedProcedure
+    .input(accountsListAllSchema.optional())
+    .query(async ({ ctx, input }) => {
+      const parsed = accountsListAllSchema.parse(input ?? {});
+      const result = await AccountsService.listAllByUser(
         ctx.session.user.id,
         parsed,
       );

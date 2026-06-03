@@ -15,8 +15,8 @@ import { useAccountMutations } from "@/hooks/accounts/use-account-mutations";
 import { useAccountUrlSync } from "@/hooks/accounts/use-account-url-sync";
 import { useAccountDetail } from "@/hooks/accounts/use-account-detail";
 import { useConfirm } from "@/hooks/use-confirm";
-import type { FormValues } from "../types";
 import { AccountForm } from "./account-form";
+import type { FormValues } from "../../types";
 
 export function AccountFormDrawer() {
   const { isOpen, onClose, accountId, mode } = useAccountDrawer();
@@ -100,22 +100,18 @@ function AccountFormInner({
       ? {
           name: account.name,
           type: account.type,
-          status: account.status ?? "active",
           bankName: account.bankName ?? undefined,
-          accountNumber: account.accountNumber ?? undefined,
+          maskedNumber: account.maskedNumber ?? undefined,
           currency: account.currency ?? "usd",
           balance: account.balance ? Number(account.balance) : 0,
-          notes: account.notes ?? undefined,
         }
       : {
           name: "",
           type: "checking",
-          status: "active",
           bankName: "",
-          accountNumber: "",
-          currency: "usd",
+          maskedNumber: "",
+          currency: "USD",
           balance: 0,
-          notes: "",
         };
 
   const onSubmit = async (values: FormValues) => {

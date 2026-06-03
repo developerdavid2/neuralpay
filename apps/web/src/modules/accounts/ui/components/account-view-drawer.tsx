@@ -63,7 +63,7 @@ function DetailField({
 
 export function AccountViewDrawer() {
   const { isOpen, mode, onClose, accountId, onOpenEdit } = useAccountDrawer();
-  const { clearUrl, syncToUrl } = useAccountUrlSync();
+  const { clearUrl, setUrl } = useAccountUrlSync();
   const { account, isLoading } = useAccountDetail(accountId ?? "");
   const { handleDelete, isDeleting } = useAccountMutations();
   const [ConfirmDialog, confirm] = useConfirm(
@@ -130,7 +130,7 @@ export function AccountViewDrawer() {
                         size="icon"
                         className="size-8"
                         onClick={() => {
-                          syncToUrl("edit", acc.id);
+                          setUrl("edit", acc.id);
                           onOpenEdit(acc.id);
                         }}
                       >
@@ -155,7 +155,9 @@ export function AccountViewDrawer() {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <h2 className="text-2xl font-bold tracking-tight">{acc.name}</h2>
+                  <h2 className="text-2xl font-bold tracking-tight">
+                    {acc.name}
+                  </h2>
                   <div className="flex items-center gap-2">
                     <AccountTypeBadge type={acc.type} />
                     <AccountStatusBadge status={acc.status} />
@@ -174,7 +176,9 @@ export function AccountViewDrawer() {
                   <DetailField
                     label="Bank Name"
                     value={acc.bankName ?? "Manual Account"}
-                    icon={<Building2 className="size-4 text-muted-foreground" />}
+                    icon={
+                      <Building2 className="size-4 text-muted-foreground" />
+                    }
                   />
                   <Separator />
                   <DetailField
@@ -184,25 +188,31 @@ export function AccountViewDrawer() {
                         {acc.type.replace(/_/g, " ")}
                       </span>
                     }
-                    icon={<CreditCard className="size-4 text-muted-foreground" />}
+                    icon={
+                      <CreditCard className="size-4 text-muted-foreground" />
+                    }
                   />
                   <Separator />
                   <DetailField
                     label="Status"
                     value={<AccountStatusBadge status={acc.status} />}
-                    icon={<AlertTriangle className="size-4 text-muted-foreground" />}
+                    icon={
+                      <AlertTriangle className="size-4 text-muted-foreground" />
+                    }
                   />
                   <Separator />
-                  {acc.accountNumber && (
+                  {acc.maskedNumber && (
                     <>
                       <DetailField
                         label="Account Number"
                         value={
                           <span className="font-mono text-xs">
-                            •••• {acc.accountNumber.slice(-4)}
+                            •••• {acc.maskedNumber.slice(-4)}
                           </span>
                         }
-                        icon={<Wallet className="size-4 text-muted-foreground" />}
+                        icon={
+                          <Wallet className="size-4 text-muted-foreground" />
+                        }
                       />
                       <Separator />
                     </>
@@ -212,25 +222,14 @@ export function AccountViewDrawer() {
                       <DetailField
                         label="Currency"
                         value={acc.currency.toUpperCase()}
-                        icon={<FileText className="size-4 text-muted-foreground" />}
-                      />
-                      <Separator />
-                    </>
-                  )}
-                  {acc.notes && (
-                    <>
-                      <DetailField
-                        label="Notes"
-                        value={
-                          <span className="italic text-muted-foreground">
-                            {acc.notes}
-                          </span>
+                        icon={
+                          <FileText className="size-4 text-muted-foreground" />
                         }
-                        icon={<FileText className="size-4 text-muted-foreground" />}
                       />
                       <Separator />
                     </>
                   )}
+
                   <DetailField
                     label="Created"
                     value={format(

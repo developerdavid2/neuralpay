@@ -21,9 +21,9 @@ export const ACCOUNT_STATUS_LABELS: Record<string, string> = {
 };
 export const ACCOUNT_STATUS_STYLES: Record<AccountStatus, string> = {
   active:
-    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400",
+    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
   disconnected:
-    "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400",
+    "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
 };
 
 export const ACCOUNT_TYPE_CONFIG: Record<
@@ -89,25 +89,28 @@ export const ACCOUNT_TYPE_CONFIG: Record<
   },
 };
 
+export const ACCOUNTS_TYPES_ICON_CHIP: Record<string, string> = {
+  checking: "bg-blue-400/70",
+  savings: "bg-emerald-400/70",
+  credit: "bg-rose-700/50",
+  investment: "bg-violet-400/70",
+  crypto: "bg-amber-400/70",
+};
+
 export const SUGGESTED_SUBTYPES = [
-  // Checking
   "Primary",
   "Bills",
   "Salary",
-  // Savings
   "Emergency Fund",
   "Vacation",
   "Ajo",
   "Esusu",
   "FD",
-  // Credit
   "Rewards",
   "Business",
-  // Investment
   "Retirement",
   "ETF Portfolio",
   "Stocks",
-  // Crypto
   "DeFi",
   "HODL",
   "Trading",

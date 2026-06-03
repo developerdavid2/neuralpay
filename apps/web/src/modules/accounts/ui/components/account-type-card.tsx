@@ -1,23 +1,48 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { ACCOUNT_TYPE_CONFIG } from "../../constants";
+import { ACCOUNT_TYPE_CONFIG, ACCOUNTS_TYPES_ICON_CHIP } from "../../constants";
 import { formatAmount } from "@/lib/utils";
-import { Eye, EyeOff, Landmark } from "lucide-react";
-import React, { useState, type ActionDispatch } from "react";
-import { ACCOUNT_TYPES } from "@neuralpay/types";
-import { useAccountAggregates } from "@/hooks/accounts/use-account-aggregates";
-import { Button } from "@neuralpay/ui/components/button";
 
-// ── NFC / Contactless SVG──────────
+const NOISE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`;
+
+function useMaskedNumber(seed: string, intervalMs: number) {
+  const rand = (s: string) => {
+    let h = 0;
+    for (let i = 0; i < s.length; i++)
+      h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  };
+  const generate = () => {
+    const base = rand(seed + Date.now().toString().slice(-5));
+    const last4 = String((base % 9000) + 1000);
+    return `•••• •••• •••• ${last4}`;
+  };
+  const [masked, setMasked] = useState(() => generate());
+  useEffect(() => {
+    const t = setInterval(() => setMasked(generate()), intervalMs);
+    return () => clearInterval(t);
+  }, [seed, intervalMs]);
+  return masked;
+}
+
+const ROTATE_MS: Record<string, number> = {
+  checking: 17000,
+  savings: 23000,
+  credit: 31000,
+  investment: 19000,
+  crypto: 27000,
+};
+
 function NfcIcon() {
   return (
     <svg
-      width="24"
-      height="24"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
-      className="text-white/40"
+      className="text-white/30"
     >
       <path
         d="M12 2C10 6 10 18 12 22"
@@ -55,119 +80,111 @@ export function AccountTypeCard({
   isBalanceVisible: boolean;
 }) {
   const config = ACCOUNT_TYPE_CONFIG[type];
+  const chipCls = ACCOUNTS_TYPES_ICON_CHIP[type];
+  const masked = useMaskedNumber(type, ROTATE_MS[type] ?? 21000);
   if (!config) return null;
 
   const isEmpty = accountCount === 0;
+  const Icon = config.icon;
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl",
-        "h-[200px] w-full",
-        "transition-all duration-500 ease-out",
-        "hover:scale-[1.03] hover:-translate-y-1",
-        "hover:shadow-[0_20px_60px_-10px_rgba(0,0,0,0.5)]",
-        "cursor-pointer select-none",
-        config.gradient,
+        "group relative overflow-hidden rounded-2xl p-px",
+        "h-[250px] w-full cursor-pointer select-none",
+        // ── Unified aurora base — same for every card ──
+        "bg-[radial-gradient(ellipse_at_30%_0%,rgba(80,40,160,0.9)_0%,rgba(20,10,45,1)_55%,rgba(6,4,14,1)_100%)]",
+        "ring-1 ring-white/[0.07]",
+        "shadow-[0_2px_20px_rgba(0,0,0,0.55)]",
+        "hover:shadow-[0_6px_32px_rgba(0,0,0,0.65)]",
+        "transition-shadow duration-500 ease-out",
         isEmpty && "opacity-40 saturate-50",
       )}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_15%_10%,rgba(255,255,255,0.18),transparent_70%)]" />
+      {/* Inner surface — same gradient, rounded inset */}
+      <div className="relative h-full w-full overflow-hidden rounded-[15px] bg-[radial-gradient(ellipse_at_30%_0%,rgba(80,40,160,0.9)_0%,rgba(20,10,45,1)_55%,rgba(6,4,14,1)_100%)]">
+        {/* Aurora bloom — soft violet light at top-left */}
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_70%_55%_at_25%_0%,rgba(140,80,255,0.22),transparent_65%)]" />
 
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_90%_90%,rgba(0,0,0,0.25),transparent_70%)]" />
+        {/* Top bevel */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-      {/* Horizontal sheen line */}
-      <div className="absolute top-[30%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        {/* Inner radial light */}
+        <div className="absolute inset-0 opacity-25 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.10),transparent_55%)]" />
 
-      <div className="relative z-10 flex flex-col justify-between h-full p-5">
-        <div className="flex items-start justify-between">
-          Logo
-          <NfcIcon />
-        </div>
+        {/* TOP MOVING LIGHT — sweeps right→left on hover */}
+        <span className="pointer-events-none absolute top-0 z-20 h-px w-[55%] opacity-0 transition-all duration-500 left-[45%] group-hover:left-4 group-hover:opacity-60 bg-gradient-to-r from-transparent via-white/55 to-transparent" />
 
-        {/* MIDDLE: Available balance label + amount */}
-        <div className="space-y-1">
-          <p className="text-[10px] font-medium text-white/50 uppercase tracking-widest">
-            {isEmpty ? "No accounts" : "Available balance"}
-          </p>
-          {!isEmpty && (
-            <p
-              className={cn(
-                "text-2xl font-bold text-white tabular-nums tracking-tight",
-                !isBalanceVisible && "blur-md",
-              )}
-            >
-              {isBalanceVisible
-                ? formatAmount(Math.abs(totalBalance))
-                : "$ ••••••"}
-            </p>
-          )}
-        </div>
+        {/* BOTTOM MOVING LIGHT — sweeps left→right on hover */}
+        <span className="pointer-events-none absolute bottom-0 z-20 h-px w-[35%] opacity-0 transition-all duration-500 left-4 group-hover:left-[60%] group-hover:opacity-50 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-        {/* BOTTOM ROW: account type label left, masked count right */}
-        <div className="flex items-end justify-between">
-          <div className="space-y-0.5">
-            <p className="text-[11px] font-semibold text-white/60 uppercase tracking-[0.15em]">
-              {config.label}
-            </p>
-            <p className="text-[11px] font-mono text-white/40">
-              {isEmpty
-                ? "——"
-                : `${accountCount} ${accountCount === 1 ? "acct" : "accts"}`}
-            </p>
+        {/* Noise grain */}
+        <div
+          className="absolute inset-0 opacity-[0.07] mix-blend-screen pointer-events-none"
+          style={{ backgroundImage: NOISE, backgroundSize: "200px 200px" }}
+        />
+
+        {/* ── Content ──────────────────────────────────────────────────── */}
+        <div className="relative z-10 flex flex-col justify-between h-full p-5">
+          {/* TOP: Icon chip + label + NFC */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              {/* Coloured icon chip */}
+              <span
+                className={cn(
+                  "flex items-center justify-center rounded-lg p-1.5",
+                  chipCls,
+                )}
+              >
+                <Icon className="size-3.5 text-white" strokeWidth={1.8} />
+              </span>
+              <span className="text-[11px] font-semibold text-white/70 tracking-wide">
+                {config.label}
+              </span>
+            </div>
+            <NfcIcon />
           </div>
 
-          {/* Type badge — subtle, bottom right */}
-          <span className="text-[10px] font-mono tracking-widest text-white/25">
-            {config.shortLabel}
-          </span>
+          {/* MIDDLE: Balance */}
+          <div className="space-y-0.5">
+            <p className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
+              {isEmpty ? "No accounts" : "Available balance"}
+            </p>
+            {!isEmpty && (
+              <p
+                className={cn(
+                  "text-2xl font-bold text-white tabular-nums tracking-tight transition-all duration-300",
+                  !isBalanceVisible && "blur-md select-none",
+                )}
+              >
+                {isBalanceVisible
+                  ? formatAmount(Math.abs(totalBalance))
+                  : "$ ••••••"}
+              </p>
+            )}
+          </div>
+
+          {/* BOTTOM: Masked account number + shine line above it */}
+          <div className="space-y-2">
+            {/* Shine line */}
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            <div className="flex items-end justify-between">
+              <p
+                className={cn(
+                  "text-[11px] font-mono text-white/35 tracking-[0.18em] transition-all duration-700",
+                  !isBalanceVisible && "blur-sm",
+                )}
+              >
+                {masked}
+              </p>
+              <p className="text-[10px] font-mono text-white/25">
+                {isEmpty
+                  ? "——"
+                  : `${accountCount} ${accountCount === 1 ? "acct" : "accts"}`}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-export function TotalCard({
-  totalBalance,
-  totalCount,
-  isBalanceVisible,
-  setIsBalanceVisible,
-}: {
-  totalBalance: number;
-  totalCount: number;
-  isBalanceVisible: boolean;
-  setIsBalanceVisible: (value: boolean) => void;
-}) {
-  return (
-    <div className="bg-card p-4 rounded-xl">
-      {/* MIDDLE */}
-      <div className="space-y-1">
-        <p className="text-[10px] font-medium uppercase tracking-widest">
-          Net worth
-        </p>
-        <p
-          className={cn(
-            "text-2xl font-bold text-white tabular-nums tracking-tight",
-            !isBalanceVisible && "blur-md",
-          )}
-        >
-          {isBalanceVisible ? formatAmount(totalBalance) : "$ ••••••"}
-        </p>
-      </div>
-
-      <div className="flex items-center justify-end">
-        <Button
-          size="icon"
-          onClick={() => setIsBalanceVisible((v) => !v)}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {isBalanceVisible ? (
-            <Eye className="size-3.5" />
-          ) : (
-            <EyeOff className="size-3.5" />
-          )}
-          <span>{isBalanceVisible ? "Hide balances" : "Show balances"}</span>
-        </Button>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ import { Drawer, DrawerContent } from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 
-import { useAccountsList } from "@/hooks/accounts/use-accounts";
+import { useAllAccounts } from "@/hooks/accounts/use-all-accounts";
 import type { TransactionDrawerMode } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
@@ -21,9 +21,11 @@ import { TransactionForm } from "./transaction-form";
 export function TransactionFormDrawer() {
   const { isOpen, onClose, transactionId, mode } = useTransactionDrawer();
   const { clearUrl } = useTransactionUrlSync();
+
   const isEdit = mode === "edit";
   const isAdd = mode === "add";
 
+  // Always render the drawer when open — content handles its own loading
   if (!isOpen || (!isEdit && !isAdd)) return null;
 
   return (
@@ -59,6 +61,7 @@ export function TransactionFormDrawer() {
   );
 }
 
+// ── Inner: handles data fetching + renders skeleton immediately ───────────
 function TransactionFormInner({
   transactionId,
   mode,
@@ -72,12 +75,11 @@ function TransactionFormInner({
 }) {
   const isEdit = mode === "edit";
 
-  const { transaction, isLoading: isLoadingDetail } = useTransactionDetail(
+  const { transaction } = useTransactionDetail(
     isEdit && transactionId ? transactionId : "",
   );
-  const { bankAccounts, isLoading: isLoadingAccounts } = useAccountsList({
-    limit: 10,
-  });
+  const { bankAccountOptions, isLoadingAccounts } = useAllAccounts();
+
   const {
     handleCreate,
     handleUpdate,
@@ -86,24 +88,34 @@ function TransactionFormInner({
     isUpdating,
     isDeleting,
   } = useTransactionMutations();
+
   const [ConfirmDialog, confirm] = useConfirm(
     "Delete transaction",
     "Are you sure you want to delete this transaction? This action cannot be undone.",
     "destructive",
   );
 
-  const isLoading = (isEdit && isLoadingDetail) || isLoadingAccounts;
   const isPending = isCreating || isUpdating || isDeleting;
 
-  if (isLoading) return <FormDrawerSkeleton />;
+  // Show skeleton immediately while ANY data is loading
+  // This matches the insight drawer pattern exactly
+  const isLoading = isLoadingAccounts || (isEdit && !transaction);
 
-  if (isEdit && !transaction) return <FormDrawerSkeleton />;
+  if (isLoading) {
+    return (
+      <>
+        <ConfirmDialog />
+        <FormDrawerSkeleton
+          onClose={() => {
+            clearUrl();
+            onClose();
+          }}
+        />
+      </>
+    );
+  }
 
-  const bankAccountOptions = (bankAccounts ?? []).map((acc) => ({
-    label: `${acc.bankName ?? "Unknown"} • ${acc.name}`,
-    value: acc.id,
-  }));
-
+  // Data is ready — render the form
   const defaultValues: FormValues =
     isEdit && transaction
       ? {
@@ -156,7 +168,6 @@ function TransactionFormInner({
   return (
     <>
       <ConfirmDialog />
-
       <TransactionForm
         key={transaction?.id ?? "add"}
         defaultValues={defaultValues}
@@ -172,9 +183,11 @@ function TransactionFormInner({
   );
 }
 
-function FormDrawerSkeleton() {
+// ── Skeleton: mirrors the exact form layout for instant render ──────────────
+function FormDrawerSkeleton({ onClose }: { onClose: () => void }) {
   return (
     <>
+      {/* Header skeleton */}
       <div className="px-6 py-4 border-b space-y-3 shrink-0">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
@@ -188,15 +201,19 @@ function FormDrawerSkeleton() {
         </div>
       </div>
 
+      {/* Body skeleton */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+        {/* Bank Account */}
         <div className="space-y-1.5">
           <Skeleton className="h-3.5 w-24" />
           <Skeleton className="h-10 w-full rounded-md" />
         </div>
+        {/* Description */}
         <div className="space-y-1.5">
           <Skeleton className="h-3.5 w-20" />
           <Skeleton className="h-10 w-full rounded-md" />
         </div>
+        {/* Amount + Type */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Skeleton className="h-3.5 w-16" />
@@ -207,28 +224,34 @@ function FormDrawerSkeleton() {
             <Skeleton className="h-10 w-full rounded-md" />
           </div>
         </div>
+        {/* Date */}
         <div className="space-y-1.5">
           <Skeleton className="h-3.5 w-10" />
           <Skeleton className="h-10 w-full rounded-md" />
         </div>
+        {/* Status */}
         <div className="space-y-1.5">
           <Skeleton className="h-3.5 w-14" />
           <Skeleton className="h-10 w-full rounded-md" />
         </div>
+        {/* Category */}
         <div className="space-y-1.5">
           <Skeleton className="h-3.5 w-16" />
           <Skeleton className="h-10 w-full rounded-md" />
         </div>
+        {/* Merchant */}
         <div className="space-y-1.5">
           <Skeleton className="h-3.5 w-20" />
           <Skeleton className="h-10 w-full rounded-md" />
         </div>
+        {/* Notes */}
         <div className="space-y-1.5">
           <Skeleton className="h-3.5 w-14" />
           <Skeleton className="h-20 w-full rounded-md" />
         </div>
       </div>
 
+      {/* Footer skeleton */}
       <div className="px-6 py-4 border-t space-y-3 shrink-0">
         <Skeleton className="h-10 w-full rounded-md" />
         <Skeleton className="h-10 w-full rounded-md" />

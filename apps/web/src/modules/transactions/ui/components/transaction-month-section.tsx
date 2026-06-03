@@ -1,28 +1,14 @@
+// modules/transactions/ui/transaction-month-section.tsx
 "use client";
 
+import { DataTable } from "@/components/data-table/data-table";
 import { MonthYearPicker } from "@/components/month-year-picker";
 import { formatAmount } from "@/lib/utils";
 import type { Transaction } from "@neuralpay/types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@neuralpay/ui/components/table";
-import { cn } from "@neuralpay/ui/lib/utils";
-import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type SortingState,
-} from "@tanstack/react-table";
 import { parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
-import { forwardRef, useCallback, useState } from "react";
-import { transactionColumns } from "./columns";
+import { useCallback, useMemo } from "react";
+import { transactionColumns } from "./transaction-columns";
 
 interface Props {
   monthKey: string;
@@ -35,149 +21,93 @@ interface Props {
   columnVisibility: Record<string, boolean>;
 }
 
-export const TransactionMonthSection = forwardRef<HTMLDivElement, Props>(
-  function TransactionMonthSection(
-    {
-      monthKey,
-      transactions,
-      globalSelection,
-      onSelectionChange,
-      onView,
-      onEdit,
-      onDelete,
-      columnVisibility,
+export function TransactionMonthSection({
+  monthKey,
+  transactions,
+  globalSelection,
+  onSelectionChange,
+  onView,
+  onEdit,
+  onDelete,
+  columnVisibility,
+}: Props) {
+  const router = useRouter();
+  const date = parseISO(`${monthKey}-01`);
+
+  const totalSpent = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.type === "debit")
+        .reduce((sum, t) => sum + Number(t.amount), 0),
+    [transactions],
+  );
+
+  const handleMonthChange = useCallback(
+    (date: Date) => {
+      const monthStartDate = new Date(
+        Date.UTC(date.getFullYear(), date.getMonth(), 1),
+      );
+      const monthEndDate = new Date(
+        Date.UTC(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999),
+      );
+
+      const params = new URLSearchParams(window.location.search);
+      params.set("dateFrom", monthStartDate.toISOString());
+      params.set("dateTo", monthEndDate.toISOString());
+      router.push(`${window.location.pathname}?${params.toString()}` as never);
     },
-    ref,
-  ) {
-    const [sorting, setSorting] = useState<SortingState>([
-      { id: "date", desc: true },
-    ]);
+    [router],
+  );
 
-    const router = useRouter();
-    const date = parseISO(`${monthKey}-01`);
-
-    const totalSpent = transactions
-      .filter((t) => t.type === "debit")
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-
-    const table = useReactTable({
-      data: transactions,
-      columns: transactionColumns({ onView, onEdit, onDelete }),
-      state: {
-        sorting,
-        columnVisibility,
-        rowSelection: Object.fromEntries(
-          transactions.map((t) => [t.id, globalSelection.has(t.id)]),
-        ),
-      },
-      onSortingChange: setSorting,
-      onRowSelectionChange: (updater) => {
-        const currentSelection = Object.fromEntries(
-          transactions.map((t) => [t.id, globalSelection.has(t.id)]),
-        );
-        const newSelection =
-          typeof updater === "function" ? updater(currentSelection) : updater;
-        const selectedIds = new Set(globalSelection);
-        transactions.forEach((tx) => {
-          if (newSelection[tx.id]) selectedIds.add(tx.id);
-          else selectedIds.delete(tx.id);
-        });
-        onSelectionChange(selectedIds);
-      },
-      getCoreRowModel: getCoreRowModel(),
-      getSortedRowModel: getSortedRowModel(),
-      enableRowSelection: true,
-      getRowId: (row) => row.id,
-    });
-
-    const handleMonthChange = useCallback(
-      (date: Date) => {
-        const monthStartDate = new Date(
-          Date.UTC(date.getFullYear(), date.getMonth(), 1),
-        );
-        const monthEndDate = new Date(
-          Date.UTC(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999),
-        );
-
-        const params = new URLSearchParams(window.location.search);
-        params.set("dateFrom", monthStartDate.toISOString());
-        params.set("dateTo", monthEndDate.toISOString());
-        router.push(
-          `${window.location.pathname}?${params.toString()}` as never,
-        );
-      },
-      [router],
+  const rowSelection = useMemo(() => {
+    return Object.fromEntries(
+      transactions.map((t) => [t.id, globalSelection.has(t.id)]),
     );
+  }, [transactions, globalSelection]);
 
-    return (
-      <div ref={ref}>
-        {/* Month Header — sticky within the scroll container */}
-        <div className="sticky top-0 z-20 bg-accent/50 border-y border-border px-4 py-3 backdrop-blur-md">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MonthYearPicker value={date} onChange={handleMonthChange} />
-              <span className="text-xs text-muted-foreground">
-                {transactions.length} transactions
-              </span>
-            </div>
-            <span className="text-sm font-medium text-muted-foreground">
-              {formatAmount(totalSpent)} spent
+  const handleSelectionChange = useCallback(
+    (selectedRowIds: Record<string, boolean>) => {
+      const newSelection = new Set(globalSelection);
+      transactions.forEach((tx) => {
+        if (selectedRowIds[tx.id]) newSelection.add(tx.id);
+        else newSelection.delete(tx.id);
+      });
+      onSelectionChange(newSelection);
+    },
+    [transactions, globalSelection, onSelectionChange],
+  );
+
+  return (
+    <div>
+      {/* Month Header — sticky at top: 0 */}
+      <div className="sticky top-0 z-20 bg-accent/50 border-y border-border px-4 py-3 backdrop-blur-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <MonthYearPicker value={date} onChange={handleMonthChange} />
+            <span className="text-xs text-muted-foreground">
+              {transactions.length} transactions
             </span>
           </div>
+          <span className="text-sm font-medium text-muted-foreground">
+            {formatAmount(totalSpent)} spent
+          </span>
         </div>
-
-        <Table noWrapper>
-          <TableHeader className="sticky top-[53.6px] z-20 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary">
-            <TableRow>
-              {table.getHeaderGroups().map((headerGroup) =>
-                headerGroup.headers.map((header) => {
-                  if (!header.column.getIsVisible()) return null;
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className={cn(
-                        "text-xs font-medium text-muted-foreground uppercase tracking-wider",
-                        header.id === "select" && "w-10",
-                        header.id === "date" && "w-[100px]",
-                        header.id === "category" && "w-[140px]",
-                        header.id === "amount" && "w-[140px] text-right",
-                        header.id === "status" && "w-[140px]",
-                        header.id === "actions" && "w-12",
-                      )}
-                      style={{ width: header.getSize() }}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                }),
-              )}
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                className={cn(
-                  row.getIsSelected() && "bg-primary/5",
-                  row.original.isAnomaly && "border-l-2 border-l-destructive",
-                )}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
       </div>
-    );
-  },
-);
+
+      <DataTable
+        columns={transactionColumns({ onView, onEdit, onDelete })}
+        data={transactions}
+        pagination="none"
+        noScroll
+        hideToolbar
+        headerClassName="sticky top-[53.6px] z-20 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary"
+        rowIdKey="id"
+        getRowClassName={(row: Transaction) =>
+          row.isAnomaly ? "border-l-2 border-l-destructive" : ""
+        }
+        externalRowSelection={rowSelection}
+        onRowSelectionChange={handleSelectionChange}
+      />
+    </div>
+  );
+}

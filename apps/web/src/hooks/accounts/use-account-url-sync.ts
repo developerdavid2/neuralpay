@@ -1,13 +1,7 @@
-// hooks/accounts/use-account-url-sync.ts
-"use client";
-
-import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import type { Route } from "next";
 
 export function useAccountUrlSync() {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const setUrl = useCallback(

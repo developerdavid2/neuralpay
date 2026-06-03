@@ -1,13 +1,12 @@
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+"use client";
+
 import { useCallback } from "react";
 import type { TransactionDrawerMode } from "./use-transaction-drawer";
 
 export function useTransactionUrlSync() {
-  const searchParams = useSearchParams();
-
   const syncToUrl = useCallback(
     (mode: TransactionDrawerMode, txId: string | null) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
       if (mode === "add") {
         params.set("mode", "add");
         params.delete("focus");
@@ -24,11 +23,11 @@ export function useTransactionUrlSync() {
           : window.location.pathname,
       );
     },
-    [searchParams],
+    [],
   );
 
   const clearUrl = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete("focus");
     params.delete("mode");
     const query = params.toString();
@@ -37,7 +36,7 @@ export function useTransactionUrlSync() {
       "",
       query ? `${window.location.pathname}?${query}` : window.location.pathname,
     );
-  }, [searchParams]);
+  }, []);
 
   return { syncToUrl, clearUrl };
 }

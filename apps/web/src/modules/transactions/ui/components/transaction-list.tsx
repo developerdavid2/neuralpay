@@ -172,7 +172,7 @@ export function TransactionsList({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full ">
       <TransactionToolbar
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={setColumnVisibility}
@@ -186,7 +186,7 @@ export function TransactionsList({
         }
       />
 
-      <div className="px-6 pb-6 overflow-y-auto scrollbar-hide flex-1 min-h-0">
+      <div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 scrollbar-hide">
         <Table noWrapper>
           {sortedMonths.map((monthKey) => (
             <TransactionMonthSection

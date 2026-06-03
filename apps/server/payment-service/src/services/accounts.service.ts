@@ -4,7 +4,8 @@ import {
   ACCOUNT_STATUSES,
   ACCOUNT_TYPES,
   type AccountsFilterInput,
-  type BankAccountRecord,
+  type AccountsListAllInput,
+  type BankAccount,
   type CreateAccountInput,
   type PaginatedAccounts,
   type ServiceResult,
@@ -28,7 +29,7 @@ export const AccountsService = {
     input: AccountsFilterInput,
   ): Promise<ServiceResult<PaginatedAccounts>> {
     try {
-      const { limit, cursor, search, type, status, tags } = input;
+      const { limit, search, type, status, tags } = input;
 
       const conditions = [eq(bankAccounts.userId, userId)];
 
@@ -69,46 +70,33 @@ export const AccountsService = {
         if (searchCond) conditions.push(searchCond);
       }
 
-      // ── Cursor pagination ──
-      if (cursor) {
-        const cursorId = Buffer.from(cursor, "base64url").toString("utf-8");
-        const [cursorRow] = await db
-          .select({ id: bankAccounts.id, createdAt: bankAccounts.createdAt })
+      const page = input.page ?? 1;
+      const offset = (page - 1) * limit;
+
+      const [rows, countRows] = await Promise.all([
+        db
+          .select(getTableColumns(bankAccounts))
           .from(bankAccounts)
-          .where(
-            and(eq(bankAccounts.id, cursorId), eq(bankAccounts.userId, userId)),
-          )
-          .limit(1);
+          .where(and(...conditions))
+          .orderBy(desc(bankAccounts.createdAt), desc(bankAccounts.id))
+          .limit(limit)
+          .offset(offset),
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(bankAccounts)
+          .where(and(...conditions)),
+      ]);
 
-        if (cursorRow) {
-          const cursorCond = or(
-            sql`${bankAccounts.createdAt} < ${cursorRow.createdAt}`,
-            and(
-              eq(bankAccounts.createdAt, cursorRow.createdAt),
-              sql`${bankAccounts.id} < ${cursorRow.id}`,
-            ),
-          );
-          if (cursorCond) conditions.push(cursorCond);
-        }
-      }
-
-      const rows = await db
-        .select(getTableColumns(bankAccounts))
-        .from(bankAccounts)
-        .where(and(...conditions))
-        .orderBy(desc(bankAccounts.createdAt), desc(bankAccounts.id))
-        .limit(limit + 1);
-
-      const hasMore = rows.length > limit;
-      const items = hasMore ? rows.slice(0, -1) : rows;
-      const last = items[items.length - 1];
-
-      const nextCursor =
-        hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
+      const totalCount = countRows[0]?.count ?? 0;
+      const pageCount = Math.ceil(totalCount / limit);
 
       return {
         success: true,
-        data: { items: items as BankAccountRecord[], nextCursor },
+        data: {
+          items: rows as BankAccount[],
+          totalCount,
+          pageCount,
+        },
       };
     } catch (err) {
       console.error("[AccountsService.listByUser]", err);
@@ -120,11 +108,69 @@ export const AccountsService = {
     }
   },
 
+  // server/services/accounts.service.ts
+  async listAllByUser(
+    userId: string,
+    input: AccountsListAllInput,
+  ): Promise<ServiceResult<BankAccount[]>> {
+    try {
+      const { search, type, status, tags, isManual } = input;
+
+      const conditions = [eq(bankAccounts.userId, userId)];
+
+      if (type?.length) {
+        conditions.push(
+          inArray(bankAccounts.type, type as (typeof ACCOUNT_TYPES)[number][]),
+        );
+      }
+      if (status?.length) {
+        conditions.push(
+          inArray(
+            bankAccounts.status,
+            status as (typeof ACCOUNT_STATUSES)[number][],
+          ),
+        );
+      }
+      if (tags?.length) {
+        conditions.push(sql`${bankAccounts.tags} && ${tags}`);
+      }
+      if (isManual !== undefined) {
+        conditions.push(eq(bankAccounts.isManual, isManual));
+      }
+      if (search) {
+        const s = `%${search}%`;
+        const searchCond = or(
+          ilike(bankAccounts.name, s),
+          ilike(bankAccounts.bankName, s),
+          ilike(bankAccounts.maskedNumber, s),
+        );
+        if (searchCond) conditions.push(searchCond);
+      }
+
+      const rows = await db
+        .select(getTableColumns(bankAccounts))
+        .from(bankAccounts)
+        .where(and(...conditions))
+        .orderBy(desc(bankAccounts.createdAt));
+
+      return {
+        success: true,
+        data: rows as BankAccount[],
+      };
+    } catch (err) {
+      console.error("[AccountsService.listAllByUser]", err);
+      return {
+        success: false,
+        error: "Failed to fetch accounts",
+        code: "DB_ERROR",
+      };
+    }
+  },
   // ── GET BY ID
   async getById(
     id: string,
     userId: string,
-  ): Promise<ServiceResult<BankAccountRecord>> {
+  ): Promise<ServiceResult<BankAccount>> {
     try {
       const [row] = await db
         .select()
@@ -138,7 +184,7 @@ export const AccountsService = {
           error: "Account not found",
           code: "NOT_FOUND",
         };
-      return { success: true, data: row as BankAccountRecord };
+      return { success: true, data: row as BankAccount };
     } catch (err) {
       console.error("[AccountsService.getById]", err);
       return {
@@ -153,7 +199,7 @@ export const AccountsService = {
   async create(
     userId: string,
     input: CreateAccountInput,
-  ): Promise<ServiceResult<BankAccountRecord>> {
+  ): Promise<ServiceResult<BankAccount>> {
     try {
       const [created] = await db
         .insert(bankAccounts)
@@ -172,7 +218,7 @@ export const AccountsService = {
         })
         .returning();
 
-      return { success: true, data: created! as BankAccountRecord };
+      return { success: true, data: created! as BankAccount };
     } catch (err) {
       console.error("[AccountsService.create]", err);
       return {
@@ -187,7 +233,7 @@ export const AccountsService = {
   async update(
     userId: string,
     input: UpdateAccountInput,
-  ): Promise<ServiceResult<BankAccountRecord>> {
+  ): Promise<ServiceResult<BankAccount>> {
     try {
       const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
@@ -213,7 +259,7 @@ export const AccountsService = {
           error: "Account not found",
           code: "NOT_FOUND",
         };
-      return { success: true, data: updated as BankAccountRecord };
+      return { success: true, data: updated as BankAccount };
     } catch (err) {
       console.error("[AccountsService.update]", err);
       return {

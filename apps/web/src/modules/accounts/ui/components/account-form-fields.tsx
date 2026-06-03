@@ -18,16 +18,18 @@ import {
 } from "@neuralpay/ui/components/select";
 import { Textarea } from "@neuralpay/ui/components/textarea";
 import { Controller, type UseFormReturn } from "react-hook-form";
-import { ACCOUNT_STATUSES, ACCOUNT_TYPES } from "../constants";
-import type { FormValues } from "../types";
+import type { FormValues } from "../../types";
+import { ACCOUNT_TYPES } from "@neuralpay/types";
 
 interface Props {
-  form: UseFormReturn<<FormValues>;
+  form: UseFormReturn<FormValues>;
   disabled?: boolean;
 }
 
 export function AccountFormFields({ form, disabled }: Props) {
   const pending = disabled || form.formState.isSubmitting;
+
+  console.log(form);
 
   return (
     <FieldGroup className="gap-4">
@@ -98,37 +100,11 @@ export function AccountFormFields({ form, disabled }: Props) {
             </Field>
           )}
         />
-
-        <Controller
-          name="status"
-          control={form.control}
-          render={({ field }) => (
-            <Field>
-              <FieldLabel>Status</FieldLabel>
-              <Select
-                value={field.value ?? ""}
-                onValueChange={field.onChange}
-                disabled={pending}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ACCOUNT_STATUSES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          )}
-        />
       </div>
 
       {/* Account Number */}
       <Controller
-        name="accountNumber"
+        name="maskedNumber"
         control={form.control}
         render={({ field, fieldState }) => (
           <Field>
@@ -187,23 +163,6 @@ export function AccountFormFields({ form, disabled }: Props) {
                 <SelectItem value="ngn">NGN — Nigerian Naira</SelectItem>
               </SelectContent>
             </Select>
-          </Field>
-        )}
-      />
-
-      {/* Notes */}
-      <Controller
-        name="notes"
-        control={form.control}
-        render={({ field }) => (
-          <Field>
-            <FieldLabel>Notes (optional)</FieldLabel>
-            <Textarea
-              {...field}
-              placeholder="Additional details about this account..."
-              disabled={pending}
-              value={field.value ?? ""}
-            />
           </Field>
         )}
       />

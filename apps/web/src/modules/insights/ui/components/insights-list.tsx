@@ -118,7 +118,7 @@ export function InsightsList({
             isFetchingNextPage={isFetchingNextPage}
             fetchNextPage={fetchNextPage}
             isLoading={isLoading}
-            isManual={false}
+            isManual={true}
           />
         </div>
       </div>
