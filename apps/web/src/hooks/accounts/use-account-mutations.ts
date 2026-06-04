@@ -3,16 +3,25 @@
 import { invalidateAccountsQueries } from "@/lib/invalidate-trpc-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
+import {
+  useAccountPendingSelectors,
+  useAccountPendingStore,
+} from "./use-account-pending";
 
 export function useAccountMutations() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [pendingUpdateId, setPendingUpdateId] = useState<string | null>(null);
-  const [pendingCreate, setPendingCreate] = useState(false);
+  const {
+    markDeleting,
+    unmarkDeleting,
+    markDisconnecting,
+    unmarkDisconnecting,
+    setPendingUpdateId,
+    setPendingCreate,
+  } = useAccountPendingStore();
+  const pending = useAccountPendingSelectors();
 
   const createAccount = useMutation({
     ...trpc.payments.accounts.create.mutationOptions(),
@@ -35,6 +44,13 @@ export function useAccountMutations() {
     },
   });
 
+  const disconnectAccount = useMutation({
+    ...trpc.payments.accounts.disconnect.mutationOptions(),
+    onSuccess: async () => {
+      await invalidateAccountsQueries(queryClient);
+    },
+  });
+
   const handleCreate = useCallback(
     async (values: Parameters<typeof createAccount.mutateAsync>[0]) => {
       setPendingCreate(true);
@@ -51,7 +67,7 @@ export function useAccountMutations() {
         setPendingCreate(false);
       }
     },
-    [createAccount],
+    [createAccount, setPendingCreate],
   );
 
   const handleUpdate = useCallback(
@@ -70,12 +86,12 @@ export function useAccountMutations() {
         setPendingUpdateId(null);
       }
     },
-    [updateAccount],
+    [updateAccount, setPendingUpdateId],
   );
 
   const handleDelete = useCallback(
     async (id: string) => {
-      setPendingDeleteId(id);
+      markDeleting([id]);
       try {
         await deleteAccount.mutateAsync({ id });
         toast.success("Account deleted successfully");
@@ -85,19 +101,62 @@ export function useAccountMutations() {
         toast.error(message);
         throw error;
       } finally {
-        setPendingDeleteId(null);
+        unmarkDeleting([id]);
       }
     },
-    [deleteAccount],
+    [deleteAccount, markDeleting, unmarkDeleting],
+  );
+
+  const handleDisconnect = useCallback(
+    async (id: string) => {
+      markDisconnecting([id]);
+      try {
+        await disconnectAccount.mutateAsync({ id });
+        toast.success("Account disconnected successfully");
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to disconnect account";
+        toast.error(message);
+        throw error;
+      } finally {
+        unmarkDisconnecting([id]);
+      }
+    },
+    [disconnectAccount, markDisconnecting, unmarkDisconnecting],
+  );
+
+  const handleBatchDelete = useCallback(
+    async (ids: string[]) => {
+      markDeleting(ids);
+      try {
+        for (const id of ids) {
+          await deleteAccount.mutateAsync({ id });
+        }
+        toast.success(
+          `${ids.length} account${ids.length > 1 ? "s" : ""} deleted`,
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to delete accounts";
+        toast.error(message);
+        throw error;
+      } finally {
+        unmarkDeleting(ids);
+      }
+    },
+    [deleteAccount, markDeleting, unmarkDeleting],
   );
 
   return {
     handleCreate,
     handleUpdate,
     handleDelete,
-    // Pending states
-    isCreating: pendingCreate,
-    isUpdating: pendingUpdateId !== null,
-    isDeleting: pendingDeleteId !== null,
+    handleDisconnect,
+    handleBatchDelete,
+    ...pending,
   };
 }

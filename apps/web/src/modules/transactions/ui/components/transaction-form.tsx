@@ -14,13 +14,14 @@ import {
 } from "@neuralpay/ui/components/drawer";
 import { Trash2, X, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { cn } from "@neuralpay/ui/lib/utils";
 import { TransactionFormFields } from "./transaction-form-fields";
 
 export function TransactionForm({
   defaultValues,
   isEdit,
-
-  isPending,
+  isSaving,
+  isDeleting = false,
   bankAccountOptions,
   onSubmit,
   onDelete,
@@ -29,8 +30,8 @@ export function TransactionForm({
 }: {
   defaultValues: FormValues;
   isEdit: boolean;
-
-  isPending: boolean;
+  isSaving: boolean;
+  isDeleting?: boolean;
   bankAccountOptions: { label: string; value: string }[];
   onSubmit: (values: FormValues) => Promise<void>;
   onDelete?: () => Promise<void>;
@@ -47,12 +48,22 @@ export function TransactionForm({
     defaultValues,
   });
 
+  const formDisabled = isSaving || isDeleting;
+
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
       noValidate
-      className="flex flex-col flex-1 min-h-0"
+      className={cn(
+        "relative flex flex-col flex-1 min-h-0",
+        isDeleting && "pointer-events-none",
+      )}
     >
+      {isDeleting && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
       {/* Header */}
       <DrawerHeader className="px-6 py-4 border-b space-y-1 shrink-0">
         <div className="flex items-start justify-between">
@@ -73,12 +84,19 @@ export function TransactionForm({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="size-8 text-muted-foreground hover:text-destructive"
+                className={cn(
+                  "size-8 text-muted-foreground hover:text-destructive",
+                  isDeleting && "text-destructive",
+                )}
                 onClick={onDelete}
-                disabled={isPending}
+                disabled={formDisabled}
                 title="Delete transaction"
               >
-                <Trash2 className="size-4" />
+                {isDeleting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
               </Button>
             )}
             <DrawerClose asChild>
@@ -90,7 +108,7 @@ export function TransactionForm({
                   clearUrl();
                   onClose();
                 }}
-                disabled={isPending}
+                disabled={formDisabled}
               >
                 <X className="size-4" />
               </Button>
@@ -103,7 +121,7 @@ export function TransactionForm({
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5 scrollbar-thin">
         <TransactionFormFields
           form={form}
-          disabled={isPending}
+          disabled={formDisabled}
           bankAccountOptions={bankAccountOptions}
         />
       </div>
@@ -112,10 +130,10 @@ export function TransactionForm({
       <DrawerFooter className="px-6 py-4 border-t shrink-0">
         <Button
           type="submit"
-          disabled={isPending || (isEdit && !form.formState.isValid)}
+          disabled={formDisabled || (isEdit && !form.formState.isValid)}
           className="w-full"
         >
-          {isPending ? (
+          {isSaving ? (
             <>
               <Loader2 className="size-4 animate-spin mr-2" />
               {isEdit ? "Saving..." : "Creating..."}
@@ -132,7 +150,7 @@ export function TransactionForm({
             type="button"
             variant="outline"
             className="w-full"
-            disabled={isPending}
+            disabled={formDisabled}
           >
             Cancel
           </Button>

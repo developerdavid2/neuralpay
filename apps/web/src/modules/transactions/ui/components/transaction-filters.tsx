@@ -86,6 +86,7 @@ export function TransactionFilters() {
     hasActiveFilters,
     dateRange,
     updateAccountType,
+    updateTransactionTypes,
     updateDateRange,
     updateIsManual,
     updateIsAnomaly,
@@ -127,7 +128,9 @@ export function TransactionFilters() {
           <FilterChip
             key={type}
             label={TRANSACTION_TYPE_LABELS[type] ?? type}
-            onRemove={() => updateAccountType("all")}
+            onRemove={() =>
+              updateTransactionTypes(currentTypes.filter((t) => t !== type))
+            }
           />
         ))}
         {currentAccountType !== "all" && (

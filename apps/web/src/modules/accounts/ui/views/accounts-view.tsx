@@ -52,6 +52,7 @@ export function AccountsView({
             <AccountFilters />
           </div>
           <SectionBoundary
+            key={`${search}-${types.join(",")}-${statuses.join(",")}-${isManual}-${limit}-${currentPage}`}
             fallback={<AccountsListSkeleton />}
             errorMessage="Could not load accounts lists"
           >

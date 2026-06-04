@@ -44,7 +44,8 @@ interface DataTableProps<TData, TValue> {
   emptyState?: React.ReactNode;
   externalRowSelection?: Record<string, boolean>;
   onRowSelectionChange?: (selection: Record<string, boolean>) => void;
-  hideToolbar?: boolean;
+  columnVisibility?: Record<string, boolean>;
+  onColumnVisibilityChange?: (v: Record<string, boolean>) => void;
   headerClassName?: string;
   noScroll?: boolean;
 }
@@ -67,13 +68,16 @@ export function DataTable<TData, TValue>({
   emptyState,
   externalRowSelection,
   onRowSelectionChange,
-  hideToolbar = false,
+  columnVisibility,
+  onColumnVisibilityChange,
   headerClassName,
   noScroll = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [internalColVisibility, setInternalColVisibility] =
+    useState<VisibilityState>({});
+  const colVisibility = columnVisibility ?? internalColVisibility;
   const [internalRowSelection, setInternalRowSelection] = useState({});
 
   const isExternalSelection = externalRowSelection !== undefined;
@@ -91,7 +95,6 @@ export function DataTable<TData, TValue>({
       pagination === "paged" ? getPaginationRowModel() : undefined,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: (updater) => {
       if (isExternalSelection && onRowSelectionChange) {
         const newSelection =
@@ -105,12 +108,19 @@ export function DataTable<TData, TValue>({
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
+      columnVisibility: colVisibility,
       rowSelection,
       pagination:
         pagination === "paged"
           ? { pageIndex: currentPage - 1, pageSize }
           : undefined,
+    },
+    onColumnVisibilityChange: (updater) => {
+      const next =
+        typeof updater === "function" ? updater(colVisibility) : updater;
+      if (onColumnVisibilityChange)
+        onColumnVisibilityChange(next as Record<string, boolean>);
+      else setInternalColVisibility(next);
     },
     manualPagination: pagination === "paged" && !!onPageChange,
     pageCount: pagination === "paged" ? pageCount : undefined,
@@ -190,22 +200,6 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="flex flex-col h-full">
-      {!hideToolbar && (
-        <DataTableToolbar
-          table={table}
-          columnNames={columnNames}
-          selectedCount={actualSelectedCount}
-          deletableCount={actualDeletableCount}
-          onClearSelection={onClearSelection}
-          onBatchDelete={onBatchDelete}
-          showPagination={pagination === "paged"}
-          pageSize={pageSize}
-          currentPage={currentPage}
-          onPageChange={onPageChange}
-          pageCount={pageCount}
-        />
-      )}
-
       {/* KEY FIX: no wrapper div when noScroll — table is direct child of parent's scroll container */}
       {noScroll ? (
         tableNode

@@ -1,4 +1,3 @@
-// modules/accounts/ui/account-filters.tsx
 "use client";
 
 import { DebouncedSearchInput } from "@/components/debounced-search-input";
@@ -17,7 +16,7 @@ import {
 import { Switch } from "@neuralpay/ui/components/switch";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Filter, SlidersHorizontal, Tag, AlertTriangle, X } from "lucide-react";
-import { ACCOUNT_STATUS_LABELS, ACCOUNT_TYPE_LABELS } from "../../constants";
+import { ACCOUNT_STATUS_CONFIG, ACCOUNT_TYPE_CONFIG } from "../../constants";
 
 export function AccountFilters() {
   const {
@@ -79,14 +78,14 @@ export function AccountFilters() {
         {currentTypes.map((type) => (
           <FilterChip
             key={type}
-            label={ACCOUNT_TYPE_LABELS[type] ?? type}
+            label={ACCOUNT_TYPE_CONFIG[type]?.label ?? type}
             onRemove={() => updateTypes(currentTypes.filter((t) => t !== type))}
           />
         ))}
         {currentStatuses.map((status) => (
           <FilterChip
             key={status}
-            label={ACCOUNT_STATUS_LABELS[status] ?? status}
+            label={ACCOUNT_STATUS_CONFIG[status]?.label ?? status}
             onRemove={() =>
               updateStatuses(currentStatuses.filter((s) => s !== status))
             }
@@ -127,18 +126,18 @@ export function AccountFilters() {
                 </div>
                 <button
                   onClick={() => {
-                    const all = Object.keys(ACCOUNT_TYPE_LABELS);
+                    const all = Object.keys(ACCOUNT_TYPE_CONFIG);
                     setDraftTypes(draftTypes.length === all.length ? [] : all);
                   }}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {draftTypes.length === Object.keys(ACCOUNT_TYPE_LABELS).length
+                  {draftTypes.length === Object.keys(ACCOUNT_TYPE_CONFIG).length
                     ? "Clear all"
                     : "Select all"}
                 </button>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {Object.entries(ACCOUNT_TYPE_LABELS).map(([key, label]) => (
+                {Object.entries(ACCOUNT_TYPE_CONFIG).map(([key, config]) => (
                   <button
                     key={key}
                     onClick={() => toggleDraftType(key)}
@@ -149,7 +148,7 @@ export function AccountFilters() {
                         : "bg-background text-foreground border-border hover:bg-accent",
                     )}
                   >
-                    {label}
+                    {config.label}
                   </button>
                 ))}
               </div>
@@ -166,7 +165,7 @@ export function AccountFilters() {
                 </div>
                 <button
                   onClick={() => {
-                    const all = Object.keys(ACCOUNT_STATUS_LABELS);
+                    const all = Object.keys(ACCOUNT_STATUS_CONFIG);
                     setDraftStatuses(
                       draftStatuses.length === all.length ? [] : all,
                     );
@@ -174,13 +173,13 @@ export function AccountFilters() {
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {draftStatuses.length ===
-                  Object.keys(ACCOUNT_STATUS_LABELS).length
+                  Object.keys(ACCOUNT_STATUS_CONFIG).length
                     ? "Clear all"
                     : "Select all"}
                 </button>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {Object.entries(ACCOUNT_STATUS_LABELS).map(([key, label]) => (
+                {Object.entries(ACCOUNT_STATUS_CONFIG).map(([key, config]) => (
                   <button
                     key={key}
                     onClick={() => toggleDraftStatus(key)}
@@ -191,7 +190,7 @@ export function AccountFilters() {
                         : "bg-background text-foreground border-border hover:bg-accent",
                     )}
                   >
-                    {label}
+                    {config.label}
                   </button>
                 ))}
               </div>

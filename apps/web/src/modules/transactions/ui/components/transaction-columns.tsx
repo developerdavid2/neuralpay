@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import {
   ChevronsUpDown,
   Eye,
+  Loader2,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -25,12 +26,14 @@ interface ColumnProps {
   onView: (tx: Transaction) => void;
   onEdit: (tx: Transaction) => void;
   onDelete: (tx: Transaction) => void;
+  isRowPending: (id: string) => boolean;
 }
 
 export function transactionColumns({
   onView,
   onEdit,
   onDelete,
+  isRowPending,
 }: ColumnProps): ColumnDef<Transaction>[] {
   return [
     {
@@ -199,20 +202,30 @@ export function transactionColumns({
       id: "actions",
       cell: ({ row }) => {
         const tx = row.original;
+        const pending = isRowPending(tx.id);
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="size-4" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                disabled={pending}
+              >
+                {pending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <MoreHorizontal className="size-4" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onView(tx)}>
+              <DropdownMenuItem onClick={() => onView(tx)} disabled={pending}>
                 <Eye className="size-4 mr-2" /> View Details
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onEdit(tx)}
-                disabled={isSyncedSource(tx)}
+                disabled={isSyncedSource(tx) || pending}
               >
                 <Pencil className="size-4 mr-2" />
                 Edit
@@ -220,7 +233,7 @@ export function transactionColumns({
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => onDelete(tx)}
-                disabled={isSyncedSource(tx)}
+                disabled={isSyncedSource(tx) || pending}
               >
                 <Trash2 className="size-4 mr-2" /> Delete
               </DropdownMenuItem>

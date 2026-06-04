@@ -18,6 +18,7 @@ interface Props {
   onView: (tx: Transaction) => void;
   onEdit: (tx: Transaction) => void;
   onDelete: (tx: Transaction) => void;
+  isRowPending: (id: string) => boolean;
   columnVisibility: Record<string, boolean>;
 }
 
@@ -29,6 +30,7 @@ export function TransactionMonthSection({
   onView,
   onEdit,
   onDelete,
+  isRowPending,
   columnVisibility,
 }: Props) {
   const router = useRouter();
@@ -95,18 +97,23 @@ export function TransactionMonthSection({
       </div>
 
       <DataTable
-        columns={transactionColumns({ onView, onEdit, onDelete })}
+        columns={transactionColumns({ onView, onEdit, onDelete, isRowPending })}
         data={transactions}
         pagination="none"
         noScroll
-        hideToolbar
         headerClassName="sticky top-[53.6px] z-20 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary"
         rowIdKey="id"
         getRowClassName={(row: Transaction) =>
-          row.isAnomaly ? "border-l-2 border-l-destructive" : ""
+          [
+            row.isAnomaly ? "border-l-2 border-l-destructive" : "",
+            isRowPending(row.id) ? "pointer-events-none opacity-50" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")
         }
         externalRowSelection={rowSelection}
         onRowSelectionChange={handleSelectionChange}
+        columnVisibility={columnVisibility}
       />
     </div>
   );

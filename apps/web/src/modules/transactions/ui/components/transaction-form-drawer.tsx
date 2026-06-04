@@ -12,6 +12,7 @@ import { useAllAccounts } from "@/hooks/accounts/use-all-accounts";
 import type { TransactionDrawerMode } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
+import { useTransactionPendingSelectors } from "@/hooks/transactions/use-transaction-pending";
 import { useTransactionUrlSync } from "@/hooks/transactions/use-transaction-url-sync";
 import { useTransactionDetail } from "@/hooks/transactions/use-transactions";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -86,16 +87,14 @@ function TransactionFormInner({
     handleDelete: runDelete,
     isCreating,
     isUpdating,
-    isDeleting,
   } = useTransactionMutations();
+  const { isDeleting } = useTransactionPendingSelectors();
 
-  const [ConfirmDialog, confirm] = useConfirm(
-    "Delete transaction",
-    "Are you sure you want to delete this transaction? This action cannot be undone.",
-    "destructive",
-  );
+  const [ConfirmDialog, confirm] = useConfirm();
 
-  const isPending = isCreating || isUpdating || isDeleting;
+  const deleting =
+    transactionId !== null ? isDeleting(transactionId) : false;
+  const isSaving = isCreating || isUpdating;
 
   // Show skeleton immediately while ANY data is loading
   // This matches the insight drawer pattern exactly
@@ -147,6 +146,14 @@ function TransactionFormInner({
         ...values,
       } as UpdateTransactionInput);
     } else {
+      const ok = await confirm({
+        title: "Create transaction",
+        message:
+          "Are you sure you want to create this transaction? It will be added to your records.",
+        confirmLabel: "Create",
+      });
+      if (!ok) return;
+
       await handleCreate({
         ...values,
         isManual: true,
@@ -158,7 +165,13 @@ function TransactionFormInner({
 
   const onDelete = async () => {
     if (!transactionId) return;
-    const ok = await confirm();
+    const ok = await confirm({
+      title: "Delete transaction",
+      message:
+        "Are you sure you want to delete this transaction? This action cannot be undone.",
+      variant: "destructive",
+      confirmLabel: "Delete",
+    });
     if (!ok) return;
     await runDelete(transactionId);
     clearUrl();
@@ -172,7 +185,8 @@ function TransactionFormInner({
         key={transaction?.id ?? "add"}
         defaultValues={defaultValues}
         isEdit={isEdit}
-        isPending={isPending}
+        isSaving={isSaving}
+        isDeleting={deleting}
         bankAccountOptions={bankAccountOptions}
         onSubmit={onSubmit}
         onDelete={isEdit ? onDelete : undefined}

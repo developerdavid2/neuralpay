@@ -1,9 +1,9 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { ACCOUNT_TYPE_CONFIG, ACCOUNTS_TYPES_ICON_CHIP } from "../../constants";
+import { ACCOUNT_TYPE_CONFIG } from "../../constants";
 import { formatAmount } from "@/lib/utils";
+import { AccountTypeBadge } from "./account-badges";
+import type { AccountType } from "@neuralpay/types";
 
 const NOISE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
@@ -74,18 +74,16 @@ export function AccountTypeCard({
   accountCount,
   isBalanceVisible,
 }: {
-  type: string;
+  type: AccountType;
   totalBalance: number;
   accountCount: number;
   isBalanceVisible: boolean;
 }) {
   const config = ACCOUNT_TYPE_CONFIG[type];
-  const chipCls = ACCOUNTS_TYPES_ICON_CHIP[type];
   const masked = useMaskedNumber(type, ROTATE_MS[type] ?? 21000);
   if (!config) return null;
 
   const isEmpty = accountCount === 0;
-  const Icon = config.icon;
 
   return (
     <div
@@ -124,26 +122,8 @@ export function AccountTypeCard({
           style={{ backgroundImage: NOISE, backgroundSize: "200px 200px" }}
         />
 
-        {/* ── Content ──────────────────────────────────────────────────── */}
         <div className="relative z-10 flex flex-col justify-between h-full p-5">
-          {/* TOP: Icon chip + label + NFC */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              {/* Coloured icon chip */}
-              <span
-                className={cn(
-                  "flex items-center justify-center rounded-lg p-1.5",
-                  chipCls,
-                )}
-              >
-                <Icon className="size-3.5 text-white" strokeWidth={1.8} />
-              </span>
-              <span className="text-[11px] font-semibold text-white/70 tracking-wide">
-                {config.label}
-              </span>
-            </div>
-            <NfcIcon />
-          </div>
+          <AccountTypeBadge type={type} variant="icon" />
 
           {/* MIDDLE: Balance */}
           <div className="space-y-0.5">

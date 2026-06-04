@@ -1,11 +1,14 @@
 "use client";
 
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionFilters } from "@/hooks/transactions/use-transaction-filters";
 import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
+import { useTransactionPendingSelectors } from "@/hooks/transactions/use-transaction-pending";
 import { useTransactionUrlSync } from "@/hooks/transactions/use-transaction-url-sync";
 import { useTransactionsList } from "@/hooks/transactions/use-transactions";
+import { useConfirm } from "@/hooks/use-confirm";
 import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
 import type {
   Transaction,
@@ -19,7 +22,6 @@ import { Package } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { TransactionFormDrawer } from "./transaction-form-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
-import { TransactionToolbar } from "./transaction-toolbar";
 import { TransactionViewDrawer } from "./transaction-view-drawer";
 
 interface Props {
@@ -68,6 +70,8 @@ export function TransactionsList({
   const { syncToUrl } = useTransactionUrlSync();
   const { handleBatchDelete, handleDelete: runDelete } =
     useTransactionMutations();
+  const { isRowPending, isBatchDeleting } = useTransactionPendingSelectors();
+  const [ConfirmDialog, confirm] = useConfirm();
 
   const handleView = (tx: Transaction) => {
     onOpenView(tx.id);
@@ -80,6 +84,14 @@ export function TransactionsList({
   };
 
   const handleDelete = async (tx: Transaction) => {
+    const ok = await confirm({
+      title: "Delete transaction",
+      message:
+        "Are you sure you want to delete this transaction? This action cannot be undone.",
+      variant: "destructive",
+      confirmLabel: "Delete",
+    });
+    if (!ok) return;
     await runDelete(tx.id);
   };
 
@@ -151,9 +163,29 @@ export function TransactionsList({
     }
   }, [focusTransactionId, focusMode, allTransactions, onOpenView, onOpenEdit]);
 
-  const deletableIds = Array.from(globalSelection).filter(
-    (id) => allTransactions.find((t) => t.id === id)?.isManual,
+  const deletableIds = useMemo(
+    () =>
+      Array.from(globalSelection).filter(
+        (id) => allTransactions.find((t) => t.id === id)?.isManual,
+      ),
+    [globalSelection, allTransactions],
   );
+
+  const handleBatchDeleteWithConfirm = async () => {
+    const count = deletableIds.length;
+    if (count === 0) return;
+
+    const ok = await confirm({
+      title: `Delete ${count} transaction${count > 1 ? "s" : ""}`,
+      message: `Do you want to delete ${count} selected transaction${count > 1 ? "s" : ""}? This action cannot be undone.`,
+      variant: "destructive",
+      confirmLabel: `Delete ${count}`,
+    });
+    if (!ok) return;
+
+    await handleBatchDelete(deletableIds);
+    setGlobalSelection(new Set());
+  };
 
   if (allTransactions.length === 0) {
     return (
@@ -173,17 +205,19 @@ export function TransactionsList({
 
   return (
     <div className="flex flex-col h-full ">
-      <TransactionToolbar
+      <ConfirmDialog />
+      <DataTableToolbar
+        showLimitSelector
+        columnNames={["merchant", "category", "amount", "status"]}
+        className="m-6"
+        limitParamKey="limit"
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={setColumnVisibility}
         selectedCount={globalSelection.size}
         deletableCount={deletableIds.length}
         onClearSelection={() => setGlobalSelection(new Set())}
-        onBatchDelete={() =>
-          handleBatchDelete(deletableIds).then(() =>
-            setGlobalSelection(new Set()),
-          )
-        }
+        onBatchDelete={handleBatchDeleteWithConfirm}
+        isBatchDeleting={isBatchDeleting}
       />
 
       <div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 scrollbar-hide">
@@ -198,6 +232,7 @@ export function TransactionsList({
               onView={handleView}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              isRowPending={isRowPending}
               columnVisibility={columnVisibility}
             />
           ))}
@@ -219,37 +254,162 @@ export function TransactionsList({
 
 export function TransactionsListSkeleton() {
   return (
-    <div className="flex flex-col gap-4 px-6 py-4">
-      {Array.from({ length: 3 }).map((_, monthIdx) => (
-        <div
-          key={monthIdx}
-          className="rounded-xl border border-border bg-card overflow-hidden"
-        >
-          <div className="flex items-center justify-between px-5 py-3.5">
+    <div className="flex flex-col h-full">
+      {/* Toolbar skeleton */}
+      <div className="sticky top-0 z-30 mx-6 py-2 flex items-center justify-between gap-4 border-t">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-7 w-[90px] rounded-md" />
+          <Skeleton className="h-7 w-[90px] rounded-md" />
+        </div>
+      </div>
+
+      <div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 scrollbar-hide space-y-0">
+        {/* Month section skeleton */}
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          {/* Month header */}
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border bg-muted/30">
             <div className="flex items-center gap-3">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-3 w-20" />
+              <Skeleton className="size-4 rounded-sm" />
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-5 w-20" />
             </div>
             <Skeleton className="h-4 w-24" />
           </div>
-          <div className="border-t border-border">
-            {Array.from({ length: 4 }).map((_, rowIdx) => (
-              <div key={rowIdx} className="flex items-center gap-4 px-4 py-3">
-                <Skeleton className="size-4 rounded" />
-                <Skeleton className="size-7 rounded-md" />
-                <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-3.5 w-32" />
+
+          {/* Column headers */}
+          <div className="flex items-center px-4 py-2.5 border-b border-border bg-muted/20">
+            <Skeleton className="size-4 rounded-sm mr-4" />
+            <div className="flex items-center gap-1.5 w-[100px]">
+              <Skeleton className="h-3 w-8" />
+              <Skeleton className="size-3" />
+            </div>
+            <div className="flex-1">
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <div className="flex items-center gap-1.5 w-[140px]">
+              <Skeleton className="h-3 w-14" />
+              <Skeleton className="size-3" />
+            </div>
+            <div className="flex items-center gap-1.5 w-[100px] justify-end">
+              <Skeleton className="h-3 w-12" />
+              <Skeleton className="size-3" />
+            </div>
+            <div className="flex items-center gap-1.5 w-[100px] justify-end">
+              <Skeleton className="h-3 w-12" />
+              <Skeleton className="size-3" />
+            </div>
+            <Skeleton className="size-4 ml-4" />
+          </div>
+
+          {/* Transaction rows */}
+          {Array.from({ length: 5 }).map((_, rowIdx) => (
+            <div
+              key={rowIdx}
+              className="flex items-center px-4 py-3 border-b border-border last:border-b-0"
+            >
+              {/* Checkbox */}
+              <Skeleton className="size-4 rounded-sm mr-4 shrink-0" />
+
+              {/* Date: "May 25" + "12:13" */}
+              <div className="w-[100px] shrink-0 space-y-0.5">
+                <Skeleton className="h-4 w-14" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+
+              {/* Merchant: Icon + Name + Sublabel */}
+              <div className="flex-1 flex items-center gap-3 min-w-0">
+                <Skeleton className="size-10 rounded-full shrink-0" />
+                <div className="space-y-1 min-w-0">
+                  <Skeleton className="h-4 w-28" />
                   <Skeleton className="h-3 w-16" />
                 </div>
-                <Skeleton className="h-3 w-16 hidden sm:block" />
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-5 w-16" />
-                <Skeleton className="size-8" />
               </div>
-            ))}
-          </div>
+
+              {/* Category */}
+              <div className="w-[140px] shrink-0">
+                <Skeleton className="h-4 w-24" />
+              </div>
+
+              {/* Amount (right-aligned) */}
+              <div className="w-[100px] shrink-0 flex justify-end">
+                <Skeleton className="h-4 w-16" />
+              </div>
+
+              {/* Status badge */}
+              <div className="w-[100px] shrink-0 flex justify-end">
+                <Skeleton className="h-5 w-20 rounded-full" />
+              </div>
+
+              {/* Actions */}
+              <Skeleton className="size-4 ml-4 shrink-0" />
+            </div>
+          ))}
         </div>
-      ))}
+
+        {/* Second month section for variety */}
+        <div className="rounded-xl border border-border bg-card overflow-hidden mt-4">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border bg-muted/30">
+            <div className="flex items-center gap-3">
+              <Skeleton className="size-4 rounded-sm" />
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-5 w-20" />
+            </div>
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <div className="flex items-center px-4 py-2.5 border-b border-border bg-muted/20">
+            <Skeleton className="size-4 rounded-sm mr-4" />
+            <div className="flex items-center gap-1.5 w-[100px]">
+              <Skeleton className="h-3 w-8" />
+              <Skeleton className="size-3" />
+            </div>
+            <div className="flex-1">
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <div className="flex items-center gap-1.5 w-[140px]">
+              <Skeleton className="h-3 w-14" />
+              <Skeleton className="size-3" />
+            </div>
+            <div className="flex items-center gap-1.5 w-[100px] justify-end">
+              <Skeleton className="h-3 w-12" />
+              <Skeleton className="size-3" />
+            </div>
+            <div className="flex items-center gap-1.5 w-[100px] justify-end">
+              <Skeleton className="h-3 w-12" />
+              <Skeleton className="size-3" />
+            </div>
+            <Skeleton className="size-4 ml-4" />
+          </div>
+          {Array.from({ length: 3 }).map((_, rowIdx) => (
+            <div
+              key={rowIdx}
+              className="flex items-center px-4 py-3 border-b border-border last:border-b-0"
+            >
+              <Skeleton className="size-4 rounded-sm mr-4 shrink-0" />
+              <div className="w-[100px] shrink-0 space-y-0.5">
+                <Skeleton className="h-4 w-14" />
+                <Skeleton className="h-3 w-10" />
+              </div>
+              <div className="flex-1 flex items-center gap-3 min-w-0">
+                <Skeleton className="size-10 rounded-full shrink-0" />
+                <div className="space-y-1 min-w-0">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+              <div className="w-[140px] shrink-0">
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="w-[100px] shrink-0 flex justify-end">
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <div className="w-[100px] shrink-0 flex justify-end">
+                <Skeleton className="h-5 w-20 rounded-full" />
+              </div>
+              <Skeleton className="size-4 ml-4 shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

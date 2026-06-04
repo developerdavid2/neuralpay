@@ -3,6 +3,7 @@
 
 import { useAccountDrawer } from "@/hooks/accounts/use-account-drawer";
 import { useAccountMutations } from "@/hooks/accounts/use-account-mutations";
+import { useAccountPendingSelectors } from "@/hooks/accounts/use-account-pending";
 import { useAccountDetail } from "@/hooks/accounts/use-account-detail";
 import { useConfirm } from "@/hooks/use-confirm";
 import { formatAmount } from "@/lib/utils";
@@ -65,26 +66,34 @@ export function AccountViewDrawer() {
   const { isOpen, mode, onClose, accountId, onOpenEdit } = useAccountDrawer();
   const { clearUrl, setUrl } = useAccountUrlSync();
   const { account, isLoading } = useAccountDetail(accountId ?? "");
-  const { handleDelete, isDeleting } = useAccountMutations();
-  const [ConfirmDialog, confirm] = useConfirm(
-    "Delete account",
-    "Are you sure you want to delete this account? This will also remove all associated transactions. This action cannot be undone.",
-    "destructive",
-  );
+  const { handleDelete } = useAccountMutations();
+  const { isDeleting } = useAccountPendingSelectors();
+  const [ConfirmDialog, confirm] = useConfirm();
 
   if (!isOpen || mode !== "view" || accountId === null) return null;
 
   const acc = account;
   const isManual = acc?.isManual ?? true;
   const isSynced = !isManual;
+  const deleting = isDeleting(accountId);
 
   const onDelete = async () => {
     if (!acc) return;
-    const ok = await confirm();
+    const ok = await confirm({
+      title: "Delete account",
+      message:
+        "Are you sure you want to delete this account? This will also remove all associated transactions. This action cannot be undone.",
+      variant: "destructive",
+      confirmLabel: "Delete",
+    });
     if (!ok) return;
-    handleDelete(acc.id);
-    clearUrl();
-    onClose();
+    try {
+      await handleDelete(acc.id);
+      clearUrl();
+      onClose();
+    } catch {
+      // Error toast handled in mutation hook
+    }
   };
 
   return (
@@ -113,6 +122,12 @@ export function AccountViewDrawer() {
           {isLoading || !acc ? (
             <AccountViewDrawerSkeleton onClose={onClose} />
           ) : (
+            <div className={cn("relative flex flex-1 flex-col min-h-0", deleting && "pointer-events-none")}>
+              {deleting && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50">
+                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                </div>
+              )}
             <>
               <DrawerHeader className="px-6 py-4 border-b space-y-4 shrink-0">
                 <div className="flex items-center justify-between">
@@ -129,6 +144,7 @@ export function AccountViewDrawer() {
                         variant="ghost"
                         size="icon"
                         className="size-8"
+                        disabled={deleting}
                         onClick={() => {
                           setUrl("edit", acc.id);
                           onOpenEdit(acc.id);
@@ -143,6 +159,7 @@ export function AccountViewDrawer() {
                         variant="ghost"
                         size="icon"
                         className="size-8"
+                        disabled={deleting}
                         onClick={() => {
                           clearUrl();
                           onClose();
@@ -247,18 +264,19 @@ export function AccountViewDrawer() {
                     variant="outline"
                     className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={onDelete}
-                    disabled={isDeleting}
+                    disabled={deleting}
                   >
-                    {isDeleting ? (
+                    {deleting ? (
                       <Loader2 className="size-4 animate-spin" />
                     ) : (
                       <Trash2 className="size-4" />
                     )}
-                    {isDeleting ? "Deleting..." : "Delete Account"}
+                    {deleting ? "Deleting..." : "Delete Account"}
                   </Button>
                 )}
               </DrawerFooter>
             </>
+            </div>
           )}
         </DrawerContent>
       </Drawer>

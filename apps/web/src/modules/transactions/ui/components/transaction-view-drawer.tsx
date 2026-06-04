@@ -6,6 +6,7 @@ import {
   type TransactionDrawerMode,
 } from "@/hooks/transactions/use-transaction-drawer";
 import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
+import { useTransactionPendingSelectors } from "@/hooks/transactions/use-transaction-pending";
 import { useTransactionDetail } from "@/hooks/transactions/use-transactions";
 import { useConfirm } from "@/hooks/use-confirm";
 import { formatAmount } from "@/lib/utils";
@@ -124,12 +125,11 @@ function TransactionViewInner({
   syncToUrl: (mode: TransactionDrawerMode, id: string) => void;
 }) {
   const { transaction, isLoading } = useTransactionDetail(transactionId);
-  const { handleDelete, isDeleting } = useTransactionMutations();
-  const [ConfirmDialog, confirm] = useConfirm(
-    "Delete transaction",
-    "Are you sure you want to delete this transaction? This action cannot be undone.",
-    "destructive",
-  );
+  const { handleDelete } = useTransactionMutations();
+  const { isDeleting } = useTransactionPendingSelectors();
+  const [ConfirmDialog, confirm] = useConfirm();
+
+  const deleting = isDeleting(transactionId);
 
   if (isLoading || !transaction) {
     return (
@@ -152,16 +152,32 @@ function TransactionViewInner({
   const receiptId = `#TRX-${tx.id.slice(-8).toUpperCase()}`;
 
   const onDelete = async () => {
-    const ok = await confirm();
+    const ok = await confirm({
+      title: "Delete transaction",
+      message:
+        "Are you sure you want to delete this transaction? This action cannot be undone.",
+      variant: "destructive",
+      confirmLabel: "Delete",
+    });
     if (!ok) return;
-    handleDelete(tx.id);
-    clearUrl();
-    onClose();
+    try {
+      await handleDelete(tx.id);
+      clearUrl();
+      onClose();
+    } catch {
+      // Error toast handled in mutation hook
+    }
   };
 
   return (
     <>
       <ConfirmDialog />
+      <div className={cn("relative flex flex-1 flex-col min-h-0", deleting && "pointer-events-none")}>
+        {deleting && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
       <DrawerHeader className="px-6 py-4 border-b space-y-4 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -176,6 +192,7 @@ function TransactionViewInner({
                 variant="ghost"
                 size="icon"
                 className="size-8"
+                disabled={deleting}
                 onClick={() => {
                   syncToUrl("edit", tx.id);
                   onOpenEdit(tx.id);
@@ -189,6 +206,7 @@ function TransactionViewInner({
                 variant="ghost"
                 size="icon"
                 className="size-8"
+                disabled={deleting}
                 onClick={() => {
                   clearUrl();
                   onClose();
@@ -348,6 +366,7 @@ function TransactionViewInner({
       <DrawerFooter className="px-6 py-4 border-t space-y-2 shrink-0">
         <Button
           className="w-full gap-2"
+          disabled={deleting}
           onClick={() => {
             window.location.href = `/dashboard/ai-chat?contextType=transaction&contextId=${tx.id}`;
           }}
@@ -360,17 +379,18 @@ function TransactionViewInner({
             variant="outline"
             className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
             onClick={onDelete}
-            disabled={isDeleting}
+            disabled={deleting}
           >
-            {isDeleting ? (
+            {deleting ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
               <Trash2 className="size-4" />
             )}
-            {isDeleting ? "Deleting..." : "Delete Transaction"}
+            {deleting ? "Deleting..." : "Delete Transaction"}
           </Button>
         )}
       </DrawerFooter>
+      </div>
     </>
   );
 }

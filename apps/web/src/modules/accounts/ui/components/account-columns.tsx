@@ -1,5 +1,5 @@
 import { formatAmount } from "@/lib/utils";
-import { ACCOUNT_TYPE_LABELS } from "@/modules/accounts/constants";
+import type { BankAccount } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import { Checkbox } from "@neuralpay/ui/components/checkbox";
 import {
@@ -13,24 +13,30 @@ import {
   ChevronsUpDown,
   Eye,
   Landmark,
+  Loader2,
   MoreHorizontal,
   Pencil,
   Trash2,
   Unplug,
 } from "lucide-react";
 import { AccountStatusBadge, AccountTypeBadge } from "./account-badges";
-import type { BankAccount } from "@neuralpay/types";
 
 interface ColumnProps {
   onView: (account: BankAccount) => void;
   onEdit: (account: BankAccount) => void;
   onDelete: (account: BankAccount) => void;
+  onDisconnect: (account: BankAccount) => void;
+  isRowPending: (id: string) => boolean;
+  isDisconnecting: (id: string) => boolean;
 }
 
 export function accountColumns({
   onView,
   onEdit,
   onDelete,
+  onDisconnect,
+  isRowPending,
+  isDisconnecting,
 }: ColumnProps): ColumnDef<BankAccount>[] {
   return [
     {
@@ -108,7 +114,14 @@ export function accountColumns({
           <ChevronsUpDown className="ml-2 size-4" />
         </Button>
       ),
-      cell: ({ row }) => <AccountTypeBadge type={row.original.type} />,
+      cell: ({ row }) => (
+        <AccountTypeBadge
+          type={row.original.type}
+          variant="icon"
+          iconClassName="bg-opacity-10"
+          labelClassName="text-foreground"
+        />
+      ),
       size: 120,
     },
     {
@@ -163,23 +176,46 @@ export function accountColumns({
       cell: ({ row }) => {
         const account = row.original;
         const isSynced = !account.isManual;
+        const pending = isRowPending(account.id);
+        const disconnecting = isDisconnecting(account.id);
+        const canDisconnect = isSynced && account.status === "active";
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="size-4" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                disabled={pending}
+              >
+                {pending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <MoreHorizontal className="size-4" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onView(account)}>
+              <DropdownMenuItem onClick={() => onView(account)} disabled={pending}>
                 <Eye className="size-4 mr-2" /> View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {}}>
-                <Unplug className="size-4 mr-2" /> Disconnect Account
-              </DropdownMenuItem>
+              {canDisconnect && (
+                <DropdownMenuItem
+                  onClick={() => onDisconnect(account)}
+                  disabled={pending || disconnecting}
+                >
+                  {disconnecting ? (
+                    <Loader2 className="size-4 mr-2 animate-spin" />
+                  ) : (
+                    <Unplug className="size-4 mr-2" />
+                  )}
+                  {disconnecting ? "Disconnecting..." : "Disconnect Account"}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onClick={() => onEdit(account)}
-                disabled={isSynced}
+                disabled={isSynced || pending}
               >
                 <Pencil className="size-4 mr-2" />
                 Edit
@@ -187,7 +223,7 @@ export function accountColumns({
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => onDelete(account)}
-                disabled={isSynced}
+                disabled={isSynced || pending}
               >
                 <Trash2 className="size-4 mr-2" /> Delete
               </DropdownMenuItem>

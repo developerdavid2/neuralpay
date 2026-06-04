@@ -12,6 +12,7 @@ import { cn } from "@neuralpay/ui/lib/utils";
 import type { AccountDrawerMode } from "@/hooks/accounts/use-account-drawer";
 import { useAccountDrawer } from "@/hooks/accounts/use-account-drawer";
 import { useAccountMutations } from "@/hooks/accounts/use-account-mutations";
+import { useAccountPendingSelectors } from "@/hooks/accounts/use-account-pending";
 import { useAccountUrlSync } from "@/hooks/accounts/use-account-url-sync";
 import { useAccountDetail } from "@/hooks/accounts/use-account-detail";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -81,16 +82,13 @@ function AccountFormInner({
     handleDelete: runDelete,
     isCreating,
     isUpdating,
-    isDeleting,
   } = useAccountMutations();
-  const [ConfirmDialog, confirm] = useConfirm(
-    "Delete account",
-    "Are you sure you want to delete this account? This action cannot be undone.",
-    "destructive",
-  );
+  const { isDeleting } = useAccountPendingSelectors();
+  const [ConfirmDialog, confirm] = useConfirm();
 
   const isLoading = isEdit && isLoadingDetail;
-  const isPending = isCreating || isUpdating || isDeleting;
+  const deleting = accountId !== null ? isDeleting(accountId) : false;
+  const isSaving = isCreating || isUpdating;
 
   if (isLoading) return <FormDrawerSkeleton />;
   if (isEdit && !account) return <FormDrawerSkeleton />;
@@ -121,6 +119,14 @@ function AccountFormInner({
         ...values,
       } as UpdateAccountInput);
     } else {
+      const ok = await confirm({
+        title: "Create account",
+        message:
+          "Are you sure you want to create this account? It will be added to your records.",
+        confirmLabel: "Create",
+      });
+      if (!ok) return;
+
       await handleCreate({
         ...values,
         isManual: true,
@@ -132,7 +138,13 @@ function AccountFormInner({
 
   const onDelete = async () => {
     if (!accountId) return;
-    const ok = await confirm();
+    const ok = await confirm({
+      title: "Delete account",
+      message:
+        "Are you sure you want to delete this account? This will also remove all associated transactions. This action cannot be undone.",
+      variant: "destructive",
+      confirmLabel: "Delete",
+    });
     if (!ok) return;
     await runDelete(accountId);
     clearUrl();
@@ -146,7 +158,8 @@ function AccountFormInner({
         key={account?.id ?? "add"}
         defaultValues={defaultValues}
         isEdit={isEdit}
-        isPending={isPending}
+        isSaving={isSaving}
+        isDeleting={deleting}
         onSubmit={onSubmit}
         onDelete={isEdit ? onDelete : undefined}
         onClose={onClose}
