@@ -36,10 +36,8 @@ export function AccountsView({
       <DashboardHeader
         title="Accounts"
         description=" Manage your bank accounts and financial institutions"
-        action={<NewAccountButton />}
       />
 
-      {/*TODO:  FIlters */}
       <div>
         <SectionBoundary
           fallback={<AccountTypeCardsSkeleton />}

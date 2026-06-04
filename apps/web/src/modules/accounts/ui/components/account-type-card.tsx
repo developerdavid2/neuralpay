@@ -93,8 +93,8 @@ export function AccountTypeCard({
         // ── Unified aurora base — same for every card ──
         "bg-[radial-gradient(ellipse_at_30%_0%,rgba(80,40,160,0.9)_0%,rgba(20,10,45,1)_55%,rgba(6,4,14,1)_100%)]",
         "ring-1 ring-white/[0.07]",
-        "shadow-[0_2px_20px_rgba(0,0,0,0.55)]",
-        "hover:shadow-[0_6px_32px_rgba(0,0,0,0.65)]",
+        // "shadow-[0_2px_20px_rgba(0,0,0,0.55)]",
+        // "hover:shadow-[0_6px_32px_rgba(0,0,0,0.65)]",
         "transition-shadow duration-500 ease-out",
         isEmpty && "opacity-40 saturate-50",
       )}
@@ -133,13 +133,13 @@ export function AccountTypeCard({
             {!isEmpty && (
               <p
                 className={cn(
-                  "text-2xl font-bold text-white tabular-nums tracking-tight transition-all duration-300",
-                  !isBalanceVisible && "blur-md select-none",
+                  "text-2xl font-bold text-white tabular-nums tracking-widest transition-all duration-300",
+                  !isBalanceVisible && "select-none",
                 )}
               >
                 {isBalanceVisible
                   ? formatAmount(Math.abs(totalBalance))
-                  : "$ ••••••"}
+                  : "$ ••••"}
               </p>
             )}
           </div>

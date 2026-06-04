@@ -1,4 +1,3 @@
-// modules/accounts/components/account-type-cards-view.tsx
 "use client";
 
 import { useAccountAggregates } from "@/hooks/accounts/use-account-aggregates";
@@ -17,6 +16,7 @@ import {
 import { cn } from "@neuralpay/ui/lib/utils";
 import { formatAmount } from "@/lib/utils";
 import { AccountTypeCard } from "../components/account-type-card";
+import { NewAccountButton } from "../components/new-account-button";
 
 function TotalCard({
   totalBalance,
@@ -33,43 +33,47 @@ function TotalCard({
     <div
       className={cn(
         "relative overflow-hidden rounded-2xl bg-card",
-        "border border-white/[0.06]",
-        "p-5",
+        "border border-white/[0.06] drop-shadow-xl",
+        "p-6",
       )}
     >
       <div className="relative z-10 flex items-center justify-between space-y-2">
         <div className="space-y-1">
-          <p className="text-md font-medium text-muted-foreground uppercase tracking-widest">
-            Net worth
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-muted-foreground uppercase tracking-widest">
+              Net worth
+            </p>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleVisibility}
+              className="shrink-0 transition-colors"
+            >
+              {isBalanceVisible ? (
+                <Eye className="size-4" />
+              ) : (
+                <EyeOff className="size-4" />
+              )}
+              <span className="sr-only">
+                {isBalanceVisible ? "Hide balances" : "Show balances"}
+              </span>
+            </Button>
+          </div>
+
           <p
             className={cn(
               "text-4xl font-bold text-foreground tabular-nums tracking-tight transition-all duration-300",
-              !isBalanceVisible && "blur-md select-none",
+              !isBalanceVisible && "select-none",
             )}
           >
-            {isBalanceVisible ? formatAmount(totalBalance) : "$ ••••••"}
+            {isBalanceVisible ? formatAmount(totalBalance) : "$ ••••"}
           </p>
-          <p className="font-mono text-muted-foreground/70 capitalize">
-            {totalCount} {totalCount === 1 ? "acct" : "accts"}
+          <p className="font-mono text-sm text-muted-foreground/70 capitalize">
+            {totalCount} {totalCount === 1 ? "ACCOUNT" : "ACCOUNTS"}
           </p>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleVisibility}
-          className="shrink-0 transition-colors"
-        >
-          {isBalanceVisible ? (
-            <Eye className="size-4" />
-          ) : (
-            <EyeOff className="size-4" />
-          )}
-          <span className="sr-only">
-            {isBalanceVisible ? "Hide balances" : "Show balances"}
-          </span>
-        </Button>
+        <NewAccountButton />
       </div>
     </div>
   );
@@ -122,7 +126,7 @@ export function AccountTypeCardsView() {
           skipSnaps: false,
           dragFree: true,
         }}
-        className="w-full"
+        className="w-full rounded-2xl overflow-hidden"
       >
         <CarouselContent className="-ml-3">
           {ACCOUNT_TYPES.map((type) => {
