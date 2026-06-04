@@ -2,6 +2,15 @@
 "use client";
 
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@neuralpay/ui/components/table";
+import { cn } from "@neuralpay/ui/lib/utils";
+import {
   type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
@@ -13,18 +22,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@neuralpay/ui/components/table";
-import { cn } from "@neuralpay/ui/lib/utils";
 import { useState } from "react";
-import { DataTablePagination } from "./data-table-pagination";
-import { DataTableToolbar } from "./data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -137,7 +135,6 @@ export function DataTable<TData, TValue>({
     return <>{emptyState}</>;
   }
 
-  // The table itself — no wrapper, just like your original working code
   const tableNode = (
     <Table noWrapper>
       <TableHeader
@@ -200,21 +197,10 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="flex flex-col h-full">
-      {/* KEY FIX: no wrapper div when noScroll — table is direct child of parent's scroll container */}
       {noScroll ? (
         tableNode
       ) : (
         <div className="flex-1 overflow-auto">{tableNode}</div>
-      )}
-
-      {pagination === "paged" && onPageChange && (
-        <DataTablePagination
-          currentPage={currentPage}
-          pageCount={pageCount ?? 1}
-          onPageChange={onPageChange}
-          pageSize={pageSize}
-          totalRows={data.length}
-        />
       )}
     </div>
   );

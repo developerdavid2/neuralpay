@@ -46,7 +46,7 @@ export function AccountsView({
           <AccountTypeCardsView />
         </SectionBoundary>
         <div className="flex flex-col bg-card border border-muted shadow rounded-2xl flex-1 min-h-0 overflow-hidden">
-          <div className="shrink-0 px-6 py-3 border-b border-border">
+          <div className="shrink-0 px-10 py-4 border-b border-border">
             <AccountFilters />
           </div>
           <SectionBoundary

@@ -1,44 +1,46 @@
-// use-query-param.ts — full replacement:
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import type { Route } from "next";
 
 export function useQueryParam(key: string) {
-  const getFromUrl = () => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get(key) ?? "";
-  };
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
-  const [currentValue, setCurrentValue] = useState<string>(() => {
-    if (typeof window === "undefined") return "";
-    return getFromUrl();
-  });
+  const getFromUrl = useCallback(() => {
+    return searchParams.get(key) ?? "";
+  }, [searchParams, key]);
 
-  // Sync when URL changes externally (e.g. back/forward)
+  const [currentValue, setCurrentValue] = useState<string>(() => getFromUrl());
+
+  // Sync when URL changes externally (back/forward, other components)
   useEffect(() => {
-    const handler = () => setCurrentValue(getFromUrl());
-    window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
-  }, [key]);
+    setCurrentValue(getFromUrl());
+  }, [getFromUrl]);
 
   const setValue = useCallback(
-    (value: string | null) => {
-      const params = new URLSearchParams(window.location.search);
-      params.delete("page");
+    (value: string | null, options?: { resetPage?: boolean }) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (options?.resetPage !== false) {
+        params.delete("page");
+      }
+
       if (value === null || value === "") {
         params.delete(key);
       } else {
         params.set(key, value);
       }
-      const query = params.toString();
-      const newUrl = query
-        ? `${window.location.pathname}?${query}`
-        : window.location.pathname;
 
-      window.history.pushState({}, "", newUrl);
-      setCurrentValue(value ?? ""); // update local state immediately
+      const query = params.toString();
+      const newUrl = query ? `${pathname}?${query}` : pathname;
+
+      router.replace(newUrl as Route, { scroll: false });
+      setCurrentValue(value ?? "");
     },
-    [key],
+    [key, searchParams, pathname, router],
   );
 
   return { currentValue, setValue };

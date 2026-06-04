@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { TransactionFormDrawer } from "./transaction-form-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
 import { TransactionViewDrawer } from "./transaction-view-drawer";
+import { useQueryParam } from "@/hooks/use-query-param";
 
 interface Props {
   focusTransactionId?: string;
@@ -72,6 +73,8 @@ export function TransactionsList({
     useTransactionMutations();
   const { isRowPending, isBatchDeleting } = useTransactionPendingSelectors();
   const [ConfirmDialog, confirm] = useConfirm();
+  const { currentValue: limitFromUrl } = useQueryParam("limit");
+  const displayLimit = limitFromUrl ? Number(limitFromUrl) : currentLimit;
 
   const handleView = (tx: Transaction) => {
     onOpenView(tx.id);
@@ -204,13 +207,13 @@ export function TransactionsList({
   }
 
   return (
-    <div className="flex flex-col h-full ">
+    <div className="flex flex-col h-full px-6">
       <ConfirmDialog />
       <DataTableToolbar
         showLimitSelector
+        limitOptions={["10", "20", "30", "50"]}
         columnNames={["merchant", "category", "amount", "status"]}
         className="m-6"
-        limitParamKey="limit"
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={setColumnVisibility}
         selectedCount={globalSelection.size}
@@ -218,6 +221,7 @@ export function TransactionsList({
         onClearSelection={() => setGlobalSelection(new Set())}
         onBatchDelete={handleBatchDeleteWithConfirm}
         isBatchDeleting={isBatchDeleting}
+        currentLimit={displayLimit}
       />
 
       <div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 scrollbar-hide">

@@ -1,6 +1,6 @@
+// components/data-table/data-table-toolbar.tsx
 "use client";
 
-import { useQueryParam } from "@/hooks/use-query-param";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   DropdownMenu,
@@ -17,14 +17,13 @@ import {
 } from "@neuralpay/ui/components/select";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Loader2, Settings2, Trash2 } from "lucide-react";
+import { useDataTableNavigation } from "@/hooks/use-data-table-navigation";
 
 interface DataTableToolbarProps {
-  // Column visibility — pass from parent's state
   columnVisibility: Record<string, boolean>;
   onColumnVisibilityChange: (visibility: Record<string, boolean>) => void;
   columnNames?: readonly string[];
 
-  // Selection
   selectedCount?: number;
   deletableCount?: number;
   onClearSelection?: () => void;
@@ -32,10 +31,8 @@ interface DataTableToolbarProps {
   isBatchDeleting?: boolean;
 
   showLimitSelector?: boolean;
-  limitParamKey?: string;
   limitOptions?: string[];
-
-  onPageChange?: (page: number) => void;
+  currentLimit?: number;
 
   className?: string;
 }
@@ -50,25 +47,19 @@ export function DataTableToolbar({
   onBatchDelete,
   isBatchDeleting = false,
   showLimitSelector = false,
-  limitParamKey = "limit",
   limitOptions = ["10", "20", "50"],
-  onPageChange,
+  currentLimit = 20,
   className,
 }: DataTableToolbarProps) {
-  const { currentValue: limitValue, setValue: setLimit } =
-    useQueryParam(limitParamKey);
-  const currentLimit = limitValue ? Number(limitValue) : 20;
+  const { setLimit } = useDataTableNavigation();
 
   return (
-    <div className={cn("flex flex-row", className)}>
+    <div className={cn("flex flex-row items-center", className)}>
       <div className="flex items-center gap-2">
         {showLimitSelector && (
           <Select
             value={String(currentLimit)}
-            onValueChange={(v) => {
-              setLimit(v);
-              onPageChange?.(1);
-            }}
+            onValueChange={(v) => setLimit(Number(v))}
           >
             <SelectTrigger className="h-7 w-[90px] text-xs">
               <SelectValue />

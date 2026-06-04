@@ -1,15 +1,10 @@
-import { AccountsView } from "@/modules/accounts/ui/views/accounts-view";
 import { ACCOUNTS_LIMIT } from "@/modules/accounts/constants";
 import {
   validateAccountStatuses,
   validateAccountTypes,
 } from "@/modules/accounts/lib/validate-accounts-enums";
-import {
-  HydrateClient,
-  prefetch,
-  prefetchInfinite,
-  trpc,
-} from "@/trpc/trpc-server";
+import { AccountsView } from "@/modules/accounts/ui/views/accounts-view";
+import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 
 export const dynamic = "force-dynamic";
 

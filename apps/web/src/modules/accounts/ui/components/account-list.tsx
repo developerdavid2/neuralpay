@@ -1,12 +1,16 @@
+// modules/accounts/components/account-list.tsx
 "use client";
 
 import { DataTable } from "@/components/data-table/data-table";
+import { DataTablePagination } from "@/components/data-table/data-table-pagination";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { useAccountDrawer } from "@/hooks/accounts/use-account-drawer";
 import { useAccountMutations } from "@/hooks/accounts/use-account-mutations";
 import { useAccountPendingSelectors } from "@/hooks/accounts/use-account-pending";
 import { useAccountUrlSync } from "@/hooks/accounts/use-account-url-sync";
 import { useAccountsList } from "@/hooks/accounts/use-accounts";
 import { useConfirm } from "@/hooks/use-confirm";
+import { useDataTableNavigation } from "@/hooks/use-data-table-navigation";
 import { ACCOUNTS_LIMIT } from "@/modules/accounts/constants";
 import type { AccountStatus, AccountType, BankAccount } from "@neuralpay/types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
@@ -15,10 +19,10 @@ import { useEffect, useMemo, useState } from "react";
 import { accountColumns } from "./account-columns";
 import { AccountFormDrawer } from "./account-form-drawer";
 import { AccountViewDrawer } from "./account-view-drawer";
-import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
-import { useQueryParam } from "@/hooks/use-query-param";
 
 interface Props {
+  focusTransactionId?: string;
+  focusMode?: string;
   currentSearch: string;
   currentTypes?: string[];
   currentStatuses?: string[];
@@ -26,7 +30,6 @@ interface Props {
   currentLimit: number;
   currentPage: number;
   focusAccountId?: string;
-  focusMode?: string;
 }
 
 export function AccountsList({
@@ -42,10 +45,10 @@ export function AccountsList({
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >({});
-
   const [globalSelection, setGlobalSelection] = useState<Set<string>>(
     new Set(),
   );
+
   const { onOpenView, onOpenEdit } = useAccountDrawer();
   const { setUrl } = useAccountUrlSync();
   const {
@@ -56,12 +59,11 @@ export function AccountsList({
   const { isRowPending, isDisconnecting, isBatchDeleting } =
     useAccountPendingSelectors();
   const [ConfirmDialog, confirm] = useConfirm();
-  const { currentValue: limitFromUrl } = useQueryParam("limit");
-  const effectiveLimit = limitFromUrl ? Number(limitFromUrl) : currentLimit;
+  const { setPage } = useDataTableNavigation();
 
   const filters = useMemo(
     () => ({
-      limit: Math.min(effectiveLimit || ACCOUNTS_LIMIT, 50),
+      limit: Math.min(currentLimit || ACCOUNTS_LIMIT, 50),
       page: currentPage,
       search: currentSearch.trim() || undefined,
       type: currentTypes?.length ? (currentTypes as AccountType[]) : undefined,
@@ -75,7 +77,7 @@ export function AccountsList({
       currentTypes,
       currentStatuses,
       currentIsManual,
-      effectiveLimit,
+      currentLimit,
       currentPage,
     ],
   );
@@ -134,9 +136,9 @@ export function AccountsList({
       title: "Disconnect account",
       message: (
         <>
-          Are you sure you want to disconnect <strong>{account.name}</strong> from{" "}
-          {account.bankName ?? "your bank"}? Syncing will stop, but existing
-          transactions will remain in your records.
+          Are you sure you want to disconnect <strong>{account.name}</strong>{" "}
+          from {account.bankName ?? "your bank"}? Syncing will stop, but
+          existing transactions will remain in your records.
         </>
       ),
       variant: "destructive",
@@ -144,12 +146,6 @@ export function AccountsList({
     });
     if (!ok) return;
     await runDisconnect(account.id);
-  };
-  const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(window.location.search);
-    params.set("page", String(page));
-    params.delete("focusId");
-    window.history.pushState({}, "", `?${params.toString()}`);
   };
 
   useEffect(() => {
@@ -180,7 +176,7 @@ export function AccountsList({
   }
 
   return (
-    <div className="flex flex-col h-full px-6">
+    <div className="flex flex-col h-full px-10">
       <ConfirmDialog />
       <DataTableToolbar
         columnVisibility={columnVisibility}
@@ -192,10 +188,9 @@ export function AccountsList({
         onBatchDelete={handleBatchDeleteWithConfirm}
         isBatchDeleting={isBatchDeleting}
         showLimitSelector
-        limitParamKey="limit"
+        currentLimit={currentLimit}
         limitOptions={["2", "10", "20", "30", "50"]}
-        onPageChange={handlePageChange}
-        className="sticky top-0 z-30 py-2 flex items-center justify-between gap-4 border-t"
+        className="py-2 border-b"
       />
 
       <DataTable
@@ -209,10 +204,10 @@ export function AccountsList({
         })}
         data={bankAccounts}
         pagination="paged"
-        pageSize={effectiveLimit}
+        pageSize={currentLimit}
         pageCount={pageCount}
         currentPage={currentPage}
-        onPageChange={handlePageChange}
+        onPageChange={setPage}
         rowIdKey="id"
         emptyState={emptyState}
         columnVisibility={columnVisibility}
@@ -221,6 +216,14 @@ export function AccountsList({
         getRowClassName={(row: BankAccount) =>
           isRowPending(row.id) ? "pointer-events-none opacity-50" : ""
         }
+      />
+
+      <DataTablePagination
+        currentPage={currentPage}
+        pageCount={pageCount}
+        pageSize={currentLimit}
+        totalRows={totalCount}
+        showPageSelect={true}
       />
 
       <AccountViewDrawer />
