@@ -19,7 +19,7 @@ export function useAccountAggregates() {
     const agg = aggregateMap?.get(type);
     if (!agg) return sum;
     const config = ACCOUNT_TYPE_CONFIG[type];
-    return sum + (config?.isLiability ? -agg.totalBalance : agg.totalBalance);
+    return sum + agg.totalBalance;
   }, 0);
 
   const totalCount = aggAccType.reduce((sum, a) => sum + a.accountCount, 0);
