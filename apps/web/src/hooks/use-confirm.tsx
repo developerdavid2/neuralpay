@@ -1,5 +1,6 @@
 "use client";
-import { useState, type JSX } from "react";
+
+import { useCallback, useState, type JSX, type ReactNode } from "react";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   AlertDialog,
@@ -12,56 +13,86 @@ import {
 
 type ConfirmVariant = "default" | "destructive";
 
-export const useConfirm = (
-  title: string,
-  message: string,
-  variant: ConfirmVariant = "default",
-): [() => JSX.Element, () => Promise<boolean>] => {
+export type ConfirmOptions = {
+  title: string;
+  message: ReactNode;
+  variant?: ConfirmVariant;
+  confirmLabel?: string;
+  cancelLabel?: string;
+};
+
+export const useConfirm = (): [
+  () => JSX.Element | null,
+  (options: ConfirmOptions) => Promise<boolean>,
+] => {
+  const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const [promise, setPromise] = useState<{
     resolve: (value: boolean) => void;
   } | null>(null);
 
-  const confirm = () =>
-    new Promise<boolean>((resolve) => {
-      setPromise({ resolve });
-    });
+  const confirm = useCallback(
+    (nextOptions: ConfirmOptions) => {
+      promise?.resolve(false);
+      return new Promise<boolean>((resolve) => {
+        setOptions(nextOptions);
+        setPromise({ resolve });
+      });
+    },
+    [promise],
+  );
 
   const handleClose = () => {
     promise?.resolve(false);
     setPromise(null);
+    setOptions(null);
   };
 
   const handleConfirm = () => {
     promise?.resolve(true);
-    handleClose();
+    setPromise(null);
+    setOptions(null);
   };
 
   const handleCancel = () => {
     promise?.resolve(false);
-    handleClose();
+    setPromise(null);
+    setOptions(null);
   };
 
-  const ConfirmationDialog = () => (
-    <AlertDialog open={!!promise} onOpenChange={handleClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="font-bold">{title}</AlertDialogTitle>
-          <AlertDialogDescription>{message}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="pt-2">
-          <Button variant="ghost" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button
-            variant={variant === "destructive" ? "destructive" : "default"}
-            onClick={handleConfirm}
-          >
-            Confirm
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
+  const ConfirmationDialog = () => {
+    if (!options) return null;
+
+    const variant = options.variant ?? "default";
+
+    return (
+      <AlertDialog
+        open={!!promise}
+        onOpenChange={(open) => {
+          if (!open) handleClose();
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-bold">
+              {options.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{options.message}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-2">
+            <Button variant="ghost" onClick={handleCancel}>
+              {options.cancelLabel ?? "Cancel"}
+            </Button>
+            <Button
+              variant={variant === "destructive" ? "destructive" : "default"}
+              onClick={handleConfirm}
+            >
+              {options.confirmLabel ?? "Confirm"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  };
 
   return [ConfirmationDialog, confirm];
 };

@@ -1,21 +1,18 @@
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+"use client";
+
 import { useCallback } from "react";
 import type { TransactionDrawerMode } from "./use-transaction-drawer";
 
 export function useTransactionUrlSync() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const syncToUrl = useCallback(
     (mode: TransactionDrawerMode, txId: string | null) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (txId) {
+      const params = new URLSearchParams(window.location.search);
+      if (mode === "add") {
+        params.set("mode", "add");
+        params.delete("focus");
+      } else if (txId) {
         params.set("mode", mode);
         params.set("focus", txId);
-      } else {
-        params.delete("focus");
-        params.delete("mode");
       }
       const query = params.toString();
       window.history.replaceState(
@@ -26,11 +23,11 @@ export function useTransactionUrlSync() {
           : window.location.pathname,
       );
     },
-    [searchParams],
+    [],
   );
 
   const clearUrl = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete("focus");
     params.delete("mode");
     const query = params.toString();
@@ -39,7 +36,7 @@ export function useTransactionUrlSync() {
       "",
       query ? `${window.location.pathname}?${query}` : window.location.pathname,
     );
-  }, [searchParams]);
+  }, []);
 
   return { syncToUrl, clearUrl };
 }

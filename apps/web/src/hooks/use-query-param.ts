@@ -1,28 +1,47 @@
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import type { Route } from "next";
 
 export function useQueryParam(key: string) {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const getFromUrl = useCallback(() => {
+    return searchParams.get(key) ?? "";
+  }, [searchParams, key]);
+
+  const [currentValue, setCurrentValue] = useState<string>(() => getFromUrl());
+
+  // Sync when URL changes externally (back/forward, other components)
+  useEffect(() => {
+    setCurrentValue(getFromUrl());
+  }, [getFromUrl]);
 
   const setValue = useCallback(
-    (value: string | null) => {
+    (value: string | null, options?: { resetPage?: boolean }) => {
       const params = new URLSearchParams(searchParams.toString());
-      params.delete("page");
+
+      if (options?.resetPage !== false) {
+        params.delete("page");
+      }
+
       if (value === null || value === "") {
         params.delete(key);
       } else {
         params.set(key, value);
       }
-      const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
-    },
-    [key, pathname, router, searchParams],
-  );
 
-  const currentValue = searchParams.get(key) ?? "";
+      const query = params.toString();
+      const newUrl = query ? `${pathname}?${query}` : pathname;
+
+      router.replace(newUrl as Route, { scroll: false });
+      setCurrentValue(value ?? "");
+    },
+    [key, searchParams, pathname, router],
+  );
 
   return { currentValue, setValue };
 }

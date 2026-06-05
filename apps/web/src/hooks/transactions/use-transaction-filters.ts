@@ -156,7 +156,7 @@ export function useTransactionFilters() {
         params.set("statuses", values.join(","));
       }
       const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as never);
+      router.push((query ? `${pathname}?${query}` : pathname) as Route);
     },
     [searchParams, pathname, router],
   );

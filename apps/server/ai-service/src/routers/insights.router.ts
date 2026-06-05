@@ -10,7 +10,6 @@ import { AIInsightsService } from "../services/insights.service";
 
 export const insightsRouter = router({
   health: publicProcedure.query(() => ({ ok: true, service: "ai-service" })),
-  //  * Used by: AI Insights page (/dashboard/ai-insights)
   list: protectedProcedure
     .input(listInsightsInputSchema.optional())
     .query(async ({ ctx, input }) => {
@@ -29,7 +28,6 @@ export const insightsRouter = router({
       return result.data;
     }),
 
-  //  * Used by: Dashboard insights summary
   recent: protectedProcedure
     .input(
       z
@@ -52,7 +50,6 @@ export const insightsRouter = router({
       return result.data;
     }),
 
-  //  * Get single insight by ID
   getInsightById: protectedProcedure
     .input(z.object({ id: z.uuid() }))
     .query(async ({ ctx, input }) => {
@@ -70,7 +67,6 @@ export const insightsRouter = router({
       return result.data;
     }),
 
-  //  * Used by: Dashboard dismiss button, AI insights page archive action
   dismiss: protectedProcedure
     .input(z.object({ id: z.uuid() }))
     .mutation(async ({ ctx, input }) => {
@@ -88,7 +84,6 @@ export const insightsRouter = router({
       return result.data;
     }),
 
-  //  * Used by: AI insights page (archived filter view)
   restore: protectedProcedure
     .input(z.object({ id: z.uuid() }))
     .mutation(async ({ ctx, input }) => {
@@ -106,7 +101,6 @@ export const insightsRouter = router({
       return result.data;
     }),
 
-  //  * Used by: Opening insight detail drawer
   markRead: protectedProcedure
     .input(z.object({ id: z.uuid() }))
     .mutation(async ({ ctx, input }) => {

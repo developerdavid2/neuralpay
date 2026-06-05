@@ -1,33 +1,66 @@
-// apps/web/src/app/dashboard/accounts/page.tsx
-import { AccountView } from "@/modules/accounts/account-view";
+import { ACCOUNTS_LIMIT } from "@/modules/accounts/constants";
 import {
-  getQueryClient,
-  HydrateClient,
-  prefetch,
-  prefetchInfinite,
-  trpc,
-} from "@/trpc/trpc-server";
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+  validateAccountStatuses,
+  validateAccountTypes,
+} from "@/modules/accounts/lib/validate-accounts-enums";
+import { AccountsView } from "@/modules/accounts/ui/views/accounts-view";
+import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 
 export const dynamic = "force-dynamic";
 
-const Page = async () => {
-  const listFilters = {};
+interface PageProps {
+  searchParams: Promise<{
+    search?: string;
+    types?: string | string[];
+    tags?: string[];
+    statuses?: string | string[];
+    isManual?: string;
+    limit?: string;
+    page?: string;
+    focusId?: string;
+    mode?: string;
+  }>;
+}
 
-  void prefetchInfinite(
-    trpc.payments.accounts.list.infiniteQueryOptions(listFilters, {
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    }),
-  );
+const Page = async ({ searchParams }: PageProps) => {
+  const params = await searchParams;
+  const parsePositiveInt = (value: string | undefined, fallback: number) => {
+    const n = Number.parseInt(value ?? "", 10);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  };
+
+  const page = parsePositiveInt(params.page, 1);
+  const limit = Math.min(parsePositiveInt(params.limit, ACCOUNTS_LIMIT), 50);
+
+  const validatedTypes = validateAccountTypes(params.types);
+  const validatedStatuses = validateAccountStatuses(params.statuses);
+
+  const listFilters = {
+    limit,
+    page,
+    search: params.search?.trim() || undefined,
+    type: validatedTypes,
+    status: validatedStatuses,
+    isManual: params.isManual === "true" ? true : undefined,
+  };
+
+  void prefetch(trpc.payments.accounts.list.queryOptions(listFilters));
+
+  void prefetch(trpc.payments.accounts.aggregateByType.queryOptions());
 
   return (
     <HydrateClient>
-      <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <AccountView />
-        </Suspense>
-      </ErrorBoundary>
+      <AccountsView
+        search={params.search ?? ""}
+        types={validatedTypes ?? []}
+        statuses={validatedStatuses ?? []}
+        tags={params.tags ?? []}
+        isManual={params.isManual === "true"}
+        focusAccountId={params.focusId}
+        focusMode={params.mode}
+        limit={limit}
+        currentPage={page}
+      />
     </HydrateClient>
   );
 };

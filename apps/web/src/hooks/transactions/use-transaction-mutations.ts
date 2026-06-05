@@ -3,16 +3,23 @@
 import { invalidateTransactionQueries } from "@/lib/invalidate-trpc-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
+import {
+  useTransactionPendingSelectors,
+  useTransactionPendingStore,
+} from "./use-transaction-pending";
 
 export function useTransactionMutations() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [pendingUpdateId, setPendingUpdateId] = useState<string | null>(null);
-  const [pendingCreate, setPendingCreate] = useState(false);
+  const {
+    markDeleting,
+    unmarkDeleting,
+    setPendingUpdateId,
+    setPendingCreate,
+  } = useTransactionPendingStore();
+  const pending = useTransactionPendingSelectors();
 
   const createTx = useMutation({
     ...trpc.payments.transactions.create.mutationOptions(),
@@ -55,12 +62,12 @@ export function useTransactionMutations() {
             ? error.message
             : "Failed to create transaction";
         toast.error(message);
-        throw error; // re-throw so caller can handle if needed
+        throw error;
       } finally {
         setPendingCreate(false);
       }
     },
-    [createTx],
+    [createTx, setPendingCreate],
   );
 
   const handleUpdate = useCallback(
@@ -81,12 +88,12 @@ export function useTransactionMutations() {
         setPendingUpdateId(null);
       }
     },
-    [updateTx],
+    [updateTx, setPendingUpdateId],
   );
 
   const handleDelete = useCallback(
     async (id: string) => {
-      setPendingDeleteId(id);
+      markDeleting([id]);
       try {
         await deleteTx.mutateAsync({ id });
         toast.success("Transaction deleted successfully");
@@ -98,14 +105,15 @@ export function useTransactionMutations() {
         toast.error(message);
         throw error;
       } finally {
-        setPendingDeleteId(null);
+        unmarkDeleting([id]);
       }
     },
-    [deleteTx],
+    [deleteTx, markDeleting, unmarkDeleting],
   );
 
   const handleBatchDelete = useCallback(
     async (ids: string[]) => {
+      markDeleting(ids);
       try {
         await batchDelete.mutateAsync({ ids });
         toast.success(
@@ -118,9 +126,11 @@ export function useTransactionMutations() {
             : "Failed to delete transactions";
         toast.error(message);
         throw error;
+      } finally {
+        unmarkDeleting(ids);
       }
     },
-    [batchDelete],
+    [batchDelete, markDeleting, unmarkDeleting],
   );
 
   return {
@@ -128,8 +138,6 @@ export function useTransactionMutations() {
     handleUpdate,
     handleDelete,
     handleBatchDelete,
-    isDeleting: pendingDeleteId !== null,
-    isUpdating: pendingUpdateId !== null,
-    isCreating: pendingCreate,
+    ...pending,
   };
 }

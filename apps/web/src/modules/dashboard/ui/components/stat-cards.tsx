@@ -9,7 +9,6 @@ export function StatCards() {
   const { totalBalance, monthSpending, savingsRate, accountCount } =
     useStatCards();
 
-  // Values must be in the same order as cardTemplates
   const values = [
     totalBalance,
     monthSpending,

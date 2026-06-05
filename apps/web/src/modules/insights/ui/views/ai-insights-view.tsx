@@ -33,7 +33,7 @@ export function AIInsightsView({
   const validatedReadStatus = validateInsightReadStatus(readStatus);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-10">
       <DashboardHeader
         title="AI Insights"
         description="Personalized financial recommendations powered by AI"

@@ -22,7 +22,7 @@ import { ChartInsightsRow } from "../components/chart-insights-row";
 
 export function DashboardView() {
   return (
-    <div className="flex flex-col gap-6 p-6 bg-accent">
+    <div className="flex flex-col gap-6 p-10 bg-accent">
       <DashboardHeader
         title="Dashboard"
         description="Welcome back. Here's your financial overview."

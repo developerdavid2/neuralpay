@@ -52,10 +52,7 @@ export function TransactionsView({
   const validatedCategories = validateTransactionCategories(categories);
 
   return (
-    <div className="flex flex-col w-full gap-6 p-6 h-[105vh]">
-      {/* Client component for URL sync — renders nothing, just runs hook */}
-      {/* <TransactionDrawerSync /> */}
-
+    <div className="flex flex-col w-full gap-6 p-10 h-[105vh]">
       <DashboardHeader
         title="Transactions"
         description="Track, filter, and manage all your financial activity"
@@ -63,12 +60,12 @@ export function TransactionsView({
       />
 
       <div className="flex flex-col bg-card border border-muted shadow rounded-2xl flex-1 min-h-0 overflow-hidden">
-        <div className="shrink-0 px-6 py-3 border-b border-border">
+        <div className="shrink-0 px-10 py-4 border-b border-border">
           <TransactionFilters />
         </div>
 
         {/* Scrollable content area */}
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 min-h-0 scrollbar-hide overflow-hidden">
           <SectionBoundary
             key={`${types.join(",")}-${statuses.join(",")}-${search}-${accountType}-${accountId}-${dateFrom}-${dateTo}-${categories.join(",")}-${isManual}-${isAnomaly}-${amountMin}-${amountMax}-${limit}`}
             fallback={<TransactionsListSkeleton />}
