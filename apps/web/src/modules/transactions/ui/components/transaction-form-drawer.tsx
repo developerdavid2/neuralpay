@@ -14,14 +14,14 @@ import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawe
 import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
 import { useTransactionPendingSelectors } from "@/hooks/transactions/use-transaction-pending";
 import { useTransactionUrlSync } from "@/hooks/transactions/use-transaction-url-sync";
-import { useTransactionDetail } from "@/hooks/transactions/use-transactions";
+import { useTransactionDetail } from "@/hooks/transactions/use-transaction-detail";
 import { useConfirm } from "@/hooks/use-confirm";
 import type { FormValues } from "../../types";
 import { TransactionForm } from "./transaction-form";
 
 export function TransactionFormDrawer() {
   const { isOpen, onClose, transactionId, mode } = useTransactionDrawer();
-  const { clearUrl } = useTransactionUrlSync();
+  const { clearUrl, syncToUrl } = useTransactionUrlSync();
 
   const isEdit = mode === "edit";
   const isAdd = mode === "add";
@@ -92,8 +92,7 @@ function TransactionFormInner({
 
   const [ConfirmDialog, confirm] = useConfirm();
 
-  const deleting =
-    transactionId !== null ? isDeleting(transactionId) : false;
+  const deleting = transactionId !== null ? isDeleting(transactionId) : false;
   const isSaving = isCreating || isUpdating;
 
   // Show skeleton immediately while ANY data is loading

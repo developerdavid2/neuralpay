@@ -1,4 +1,3 @@
-import type { AccountStatus } from "@neuralpay/types";
 import {
   Bitcoin,
   CreditCard,

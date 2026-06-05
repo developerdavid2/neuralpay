@@ -1,23 +1,49 @@
+import type { Transaction } from "@neuralpay/types";
 import { create } from "zustand";
 
 export type TransactionDrawerMode = "view" | "edit" | "add";
 
-type TransactionDrawerState = {
+interface TransactionDrawerState {
+  isOpen: boolean;
   mode: TransactionDrawerMode;
   transactionId: string | null;
-  isOpen: boolean;
-  onOpenView: (id: string) => void;
-  onOpenEdit: (id: string) => void;
+  transactionData: Transaction | null;
+  onOpenView: (id: string, data?: Transaction) => void;
+  onOpenEdit: (id: string, data?: Transaction) => void;
   onOpenAdd: () => void;
   onClose: () => void;
-};
+}
 
 export const useTransactionDrawer = create<TransactionDrawerState>((set) => ({
+  isOpen: false,
   mode: "view",
   transactionId: null,
-  isOpen: false,
-  onOpenView: (id) => set({ mode: "view", transactionId: id, isOpen: true }),
-  onOpenEdit: (id) => set({ mode: "edit", transactionId: id, isOpen: true }),
-  onOpenAdd: () => set({ mode: "add", transactionId: null, isOpen: true }),
-  onClose: () => set({ isOpen: false, transactionId: null, mode: "view" }),
+  transactionData: null,
+  onOpenView: (id, data) =>
+    set({
+      isOpen: true,
+      mode: "view",
+      transactionId: id,
+      transactionData: data ?? null,
+    }),
+  onOpenEdit: (id, data) =>
+    set({
+      isOpen: true,
+      mode: "edit",
+      transactionId: id,
+      transactionData: data ?? null,
+    }),
+  onOpenAdd: () =>
+    set({
+      isOpen: true,
+      mode: "add",
+      transactionId: null,
+      transactionData: null,
+    }),
+  onClose: () =>
+    set({
+      isOpen: false,
+      transactionId: null,
+      transactionData: null,
+    }),
 }));
