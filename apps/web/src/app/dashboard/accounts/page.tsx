@@ -24,13 +24,13 @@ interface PageProps {
 
 const Page = async ({ searchParams }: PageProps) => {
   const params = await searchParams;
-  const parsedLimit = Number(params.limit ?? ACCOUNTS_LIMIT);
-  const page = Math.max(Number(params.page ?? 1), 1);
+  const parsePositiveInt = (value: string | undefined, fallback: number) => {
+    const n = Number.parseInt(value ?? "", 10);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  };
 
-  const limit = Math.min(
-    Math.max(Number.isFinite(parsedLimit) ? parsedLimit : ACCOUNTS_LIMIT, 1),
-    50,
-  );
+  const page = parsePositiveInt(params.page, 1);
+  const limit = Math.min(parsePositiveInt(params.limit, ACCOUNTS_LIMIT), 50);
 
   const validatedTypes = validateAccountTypes(params.types);
   const validatedStatuses = validateAccountStatuses(params.statuses);

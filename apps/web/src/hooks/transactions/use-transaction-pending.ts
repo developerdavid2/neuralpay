@@ -33,12 +33,15 @@ export const useTransactionPendingStore = create<TransactionPendingState>(
 );
 
 export function useTransactionPendingSelectors() {
-  const pendingDeleteIds = useTransactionPendingStore((s) => s.pendingDeleteIds);
+  const pendingDeleteIds = useTransactionPendingStore(
+    (s) => s.pendingDeleteIds,
+  );
   const pendingUpdateId = useTransactionPendingStore((s) => s.pendingUpdateId);
   const pendingCreate = useTransactionPendingStore((s) => s.pendingCreate);
 
   const isDeleting = (id: string) => pendingDeleteIds.has(id);
-  const isRowPending = (id: string) => pendingDeleteIds.has(id);
+  const isRowPending = (id: string) =>
+    pendingDeleteIds.has(id) || pendingUpdateId === id;
   const isBatchDeleting = pendingDeleteIds.size > 1;
 
   return {

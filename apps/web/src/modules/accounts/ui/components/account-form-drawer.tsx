@@ -100,7 +100,7 @@ function AccountFormInner({
           type: account.type,
           bankName: account.bankName ?? undefined,
           maskedNumber: account.maskedNumber ?? undefined,
-          currency: account.currency ?? "usd",
+          currency: account.currency ?? "USD",
           balance: account.balance ? Number(account.balance) : 0,
         }
       : {

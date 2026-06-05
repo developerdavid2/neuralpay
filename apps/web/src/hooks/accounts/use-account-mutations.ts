@@ -131,17 +131,26 @@ export function useAccountMutations() {
     async (ids: string[]) => {
       markDeleting(ids);
       try {
-        for (const id of ids) {
-          await deleteAccount.mutateAsync({ id });
-        }
-        toast.success(
-          `${ids.length} account${ids.length > 1 ? "s" : ""} deleted`,
+        const results = await Promise.allSettled(
+          ids.map((id) => deleteAccount.mutateAsync({ id })),
         );
+        const failures = results.filter((r) => r.status === "rejected");
+        const successes = results.filter((r) => r.status === "fulfilled");
+
+        if (failures.length === 0) {
+          toast.success(
+            `${ids.length} account${ids.length > 1 ? "s" : ""} deleted`,
+          );
+        } else if (successes.length > 0) {
+          toast.warning(
+            `${successes.length} of ${ids.length} accounts deleted. ${failures.length} failed.`,
+          );
+        } else {
+          throw new Error("All deletions failed");
+        }
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to delete accounts";
+          error instanceof Error ? error.message : "Failed to delete accounts";
         toast.error(message);
         throw error;
       } finally {

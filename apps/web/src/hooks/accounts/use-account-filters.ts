@@ -66,33 +66,13 @@ export function useAccountFilters() {
   );
 
   const updateTypes = useCallback(
-    (values: string[]) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("page");
-      if (values.length === 0) {
-        params.delete("types");
-      } else {
-        params.set("types", values.join(","));
-      }
-      const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
-    },
-    [searchParams, pathname, router],
+    (values: string[]) => commit("types", values),
+    [commit],
   );
 
   const updateStatuses = useCallback(
-    (values: string[]) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("page");
-      if (values.length === 0) {
-        params.delete("statuses");
-      } else {
-        params.set("statuses", values.join(","));
-      }
-      const query = params.toString();
-      router.push((query ? `${pathname}?${query}` : pathname) as Route);
-    },
-    [searchParams, pathname, router],
+    (values: string[]) => commit("statuses", values),
+    [commit],
   );
 
   const updateIsManual = useCallback(

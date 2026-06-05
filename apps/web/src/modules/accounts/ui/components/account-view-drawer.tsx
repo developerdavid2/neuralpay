@@ -119,163 +119,185 @@ export function AccountViewDrawer() {
             flex flex-col
           "
         >
-          {isLoading || !acc ? (
+          {isLoading ? (
             <AccountViewDrawerSkeleton onClose={onClose} />
+          ) : !acc ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 p-6">
+              <p className="text-sm text-muted-foreground">
+                Account not found.
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  clearUrl();
+                  onClose();
+                }}
+              >
+                Close
+              </Button>
+            </div>
           ) : (
-            <div className={cn("relative flex flex-1 flex-col min-h-0", deleting && "pointer-events-none")}>
+            <div
+              className={cn(
+                "relative flex flex-1 flex-col min-h-0",
+                deleting && "pointer-events-none",
+              )}
+            >
               {deleting && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50">
                   <Loader2 className="size-6 animate-spin text-muted-foreground" />
                 </div>
               )}
-            <>
-              <DrawerHeader className="px-6 py-4 border-b space-y-4 shrink-0">
-                <div className="flex items-center justify-between">
+              <>
+                <DrawerHeader className="px-6 py-4 border-b space-y-4 shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Landmark className="size-5 text-muted-foreground" />
+                      <span className="font-mono text-xs font-medium text-muted-foreground">
+                        #{acc.id.slice(-8).toUpperCase()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      {!isSynced && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          disabled={deleting}
+                          onClick={() => {
+                            setUrl("edit", acc.id);
+                            onOpenEdit(acc.id);
+                          }}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                      )}
+
+                      <DrawerClose asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          disabled={deleting}
+                          onClick={() => {
+                            clearUrl();
+                            onClose();
+                          }}
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      </DrawerClose>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <h2 className="text-2xl font-bold tracking-tight">
+                      {acc.name}
+                    </h2>
+                    <div className="flex items-center gap-2">
+                      <AccountTypeBadge type={acc.type} />
+                      <AccountStatusBadge status={acc.status} />
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-2">
-                    <Landmark className="size-5 text-muted-foreground" />
-                    <span className="font-mono text-xs font-medium text-muted-foreground">
-                      #{acc.id.slice(-8).toUpperCase()}
+                    <span className="text-3xl font-bold tabular-nums tracking-tight">
+                      {acc.balance ? formatAmount(Number(acc.balance)) : "—"}
                     </span>
                   </div>
+                </DrawerHeader>
 
-                  <div className="flex items-center gap-1">
-                    {!isSynced && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        disabled={deleting}
-                        onClick={() => {
-                          setUrl("edit", acc.id);
-                          onOpenEdit(acc.id);
-                        }}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
+                <ScrollArea className="flex-1 px-6 no-scrollbar overflow-y-auto">
+                  <div className="space-y-1 py-4">
+                    <DetailField
+                      label="Bank Name"
+                      value={acc.bankName ?? "Manual Account"}
+                      icon={
+                        <Building2 className="size-4 text-muted-foreground" />
+                      }
+                    />
+                    <Separator />
+                    <DetailField
+                      label="Account Type"
+                      value={
+                        <span className="capitalize">
+                          {acc.type.replace(/_/g, " ")}
+                        </span>
+                      }
+                      icon={
+                        <CreditCard className="size-4 text-muted-foreground" />
+                      }
+                    />
+                    <Separator />
+                    <DetailField
+                      label="Status"
+                      value={<AccountStatusBadge status={acc.status} />}
+                      icon={
+                        <AlertTriangle className="size-4 text-muted-foreground" />
+                      }
+                    />
+                    <Separator />
+                    {acc.maskedNumber && (
+                      <>
+                        <DetailField
+                          label="Account Number"
+                          value={
+                            <span className="font-mono text-xs">
+                              •••• {acc.maskedNumber.slice(-4)}
+                            </span>
+                          }
+                          icon={
+                            <Wallet className="size-4 text-muted-foreground" />
+                          }
+                        />
+                        <Separator />
+                      </>
+                    )}
+                    {acc.currency && (
+                      <>
+                        <DetailField
+                          label="Currency"
+                          value={acc.currency.toUpperCase()}
+                          icon={
+                            <FileText className="size-4 text-muted-foreground" />
+                          }
+                        />
+                        <Separator />
+                      </>
                     )}
 
-                    <DrawerClose asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        disabled={deleting}
-                        onClick={() => {
-                          clearUrl();
-                          onClose();
-                        }}
-                      >
-                        <X className="size-4" />
-                      </Button>
-                    </DrawerClose>
+                    <DetailField
+                      label="Created"
+                      value={format(
+                        new Date(acc.createdAt),
+                        "MMM do, yyyy 'at' h:mm a",
+                      )}
+                      icon={
+                        <Calendar className="size-4 text-muted-foreground" />
+                      }
+                    />
                   </div>
-                </div>
+                </ScrollArea>
 
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-2xl font-bold tracking-tight">
-                    {acc.name}
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    <AccountTypeBadge type={acc.type} />
-                    <AccountStatusBadge status={acc.status} />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-bold tabular-nums tracking-tight">
-                    {acc.balance ? formatAmount(Number(acc.balance)) : "—"}
-                  </span>
-                </div>
-              </DrawerHeader>
-
-              <ScrollArea className="flex-1 px-6 no-scrollbar overflow-y-auto">
-                <div className="space-y-1 py-4">
-                  <DetailField
-                    label="Bank Name"
-                    value={acc.bankName ?? "Manual Account"}
-                    icon={
-                      <Building2 className="size-4 text-muted-foreground" />
-                    }
-                  />
-                  <Separator />
-                  <DetailField
-                    label="Account Type"
-                    value={
-                      <span className="capitalize">
-                        {acc.type.replace(/_/g, " ")}
-                      </span>
-                    }
-                    icon={
-                      <CreditCard className="size-4 text-muted-foreground" />
-                    }
-                  />
-                  <Separator />
-                  <DetailField
-                    label="Status"
-                    value={<AccountStatusBadge status={acc.status} />}
-                    icon={
-                      <AlertTriangle className="size-4 text-muted-foreground" />
-                    }
-                  />
-                  <Separator />
-                  {acc.maskedNumber && (
-                    <>
-                      <DetailField
-                        label="Account Number"
-                        value={
-                          <span className="font-mono text-xs">
-                            •••• {acc.maskedNumber.slice(-4)}
-                          </span>
-                        }
-                        icon={
-                          <Wallet className="size-4 text-muted-foreground" />
-                        }
-                      />
-                      <Separator />
-                    </>
+                <DrawerFooter className="px-6 py-4 border-t space-y-2 shrink-0">
+                  {!isSynced && (
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={onDelete}
+                      disabled={deleting}
+                    >
+                      {deleting ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-4" />
+                      )}
+                      {deleting ? "Deleting..." : "Delete Account"}
+                    </Button>
                   )}
-                  {acc.currency && (
-                    <>
-                      <DetailField
-                        label="Currency"
-                        value={acc.currency.toUpperCase()}
-                        icon={
-                          <FileText className="size-4 text-muted-foreground" />
-                        }
-                      />
-                      <Separator />
-                    </>
-                  )}
-
-                  <DetailField
-                    label="Created"
-                    value={format(
-                      new Date(acc.createdAt),
-                      "MMM do, yyyy 'at' h:mm a",
-                    )}
-                    icon={<Calendar className="size-4 text-muted-foreground" />}
-                  />
-                </div>
-              </ScrollArea>
-
-              <DrawerFooter className="px-6 py-4 border-t space-y-2 shrink-0">
-                {!isSynced && (
-                  <Button
-                    variant="outline"
-                    className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={onDelete}
-                    disabled={deleting}
-                  >
-                    {deleting ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="size-4" />
-                    )}
-                    {deleting ? "Deleting..." : "Delete Account"}
-                  </Button>
-                )}
-              </DrawerFooter>
-            </>
+                </DrawerFooter>
+              </>
             </div>
           )}
         </DrawerContent>

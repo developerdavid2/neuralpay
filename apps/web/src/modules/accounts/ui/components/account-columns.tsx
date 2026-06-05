@@ -59,6 +59,7 @@ export function accountColumns({
             checked={row.getIsSelected()}
             onCheckedChange={(val) => row.toggleSelected(!!val)}
             disabled={isDisabled}
+            aria-label={`Select account ${account.name}`}
             title={
               isDisabled ? "Synced accounts cannot be batch deleted" : undefined
             }
@@ -187,6 +188,7 @@ export function accountColumns({
                 variant="ghost"
                 size="sm"
                 className="h-8 w-8 p-0"
+                aria-label={`Open actions for account ${account.name}`}
                 disabled={pending}
               >
                 {pending ? (
@@ -197,7 +199,10 @@ export function accountColumns({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onView(account)} disabled={pending}>
+              <DropdownMenuItem
+                onClick={() => onView(account)}
+                disabled={pending}
+              >
                 <Eye className="size-4 mr-2" /> View Details
               </DropdownMenuItem>
               {canDisconnect && (

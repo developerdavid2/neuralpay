@@ -119,7 +119,7 @@ export function AccountForm({
       <DrawerFooter className="px-6 py-4 border-t shrink-0">
         <Button
           type="submit"
-          disabled={formDisabled || (isEdit && !form.formState.isValid)}
+          disabled={formDisabled || !form.formState.isValid}
           className="w-full"
         >
           {isSaving ? (

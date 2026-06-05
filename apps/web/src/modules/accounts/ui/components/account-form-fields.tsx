@@ -148,7 +148,7 @@ export function AccountFormFields({ form, disabled }: Props) {
           <Field>
             <FieldLabel>Currency</FieldLabel>
             <Select
-              value={field.value ?? "usd"}
+              value={field.value ?? "USD"}
               onValueChange={field.onChange}
               disabled={pending}
             >
@@ -156,11 +156,11 @@ export function AccountFormFields({ form, disabled }: Props) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="usd">USD — US Dollar</SelectItem>
-                <SelectItem value="eur">EUR — Euro</SelectItem>
-                <SelectItem value="gbp">GBP — British Pound</SelectItem>
-                <SelectItem value="cad">CAD — Canadian Dollar</SelectItem>
-                <SelectItem value="ngn">NGN — Nigerian Naira</SelectItem>
+                <SelectItem value="USD">USD — US Dollar</SelectItem>
+                <SelectItem value="EUR">EUR — Euro</SelectItem>
+                <SelectItem value="GBP">GBP — British Pound</SelectItem>
+                <SelectItem value="CAD">CAD — Canadian Dollar</SelectItem>
+                <SelectItem value="NGN">NGN — Nigerian Naira</SelectItem>
               </SelectContent>
             </Select>
           </Field>

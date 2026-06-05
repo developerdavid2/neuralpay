@@ -15,7 +15,6 @@ export function useAccountUrlSync() {
         params.set("account", accountId);
       }
       params.delete("focus");
-      params.delete("mode");
       const query = params.toString();
       window.history.replaceState(
         null,

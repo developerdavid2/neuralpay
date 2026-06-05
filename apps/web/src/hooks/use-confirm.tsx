@@ -31,12 +31,14 @@ export const useConfirm = (): [
   } | null>(null);
 
   const confirm = useCallback(
-    (nextOptions: ConfirmOptions) =>
-      new Promise<boolean>((resolve) => {
+    (nextOptions: ConfirmOptions) => {
+      promise?.resolve(false);
+      return new Promise<boolean>((resolve) => {
         setOptions(nextOptions);
         setPromise({ resolve });
-      }),
-    [],
+      });
+    },
+    [promise],
   );
 
   const handleClose = () => {

@@ -4,7 +4,7 @@ import { useAccountAggregates } from "@/hooks/accounts/use-account-aggregates";
 import { ACCOUNT_TYPES } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import { Eye, EyeOff } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -94,7 +94,7 @@ export function AccountTypeCardsView() {
     setCanScrollNext(api.canScrollNext());
   }, [api]);
 
-  useState(() => {
+  useEffect(() => {
     if (!api) return;
     onSelect();
     api.on("select", onSelect);
@@ -103,7 +103,7 @@ export function AccountTypeCardsView() {
       api.off("select", onSelect);
       api.off("reInit", onSelect);
     };
-  });
+  }, [api, onSelect]);
 
   const toggleVisibility = useCallback(() => {
     setIsBalanceVisible((v) => !v);
