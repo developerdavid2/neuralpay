@@ -1,5 +1,4 @@
 import { DashboardHeader } from "@/components/dashboard-header";
-import { NewAccountButton } from "../components/new-account-button";
 import {
   AccountTypeCardsSkeleton,
   AccountTypeCardsView,
@@ -7,6 +6,7 @@ import {
 import { SectionBoundary } from "@/components/section-boundary";
 import { AccountsList, AccountsListSkeleton } from "../components/account-list";
 import { AccountFilters } from "../components/account-filters";
+import { NewAccountButton } from "./../components/new-account-button";
 
 interface AccountsViewProps {
   search?: string;

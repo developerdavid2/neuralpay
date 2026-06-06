@@ -10,6 +10,16 @@ export const ACCOUNT_TYPES = [
 ] as const;
 
 export const ACCOUNT_STATUSES = ["active", "disconnected"] as const;
+export const SUPPORTED_CURRENCIES = [
+  "USD",
+  "EUR",
+  "NGN",
+  "GBP",
+  "CAD",
+  "AUD",
+  "JPY",
+  "CNY",
+] as const;
 
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
@@ -38,16 +48,21 @@ export const createAccountSchema = z.object({
   bankName: z
     .string()
     .min(3, { error: "Bank name must be at least 3 characters" })
-    .max(200, { error: "Bank name is too long" }),
-  maskedNumber: z.string().max(4, { error: "Account number is too long" }),
+    .max(200, { error: "Bank name is too long" })
+    .optional(),
+  maskedNumber: z
+    .string()
+    .max(4, { error: "Account number is too long" })
+    .optional(),
   balance: z
     .number({
       error: "Balance must be a valid number",
     })
     .default(0),
   currency: z
-    .string()
-    .length(3, { error: "Currency must be a 3-letter code (e.g., USD)" })
+    .enum(SUPPORTED_CURRENCIES, {
+      error: "Currency must be a valid ISO code (USD, EUR, GBP, etc.)",
+    })
     .default("USD"),
   isManual: z.literal(true).default(true),
 });
@@ -55,9 +70,18 @@ export const createAccountSchema = z.object({
 export const updateAccountSchema = z.object({
   id: z.uuid(),
   name: z.string().min(1).max(200).optional(),
+  type: z
+    .enum(ACCOUNT_TYPES, {
+      error: (issue) =>
+        issue.code === "invalid_value"
+          ? "Please select a valid account type"
+          : "Account type is required",
+    })
+    .optional(),
   subtype: z.string().max(100).optional().nullable(),
   tags: z.array(z.string().max(50)).max(10).optional(),
   bankName: z.string().max(200).optional(),
+  maskedNumber: z.string().max(200).optional(),
   balance: z.number().optional(),
   currency: z.string().length(3).optional(),
 });

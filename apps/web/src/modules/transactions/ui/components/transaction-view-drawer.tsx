@@ -17,6 +17,7 @@ import {
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
+  DrawerTitle,
 } from "@neuralpay/ui/components/drawer";
 import { ScrollArea } from "@neuralpay/ui/components/scroll-area";
 import { Separator } from "@neuralpay/ui/components/separator";
@@ -99,6 +100,7 @@ export function TransactionViewDrawer() {
           flex flex-col
         "
       >
+        <DrawerTitle />
         <TransactionViewInner
           transactionId={transactionId}
           onClose={onClose}

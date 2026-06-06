@@ -4,7 +4,11 @@ import {
   type CreateTransactionInput,
   type UpdateTransactionInput,
 } from "@neuralpay/types";
-import { Drawer, DrawerContent } from "@neuralpay/ui/components/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+} from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 
@@ -21,12 +25,11 @@ import { TransactionForm } from "./transaction-form";
 
 export function TransactionFormDrawer() {
   const { isOpen, onClose, transactionId, mode } = useTransactionDrawer();
-  const { clearUrl, syncToUrl } = useTransactionUrlSync();
+  const { clearUrl } = useTransactionUrlSync();
 
   const isEdit = mode === "edit";
   const isAdd = mode === "add";
 
-  // Always render the drawer when open — content handles its own loading
   if (!isOpen || (!isEdit && !isAdd)) return null;
 
   return (
@@ -51,6 +54,7 @@ export function TransactionFormDrawer() {
           "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
         )}
       >
+        <DrawerTitle />
         <TransactionFormInner
           transactionId={transactionId}
           mode={mode}
@@ -62,7 +66,7 @@ export function TransactionFormDrawer() {
   );
 }
 
-// ── Inner: handles data fetching + renders skeleton immediately ───────────
+// ── Inner: handles data fetching + renders skeleton immediately
 function TransactionFormInner({
   transactionId,
   mode,
@@ -89,14 +93,9 @@ function TransactionFormInner({
     isUpdating,
   } = useTransactionMutations();
   const { isDeleting } = useTransactionPendingSelectors();
-
   const [ConfirmDialog, confirm] = useConfirm();
-
   const deleting = transactionId !== null ? isDeleting(transactionId) : false;
   const isSaving = isCreating || isUpdating;
-
-  // Show skeleton immediately while ANY data is loading
-  // This matches the insight drawer pattern exactly
   const isLoading = isLoadingAccounts || (isEdit && !transaction);
 
   if (isLoading) {
@@ -113,7 +112,6 @@ function TransactionFormInner({
     );
   }
 
-  // Data is ready — render the form
   const defaultValues: FormValues =
     isEdit && transaction
       ? {
@@ -196,11 +194,9 @@ function TransactionFormInner({
   );
 }
 
-// ── Skeleton: mirrors the exact form layout for instant render ──────────────
 function FormDrawerSkeleton({ onClose }: { onClose: () => void }) {
   return (
     <>
-      {/* Header skeleton */}
       <div className="px-6 py-4 border-b space-y-3 shrink-0">
         <div className="flex items-start justify-between">
           <div className="space-y-2">

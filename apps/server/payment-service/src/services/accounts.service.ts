@@ -241,6 +241,8 @@ export const AccountsService = {
       if (input.subtype !== undefined) updateData.subtype = input.subtype;
       if (input.tags !== undefined) updateData.tags = input.tags;
       if (input.bankName !== undefined) updateData.bankName = input.bankName;
+      if (input.maskedNumber !== undefined)
+        updateData.maskedNumber = input.maskedNumber;
       if (input.balance !== undefined)
         updateData.balance = input.balance.toString();
       if (input.currency !== undefined) updateData.currency = input.currency;

@@ -12,7 +12,6 @@ export function useTransactionDetail(transactionId: string) {
   const fromListCache = useMemo(() => {
     if (!transactionId) return undefined;
 
-    // Find any cached list query regardless of what filters were active
     const allQueries = queryClient.getQueriesData<{
       pages: Array<{ items: Transaction[] }>;
     }>({
@@ -28,21 +27,24 @@ export function useTransactionDetail(transactionId: string) {
       },
     });
 
-    for (const [, data] of allQueries) {
+    for (const [queryKey, data] of allQueries) {
       if (!data?.pages) continue;
       const found = data.pages
         .flatMap((page) => page.items)
         .find((tx) => tx.id === transactionId);
-      if (found) return found;
+      if (found) {
+        const dataUpdatedAt =
+          queryClient.getQueryState(queryKey)?.dataUpdatedAt;
+        return { transaction: found, dataUpdatedAt };
+      }
     }
 
     return undefined;
   }, [transactionId, queryClient]);
-
-  // Drawer store takes priority (came directly from the clicked row)
-  // List cache is the fallback (handles cases where drawer store is stale/empty)
   const seedData =
-    drawerData?.id === transactionId ? drawerData : fromListCache;
+    drawerData?.id === transactionId
+      ? { transaction: drawerData, dataUpdatedAt: undefined }
+      : fromListCache;
 
   const {
     data: transaction,
@@ -52,19 +54,12 @@ export function useTransactionDetail(transactionId: string) {
     ...trpc.payments.transactions.getById.queryOptions({ id: transactionId }),
     enabled: !!transactionId,
     staleTime: 30_000,
-    initialData: seedData,
-    // Only mark as stale immediately if we seeded from cache, not from fresh click
-    // This prevents a redundant background refetch when the user just clicked a row
-    initialDataUpdatedAt: seedData
-      ? queryClient.getQueryState(
-          trpc.payments.transactions.list.infiniteQueryKey({} as never),
-        )?.dataUpdatedAt
-      : undefined,
+    initialData: seedData?.transaction,
+    initialDataUpdatedAt: seedData?.dataUpdatedAt,
   });
 
   return {
     transaction: transaction ?? null,
-    // Don't flash a skeleton if we already have seed data to show
     isLoading: isPending && !seedData,
     isError,
   };

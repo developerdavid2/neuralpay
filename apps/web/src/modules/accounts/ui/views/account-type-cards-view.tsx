@@ -70,8 +70,6 @@ function TotalCard({
             {totalCount} {totalCount === 1 ? "ACCOUNT" : "ACCOUNTS"}
           </p>
         </div>
-
-        <NewAccountButton />
       </div>
     </div>
   );
@@ -108,14 +106,18 @@ export function AccountTypeCardsView() {
 
   return (
     <div className="space-y-4 my-6">
-      <TotalCard
-        totalBalance={totalBalance}
-        totalCount={totalCount}
-        isBalanceVisible={isBalanceVisible}
-        onToggleVisibility={toggleVisibility}
-      />
+      <div className="relative">
+        <TotalCard
+          totalBalance={totalBalance}
+          totalCount={totalCount}
+          isBalanceVisible={isBalanceVisible}
+          onToggleVisibility={toggleVisibility}
+        />
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 z-20">
+          <NewAccountButton />
+        </div>
+      </div>
 
-      {/* Carousel with absolute-positioned navigation arrows */}
       <div className="relative">
         <Carousel
           setApi={setApi}
@@ -147,8 +149,9 @@ export function AccountTypeCardsView() {
           </CarouselContent>
         </Carousel>
 
-        {/* Absolute positioned arrows — edge of carousel area */}
         <button
+          type="button"
+          disabled={!canScrollPrev}
           onClick={() => api?.scrollPrev()}
           className={cn(
             "absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3",
@@ -168,6 +171,8 @@ export function AccountTypeCardsView() {
         </button>
 
         <button
+          type="button"
+          disabled={!canScrollNext}
           onClick={() => api?.scrollNext()}
           className={cn(
             "absolute right-0 top-1/2 -translate-y-1/2 translate-x-3",

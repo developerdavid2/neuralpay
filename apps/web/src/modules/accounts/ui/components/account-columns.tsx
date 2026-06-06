@@ -128,6 +128,7 @@ export function accountColumns({
 
     {
       accessorKey: "accountNumber",
+      accessorFn: (row) => (row.maskedNumber ?? "").slice(-4),
       header: ({ column }) => (
         <div className="text-right">
           <Button
@@ -142,7 +143,10 @@ export function accountColumns({
         </div>
       ),
       cell: ({ row }) => {
-        const maskedNumber = Number(row.original.maskedNumber ?? 1234);
+        const maskedNumber = String(row.original.maskedNumber ?? "")
+          .replace(/\D/g, "")
+          .slice(-4)
+          .padStart(4, "•");
         return (
           <div className="text-center font-mono text-sm text-muted-foreground tabular-nums tracking-wide">
             **** **** {maskedNumber}
