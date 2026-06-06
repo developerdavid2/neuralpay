@@ -1,4 +1,3 @@
-// modules/accounts/ui/account-form-fields.tsx
 "use client";
 
 import { AmountInput } from "@/components/amount-input";
@@ -72,8 +71,8 @@ export function AccountFormFields({ form, disabled }: Props) {
         )}
       />
 
-      {/* Type + Status */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Type */}
+      <div className="gap-4">
         <Controller
           name="type"
           control={form.control}
@@ -108,10 +107,10 @@ export function AccountFormFields({ form, disabled }: Props) {
         control={form.control}
         render={({ field, fieldState }) => (
           <Field>
-            <FieldLabel>Account Number</FieldLabel>
+            <FieldLabel>Last 4 Account digits</FieldLabel>
             <Input
               {...field}
-              placeholder="•••• •••• •••• 1234"
+              placeholder="1234"
               disabled={pending}
               value={field.value ?? ""}
               aria-invalid={fieldState.invalid}
@@ -134,6 +133,7 @@ export function AccountFormFields({ form, disabled }: Props) {
               onChange={(v) => field.onChange(v ? Number(v) : 0)}
               disabled={pending}
               placeholder="0.00"
+              type="credit"
             />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>

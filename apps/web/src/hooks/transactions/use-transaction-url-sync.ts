@@ -14,6 +14,7 @@ export function useTransactionUrlSync() {
         params.set("mode", mode);
         params.set("focus", txId);
       }
+
       const query = params.toString();
       window.history.replaceState(
         null,

@@ -77,12 +77,12 @@ export function TransactionsList({
   const displayLimit = limitFromUrl ? Number(limitFromUrl) : currentLimit;
 
   const handleView = (tx: Transaction) => {
-    onOpenView(tx.id);
+    onOpenView(tx.id, tx);
     syncToUrl("view", tx.id);
   };
 
   const handleEdit = (tx: Transaction) => {
-    onOpenEdit(tx.id);
+    onOpenEdit(tx.id, tx);
     syncToUrl("edit", tx.id);
   };
 
@@ -151,10 +151,7 @@ export function TransactionsList({
   } = useTransactionsList(filters);
 
   useEffect(() => {
-    if (!focusTransactionId || allTransactions.length === 0) return;
-
-    const target = allTransactions.find((t) => t.id === focusTransactionId);
-    if (!target) return;
+    if (!focusTransactionId) return;
 
     const { isOpen, transactionId } = useTransactionDrawer.getState();
     if (isOpen && transactionId === focusTransactionId) return;
@@ -164,7 +161,7 @@ export function TransactionsList({
     } else {
       onOpenView(focusTransactionId);
     }
-  }, [focusTransactionId, focusMode, allTransactions, onOpenView, onOpenEdit]);
+  }, [focusTransactionId, focusMode]);
 
   const deletableIds = useMemo(
     () =>

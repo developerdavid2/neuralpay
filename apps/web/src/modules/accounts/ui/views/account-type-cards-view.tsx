@@ -3,14 +3,12 @@
 import { useAccountAggregates } from "@/hooks/accounts/use-account-aggregates";
 import { ACCOUNT_TYPES } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from "@neuralpay/ui/components/carousel";
 import { cn } from "@neuralpay/ui/lib/utils";
@@ -72,8 +70,6 @@ function TotalCard({
             {totalCount} {totalCount === 1 ? "ACCOUNT" : "ACCOUNTS"}
           </p>
         </div>
-
-        <NewAccountButton />
       </div>
     </div>
   );
@@ -85,8 +81,7 @@ export function AccountTypeCardsView() {
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
-  const { aggAccType, totalBalance, aggregateMap, totalCount } =
-    useAccountAggregates();
+  const { totalBalance, aggregateMap, totalCount } = useAccountAggregates();
 
   const onSelect = useCallback(() => {
     if (!api) return;
@@ -110,81 +105,108 @@ export function AccountTypeCardsView() {
   }, []);
 
   return (
-    <div className="space-y-4">
-      <TotalCard
-        totalBalance={totalBalance}
-        totalCount={totalCount}
-        isBalanceVisible={isBalanceVisible}
-        onToggleVisibility={toggleVisibility}
-      />
-
-      <Carousel
-        setApi={setApi}
-        opts={{
-          align: "start",
-          loop: false,
-          skipSnaps: false,
-          dragFree: true,
-        }}
-        className="w-full rounded-2xl overflow-hidden"
-      >
-        <CarouselContent className="-ml-3">
-          {ACCOUNT_TYPES.map((type) => {
-            const agg = aggregateMap.get(type);
-            return (
-              <CarouselItem
-                key={type}
-                className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3"
-              >
-                <AccountTypeCard
-                  type={type}
-                  totalBalance={agg?.totalBalance ?? 0}
-                  accountCount={agg?.accountCount ?? 0}
-                  isBalanceVisible={isBalanceVisible}
-                />
-              </CarouselItem>
-            );
-          })}
-        </CarouselContent>
-
-        {/* Navigation — only show when scrollable */}
-        <div
-          className={cn(
-            "flex items-center justify-end gap-1 mt-3 transition-opacity duration-200",
-            !canScrollPrev && !canScrollNext && "opacity-0 pointer-events-none",
-          )}
-        >
-          <CarouselPrevious
-            className={cn(
-              "relative inset-0 translate-x-0 translate-y-0 h-7 w-7 border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
-              !canScrollPrev && "opacity-30 cursor-not-allowed",
-            )}
-          />
-          <CarouselNext
-            className={cn(
-              "relative inset-0 translate-x-0 translate-y-0 h-7 w-7 border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white",
-              !canScrollNext && "opacity-30 cursor-not-allowed",
-            )}
-          />
+    <div className="space-y-4 my-6">
+      <div className="relative">
+        <TotalCard
+          totalBalance={totalBalance}
+          totalCount={totalCount}
+          isBalanceVisible={isBalanceVisible}
+          onToggleVisibility={toggleVisibility}
+        />
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 z-20">
+          <NewAccountButton />
         </div>
-      </Carousel>
+      </div>
+
+      <div className="relative">
+        <Carousel
+          setApi={setApi}
+          opts={{
+            align: "start",
+            loop: false,
+            skipSnaps: false,
+            dragFree: true,
+          }}
+          className="w-full max-w-full"
+        >
+          <CarouselContent className="-ml-3">
+            {ACCOUNT_TYPES.map((type) => {
+              const agg = aggregateMap.get(type);
+              return (
+                <CarouselItem
+                  key={type}
+                  className="pl-3 basis-full sm:basis-1/2 lg:basis-1/3"
+                >
+                  <AccountTypeCard
+                    type={type}
+                    totalBalance={agg?.totalBalance ?? 0}
+                    accountCount={agg?.accountCount ?? 0}
+                    isBalanceVisible={isBalanceVisible}
+                  />
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+        </Carousel>
+
+        <button
+          type="button"
+          disabled={!canScrollPrev}
+          onClick={() => api?.scrollPrev()}
+          className={cn(
+            "absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3",
+            "z-10 flex items-center justify-center",
+            "size-12 rounded-full",
+            "bg-black/40 backdrop-blur-sm",
+            "border border-border/50",
+            "text-muted-foreground hover:text-foreground",
+            "shadow-lg shadow-black/20",
+            "transition-all duration-200",
+            "hover:scale-110 active:scale-95",
+            !canScrollPrev && "opacity-0 pointer-events-none scale-90",
+          )}
+          aria-label="Previous cards"
+        >
+          <ChevronLeft className="size-6 text-white" />
+        </button>
+
+        <button
+          type="button"
+          disabled={!canScrollNext}
+          onClick={() => api?.scrollNext()}
+          className={cn(
+            "absolute right-0 top-1/2 -translate-y-1/2 translate-x-3",
+            "z-10 flex items-center justify-center",
+            "size-12 rounded-full",
+            "bg-black/40 backdrop-blur-sm",
+            "border border-border/50",
+            "text-muted-foreground hover:text-foreground",
+            "shadow-lg shadow-black/20",
+            "transition-all duration-200",
+            "hover:scale-110 active:scale-95",
+            !canScrollNext && "opacity-0 pointer-events-none scale-90",
+          )}
+          aria-label="Next cards"
+        >
+          <ChevronRight className="size-6 text-white" />
+        </button>
+      </div>
     </div>
   );
 }
 
-// ── Skeleton ───────────────────────────────────────────────────
 export function AccountTypeCardsSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 my-6">
       {/* Total card skeleton */}
-      <div className="rounded-2xl bg-muted animate-pulse h-[88px]" />
+      <div className="rounded-2xl bg-card animate-pulse h-[100px]" />
 
       {/* Carousel skeleton */}
-      <div className="flex gap-3 overflow-hidden">
+      <div className="flex gap-3 overflow-hidden ">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="min-w-[280px] flex-1 rounded-2xl aspect-[1.586/1] bg-muted animate-pulse"
+            className="pl-3 basis-full sm:basis-1/2 lg:basis-1/3 min-w-[280px] flex-1 rounded-2xl h-[300px] bg-card animate-pulse"
           />
         ))}
       </div>

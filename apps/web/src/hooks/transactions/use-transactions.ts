@@ -3,7 +3,6 @@ import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
 import { useTRPC } from "@/trpc/trpc-client";
 import type { Transaction, TransactionsFilterInput } from "@neuralpay/types";
 import {
-  useQuery,
   useSuspenseInfiniteQuery,
   useSuspenseQuery,
 } from "@tanstack/react-query";
@@ -96,45 +95,3 @@ export function useTopCategories(params?: {
     }),
   );
 }
-
-// TRANSACTION DETAILS BY ID
-export function useTransactionDetail(transactionId: string) {
-  const trpc = useTRPC();
-  const {
-    data: transaction,
-    isPending,
-    isError,
-  } = useQuery({
-    ...trpc.payments.transactions.getById.queryOptions({ id: transactionId }),
-    enabled: !!transactionId,
-    staleTime: 30_000,
-  });
-
-  return {
-    transaction: transaction ?? null,
-    isLoading: isPending,
-    isError,
-  };
-}
-
-//AI INSIGHT
-// export function useTransactionInsight(transactionId: string | null) {
-//   const trpc = useTRPC();
-//   const {
-//     data: insight,
-//     isPending,
-//     isError,
-//   } = useQuery({
-//     ...trpc.ai.insights.getInsightById.queryOptions(
-//       { transactionId: transactionId! },
-//       { enabled: !!transactionId },
-//     ),
-//     enabled: !!transactionId,
-//   });
-
-//   return {
-//     insight: insight ?? null,
-//     isLoading: isPending,
-//     isError,
-//   };
-// }

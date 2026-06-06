@@ -207,10 +207,10 @@ export const AccountsService = {
           userId,
           name: input.name,
           type: input.type,
-          subtype: input.subtype ?? null,
+          subtype: input.subtype,
           tags: input.tags,
-          bankName: input.bankName ?? null,
-          maskedNumber: input.maskedNumber ?? null,
+          bankName: input.bankName,
+          maskedNumber: input.maskedNumber,
           balance: input.balance.toString(),
           currency: input.currency,
           isManual: true,
@@ -241,6 +241,8 @@ export const AccountsService = {
       if (input.subtype !== undefined) updateData.subtype = input.subtype;
       if (input.tags !== undefined) updateData.tags = input.tags;
       if (input.bankName !== undefined) updateData.bankName = input.bankName;
+      if (input.maskedNumber !== undefined)
+        updateData.maskedNumber = input.maskedNumber;
       if (input.balance !== undefined)
         updateData.balance = input.balance.toString();
       if (input.currency !== undefined) updateData.currency = input.currency;

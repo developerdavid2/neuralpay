@@ -3,21 +3,22 @@
 
 import {
   type CreateAccountInput,
+  type SupportedCurrencies,
   type UpdateAccountInput,
 } from "@neuralpay/types";
 import { Drawer, DrawerContent } from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 
+import { useAccountDetail } from "@/hooks/accounts/use-account-detail";
 import type { AccountDrawerMode } from "@/hooks/accounts/use-account-drawer";
 import { useAccountDrawer } from "@/hooks/accounts/use-account-drawer";
 import { useAccountMutations } from "@/hooks/accounts/use-account-mutations";
 import { useAccountPendingSelectors } from "@/hooks/accounts/use-account-pending";
 import { useAccountUrlSync } from "@/hooks/accounts/use-account-url-sync";
-import { useAccountDetail } from "@/hooks/accounts/use-account-detail";
 import { useConfirm } from "@/hooks/use-confirm";
-import { AccountForm } from "./account-form";
 import type { FormValues } from "../../types";
+import { AccountForm } from "./account-form";
 
 export function AccountFormDrawer() {
   const { isOpen, onClose, accountId, mode } = useAccountDrawer();
@@ -100,7 +101,7 @@ function AccountFormInner({
           type: account.type,
           bankName: account.bankName ?? undefined,
           maskedNumber: account.maskedNumber ?? undefined,
-          currency: account.currency ?? "USD",
+          currency: account.currency as SupportedCurrencies,
           balance: account.balance ? Number(account.balance) : 0,
         }
       : {

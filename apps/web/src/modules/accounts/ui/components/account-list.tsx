@@ -181,7 +181,7 @@ export function AccountsList({
       <DataTableToolbar
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={setColumnVisibility}
-        columnNames={["name", "type", "balance", "status"]}
+        columnNames={["name", "type", "accountNumber", "balance", "status"]}
         selectedCount={globalSelection.size}
         deletableCount={deletableIds.length}
         onClearSelection={() => setGlobalSelection(new Set())}

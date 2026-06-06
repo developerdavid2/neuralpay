@@ -125,6 +125,36 @@ export function accountColumns({
       ),
       size: 120,
     },
+
+    {
+      accessorKey: "accountNumber",
+      accessorFn: (row) => (row.maskedNumber ?? "").slice(-4),
+      header: ({ column }) => (
+        <div className="text-right">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-3 h-8 data-[state=open]:bg-accent uppercase text-[12px]"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Account Number
+            <ChevronsUpDown className="ml-2 size-4" />
+          </Button>
+        </div>
+      ),
+      cell: ({ row }) => {
+        const maskedNumber = String(row.original.maskedNumber ?? "")
+          .replace(/\D/g, "")
+          .slice(-4)
+          .padStart(4, "•");
+        return (
+          <div className="text-center font-mono text-sm text-muted-foreground tabular-nums tracking-wide">
+            **** **** {maskedNumber}
+          </div>
+        );
+      },
+      size: 140,
+    },
     {
       accessorKey: "balance",
       header: ({ column }) => (

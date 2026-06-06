@@ -1,3 +1,4 @@
+// modules/accounts/components/account-type-card.tsx
 import { useEffect, useState } from "react";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { ACCOUNT_TYPE_CONFIG } from "../../constants";
@@ -6,6 +7,64 @@ import { AccountTypeBadge } from "./account-badges";
 import type { AccountType } from "@neuralpay/types";
 
 const NOISE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`;
+
+const AURORA_CONFIG: Record<
+  AccountType,
+  {
+    baseGradient: string;
+    bloomGradient: string;
+    bevelColor: string;
+    sweepColor: string;
+    iconGlow: string;
+  }
+> = {
+  checking: {
+    baseGradient:
+      "radial-gradient(ellipse_at_30%_0%,rgba(40,60,180,0.85)_0%,rgba(15,10,50,1)_50%,rgba(6,4,14,1)_100%)",
+    bloomGradient:
+      "radial-gradient(ellipse_70%_55%_at_25%_0%,rgba(80,140,255,0.28),transparent_65%)",
+    bevelColor: "from-transparent via-blue-400/25 to-transparent",
+    sweepColor: "from-transparent via-blue-400/60 to-transparent",
+    iconGlow: "shadow-[0_0_20px_rgba(80,140,255,0.3)]",
+  },
+  savings: {
+    baseGradient:
+      "radial-gradient(ellipse at 30% 100%, rgba(55,25,110,0.85) 0%, rgba(18,10,42,1) 55%, rgba(6,4,14,1) 100%)",
+    bloomGradient:
+      "radial-gradient(ellipse 55% 50% at 25% 100%, rgba(60,210,90,0.10), transparent 60%)",
+    bevelColor: "from-transparent via-emerald-400/20 to-transparent",
+    sweepColor: "from-transparent via-emerald-400/50 to-transparent",
+    iconGlow: "shadow-[0_0_20px_rgba(60,220,140,0.25)]",
+  },
+  credit: {
+    baseGradient:
+      "radial-gradient(ellipse at 80% 50%, rgba(80,60,120,0.9) 0%, rgba(20,10,45,1) 55%, rgba(6,4,14,1) 100%)",
+    bloomGradient:
+      "radial-gradient(ellipse_70%_55%_at_25%_0%,rgba(255,80,140,0.15),transparent_65%)",
+    bevelColor: "from-transparent via-rose-400/25 to-transparent",
+    sweepColor: "from-transparent via-rose-400/55 to-transparent",
+    iconGlow: "shadow-[0_0_20px_rgba(150,120,230,0.30)]",
+  },
+
+  investment: {
+    baseGradient:
+      "radial-gradient(ellipse at 25% 0%, rgba(60,30,120,0.9) 0%, rgba(20,10,45,1) 50%, rgba(6,4,14,1) 100%)",
+    bloomGradient:
+      "radial-gradient(ellipse_55%_50%_at_20%_100%,rgba(67,10,200,0.18),transparent_60%)",
+    bevelColor: "from-transparent via-violet-400/20 to-transparent",
+    sweepColor: "from-transparent via-violet-400/50 to-transparent",
+    iconGlow: "shadow-[0_0_20px_rgba(140,100,220,0.35)]",
+  },
+  crypto: {
+    baseGradient:
+      "radial-gradient(ellipse_at_30%_0%,rgba(30,50,120,0.5)_0%,rgba(20,10,45,1)_50%,rgba(6,4,14,1)_100%)",
+    bloomGradient:
+      "radial-gradient(ellipse_60%_55%_at_80%_100%,rgba(255,140,60,0.12),transparent_60%)",
+    bevelColor: "from-transparent via-yellow-400/20 to-transparent",
+    sweepColor: "from-transparent via-yellow-400/50 to-transparent",
+    iconGlow: "shadow-[0_0_20px_rgba(255,110,10,0.25)]",
+  },
+};
 
 function useMaskedNumber(seed: string, intervalMs: number) {
   const rand = (s: string) => {
@@ -80,6 +139,7 @@ export function AccountTypeCard({
   isBalanceVisible: boolean;
 }) {
   const config = ACCOUNT_TYPE_CONFIG[type];
+  const aurora = AURORA_CONFIG[type];
   const masked = useMaskedNumber(type, ROTATE_MS[type] ?? 21000);
   if (!config) return null;
 
@@ -90,31 +150,55 @@ export function AccountTypeCard({
       className={cn(
         "group relative overflow-hidden rounded-2xl p-px",
         "h-[250px] w-full cursor-pointer select-none",
-        // ── Unified aurora base — same for every card ──
-        "bg-[radial-gradient(ellipse_at_30%_0%,rgba(80,40,160,0.9)_0%,rgba(20,10,45,1)_55%,rgba(6,4,14,1)_100%)]",
         "ring-1 ring-white/[0.07]",
-        // "shadow-[0_2px_20px_rgba(0,0,0,0.55)]",
-        // "hover:shadow-[0_6px_32px_rgba(0,0,0,0.65)]",
         "transition-shadow duration-500 ease-out",
         isEmpty && "opacity-40 saturate-50",
       )}
+      style={{
+        background: aurora.baseGradient.replace(/_/g, " "),
+      }}
     >
-      {/* Inner surface — same gradient, rounded inset */}
-      <div className="relative h-full w-full overflow-hidden rounded-[15px] bg-[radial-gradient(ellipse_at_30%_0%,rgba(80,40,160,0.9)_0%,rgba(20,10,45,1)_55%,rgba(6,4,14,1)_100%)]">
-        {/* Aurora bloom — soft violet light at top-left */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_70%_55%_at_25%_0%,rgba(140,80,255,0.22),transparent_65%)]" />
+      {/* Inner surface */}
+      <div
+        className="relative h-full w-full overflow-hidden rounded-[15px]"
+        style={{
+          background: aurora.baseGradient.replace(/_/g, " "),
+        }}
+      >
+        {/* Aurora bloom — unique per card type */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: aurora.bloomGradient.replace(/_/g, " "),
+          }}
+        />
 
-        {/* Top bevel */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        {/* Top bevel — type-specific tint */}
+        <div
+          className={cn(
+            "absolute inset-x-0 top-0 h-px bg-gradient-to-r",
+            aurora.bevelColor,
+          )}
+        />
 
         {/* Inner radial light */}
         <div className="absolute inset-0 opacity-25 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.10),transparent_55%)]" />
 
-        {/* TOP MOVING LIGHT — sweeps right→left on hover */}
-        <span className="pointer-events-none absolute top-0 z-20 h-px w-[55%] opacity-0 transition-all duration-500 left-[45%] group-hover:left-4 group-hover:opacity-60 bg-gradient-to-r from-transparent via-white/55 to-transparent" />
+        {/* TOP MOVING LIGHT — sweeps on hover */}
+        <span
+          className={cn(
+            "pointer-events-none absolute top-0 z-20 h-px w-[55%] opacity-0 transition-all duration-500 left-[45%] group-hover:left-4 group-hover:opacity-60 bg-gradient-to-r",
+            aurora.sweepColor,
+          )}
+        />
 
-        {/* BOTTOM MOVING LIGHT — sweeps left→right on hover */}
-        <span className="pointer-events-none absolute bottom-0 z-20 h-px w-[35%] opacity-0 transition-all duration-500 left-4 group-hover:left-[60%] group-hover:opacity-50 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+        {/* BOTTOM MOVING LIGHT — sweeps on hover */}
+        <span
+          className={cn(
+            "pointer-events-none absolute bottom-0 z-20 h-px w-[35%] opacity-0 transition-all duration-500 left-4 group-hover:left-[60%] group-hover:opacity-50 bg-gradient-to-r",
+            aurora.sweepColor,
+          )}
+        />
 
         {/* Noise grain */}
         <div
@@ -123,7 +207,13 @@ export function AccountTypeCard({
         />
 
         <div className="relative z-10 flex flex-col justify-between h-full p-5">
-          <AccountTypeBadge type={type} variant="icon" />
+          <div
+            className={cn(
+              "w-fit p-2 rounded-full backdrop-blur-md bg-black/20 border-black/30 shadow-md",
+            )}
+          >
+            <AccountTypeBadge type={type} variant="icon" />
+          </div>
 
           {/* MIDDLE: Balance */}
           <div className="space-y-0.5">
@@ -144,9 +234,8 @@ export function AccountTypeCard({
             )}
           </div>
 
-          {/* BOTTOM: Masked account number + shine line above it */}
+          {/* BOTTOM: Masked account number + shine line */}
           <div className="space-y-2">
-            {/* Shine line */}
             <div className="h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
             <div className="flex items-end justify-between">
               <p
