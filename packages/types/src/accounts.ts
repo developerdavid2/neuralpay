@@ -81,9 +81,12 @@ export const updateAccountSchema = z.object({
   subtype: z.string().max(100).optional().nullable(),
   tags: z.array(z.string().max(50)).max(10).optional(),
   bankName: z.string().max(200).optional(),
-  maskedNumber: z.string().max(200).optional(),
+  maskedNumber: z
+    .string()
+    .regex(/^\d{1,4}$/, { error: "Input must be up to 4 digits" })
+    .optional(),
   balance: z.number().optional(),
-  currency: z.string().length(3).optional(),
+  currency: z.enum(SUPPORTED_CURRENCIES).optional(),
 });
 
 export const accountsFilterSchema = z.object({
