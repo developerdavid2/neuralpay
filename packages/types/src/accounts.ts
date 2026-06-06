@@ -23,6 +23,7 @@ export const SUPPORTED_CURRENCIES = [
 
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
+export type SupportedCurrencies = (typeof SUPPORTED_CURRENCIES)[number];
 
 export const createAccountSchema = z.object({
   name: z
