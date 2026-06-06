@@ -207,7 +207,11 @@ export function AccountTypeCard({
         />
 
         <div className="relative z-10 flex flex-col justify-between h-full p-5">
-          <div className={cn("w-fit", aurora.iconGlow)}>
+          <div
+            className={cn(
+              "w-fit p-2 rounded-full backdrop-blur-md bg-black/20 border-black/30 shadow-md",
+            )}
+          >
             <AccountTypeBadge type={type} variant="icon" />
           </div>
 

@@ -192,16 +192,16 @@ export function AccountTypeCardsView() {
 
 export function AccountTypeCardsSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 my-6">
       {/* Total card skeleton */}
-      <div className="rounded-2xl bg-card animate-pulse h-[88px]" />
+      <div className="rounded-2xl bg-card animate-pulse h-[100px]" />
 
       {/* Carousel skeleton */}
-      <div className="flex gap-3 overflow-hidden bg-card">
+      <div className="flex gap-3 overflow-hidden ">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="min-w-[280px] flex-1 rounded-2xl h-[300px] bg-muted animate-pulse"
+            className="pl-3 basis-full sm:basis-1/2 lg:basis-1/3 min-w-[280px] flex-1 rounded-2xl h-[300px] bg-card animate-pulse"
           />
         ))}
       </div>

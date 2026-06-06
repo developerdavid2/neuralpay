@@ -125,6 +125,32 @@ export function accountColumns({
       ),
       size: 120,
     },
+
+    {
+      accessorKey: "accountNumber",
+      header: ({ column }) => (
+        <div className="text-right">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-3 h-8 data-[state=open]:bg-accent uppercase text-[12px]"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Account Number
+            <ChevronsUpDown className="ml-2 size-4" />
+          </Button>
+        </div>
+      ),
+      cell: ({ row }) => {
+        const maskedNumber = Number(row.original.maskedNumber ?? 1234);
+        return (
+          <div className="text-center font-mono text-sm text-muted-foreground tabular-nums tracking-wide">
+            **** **** {maskedNumber}
+          </div>
+        );
+      },
+      size: 140,
+    },
     {
       accessorKey: "balance",
       header: ({ column }) => (

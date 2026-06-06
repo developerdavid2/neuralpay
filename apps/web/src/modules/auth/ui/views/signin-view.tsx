@@ -24,6 +24,7 @@ import {
 import { Input } from "@neuralpay/ui/components/input";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { toast } from "sonner";
+import { PremiumButton } from "@/components/premium-button";
 
 type FormStatus =
   | { type: "idle" }
@@ -283,22 +284,22 @@ const SignInView = () => {
               )}
 
               {/* Submit */}
-              <Button
+              <PremiumButton
                 type="submit"
                 disabled={
                   pending || status.type === "error" || !form.formState.isValid
                 }
-                className="w-full h-12 font-semibold text-sm uppercase tracking-wide"
+                className="rounded-2xl w-full h-12 font-semibold text-sm uppercase tracking-wide"
               >
                 {pending ? (
                   <span className="flex items-center gap-2">
                     <span className="h-4 w-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
-                    Signing in...
+                    SIGNING IN...
                   </span>
                 ) : (
-                  "Sign In"
+                  "SIGN IN"
                 )}
-              </Button>
+              </PremiumButton>
 
               {/* Sign up link */}
               <p className="text-center text-sm text-muted-foreground">
