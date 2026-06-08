@@ -8,22 +8,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-import { categoryEnum } from "./categories";
 
-// Inlined for drizzle-kit CJS compatibility — source of truth is @neuralpay/types
-export const insightTypeEnum = pgEnum("insight_type", [
-  "anomaly",
-  "opportunity",
-  "trend",
-  "saving",
-  "warning",
-]);
-export const insightSeverityEnum = pgEnum("insight_severity", [
-  "low",
-  "medium",
-  "high",
-  "critical",
-]);
 export const chatContextTypeEnum = pgEnum("chat_context_type", [
   "insight",
   "transaction",
@@ -32,7 +17,7 @@ export const chatContextTypeEnum = pgEnum("chat_context_type", [
   "split",
   "general",
 ]);
-export const topicEnum = pgEnum("topic", [
+export const topicTypeEnum = pgEnum("topic", [
   "budgeting",
   "spending",
   "savings",
@@ -40,30 +25,13 @@ export const topicEnum = pgEnum("topic", [
 ]);
 export const roleEnum = pgEnum("role", ["user", "assistant"]);
 
-export const insights = pgTable("insights_spending", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  type: insightTypeEnum("type").notNull(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  severity: insightSeverityEnum("severity"),
-  category: categoryEnum("category"),
-  data: text("data"),
-  readAt: timestamp("read_at"),
-  dismissedAt: timestamp("dismissed_at"),
-  generatedAt: timestamp("generated_at").defaultNow().notNull(),
-  expiresAt: timestamp("expires_at"),
-});
-
 export const chatSessions = pgTable("chat_sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
-  topic: topicEnum("topic").default("general"),
+  topic: topicTypeEnum("topic").default("general"),
   contextType: chatContextTypeEnum("context_type").default("general"),
   contextId: text("context_id"),
   isActive: boolean("is_active").default(true),

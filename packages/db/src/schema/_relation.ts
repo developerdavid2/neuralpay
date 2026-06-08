@@ -15,7 +15,8 @@ import {
   vaultInvitations,
 } from "./vaults";
 
-import { insights, chatSessions, chatMessages } from "./ai";
+import { insights} from "./insights";
+import { chatSessions, chatMessages } from "./chats";
 
 import { notifications, deviceTokens } from "./notifications";
 import { bankAccounts } from "./accounts";

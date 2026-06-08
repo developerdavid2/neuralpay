@@ -1,6 +1,7 @@
 import { db } from "./src";
 import { bankAccounts } from "./src/schema/accounts";
-import { chatMessages, chatSessions, insights } from "./src/schema/ai";
+import { insights } from "./src/schema/insights";
+import { chatMessages, chatSessions } from "./src/schema/chats";
 import { budgets } from "./src/schema/budgets";
 import { notifications } from "./src/schema/notifications";
 import {

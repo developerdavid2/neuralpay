@@ -5,6 +5,7 @@ export * from "./categories";
 export * from "./accounts";
 export * from "./splits";
 export * from "./vaults";
-export * from "./ai";
+export * from "./insights";
+export * from "./chats";
 export * from "./notifications";
 export {};

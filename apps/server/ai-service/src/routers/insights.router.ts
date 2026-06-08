@@ -3,7 +3,7 @@ import {
   publicProcedure,
   router,
 } from "@neuralpay/config/trpc";
-import { listInsightsInputSchema } from "@neuralpay/types";
+import { insightFilterSchema } from "@neuralpay/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { AIInsightsService } from "../services/insights.service";
@@ -11,9 +11,9 @@ import { AIInsightsService } from "../services/insights.service";
 export const insightsRouter = router({
   health: publicProcedure.query(() => ({ ok: true, service: "ai-service" })),
   list: protectedProcedure
-    .input(listInsightsInputSchema.optional())
+    .input(insightFilterSchema.optional())
     .query(async ({ ctx, input }) => {
-      const parsed = listInsightsInputSchema.parse(input ?? {});
+      const parsed = insightFilterSchema.parse(input ?? {});
 
       const result = await AIInsightsService.getInsights(
         ctx.session.user.id,

@@ -250,12 +250,11 @@ export const AIInsightsService = {
           and(
             eq(insights.id, id),
             eq(insights.userId, userId),
-            isNull(insights.readAt), // Only update if not already read
+            isNull(insights.readAt),
           ),
         )
         .returning({ id: insights.id });
 
-      // If already read, still return success
       if (!result) {
         // Check if insight exists and is already read
         const [existing] = await db
