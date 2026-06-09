@@ -2,6 +2,7 @@ export * from "./auth";
 export * from "./users";
 export * from "./transactions";
 export * from "./insights";
+export * from "./chats";
 export * from "./pagination";
 export * from "./accounts";
 export {};

@@ -9,7 +9,7 @@ export const CHAT_CONTEXT_TYPES = [
   "general",
 ] as const;
 
-export const CHAT_TOPICS_TYPES = [
+export const CHAT_TOPIC_TYPES = [
   "budgeting",
   "spending",
   "savings",
@@ -19,35 +19,95 @@ export const CHAT_TOPICS_TYPES = [
 export const ROLES = ["user", "assistant"] as const;
 
 export type ChatContextType = (typeof CHAT_CONTEXT_TYPES)[number];
-export type Topic = (typeof CHAT_TOPICS_TYPES)[number];
-export type Role = (typeof ROLES)[number];
+export type ChatTopicType = (typeof CHAT_TOPIC_TYPES)[number];
+export type ChatRole = (typeof ROLES)[number];
 
-export const chatSessionSchema = z
+export const startOrCreateChatSessionSchema = z
   .object({
+    sessionId: z.uuid().optional(),
     contextType: z.enum(CHAT_CONTEXT_TYPES).default("general"),
     contextId: z.string().optional(),
     title: z.string().min(1).max(100).optional(),
-    topic: z.enum(CHAT_TOPICS_TYPES).default("general"),
+    topic: z.enum(CHAT_TOPIC_TYPES).default("general"),
   })
   .refine((data) => data.contextType === "general" || !!data.contextId, {
     message: "contextId is required when contextType is not 'general'",
   });
-
 export const sendMessageSchema = z.object({
   sessionId: z.uuid(),
   content: z.string().min(1).max(4000),
 });
 
-export const chatFilterSchema = z.object({
+export const chatSessionsFilterSchema = z.object({
   limit: z.number().int().min(1).max(100).default(20),
   cursor: z.string().optional(),
   includeArchived: z.boolean().default(false),
   contextType: z.enum(CHAT_CONTEXT_TYPES).optional(),
-  topic: z.enum(CHAT_CONTEXT_TYPES).optional(),
+  topic: z.enum(CHAT_TOPIC_TYPES).optional(),
   search: z.string().trim().optional(),
 });
 
-export type ChatSessionInput = z.infer<typeof chatSessionSchema>;
+export const chatMesssagesParamsSchema = z.object({
+  limit: z.number().int().min(1).max(100).default(20),
+  cursor: z.string().optional(),
+});
+
+export const sessionByIdSchema = z.object({
+  sessionId: z.uuid(),
+});
+
+export const updateSessionTitleSchema = z.object({
+  sessionId: z.uuid(),
+  title: z.string().min(1).max(100),
+});
+
+export type ChatSessionsFilterInput = z.infer<typeof chatSessionsFilterSchema>;
+export type StartOrCreateChatSessionInput = z.infer<
+  typeof startOrCreateChatSessionSchema
+>;
+export type UpdateSessionTitleInput = z.infer<typeof updateSessionTitleSchema>;
+
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
-export type ChatFilterInput = z.infer<typeof chatFilterSchema>;
-export type ListSessionsInput = z.infer<typeof chatFilterSchema>;
+export type ChatMessagesParamsInput = z.infer<typeof chatMesssagesParamsSchema>;
+
+export type ChatSession = {
+  topic: "general" | "budgeting" | "spending" | "savings" | null;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  title: string;
+  contextType:
+    | "insight"
+    | "transaction"
+    | "budget"
+    | "vault"
+    | "split"
+    | "general"
+    | null;
+  contextId: string | null;
+  isActive: boolean | null;
+  archivedAt: Date | null;
+};
+
+export type ChatMessage = {
+  role: "user" | "assistant";
+  id: string;
+  createdAt: Date;
+  userId: string;
+  sessionId: string;
+  content: string;
+  tokensUsed: number | null;
+  metadata: string | null;
+};
+
+export type PaginatedChatSessions = {
+  items: ChatSession[];
+  nextCursor: string | null;
+  total?: number;
+};
+export type PaginatedChatMessages = {
+  items: ChatMessage[];
+  nextCursor: string | null;
+  total?: number;
+};

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { useRecentInsights } from "@/hooks/insights/use-insights";
+import { useRecentInsights } from "@/modules/insights/hooks/use-insights";
 
 import {
   EmptyState,
@@ -10,7 +10,7 @@ import {
   InsightsSkeleton,
 } from "@/modules/insights/ui/components/insight-card";
 import { ArrowUpRight } from "lucide-react";
-import { useRecentInsightNavigation } from "@/hooks/insights/use-recent-insight-navigation";
+import { useRecentInsightNavigation } from "@/modules/insights/hooks/use-recent-insight-navigation";
 
 export function RecentInsights() {
   const { insights, isLoading } = useRecentInsights();

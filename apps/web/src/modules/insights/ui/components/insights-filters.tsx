@@ -12,7 +12,7 @@ import {
 import { Filter, Archive } from "lucide-react";
 import { INSIGHTS_TYPE_LABELS } from "../../constants";
 import { DebouncedSearchInput } from "@/components/debounced-search-input";
-import { useInsightFilters } from "@/hooks/insights/use-insight-filters";
+import { useInsightFilters } from "@/modules/insights/hooks/use-insight-filters";
 
 export function InsightsFilters() {
   const {

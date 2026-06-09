@@ -30,4 +30,8 @@ export const insights = pgTable("insights_spending", {
   dismissedAt: timestamp("dismissed_at"),
   generatedAt: timestamp("generated_at").defaultNow().notNull(),
   expiresAt: timestamp("expires_at"),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });

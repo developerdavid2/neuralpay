@@ -3,7 +3,7 @@
 
 import { PremiumButton } from "@/components/premium-button";
 import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
-import { useTransactionUrlSync } from "@/hooks/transactions/use-transaction-url-sync";
+import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
 import { PlusIcon } from "lucide-react";
 
 export function NewTransactionButton() {

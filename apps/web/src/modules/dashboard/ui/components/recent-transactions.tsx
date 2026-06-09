@@ -1,6 +1,6 @@
 "use client";
 
-import { useRecentTransactions } from "@/hooks/transactions/use-transactions";
+import { useRecentTransactions } from "@/modules/transactions/hooks/use-transactions";
 import { formatAmount } from "@/lib/utils";
 import type { Transaction } from "@neuralpay/types";
 import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";

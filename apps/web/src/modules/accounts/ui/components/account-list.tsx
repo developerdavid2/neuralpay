@@ -6,9 +6,9 @@ import { DataTablePagination } from "@/components/data-table/data-table-paginati
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { useAccountDrawer } from "@/hooks/accounts/use-account-drawer";
 import { useAccountMutations } from "@/hooks/accounts/use-account-mutations";
-import { useAccountPendingSelectors } from "@/hooks/accounts/use-account-pending";
-import { useAccountUrlSync } from "@/hooks/accounts/use-account-url-sync";
-import { useAccountsList } from "@/hooks/accounts/use-accounts";
+import { useAccountPendingSelectors } from "@/modules/accounts/hooks/use-account-pending";
+import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
+import { useAccountsList } from "@/modules/accounts/hooks/use-accounts";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDataTableNavigation } from "@/hooks/use-data-table-navigation";
 import { ACCOUNTS_LIMIT } from "@/modules/accounts/constants";

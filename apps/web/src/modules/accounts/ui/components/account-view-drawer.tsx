@@ -3,7 +3,7 @@
 
 import { useAccountDrawer } from "@/hooks/accounts/use-account-drawer";
 import { useAccountMutations } from "@/hooks/accounts/use-account-mutations";
-import { useAccountPendingSelectors } from "@/hooks/accounts/use-account-pending";
+import { useAccountPendingSelectors } from "@/modules/accounts/hooks/use-account-pending";
 import { useAccountDetail } from "@/hooks/accounts/use-account-detail";
 import { useConfirm } from "@/hooks/use-confirm";
 import { formatAmount } from "@/lib/utils";
@@ -34,7 +34,7 @@ import {
   X,
 } from "lucide-react";
 import { AccountStatusBadge, AccountTypeBadge } from "./account-badges";
-import { useAccountUrlSync } from "@/hooks/accounts/use-account-url-sync";
+import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
 
 function DetailField({
   label,

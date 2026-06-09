@@ -5,9 +5,9 @@ import {
   useTransactionDrawer,
   type TransactionDrawerMode,
 } from "@/hooks/transactions/use-transaction-drawer";
-import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
-import { useTransactionPendingSelectors } from "@/hooks/transactions/use-transaction-pending";
-import { useTransactionDetail } from "@/hooks/transactions/use-transaction-detail";
+import { useTransactionMutations } from "@/modules/transactions/hooks/use-transaction-mutations";
+import { useTransactionPendingSelectors } from "@/modules/transactions/hooks/use-transaction-pending";
+import { useTransactionDetail } from "@/modules/transactions/hooks/use-transaction-detail";
 import { useConfirm } from "@/hooks/use-confirm";
 import { formatAmount } from "@/lib/utils";
 import { Button } from "@neuralpay/ui/components/button";
@@ -42,7 +42,7 @@ import {
 } from "lucide-react";
 import { isSyncedSource } from "../../lib/utils";
 import { SourceBadge, StatusBadge } from "./transaction-badges";
-import { useTransactionUrlSync } from "@/hooks/transactions/use-transaction-url-sync";
+import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
 
 function DetailField({
   label,

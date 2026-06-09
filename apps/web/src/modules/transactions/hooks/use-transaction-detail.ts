@@ -1,8 +1,9 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTransactionDrawer } from "./use-transaction-drawer";
+
 import { useMemo } from "react";
 import type { Transaction } from "@neuralpay/types";
+import { useTransactionDrawer } from "../store/use-transaction-drawer";
 
 export function useTransactionDetail(transactionId: string) {
   const trpc = useTRPC();
@@ -51,7 +52,7 @@ export function useTransactionDetail(transactionId: string) {
     isPending,
     isError,
   } = useQuery({
-    ...trpc.payments.transactions.getById.queryOptions({ id: transactionId }),
+    ...trpc.payments.transactions.getById.queryOptions({ transactionId }),
     enabled: !!transactionId,
     staleTime: 30_000,
     initialData: seedData?.transaction,

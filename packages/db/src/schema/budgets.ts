@@ -24,6 +24,10 @@ export const budgets = pgTable(
     alertThreshold: integer("alert_threshold").default(80),
     resetDay: integer("reset_day").default(1),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (t) => [index("budget_user_idx").on(t.userId)],
 );

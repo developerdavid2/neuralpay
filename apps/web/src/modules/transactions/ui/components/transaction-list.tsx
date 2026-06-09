@@ -3,11 +3,11 @@
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
-import { useTransactionFilters } from "@/hooks/transactions/use-transaction-filters";
-import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
-import { useTransactionPendingSelectors } from "@/hooks/transactions/use-transaction-pending";
-import { useTransactionUrlSync } from "@/hooks/transactions/use-transaction-url-sync";
-import { useTransactionsList } from "@/hooks/transactions/use-transactions";
+import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
+import { useTransactionMutations } from "@/modules/transactions/hooks/use-transaction-mutations";
+import { useTransactionPendingSelectors } from "@/modules/transactions/hooks/use-transaction-pending";
+import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
+import { useTransactionsList } from "@/modules/transactions/hooks/use-transactions";
 import { useConfirm } from "@/hooks/use-confirm";
 import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
 import type {

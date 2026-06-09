@@ -40,6 +40,10 @@ export const notifications = pgTable("notifications", {
   relatedType: text("related_type"),
   actionUrl: text("action_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 export const deviceTokens = pgTable("device_tokens", {
@@ -52,4 +56,8 @@ export const deviceTokens = pgTable("device_tokens", {
   deviceName: text("device_name"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });

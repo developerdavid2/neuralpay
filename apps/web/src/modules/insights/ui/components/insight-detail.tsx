@@ -1,6 +1,6 @@
 "use client";
 
-import { useInsightDetail } from "@/hooks/insights/use-insights";
+import { useInsightDetail } from "@/modules/insights/hooks/use-insights";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { formatTransactionDate } from "@/lib/utils";
 import { Button } from "@neuralpay/ui/components/button";

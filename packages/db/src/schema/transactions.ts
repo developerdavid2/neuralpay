@@ -55,6 +55,10 @@ export const transactions = pgTable(
       onDelete: "set null",
     }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (t) => [
     index("transactions_user_idx").on(t.userId),
@@ -107,6 +111,10 @@ export const csvImports = pgTable(
     columnMapping: text("column_mapping"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     completedAt: timestamp("completed_at"),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (t) => [index("csv_imports_user_idx").on(t.userId)],
 );
