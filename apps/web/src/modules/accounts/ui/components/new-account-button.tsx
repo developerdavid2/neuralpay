@@ -1,8 +1,9 @@
 "use client";
 
 import { PremiumButton } from "@/components/premium-button";
-import { useAccountDrawer } from "@/hooks/accounts/use-account-drawer";
+
 import { PlusIcon } from "lucide-react";
+import { useAccountDrawer } from "../../store/use-account-drawer";
 
 export function NewAccountButton() {
   const { onOpenAdd } = useAccountDrawer();

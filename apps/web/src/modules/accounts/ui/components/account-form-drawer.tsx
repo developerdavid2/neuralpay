@@ -1,4 +1,3 @@
-// modules/accounts/ui/account-form-drawer.tsx
 "use client";
 
 import {
@@ -9,14 +8,15 @@ import {
 import { Drawer, DrawerContent } from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
-
-import { useAccountDetail } from "@/hooks/accounts/use-account-detail";
-import type { AccountDrawerMode } from "@/hooks/accounts/use-account-drawer";
-import { useAccountDrawer } from "@/hooks/accounts/use-account-drawer";
-import { useAccountMutations } from "@/hooks/accounts/use-account-mutations";
-import { useAccountPendingSelectors } from "@/modules/accounts/hooks/use-account-pending";
 import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
+import { useAccountPendingSelectors } from "@/modules/accounts/store/use-account-pending";
 import { useConfirm } from "@/hooks/use-confirm";
+import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
+import { useAccountDetail } from "../../hooks/queries/use-account-detail";
+import {
+  useAccountDrawer,
+  type AccountDrawerMode,
+} from "../../store/use-account-drawer";
 import type { FormValues } from "../../types";
 import { AccountForm } from "./account-form";
 

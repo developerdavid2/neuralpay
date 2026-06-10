@@ -19,8 +19,8 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
-import { SourceBadge, StatusBadge } from "./transaction-badges";
 import { isSyncedSource } from "../../lib/utils";
+import { SourceBadge, StatusBadge } from "./transaction-badges";
 
 interface ColumnProps {
   onView: (tx: Transaction) => void;

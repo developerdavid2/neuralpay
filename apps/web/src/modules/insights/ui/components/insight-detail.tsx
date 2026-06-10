@@ -1,6 +1,5 @@
 "use client";
 
-import { useInsightDetail } from "@/modules/insights/hooks/use-insights";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { formatTransactionDate } from "@/lib/utils";
 import { Button } from "@neuralpay/ui/components/button";
@@ -17,6 +16,7 @@ import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Archive, Loader2, MessageCircle, RotateCcw, X } from "lucide-react";
 import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
+import { useInsightDetail } from "../../hooks/queries/use-insight-detail";
 import type { Insight } from "../../types";
 
 interface InsightDetailsProps {

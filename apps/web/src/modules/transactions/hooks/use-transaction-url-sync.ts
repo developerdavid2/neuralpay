@@ -1,7 +1,5 @@
-"use client";
-
 import { useCallback } from "react";
-import type { TransactionDrawerMode } from "./use-transaction-drawer";
+import type { TransactionDrawerMode } from "../store/use-transaction-drawer";
 
 export function useTransactionUrlSync() {
   const syncToUrl = useCallback(

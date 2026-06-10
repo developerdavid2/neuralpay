@@ -1,4 +1,4 @@
-// hooks/accounts/use-account-drawer.ts
+"use client";
 import { create } from "zustand";
 
 export type AccountDrawerMode = "view" | "edit" | "add";

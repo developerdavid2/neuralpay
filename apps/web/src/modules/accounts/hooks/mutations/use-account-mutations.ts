@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import {
   useAccountPendingSelectors,
   useAccountPendingStore,
-} from "./use-account-pending";
+} from "../../store/use-account-pending";
 
 export function useAccountMutations() {
   const trpc = useTRPC();

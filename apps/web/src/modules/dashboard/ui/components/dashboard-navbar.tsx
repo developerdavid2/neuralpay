@@ -6,7 +6,7 @@ import { Separator } from "@neuralpay/ui/components/separator";
 import { SidebarTrigger } from "@neuralpay/ui/components/sidebar";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const DashboardNavbar = () => {
   const [openCommand, setOpenCommand] = useState(false);

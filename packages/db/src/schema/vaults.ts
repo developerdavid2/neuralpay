@@ -49,11 +49,9 @@ export const vaultMembers = pgTable("vault_members", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  role: text("role").notNull().default("contributor"), // owner, contributor
-
-  
+  role: text("role").notNull().default("contributor"),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
+  updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),

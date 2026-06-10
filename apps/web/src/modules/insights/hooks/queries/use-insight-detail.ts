@@ -1,21 +1,19 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useQuery } from "@tanstack/react-query";
 
-export function useSession(sessionId: string) {
+export function useInsightDetail(insightId: string) {
   const trpc = useTRPC();
-
   const {
-    data: session,
+    data: insight,
     isPending,
     isError,
   } = useQuery({
-    ...trpc.ai.coach.sessionById.queryOptions({ sessionId }),
-    enabled: !!sessionId,
-    staleTime: 30_000,
+    ...trpc.ai.insights.getInsightById.queryOptions({ id: insightId }),
+    enabled: !!insightId,
   });
 
   return {
-    session: session ?? null,
+    insight: insight ?? null,
     isLoading: isPending,
     isError,
   };

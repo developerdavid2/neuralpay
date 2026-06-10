@@ -42,7 +42,7 @@ import {
 } from "../../constants";
 import type { ChartType, Period } from "../../types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { useSpendingOverview } from "@/modules/transactions/hooks/use-transactions";
+import { useSpendingOverview } from "@/modules/transactions/hooks/queries/use-spending-overview";
 
 interface PieDataItem {
   name: string;

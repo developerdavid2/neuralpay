@@ -1,4 +1,3 @@
-// modules/accounts/components/account-type-card.tsx
 import { useEffect, useState } from "react";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { ACCOUNT_TYPE_CONFIG } from "../../constants";

@@ -1,20 +1,19 @@
 import { protectedProcedure, router } from "@neuralpay/config/trpc";
-import { TRPCError } from "@trpc/server";
-import z from "zod";
-import { AICoachService } from "../services/coach.service";
 import {
-  chatFilterSchema,
+  chatSessionsFilterSchema,
   sendMessageSchema,
-  sessionByIdSchema,
   startOrCreateChatSessionSchema,
   updateSessionTitleSchema,
 } from "@neuralpay/types";
+import { TRPCError } from "@trpc/server";
+import z from "zod";
+import { AICoachService } from "../services/coach.service";
 
 export const coachRouter = router({
   sessions: protectedProcedure
-    .input(chatFilterSchema.optional())
+    .input(chatSessionsFilterSchema.optional())
     .query(async ({ ctx, input }) => {
-      const parsed = chatFilterSchema.parse(input ?? {});
+      const parsed = chatSessionsFilterSchema.parse(input ?? {});
 
       const result = await AICoachService.listSessions(
         ctx.session.user.id,
@@ -35,6 +34,8 @@ export const coachRouter = router({
     .input(
       z.object({
         sessionId: z.uuid(),
+        limit: z.number().int().min(1).max(100).default(20),
+        cursor: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -56,6 +57,10 @@ export const coachRouter = router({
       const messagesResult = await AICoachService.getMessages(
         sessionResult.data.id,
         ctx.session.user.id,
+        {
+          limit: input.limit,
+          cursor: input.cursor,
+        },
       );
 
       if (!messagesResult.success) {
@@ -115,11 +120,18 @@ export const coachRouter = router({
     }),
 
   getMessages: protectedProcedure
-    .input(z.object({ sessionId: z.uuid() }))
+    .input(
+      z.object({
+        sessionId: z.uuid(),
+        limit: z.number().int().min(1).max(100).default(20),
+        cursor: z.string().optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const result = await AICoachService.getMessages(
         input.sessionId,
         ctx.session.user.id,
+        { limit: input.limit, cursor: input.cursor },
       );
 
       if (!result.success) {

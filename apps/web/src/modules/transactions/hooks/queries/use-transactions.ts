@@ -1,11 +1,6 @@
-import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
-
 import { useTRPC } from "@/trpc/trpc-client";
 import type { Transaction, TransactionsFilterInput } from "@neuralpay/types";
-import {
-  useSuspenseInfiniteQuery,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo } from "react";
 
@@ -54,44 +49,4 @@ export function useTransactionsList(filters: TransactionsFilterInput) {
     sortedMonths,
     isLoading: query.isPending,
   };
-}
-
-// TRANSACTIONS (for dashboard)
-//RECENT
-export function useRecentTransactions(limit = TRANSACTIONS_LIMIT) {
-  const trpc = useTRPC();
-  const { data: recentTransactions } = useSuspenseQuery(
-    trpc.payments.transactions.recent.queryOptions({ limit }),
-  );
-
-  return { recentTransactions };
-}
-//SPENDING OVERVIEW
-export function useSpendingOverview(params: {
-  period: "7d" | "30d" | "90d" | "custom";
-  from?: string;
-  to?: string;
-}) {
-  const trpc = useTRPC();
-  return useSuspenseQuery(
-    trpc.payments.transactions.spendingOverview.queryOptions(params),
-  );
-}
-
-//TOP MONTHLY CATEGORIES
-export function useTopCategories(params?: {
-  month?: number;
-  year?: number;
-  limit?: number;
-}) {
-  const trpc = useTRPC();
-  const now = new Date();
-
-  return useSuspenseQuery(
-    trpc.payments.transactions.topCategories.queryOptions({
-      month: params?.month ?? now.getMonth() + 1,
-      year: params?.year ?? now.getFullYear(),
-      limit: params?.limit ?? 5,
-    }),
-  );
 }

@@ -12,16 +12,19 @@ import {
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 
-import { useAllAccounts } from "@/modules/accounts/hooks/use-all-accounts";
-import type { TransactionDrawerMode } from "@/hooks/transactions/use-transaction-drawer";
-import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
-import { useTransactionMutations } from "@/modules/transactions/hooks/use-transaction-mutations";
-import { useTransactionPendingSelectors } from "@/modules/transactions/hooks/use-transaction-pending";
+import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
+
+import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
+import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
 import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
-import { useTransactionDetail } from "@/modules/transactions/hooks/use-transaction-detail";
+import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
 import { useConfirm } from "@/hooks/use-confirm";
 import type { FormValues } from "../../types";
 import { TransactionForm } from "./transaction-form";
+import {
+  useTransactionDrawer,
+  type TransactionDrawerMode,
+} from "../../store/use-transaction-drawer";
 
 export function TransactionFormDrawer() {
   const { isOpen, onClose, transactionId, mode } = useTransactionDrawer();
@@ -66,7 +69,6 @@ export function TransactionFormDrawer() {
   );
 }
 
-// ── Inner: handles data fetching + renders skeleton immediately
 function TransactionFormInner({
   transactionId,
   mode,

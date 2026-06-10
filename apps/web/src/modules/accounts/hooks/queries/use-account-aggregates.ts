@@ -1,7 +1,7 @@
 import { ACCOUNT_TYPE_CONFIG } from "@/modules/accounts/constants";
 import { useTRPC } from "@/trpc/trpc-client";
 import { ACCOUNT_TYPES } from "@neuralpay/types";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 export function useAccountAggregates() {
   const trpc = useTRPC();

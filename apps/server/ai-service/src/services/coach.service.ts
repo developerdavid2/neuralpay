@@ -291,10 +291,10 @@ export const AICoachService = {
 
         if (cursorRow) {
           const cursorRowCondition = or(
-            sql`${chatSessions.updatedAt} < ${cursorRow.updatedAt}`,
+            sql`${chatMessages.updatedAt} < ${cursorRow.updatedAt}`,
             and(
-              eq(chatSessions.updatedAt, cursorRow.updatedAt),
-              sql`${chatSessions.id} < ${cursorRow.id}`,
+              eq(chatMessages.updatedAt, cursorRow.updatedAt),
+              sql`${chatMessages.id} < ${cursorRow.id}`,
             ),
           );
           if (cursorRowCondition) {
@@ -305,9 +305,9 @@ export const AICoachService = {
 
       const result = await db
         .select()
-        .from(chatSessions)
+        .from(chatMessages)
         .where(and(...conditions))
-        .orderBy(desc(chatSessions.updatedAt), desc(chatSessions.id))
+        .orderBy(chatMessages.createdAt)
         .limit(limit + 1);
 
       const hasMore = result.length > limit;

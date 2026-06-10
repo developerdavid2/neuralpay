@@ -2,14 +2,12 @@ import { invalidateInsightsQueries } from "@/lib/invalidate-trpc-queries";
 import type { Insight } from "@/modules/insights/types";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 
 export function useInsightMutations() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [pendingDismissId, setPendingDismissId] = useState<string | null>(null);

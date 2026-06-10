@@ -1,6 +1,5 @@
 "use client";
 
-import { useAccountAggregates } from "@/hooks/accounts/use-account-aggregates";
 import { ACCOUNT_TYPES } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import { Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react";
@@ -15,6 +14,7 @@ import { cn } from "@neuralpay/ui/lib/utils";
 import { formatAmount } from "@/lib/utils";
 import { AccountTypeCard } from "../components/account-type-card";
 import { NewAccountButton } from "../components/new-account-button";
+import { useAccountAggregates } from "../../hooks/queries/use-account-aggregates";
 
 function TotalCard({
   totalBalance,

@@ -1,4 +1,6 @@
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+"use client";
+
+import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
 export function useAccountUrlSync() {
