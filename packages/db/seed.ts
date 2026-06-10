@@ -938,6 +938,130 @@ async function seed() {
     },
   ]);
 
+  // Replace the TWO separate chatSessions inserts with ONE:
+
+  const [budgetChatSession] = await db
+    .insert(chatSessions)
+    .values({
+      userId,
+      title: "Help with monthly budget",
+      topic: "budgeting",
+      isActive: true,
+    })
+    .returning();
+
+  if (budgetChatSession) {
+    await db.insert(chatMessages).values([
+      {
+        sessionId: budgetChatSession.id,
+        userId,
+        role: "user",
+        content: "How can I save more this month?",
+      },
+      {
+        sessionId: budgetChatSession.id,
+        userId,
+        role: "assistant",
+        content:
+          "Based on your spending, your subscriptions total $25.98/month. " +
+          "Reducing dining out by 20% could save another ~$30. " +
+          "Together that's roughly $55 you could redirect to your Bali vault.",
+        tokensUsed: 148,
+      },
+      {
+        sessionId: budgetChatSession.id,
+        userId,
+        role: "user",
+        content: "What about the anomaly you flagged?",
+      },
+      {
+        sessionId: budgetChatSession.id,
+        userId,
+        role: "assistant",
+        content:
+          "The $150 Club XYZ transaction was 3x your usual entertainment spend for a single transaction. " +
+          "I flagged it because it occurred at 2am and at a merchant you've never visited before. " +
+          "Was this intentional?",
+        tokensUsed: 96,
+      },
+    ]);
+  }
+
+  // Then the additional 3 sessions:
+  const extraSessions = await db
+    .insert(chatSessions)
+    .values([
+      {
+        userId,
+        title: "Spending overview for June",
+        topic: "spending",
+        contextType: "general",
+        isActive: true,
+      },
+      {
+        userId,
+        title: "Chat about transaction: Starbucks",
+        topic: "spending",
+        contextType: "transaction",
+        contextId: "txn-123",
+        isActive: true,
+      },
+      {
+        userId,
+        title: "Budget check: Dining out",
+        topic: "budgeting",
+        contextType: "budget",
+        contextId: "budget-456",
+        isActive: true,
+      },
+    ])
+    .returning();
+
+  if (extraSessions.length > 0 && extraSessions[0]) {
+    const firstSessionId = extraSessions[0].id;
+    await db.insert(chatMessages).values([
+      {
+        sessionId: firstSessionId,
+        userId,
+        role: "user",
+        content: "How much did I spend this month?",
+      },
+      {
+        sessionId: firstSessionId,
+        userId,
+        role: "assistant",
+        content:
+          "You spent $2,340 this month. That's 15% more than last month. Your top categories are Dining ($450), Groceries ($380), and Transport ($210).",
+        tokensUsed: 145,
+      },
+      {
+        sessionId: firstSessionId,
+        userId,
+        role: "user",
+        content: "Why is dining so high?",
+      },
+      {
+        sessionId: firstSessionId,
+        userId,
+        role: "assistant",
+        content:
+          "Your dining spending is 40% higher than your 3-month average. You had 12 restaurant visits vs your usual 8. The biggest spike was on June 15th with $85 at The Steakhouse.",
+        tokensUsed: 132,
+      },
+    ]);
+  }
+
+  // // Add usage record
+  // await db.insert(aiUsage).values({
+  //   userId,
+  //   month: new Date().getMonth() + 1,
+  //   year: new Date().getFullYear(),
+  //   queryCount: 2,
+  //   tokenCount: 277,
+  // });
+
+  console.log(`✅ Seeded AI chat sessions`);
+
   console.log("✅ Seeding complete!");
   console.log(`   User: ${existingUser.email}`);
   console.log(`   Accounts: 5 (checking, savings, credit, investment, crypto)`);

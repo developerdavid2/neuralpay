@@ -15,7 +15,7 @@ export const ChatsLayout = ({ children }: { children: React.ReactNode }) => {
         defaultSize={25}
         minSize={15}
         maxSize={25}
-        className="bg-sidebar"
+        className="bg-sidebar h-screen"
       >
         <p>Aside Chat Side bar</p>
       </ResizablePanel>

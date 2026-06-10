@@ -5,6 +5,7 @@ import {
   prefetch,
   trpc,
 } from "@/trpc/trpc-server";
+import { ChatsView } from "@/modules/chats/ui/views/chats-view";
 
 interface PageProps {
   searchParams: Promise<{
@@ -20,8 +21,7 @@ export default async function Page({ searchParams }: PageProps) {
 
   const sessionId = params.session;
 
-  // Prefetch session list (infinite)
-  const data = prefetchInfinite(
+  void prefetchInfinite(
     trpc.ai.coach.sessions.infiniteQueryOptions(
       {
         search: params.search ?? undefined,
@@ -51,13 +51,12 @@ export default async function Page({ searchParams }: PageProps) {
     );
   }
 
-  // Prefetch usage (quota)
   void prefetch(trpc.ai.coach.usage.queryOptions());
 
   return (
     <HydrateClient>
       <Suspense fallback={<p>Loading</p>}>
-        <p>{JSON.stringify(data, null, 2)}</p>
+        <ChatsView />
       </Suspense>
     </HydrateClient>
   );
