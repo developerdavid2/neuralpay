@@ -3,6 +3,9 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@neuralpay/ui/components/resizable";
+import { ChatsSidebarPanel } from "../components/chats-sidebar/chats-sidebar-panel";
+import { ChevronLeft } from "lucide-react";
+import { Button } from "@neuralpay/ui/components/button";
 
 export const ChatsLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -14,10 +17,11 @@ export const ChatsLayout = ({ children }: { children: React.ReactNode }) => {
       <ResizablePanel
         defaultSize={25}
         minSize={15}
-        maxSize={25}
-        className="bg-sidebar h-screen"
+        maxSize={35}
+        collapsible={true}
+        className="bg-sidebar"
       >
-        <p>Aside Chat Side bar</p>
+        <ChatsSidebarPanel />
       </ResizablePanel>
     </ResizablePanelGroup>
   );

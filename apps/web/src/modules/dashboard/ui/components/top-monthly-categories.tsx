@@ -3,10 +3,10 @@
 import { useState } from "react";
 
 import { MonthYearPicker } from "@/components/month-year-picker";
-import { cn } from "@neuralpay/ui/lib/utils";
-import { format, startOfMonth, subMonths } from "date-fns";
-import { Receipt, TrendingUp } from "lucide-react";
 import { useMonthlyTopCategories } from "@/modules/transactions/hooks/queries/use-monthly-top-categories";
+import { cn } from "@neuralpay/ui/lib/utils";
+import { format, startOfMonth } from "date-fns";
+import { Receipt, TrendingUp } from "lucide-react";
 
 export function TopCategoriesCard() {
   const [selectedDate, setSelectedDate] = useState(() =>

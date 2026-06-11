@@ -15,7 +15,6 @@ export function useQueryParam(key: string) {
 
   const [currentValue, setCurrentValue] = useState<string>(() => getFromUrl());
 
-  // Sync when URL changes externally (back/forward, other components)
   useEffect(() => {
     setCurrentValue(getFromUrl());
   }, [getFromUrl]);

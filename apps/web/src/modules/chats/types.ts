@@ -1,9 +1,7 @@
 import type {
   ChatContextType,
-  ChatTopicType,
-  ChatRole,
-  ChatSession,
   ChatMessage,
+  ChatSession,
 } from "@neuralpay/types";
 
 export interface SessionWithMessages {

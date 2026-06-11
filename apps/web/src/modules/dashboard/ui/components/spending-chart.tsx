@@ -30,7 +30,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@neuralpay/ui/components/tabs";
 
 import { DateRangePicker } from "@/components/date-range-picker";
-import { formatAmount, getPeriodDays } from "@/lib/utils";
+import { formatAmount } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
 import {
   CATEGORY_COLORS,
@@ -43,6 +43,7 @@ import {
 import type { ChartType, Period } from "../../types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { useSpendingOverview } from "@/modules/transactions/hooks/queries/use-spending-overview";
+import { getPeriodDays } from "../../lib/utils";
 
 interface PieDataItem {
   name: string;
@@ -469,7 +470,6 @@ export function SpendingChart() {
   const trendData = overview?.trendData ?? [];
   const totalBudget = overview?.totalBudget ?? 0;
 
-  // ✅ Dynamic period-adjusted budget display
   const periodDays = getPeriodDays(period, dateRange);
   const displayBudget = useMemo(() => {
     if (totalBudget <= 0) return 0;

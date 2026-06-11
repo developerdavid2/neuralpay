@@ -1,28 +1,17 @@
-"use client";
-
-import { useTRPC } from "@/trpc/trpc-client";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-
-const filters = {
-  limit: 50,
-};
+import { ChatInput } from "../components/chat-input";
 
 export const ChatsView = () => {
-  const trpc = useTRPC();
-
-  // ✅ CORRECT: pass the options object directly
-  const { data } = useSuspenseInfiniteQuery(
-    trpc.ai.coach.sessions.infiniteQueryOptions(filters, {
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    }),
-  );
-
-  // Flatten pages for display
-  const sessions = data.pages.flatMap((page) => page.items);
-
   return (
-    <div className="flex h-full w-full flex-col">
-      <pre>{JSON.stringify(sessions, null, 2)}</pre>
+    <div className="flex h-[calc(100vh-4rem)] w-full flex-col items-center justify-center gap-6 px-4">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-semibold">What can I help you with?</h1>
+        <p className="text-sm text-muted-foreground">
+          Ask me anything about your finances, budgets, or transactions.
+        </p>
+      </div>
+      <div className="w-full max-w-2xl">
+        <ChatInput />
+      </div>
     </div>
   );
 };

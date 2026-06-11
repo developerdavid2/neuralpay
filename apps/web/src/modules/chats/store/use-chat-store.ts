@@ -8,9 +8,9 @@ interface ChatUIState {
   setActiveSessionId: (id: string | null) => void;
 
   // Sidebar
-  sidebarOpen: boolean;
-  toggleSidebar: () => void;
-  setSidebarOpen: (open: boolean) => void;
+  sessionSidebarOpen: boolean;
+  toggleSessionSidebar: () => void;
+  setSessionSidebarOpen: (open: boolean) => void;
 
   // Search
   searchQuery: string;
@@ -46,9 +46,10 @@ export const useChatStore = create<ChatUIState>()(
       setActiveSessionId: (id) => set({ activeSessionId: id }),
 
       // Sidebar
-      sidebarOpen: true,
-      toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
-      setSidebarOpen: (open) => set({ sidebarOpen: open }),
+      sessionSidebarOpen: true,
+      toggleSessionSidebar: () =>
+        set((s) => ({ sessionSidebarOpen: !s.sessionSidebarOpen })),
+      setSessionSidebarOpen: (open) => set({ sessionSidebarOpen: open }),
 
       // Search
       searchQuery: "",

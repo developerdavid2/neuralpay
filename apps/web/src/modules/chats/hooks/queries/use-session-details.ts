@@ -5,7 +5,7 @@ export function useSessionDetails(sessionId: string) {
   const trpc = useTRPC();
 
   const {
-    data: session,
+    data: sessionData,
     isLoading: isLoadingSession,
     isError: isErrorSession,
   } = useSuspenseQuery(
@@ -16,7 +16,7 @@ export function useSessionDetails(sessionId: string) {
   );
 
   return {
-    session,
+    sessionData,
     isLoadingSession,
     isErrorSession,
   };

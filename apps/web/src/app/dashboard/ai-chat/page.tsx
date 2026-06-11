@@ -1,15 +1,14 @@
-import { Suspense } from "react";
+import { ChatsView } from "@/modules/chats/ui/views/chats-view";
 import {
   HydrateClient,
-  prefetchInfinite,
   prefetch,
+  prefetchInfinite,
   trpc,
 } from "@/trpc/trpc-server";
-import { ChatsView } from "@/modules/chats/ui/views/chats-view";
+import { Suspense } from "react";
 
 interface PageProps {
   searchParams: Promise<{
-    session?: string;
     search?: string;
     topic?: string;
     includeArchived?: string;
@@ -18,8 +17,6 @@ interface PageProps {
 
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
-
-  const sessionId = params.session;
 
   void prefetchInfinite(
     trpc.ai.coach.sessions.infiniteQueryOptions(
@@ -35,21 +32,9 @@ export default async function Page({ searchParams }: PageProps) {
         includeArchived: params.includeArchived === "true",
         limit: 20,
       },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-      },
+      { getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined },
     ),
   );
-
-  // Prefetch specific session if provided
-  if (sessionId) {
-    void prefetch(
-      trpc.ai.coach.sessionById.queryOptions({
-        sessionId,
-        limit: 50,
-      }),
-    );
-  }
 
   void prefetch(trpc.ai.coach.usage.queryOptions());
 
