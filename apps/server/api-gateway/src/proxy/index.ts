@@ -1,5 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import proxy from "express-http-proxy";
+import { createProxyMiddleware } from "http-proxy-middleware";
 import { gatewayEnv } from "@neuralpay/env/gateway";
 import { logger } from "../utils/logger";
 
@@ -109,8 +110,6 @@ function trpcNamespaceProxy(app: Express) {
 // ── Mount all proxies ─────────────────────────────────────────────────────────
 export function mountProxies(app: Express) {
   // 1. Better Auth routes → user-service
-  //    Handles: sign-up, sign-in, OTP, forgot-password, reset-password
-  //    Better Auth client on frontend calls these directly, no tRPC involved
   app.use(
     "/v1/auth",
     proxy(gatewayEnv.USER_SERVICE_URL, {
@@ -124,20 +123,28 @@ export function mountProxies(app: Express) {
     }),
   );
 
-  // 2. tRPC routes → namespaced to correct service
+  // 2. AI Chat Streaming — must be before tRPC proxy
+  app.use(
+    "/v1/ai/chat/stream",
+    createProxyMiddleware({
+      target: gatewayEnv.AI_SERVICE_URL,
+      changeOrigin: true,
+      pathRewrite: { "^/v1/ai/chat/stream": "/chat/stream" },
+      on: {
+        proxyReq: (proxyReq, req) => {
+          const user = (req as any).user;
+          if (user?.id) {
+            proxyReq.setHeader("x-user-id", user.id);
+            proxyReq.setHeader("x-user-email", user.email ?? "");
+            proxyReq.setHeader("x-user-name", user.name ?? "");
+          }
+          proxyReq.setHeader("x-internal-source", "api-gateway");
+          proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
+        },
+      },
+    }),
+  );
+
+  // 3. tRPC routes → namespaced to correct service
   trpcNamespaceProxy(app);
-
-  // 3. Plaid/Mono webhooks → payment-service (external inbound)
-  // app.use(
-  //   "/v1/webhooks",
-  //   proxy(gatewayEnv.PAYMENT_SERVICE_URL, {
-  //     proxyErrorHandler:    proxyError,
-  //     proxyReqPathResolver: (req) => `/webhooks${req.url}`,
-  //     proxyReqOptDecorator: baseHeaders,
-  //   }),
-  // );
-
-  // 4. Socket.io (notification-service) — NOT proxied here
-  //    Frontend connects directly: io("http://localhost:4004")
-  //    because WebSocket upgrade through express-http-proxy is unreliable
 }

@@ -3,11 +3,12 @@
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import type { ChatTopicType } from "@neuralpay/types";
+import type { ChatTopicType, ChatContextType } from "@neuralpay/types";
 
 const DEFAULTS = {
   search: "",
   topic: "",
+  contextType: "",
   includeArchived: "false",
 };
 
@@ -21,10 +22,12 @@ export function useChatFilters() {
 
   const currentSearch = get("search");
   const currentTopic = (get("topic") as ChatTopicType | "") || "";
+  const currentContextType = (get("contextType") as ChatContextType | "") || "";
   const currentIncludeArchived = get("includeArchived") === "true";
 
   const activeFilterCount = [
     currentTopic !== "",
+    currentContextType !== "",
     currentIncludeArchived,
   ].filter(Boolean).length;
 
@@ -33,7 +36,6 @@ export function useChatFilters() {
   const commit = useCallback(
     (updates: Record<string, string>) => {
       const params = new URLSearchParams(searchParams.toString());
-
       for (const [key, value] of Object.entries(updates)) {
         const def = DEFAULTS[key as keyof typeof DEFAULTS];
         if (!value || value === def) {
@@ -42,7 +44,6 @@ export function useChatFilters() {
           params.set(key, value);
         }
       }
-
       const query = params.toString();
       router.push((query ? `${pathname}?${query}` : pathname) as Route);
     },
@@ -59,6 +60,11 @@ export function useChatFilters() {
     [commit],
   );
 
+  const updateContextType = useCallback(
+    (value: ChatContextType | "") => commit({ contextType: value }),
+    [commit],
+  );
+
   const updateIncludeArchived = useCallback(
     (value: boolean) => commit({ includeArchived: value ? "true" : "" }),
     [commit],
@@ -71,11 +77,13 @@ export function useChatFilters() {
   return {
     currentSearch,
     currentTopic,
+    currentContextType,
     currentIncludeArchived,
     activeFilterCount,
     hasActiveFilters,
     updateSearch,
     updateTopic,
+    updateContextType,
     updateIncludeArchived,
     clearAllFilters,
   };

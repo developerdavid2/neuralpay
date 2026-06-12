@@ -1,7 +1,7 @@
 "use client";
 
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { formatTransactionDate } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   Drawer,
@@ -166,7 +166,7 @@ function InsightDetailsContent({
         </DrawerDescription>
 
         <p className="text-xs text-muted-foreground/70">
-          Generated: {formatTransactionDate(insight.generatedAt)}
+          Generated: {formatDateTime(insight.generatedAt)}
         </p>
       </DrawerHeader>
 

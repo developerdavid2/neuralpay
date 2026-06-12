@@ -61,6 +61,11 @@ export const updateSessionTitleSchema = z.object({
   title: z.string().min(1).max(100),
 });
 
+export const streamRequestSchema = z.object({
+  sessionId: z.uuid(),
+  content: z.string().min(1).max(10000),
+});
+
 export type ChatSessionsFilterInput = z.infer<typeof chatSessionsFilterSchema>;
 export type StartOrCreateChatSessionInput = z.infer<
   typeof startOrCreateChatSessionSchema
@@ -111,3 +116,22 @@ export type PaginatedChatMessages = {
   nextCursor: string | null;
   total?: number;
 };
+
+export interface StreamChatRequest {
+  sessionId: string;
+  userId: string;
+  content: string;
+  planTier?: string;
+}
+
+export interface StreamChatResponse {
+  success: boolean;
+  error?: string;
+  code?: string;
+}
+
+export interface ContextSnapshot {
+  type: string;
+  data: unknown;
+  fetchedAt: string;
+}

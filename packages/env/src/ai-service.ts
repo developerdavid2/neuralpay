@@ -7,7 +7,7 @@ export const aiServiceEnv = createEnv({
     ...baseServerEnv,
     ...authEnv,
     PORT: z.coerce.number().default(4003),
-    // OPENAI_API_KEY: z.string().min(1),
+    AI_GATEWAY_API_KEY: z.string().min(1),
   },
   runtimeEnv: process.env,
 });

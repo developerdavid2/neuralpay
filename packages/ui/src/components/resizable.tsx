@@ -30,10 +30,12 @@ function ResizablePanel({
 
 function ResizableHandle({
   withHandle,
+  children,
   className,
   ...props
 }: React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle> & {
   withHandle?: boolean;
+  children?: React.ReactNode;
 }) {
   return (
     <ResizablePrimitive.PanelResizeHandle
@@ -44,11 +46,15 @@ function ResizableHandle({
       )}
       {...props}
     >
+      {/* Default grip handle */}
       {withHandle && (
         <div className="bg-border z-10 flex h-4 w-3 items-center justify-center rounded-xs border">
           <GripVerticalIcon className="size-2.5" />
         </div>
       )}
+
+      {/* Custom children — e.g. toggle button */}
+      {children}
     </ResizablePrimitive.PanelResizeHandle>
   );
 }

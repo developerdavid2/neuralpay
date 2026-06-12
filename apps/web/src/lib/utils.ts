@@ -1,4 +1,3 @@
-import type { Period } from "@/modules/dashboard/types";
 import {
   format,
   formatDistanceToNow,
@@ -6,7 +5,6 @@ import {
   isToday,
   isYesterday,
 } from "date-fns";
-import { type DateRange } from "react-day-picker";
 
 function toDate(date: Date | string | number): Date {
   return date instanceof Date ? date : new Date(date);

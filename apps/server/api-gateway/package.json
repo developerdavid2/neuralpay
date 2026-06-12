@@ -15,12 +15,12 @@
     "start": "bun run dist/index.mjs"
   },
   "dependencies": {
-    "@neuralpay/user-service": "workspace:*",
     "@neuralpay/ai-service": "workspace:*",
-    "@neuralpay/payment-service": "workspace:*",
     "@neuralpay/auth": "workspace:*",
-    "@neuralpay/env": "workspace:*",
     "@neuralpay/config": "workspace:*",
+    "@neuralpay/env": "workspace:*",
+    "@neuralpay/payment-service": "workspace:*",
+    "@neuralpay/user-service": "workspace:*",
     "@trpc/server": "catalog:",
     "better-auth": "catalog:",
     "cors": "^2.8.5",
@@ -28,11 +28,11 @@
     "express": "^5.1.0",
     "express-http-proxy": "^2.1.2",
     "express-rate-limit": "^8.4.1",
-    "http-proxy-middleware": "^3.0.5",
-    "ioredis": "^5.10.1",
-    "winston": "^3.19.0",
     "helmet": "^8.1.0",
+    "http-proxy-middleware": "^4.1.0",
+    "ioredis": "^5.10.1",
     "morgan": "^1.10.1",
+    "winston": "^3.19.0",
     "zod": "catalog:"
   },
   "devDependencies": {

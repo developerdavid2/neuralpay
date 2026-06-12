@@ -9,34 +9,10 @@ import {
 import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Bot, User } from "lucide-react";
+import { sanitizeMessageContent } from "../../lib/utils";
 
 interface ChatMessageItemProps {
   message: ChatMessage;
-}
-
-/**
- * Sanitize message content to prevent script tag rendering
- * Removes or escapes potentially dangerous HTML content
- */
-function sanitizeMessageContent(content: string): string {
-  if (!content || typeof content !== "string") {
-    return "";
-  }
-
-  // Remove script tags and their content completely
-  let sanitized = content.replace(
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    "",
-  );
-
-  // Remove event handlers (onclick, onload, etc.)
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "");
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, "");
-
-  // Remove javascript: protocol
-  sanitized = sanitized.replace(/javascript:/gi, "");
-
-  return sanitized;
 }
 
 export function ChatMessageItem({ message }: ChatMessageItemProps) {

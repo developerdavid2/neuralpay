@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@neuralpay/ui/lib/utils";
-import { formatTransactionDate } from "@/lib/utils";
 import {
   Archive,
   ChevronRight,
@@ -14,17 +13,18 @@ import {
 import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
 import type { Insight } from "../../types";
 import { Button } from "@neuralpay/ui/components/button";
+import { formatDateTime } from "@/lib/utils";
 
 export type InsightCardVariant = "compact" | "full";
 
 interface InsightCardProps {
   insight: Insight;
   variant?: InsightCardVariant;
-  onDismiss: (id: string) => Promise<void>; // now async
+  onDismiss: (id: string) => Promise<void>;
   onRestore?: (id: string) => Promise<void>;
   onChat: (id: string) => void;
   onOpen: (id: string) => void;
-  isDismissing: (id: string) => boolean; // per-ID check
+  isDismissing: (id: string) => boolean;
   isRestoring: (id: string) => boolean;
   isFocused?: boolean;
 }
@@ -179,7 +179,7 @@ export const InsightCard = ({
 
       {/* Timestamp */}
       <p className="text-xs text-muted-foreground/70 mt-1">
-        Generated: {formatTransactionDate(insight.generatedAt)}
+        Generated: {formatDateTime(insight.generatedAt)}
       </p>
 
       {/* FULL: Prominent CTAs */}

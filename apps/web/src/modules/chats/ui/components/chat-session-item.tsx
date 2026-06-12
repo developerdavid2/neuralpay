@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@neuralpay/ui/components/dropdown-menu";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 import {
   Archive,
@@ -38,7 +39,7 @@ interface ChatSessionItemProps {
   isActive: boolean;
   isArchiving: boolean;
   isDeleting: boolean;
-  onSelect: (sessionId: string, contextType?: string, topic?: string) => void;
+  onSelect: (sessionId: string) => void;
   onArchive: (sessionId: string, title: string) => void;
   onDelete: (sessionId: string, title: string) => void;
 }
@@ -79,30 +80,12 @@ export function ChatSessionItem({
       className={cn(
         "group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 cursor-pointer transition-all duration-200",
         isActive
-          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium shadow-sm"
+          ? "bg-violet-500/10 text-violet-600 dark:text-violet-400 font-medium shadow-sm"
           : "hover:bg-muted/60 text-foreground",
         isProcessing && "opacity-50 pointer-events-none",
       )}
-      onClick={() =>
-        onSelect(
-          session.id,
-          session.contextType as ChatContextType,
-          session.topic as ChatTopicType,
-        )
-      }
+      onClick={() => onSelect(session.id)}
     >
-      {/* Icon */}
-      <div
-        className={cn(
-          "shrink-0",
-          isActive
-            ? "text-blue-600 dark:text-blue-400"
-            : "text-muted-foreground",
-        )}
-      >
-        {topicIcons[session.topic ?? "general"]}
-      </div>
-
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p className="truncate text-xs font-medium">{session.title}</p>
@@ -110,7 +93,7 @@ export function ChatSessionItem({
           className={cn(
             "truncate text-[10px]",
             isActive
-              ? "text-blue-600/70 dark:text-blue-300/70"
+              ? "text-violet-600/70 dark:text-violet-300/70"
               : "text-muted-foreground",
           )}
         >
@@ -152,6 +135,24 @@ export function ChatSessionItem({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+    </div>
+  );
+}
+
+export function ChatSessionItemSkeleton() {
+  return (
+    <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-2.5">
+      {/* Topic icon */}
+      <Skeleton className="size-3 rounded shrink-0" />
+
+      {/* Content */}
+      <div className="flex-1 min-w-0 space-y-1.5">
+        <Skeleton className="h-3 w-3/4" />
+        <Skeleton className="h-2.5 w-1/2" />
+      </div>
+
+      {/* Action button placeholder */}
+      <Skeleton className="size-6 rounded" />
     </div>
   );
 }

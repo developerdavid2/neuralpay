@@ -1,13 +1,16 @@
+// apps/server/ai-service/src/main.ts
+
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { createExpressApp } from "@neuralpay/config/express-config";
 import { aiRouter } from "./routers";
-
 import { aiServiceEnv } from "@neuralpay/env/ai-service";
 import { createContext } from "./trpc/context";
+import { chatStreamHandler } from "./routers/chat-stream.router";
 
 const PORT = Number(aiServiceEnv.PORT) || 4003;
 const app = createExpressApp({ serviceName: "ai-service", port: PORT });
 
+// ── tRPC (CRUD routes) ──
 app.use(
   "/trpc",
   trpcExpress.createExpressMiddleware({
@@ -21,7 +24,12 @@ app.use(
   }),
 );
 
+// ── AI Chat Streaming (dedicated HTTP endpoint) ──
+// Must be after body-parser middleware (usually in createExpressApp)
+app.post("/chat/stream", chatStreamHandler);
+
 app.listen(PORT, () => {
   console.log(`🚀 ai-service running on http://localhost:${PORT}`);
   console.log(`   tRPC at http://localhost:${PORT}/trpc`);
+  console.log(`   Chat stream at http://localhost:${PORT}/chat/stream`);
 });

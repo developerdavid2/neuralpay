@@ -20,3 +20,21 @@ export function groupSessionsByDate(sessions: ChatSession[]) {
 
   return { recent, earlier };
 }
+
+export function sanitizeMessageContent(content: string): string {
+  if (!content || typeof content !== "string") {
+    return "";
+  }
+
+  let sanitized = content.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    "",
+  );
+
+  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "");
+  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, "");
+
+  sanitized = sanitized.replace(/javascript:/gi, "");
+
+  return sanitized;
+}

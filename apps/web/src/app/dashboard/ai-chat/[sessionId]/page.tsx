@@ -15,8 +15,6 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const { sessionId } = await params;
 
-  console.log(sessionId);
-
   void prefetch(
     trpc.ai.coach.sessionById.queryOptions({ sessionId, limit: 50 }),
   );

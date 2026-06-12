@@ -1,10 +1,13 @@
+// chat-session-list.tsx
 "use client";
 
-import { ChatSessionItem } from "./chat-session-item";
+import { ChatSessionItem, ChatSessionItemSkeleton } from "./chat-session-item";
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import { Clock, Calendar } from "lucide-react";
 import type { ChatSession } from "@neuralpay/types";
 import { groupSessionsByDate } from "../../lib/utils";
 import { useChatStore } from "../../store/use-chat-store";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
 
 interface ChatSessionListProps {
   sessions: ChatSession[];
@@ -13,6 +16,12 @@ interface ChatSessionListProps {
   onDelete: (sessionId: string, title: string) => void;
   isArchiving: boolean;
   isDeleting: boolean;
+  // Infinite scroll
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => void;
+  // Filter-triggered loading
+  isRefetching: boolean;
 }
 
 export function ChatSessionList({
@@ -22,13 +31,21 @@ export function ChatSessionList({
   onDelete,
   isArchiving,
   isDeleting,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
+  isRefetching,
 }: ChatSessionListProps) {
   const { activeSessionId } = useChatStore();
   const { recent, earlier } = groupSessionsByDate(sessions);
 
+  // Show skeleton over list when filter/search triggers a refetch
+  if (isRefetching) {
+    return <ChatSessionListSkeleton />;
+  }
+
   return (
     <div className="px-2 py-1 space-y-3">
-      {/* Recent */}
       {recent.length > 0 && (
         <div>
           <h3 className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
@@ -52,7 +69,6 @@ export function ChatSessionList({
         </div>
       )}
 
-      {/* Earlier */}
       {earlier.length > 0 && (
         <div>
           <h3 className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
@@ -75,6 +91,46 @@ export function ChatSessionList({
           </div>
         </div>
       )}
+
+      <InfiniteScroll
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        fetchNextPage={fetchNextPage}
+        isLoading={false}
+        isManual={false}
+      />
+    </div>
+  );
+}
+
+export function ChatSessionListSkeleton({ count = 8 }: { count?: number }) {
+  return (
+    <div className="px-2 py-1 space-y-3">
+      {/* Recent group */}
+      <div>
+        <div className="px-2.5 py-1.5 flex items-center gap-1">
+          <Skeleton className="size-3 rounded" />
+          <Skeleton className="h-3 w-12" />
+        </div>
+        <div className="space-y-0.5">
+          {Array.from({ length: Math.ceil(count * 0.6) }).map((_, i) => (
+            <ChatSessionItemSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+
+      {/* Earlier group */}
+      <div>
+        <div className="px-2.5 py-1.5 flex items-center gap-1">
+          <Skeleton className="size-3 rounded" />
+          <Skeleton className="h-3 w-14" />
+        </div>
+        <div className="space-y-0.5">
+          {Array.from({ length: Math.floor(count * 0.4) }).map((_, i) => (
+            <ChatSessionItemSkeleton key={i} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

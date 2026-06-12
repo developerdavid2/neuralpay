@@ -9,25 +9,15 @@ interface ChatUIState {
 
   // Sidebar
   sessionSidebarOpen: boolean;
-  toggleSessionSidebar: () => void;
   setSessionSidebarOpen: (open: boolean) => void;
 
-  // Search
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-
-  // Filter
+  // Filter topic
   selectedTopic: ChatTopicType | "all";
   setSelectedTopic: (topic: ChatTopicType | "all") => void;
 
-  // Context for new chat
-  pendingContext: {
-    contextType: ChatContextType;
-    contextId?: string;
-    title?: string;
-  } | null;
-  setPendingContext: (ctx: ChatUIState["pendingContext"]) => void;
-  clearPendingContext: () => void;
+  // filter context
+  selectedContext: ChatContextType | "all";
+  setSelectedContext: (context: ChatContextType | "all") => void;
 
   // Input state (lifted for AI Elements)
   inputText: string;
@@ -47,22 +37,15 @@ export const useChatStore = create<ChatUIState>()(
 
       // Sidebar
       sessionSidebarOpen: true,
-      toggleSessionSidebar: () =>
-        set((s) => ({ sessionSidebarOpen: !s.sessionSidebarOpen })),
       setSessionSidebarOpen: (open) => set({ sessionSidebarOpen: open }),
 
-      // Search
-      searchQuery: "",
-      setSearchQuery: (query) => set({ searchQuery: query }),
-
-      // Filter
+      // Filter topic
       selectedTopic: "all",
       setSelectedTopic: (topic) => set({ selectedTopic: topic }),
 
-      // Pending context
-      pendingContext: null,
-      setPendingContext: (ctx) => set({ pendingContext: ctx }),
-      clearPendingContext: () => set({ pendingContext: null }),
+      // context
+      selectedContext: "all",
+      setSelectedContext: (context) => set({ selectedContext: context }),
 
       // Input
       inputText: "",
