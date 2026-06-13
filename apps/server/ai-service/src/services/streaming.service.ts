@@ -1,5 +1,3 @@
-// apps/server/ai-service/src/services/streaming.service.ts
-
 import { db } from "@neuralpay/db";
 import {
   bankAccounts,
@@ -9,18 +7,18 @@ import {
   transactions,
   vaults,
 } from "@neuralpay/db/schema";
-import { streamText } from "ai";
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
-import { AICoachService } from "./coach.service";
 import type {
   ContextSnapshot,
   StreamChatRequest,
   StreamChatResponse,
 } from "@neuralpay/types";
+import { streamText } from "ai";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import type { Response } from "express";
+import { getModel } from "../lib/ai-provider";
 import { buildSystemPrompt } from "../lib/prompt";
+import { AICoachService } from "./coach.service";
 
-const AI_MODEL = process.env.AI_MODEL ?? "anthropic/claude-sonnet-4.5";
 const MAX_HISTORY_MESSAGES = 15;
 
 async function fetchGeneralContext(userId: string): Promise<unknown> {
@@ -386,14 +384,14 @@ export async function handleStreamChat(
 
     // 6. AI SDK — streamText with anthropic provider
     const result = streamText({
-      model: AI_MODEL,
+      model: getModel(),
       system: systemPrompt,
       messages: [...history, { role: "user" as const, content }],
       onFinish: async ({ text, usage }) => {
         // Save assistant message + token usage AFTER stream completes
         const metadata = JSON.stringify({
           contextSnapshot: snapshot,
-          model: AI_MODEL,
+          model: getModel(),
         });
 
         await AICoachService.saveMessage(
@@ -408,7 +406,12 @@ export async function handleStreamChat(
     });
 
     // 7. Pipe to Express response — useChat on the frontend expects this format
-    result.pipeUIMessageStreamToResponse(res);
+    // 7. Pipe to Express response
+    result.pipeUIMessageStreamToResponse(res, {
+      headers: {
+        "Content-Encoding": "none",
+      },
+    });
 
     return { success: true };
   } catch (error) {

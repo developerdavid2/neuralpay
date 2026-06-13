@@ -108,6 +108,31 @@ function trpcNamespaceProxy(app: Express) {
   });
 }
 // ── Mount all proxies ─────────────────────────────────────────────────────────
+// In proxy.ts — add this separate export
+export function mountStreamingProxy(app: Express) {
+  app.use(
+    "/v1/ai/chat/stream",
+    createProxyMiddleware({
+      target: gatewayEnv.AI_SERVICE_URL,
+      changeOrigin: true,
+      pathRewrite: (_path) => "/chat/stream", // always rewrite to exactly this
+      on: {
+        proxyReq: (proxyReq, req) => {
+          proxyReq.setHeader("x-internal-source", "api-gateway");
+          proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
+        },
+        error: (err, _req, res) => {
+          logger.error(`[stream proxy] error: ${err.message}`);
+          (res as Response)
+            .status(502)
+            .json({ success: false, message: "AI service unavailable" });
+        },
+      },
+    }),
+  );
+}
+
+// And remove it from mountProxies
 export function mountProxies(app: Express) {
   // 1. Better Auth routes → user-service
   app.use(
@@ -123,28 +148,6 @@ export function mountProxies(app: Express) {
     }),
   );
 
-  // 2. AI Chat Streaming — must be before tRPC proxy
-  app.use(
-    "/v1/ai/chat/stream",
-    createProxyMiddleware({
-      target: gatewayEnv.AI_SERVICE_URL,
-      changeOrigin: true,
-      pathRewrite: { "^/v1/ai/chat/stream": "/chat/stream" },
-      on: {
-        proxyReq: (proxyReq, req) => {
-          const user = (req as any).user;
-          if (user?.id) {
-            proxyReq.setHeader("x-user-id", user.id);
-            proxyReq.setHeader("x-user-email", user.email ?? "");
-            proxyReq.setHeader("x-user-name", user.name ?? "");
-          }
-          proxyReq.setHeader("x-internal-source", "api-gateway");
-          proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
-        },
-      },
-    }),
-  );
-
-  // 3. tRPC routes → namespaced to correct service
+  // 2. tRPC routes → namespaced to correct service
   trpcNamespaceProxy(app);
 }

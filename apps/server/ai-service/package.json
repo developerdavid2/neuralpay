@@ -17,11 +17,13 @@
     "check-types": "tsc -b"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^3.0.41",
     "@neuralpay/auth": "workspace:*",
     "@neuralpay/config": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
+    "@openrouter/ai-sdk-provider": "^2.9.1",
     "@trpc/server": "catalog:",
     "ai": "^6.0.203",
     "better-auth": "catalog:",

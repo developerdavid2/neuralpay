@@ -1,4 +1,4 @@
-import { ChatInput } from "../components/chat-input";
+import { NewChatConversationArea } from "../components/new-chat-conversation-area";
 
 export const ChatsView = () => {
   return (
@@ -9,9 +9,7 @@ export const ChatsView = () => {
           Ask me anything about your finances, budgets, or transactions.
         </p>
       </div>
-      <div className="w-full max-w-2xl">
-        <ChatInput />
-      </div>
+      <NewChatConversationArea />
     </div>
   );
 };

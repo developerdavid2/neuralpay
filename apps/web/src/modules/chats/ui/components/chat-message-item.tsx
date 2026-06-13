@@ -39,7 +39,7 @@ export function ChatMessageItem({ message }: ChatMessageItemProps) {
           "max-w-[80%] rounded-2xl px-4 py-3",
           isUser
             ? "bg-primary! text-primary-foreground!"
-            : "bg-muted text-foreground",
+            : "bg-sidebar text-foreground",
         )}
       >
         {message.role === "assistant" ? (

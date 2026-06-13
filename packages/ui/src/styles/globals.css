@@ -190,4 +190,13 @@
       transparent
     );
   }
+
+  [role="log"] > div {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  [role="log"] > div::-webkit-scrollbar {
+    display: none !important;
+  }
 }

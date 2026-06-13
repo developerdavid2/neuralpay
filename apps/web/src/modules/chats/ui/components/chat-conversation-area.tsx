@@ -1,28 +1,29 @@
 // chat-conversation-area.tsx
 "use client";
 
-import { Loader2 } from "lucide-react";
-import { Suspense } from "react";
+import { Bot, Loader2 } from "lucide-react";
 import { useSessionDetails } from "../../hooks/queries/use-session-details";
-import { ChatContextPill } from "./chat-context-pill";
 import { useAIChat } from "../../hooks/use-ai-chat";
+import { ChatContextPill } from "./chat-context-pill";
 
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
 } from "@neuralpay/ui/components/ai-elements/conversation";
+import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
 import { Button } from "@neuralpay/ui/components/button";
 import { AlertCircle } from "lucide-react";
+import { useMessages } from "../../hooks/queries/use-messages";
 import { ChatInput } from "./chat-input";
 import { ChatMessageItem } from "./chat-message-item";
-import { useMessages } from "../../hooks/queries/use-messages";
 
 interface Props {
   sessionId: string;
+  initialMessage?: string;
 }
 
-export function ChatConversationArea({ sessionId }: Props) {
+export function ChatConversationArea({ sessionId, initialMessage }: Props) {
   if (!sessionId || typeof sessionId !== "string" || sessionId.trim() === "") {
     return (
       <div className="flex h-full items-center justify-center">
@@ -44,7 +45,6 @@ export function ChatConversationArea({ sessionId }: Props) {
     isFetchingNextPage,
   } = useMessages(sessionId);
 
-  // useChat owns the streaming state — lives here so both messages + input share it
   const {
     messages: streamingMessages,
     input,
@@ -52,7 +52,7 @@ export function ChatConversationArea({ sessionId }: Props) {
     handleSubmit,
     isLoading,
     error,
-  } = useAIChat({ sessionId });
+  } = useAIChat({ sessionId, initialMessage });
 
   const persistedMessages =
     messagesData?.pages.flatMap((page) => page.items) ?? [];
@@ -70,7 +70,7 @@ export function ChatConversationArea({ sessionId }: Props) {
         </div>
       </header>
 
-      <div className="flex h-full flex-col max-w-4xl mx-auto">
+      <div className="flex h-full flex-col w-4xl mx-auto ">
         <Conversation className="flex-1 min-h-0">
           <ConversationContent className="p-4 space-y-4">
             {hasNextPage && (
@@ -117,20 +117,35 @@ export function ChatConversationArea({ sessionId }: Props) {
                 />
               );
             })}
+
+            {isLoading &&
+              streamingMessages[streamingMessages.length - 1]?.role ===
+                "user" && (
+                <div className="flex gap-3 flex-row">
+                  <Avatar className="size-8 shrink-0 bg-muted">
+                    <AvatarFallback>
+                      <Bot className="size-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="bg-muted rounded-2xl px-4 py-3 flex items-center gap-1">
+                    <span className="size-2 rounded-full bg-foreground/40 animate-bounce [animation-delay:0ms]" />
+                    <span className="size-2 rounded-full bg-foreground/40 animate-bounce [animation-delay:150ms]" />
+                    <span className="size-2 rounded-full bg-foreground/40 animate-bounce [animation-delay:300ms]" />
+                  </div>
+                </div>
+              )}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
 
-        <Suspense fallback={<div className="shrink-0 border-t p-4 h-20" />}>
-          <div className="shrink-0 border-t p-4 space-y-3">
-            <ChatInput
-              input={input}
-              isLoading={isLoading}
-              onInputChange={handleInputChange}
-              onSubmit={handleSubmit}
-            />
-          </div>
-        </Suspense>
+        <div className="shrink-0 border-t p-4 pb-12 space-y-3">
+          <ChatInput
+            input={input}
+            isLoading={isLoading}
+            onInputChange={handleInputChange}
+            onSubmit={handleSubmit}
+          />
+        </div>
       </div>
     </>
   );

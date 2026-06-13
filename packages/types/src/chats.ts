@@ -61,9 +61,21 @@ export const updateSessionTitleSchema = z.object({
   title: z.string().min(1).max(100),
 });
 
-export const streamRequestSchema = z.object({
-  sessionId: z.uuid(),
-  content: z.string().min(1).max(10000),
+const streamRequestSchema = z.object({
+  sessionId: z.string().uuid(),
+  // AI SDK v5 sends messages array, not flat content
+  messages: z.array(
+    z.object({
+      role: z.enum(["user", "assistant"]),
+      parts: z.array(
+        z.object({
+          type: z.string(),
+          text: z.string().optional(),
+        }),
+      ),
+      id: z.string(),
+    }),
+  ),
 });
 
 export type ChatSessionsFilterInput = z.infer<typeof chatSessionsFilterSchema>;

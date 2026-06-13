@@ -1,9 +1,16 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export function useAIChat({ sessionId }: { sessionId: string }) {
+export function useAIChat({
+  sessionId,
+  initialMessage,
+}: {
+  sessionId: string;
+  initialMessage?: string;
+}) {
   const [input, setInput] = useState("");
+  const hasSentInitial = useRef(false);
 
   const chat = useChat({
     id: sessionId,
@@ -13,6 +20,13 @@ export function useAIChat({ sessionId }: { sessionId: string }) {
       body: { sessionId },
     }),
   });
+
+  useEffect(() => {
+    if (initialMessage && !hasSentInitial.current) {
+      hasSentInitial.current = true;
+      chat.sendMessage({ text: initialMessage });
+    }
+  }, [initialMessage]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);

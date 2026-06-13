@@ -37,21 +37,13 @@ export function ChatInput({
 
   return (
     <div className="w-full space-y-3">
-      <PromptInput onSubmit={() => {}}>
+      <PromptInput onSubmit={(_message) => onSubmit()}>
         <PromptInputBody>
           <PromptInputTextarea
             value={input}
             onChange={onInputChange}
             placeholder="Ask about your finances..."
             className="min-h-[70px] max-h-[200px]"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                if (!isSubmitDisabled) {
-                  onSubmit();
-                }
-              }
-            }}
           />
         </PromptInputBody>
 
