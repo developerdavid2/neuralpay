@@ -1,6 +1,3 @@
-// chat-input.tsx
-"use client";
-
 import {
   PromptInput,
   PromptInputBody,

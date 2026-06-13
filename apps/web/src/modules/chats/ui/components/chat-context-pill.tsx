@@ -1,18 +1,17 @@
 "use client";
 
-import { Lightbulb, Receipt, Wallet, Vault, Split, Info } from "lucide-react";
+import { Info, Lightbulb, Receipt, Split, Vault, Wallet } from "lucide-react";
 
 import type { ChatContextType } from "@neuralpay/types";
-import { useChatStore } from "../../store/use-chat-store";
-import { useSessionDetails } from "../../hooks/queries/use-session-details";
+import { Badge } from "@neuralpay/ui/components/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@neuralpay/ui/components/tooltip";
-import { Badge } from "@neuralpay/ui/components/badge";
 import { cn } from "@neuralpay/ui/lib/utils";
+import { useSessionDetails } from "../../hooks/queries/use-session-details";
 
 const contextConfig: Record<
   ChatContextType,
@@ -50,8 +49,11 @@ const contextConfig: Record<
   },
 };
 
-export function ChatContextPill() {
-  const { activeSessionId } = useChatStore();
+interface ChatContextPillProps {
+  sessionId: string;
+}
+export function ChatContextPill({ sessionId }: ChatContextPillProps) {
+  const activeSessionId = sessionId;
   const { sessionData } = useSessionDetails(activeSessionId ?? "");
 
   if (!sessionData || sessionData.session.contextType === "general") {

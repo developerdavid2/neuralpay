@@ -1,5 +1,3 @@
-"use client";
-
 import type { ChatContextType } from "@neuralpay/types";
 import {
   Suggestion,

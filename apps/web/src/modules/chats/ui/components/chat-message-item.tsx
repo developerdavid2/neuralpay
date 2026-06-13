@@ -1,5 +1,3 @@
-"use client";
-
 import type { ChatMessage } from "@neuralpay/types";
 import {
   Message,

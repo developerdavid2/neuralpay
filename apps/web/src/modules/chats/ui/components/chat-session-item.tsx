@@ -1,5 +1,3 @@
-"use client";
-
 import { formatDate } from "@/lib/utils";
 import type { ChatSession } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";

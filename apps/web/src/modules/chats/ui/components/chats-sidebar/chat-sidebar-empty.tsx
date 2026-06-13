@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@neuralpay/ui/components/button";
 import { MessageSquare, Plus } from "lucide-react";
 

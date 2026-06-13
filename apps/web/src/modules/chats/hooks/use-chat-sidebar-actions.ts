@@ -1,23 +1,17 @@
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useChatStore } from "../store/use-chat-store";
 import { useArchiveSession } from "./mutations/use-archive-session";
 import { useDeleteSession } from "./mutations/use-delete-session";
 import { useStartSession } from "./mutations/use-start-session";
 import type { Route } from "next";
 
-/**
- * Consolidates all sidebar session actions:
- * - New chat creation (routes to /ai-chat without sessionId)
- * - Session selection with proper params (contextType, topic)
- * - Archive with confirmation
- * - Delete with confirmation and error recovery
- */
 export function useChatSidebarActions() {
   const router = useRouter();
-  const { activeSessionId, setActiveSessionId } = useChatStore();
+  const params = useParams();
+  const activeSessionId = params.sessionId as string | undefined;
+
   const [ConfirmDialog, confirm] = useConfirm();
 
   const startSession = useStartSession();
@@ -25,17 +19,11 @@ export function useChatSidebarActions() {
   const deleteSession = useDeleteSession();
 
   const handleNewChat = useCallback(async () => {
-    // Route to /ai-chat without sessionId
-    // Session will be created on first message submission
-    setActiveSessionId(null);
     router.push("/dashboard/ai-chat" as Route);
-  }, [router, setActiveSessionId]);
+  }, [router]);
 
   const handleSelectSession = useCallback(
     (sessionId: string, contextType?: string, topic?: string) => {
-      setActiveSessionId(sessionId);
-
-      // Build URL with optional query params
       const params = new URLSearchParams();
       if (contextType && contextType !== "general") {
         params.append("context", contextType);
@@ -45,12 +33,10 @@ export function useChatSidebarActions() {
       }
 
       const queryString = params.toString();
-      const url = `/dashboard/ai-chat/${sessionId}${
-        queryString ? `?${queryString}` : ""
-      }`;
+      const url = `/dashboard/ai-chat/${sessionId}${queryString ? `?${queryString}` : ""}`;
       router.push(url as Route);
     },
-    [router, setActiveSessionId],
+    [router],
   );
 
   const handleArchive = useCallback(
@@ -67,9 +53,7 @@ export function useChatSidebarActions() {
         archiveSession.mutate(
           { sessionId },
           {
-            onSuccess: () => {
-              toast.success("Conversation archived");
-            },
+            onSuccess: () => toast.success("Conversation archived"),
             onError: (error) => {
               const message =
                 error instanceof Error ? error.message : "Failed to archive";
@@ -98,9 +82,8 @@ export function useChatSidebarActions() {
           {
             onSuccess: () => {
               toast.success("Conversation deleted");
-              // If the deleted session was active, navigate away
+              // If the deleted session was active, navigate to base route
               if (activeSessionId === sessionId) {
-                setActiveSessionId(null);
                 router.push("/dashboard/ai-chat" as Route);
               }
             },
@@ -113,7 +96,7 @@ export function useChatSidebarActions() {
         );
       }
     },
-    [deleteSession, activeSessionId, setActiveSessionId, router, confirm],
+    [deleteSession, activeSessionId, router, confirm],
   );
 
   return {

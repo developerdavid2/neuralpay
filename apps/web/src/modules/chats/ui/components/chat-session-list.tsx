@@ -1,5 +1,3 @@
-"use client";
-
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import type { ChatSession } from "@neuralpay/types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";

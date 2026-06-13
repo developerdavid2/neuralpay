@@ -1,5 +1,3 @@
-"use client";
-
 import { PremiumButton } from "@/components/premium-button";
 import { Loader2, MessageSquare, Plus } from "lucide-react";
 

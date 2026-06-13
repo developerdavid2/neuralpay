@@ -1,5 +1,3 @@
-"use client";
-
 import { Search, X } from "lucide-react";
 import { Input } from "@neuralpay/ui/components/input";
 import { Button } from "@neuralpay/ui/components/button";

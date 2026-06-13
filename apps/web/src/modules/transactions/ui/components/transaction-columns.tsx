@@ -136,7 +136,7 @@ export function transactionColumns({
       ),
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground">
-          {row.original.customCategoryName ??
+          {row.original.category ??
             CATEGORY_LABELS[row.original.category ?? "other"] ??
             "Other"}
         </span>

@@ -66,7 +66,7 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
             {sessionData?.session.title ?? "Chat"}
           </h2>
           {sessionData?.session.contextType !== "general" && (
-            <ChatContextPill />
+            <ChatContextPill sessionId={sessionId} />
           )}
         </div>
       </header>

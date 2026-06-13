@@ -1,4 +1,3 @@
-// chats-sidebar-panel.tsx
 "use client";
 
 import { useSessions } from "@/modules/chats/hooks/queries/use-sessions";
