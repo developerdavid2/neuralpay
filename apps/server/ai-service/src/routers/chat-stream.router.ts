@@ -23,24 +23,27 @@ export async function chatStreamHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  let userId = req.headers["x-user-id"] as string | undefined;
+  // Always authenticate via session first - never trust client headers for auth
+  let userId: string | undefined;
+  let planTier: string = "free"; // safe default
 
-  if (!userId) {
-    try {
-      const headers = fromNodeHeaders(req.headers);
-      const session = await auth.api.getSession({ headers });
-      userId = session?.user?.id;
-    } catch {
-      // session validation failed
+  try {
+    const headers = fromNodeHeaders(req.headers);
+    const session = await auth.api.getSession({ headers });
+
+    if (!session?.user?.id) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
     }
-  }
 
-  if (!userId) {
+    userId = session.user.id;
+    // Derive planTier from authenticated session (from @neuralpay/auth schema)
+    planTier = (session.user as any).planTier ?? "free";
+  } catch {
+    // Auth validation failed - return 401
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-
-  const planTier = (req.headers["x-user-plan"] as string) ?? "free";
 
   const parseResult = streamRequestSchema.safeParse(req.body);
   if (!parseResult.success) {

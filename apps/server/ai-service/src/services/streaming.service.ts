@@ -342,6 +342,9 @@ export async function handleStreamChat(
       };
     }
 
+    // Use the resolved session ID from the result
+    const resolvedSessionId = sessionResult.data.id;
+
     const quotaResult = await AICoachService.checkQuota(userId, planTier);
     if (!quotaResult.success) {
       return {
@@ -353,7 +356,7 @@ export async function handleStreamChat(
 
     // 2. Save user message FIRST
     const userMessageResult = await AICoachService.saveMessage(
-      sessionId,
+      resolvedSessionId,
       userId,
       "user",
       content,
@@ -374,7 +377,7 @@ export async function handleStreamChat(
     );
 
     // 4. Fetch conversation history
-    const history = await fetchMessageHistory(sessionId, userId);
+    const history = await fetchMessageHistory(resolvedSessionId, userId);
 
     // 5. Build system prompt
     const systemPrompt = buildSystemPrompt(
@@ -395,7 +398,7 @@ export async function handleStreamChat(
         });
 
         await AICoachService.saveMessage(
-          sessionId,
+          resolvedSessionId,
           userId,
           "assistant",
           text,

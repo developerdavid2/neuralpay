@@ -10,7 +10,6 @@ import { chatStreamHandler } from "./routers/chat-stream.router";
 const PORT = Number(aiServiceEnv.PORT) || 4003;
 const app = createExpressApp({ serviceName: "ai-service", port: PORT });
 
-// ── tRPC (CRUD routes) ──
 app.use(
   "/trpc",
   trpcExpress.createExpressMiddleware({
@@ -24,7 +23,6 @@ app.use(
   }),
 );
 
-// ── AI Chat Streaming (dedicated HTTP endpoint) ──
 // Must be after body-parser middleware (usually in createExpressApp)
 app.post("/chat/stream", chatStreamHandler);
 

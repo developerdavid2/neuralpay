@@ -14,17 +14,25 @@ import { DebouncedSearchInput } from "@/components/debounced-search-input";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { CHAT_SESSIONS_LIMIT } from "@/modules/chats/constants";
 
-function ChatSessionListSection() {
+function ChatSessionListSection({
+  handleSelectSession,
+  handleArchive,
+  handleDelete,
+  isArchiving,
+  isDeleting,
+}: {
+  handleSelectSession: (
+    sessionId: string,
+    contextType?: string,
+    topic?: string,
+  ) => void;
+  handleArchive: (sessionId: string, title: string) => void;
+  handleDelete: (sessionId: string, title: string) => void;
+  isArchiving: boolean;
+  isDeleting: boolean;
+}) {
   const { currentSearch, currentTopic, currentIncludeArchived } =
     useChatFilters();
-
-  const {
-    handleSelectSession,
-    handleArchive,
-    handleDelete,
-    isArchiving,
-    isDeleting,
-  } = useChatSidebarActions();
 
   const {
     sessions,
@@ -83,7 +91,16 @@ export const ChatsSidebarPanel = () => {
     hasActiveFilters,
   } = useChatFilters();
 
-  const { ConfirmDialog, handleNewChat, isCreating } = useChatSidebarActions();
+  const {
+    ConfirmDialog,
+    handleNewChat,
+    isCreating,
+    handleSelectSession,
+    handleArchive,
+    handleDelete,
+    isArchiving,
+    isDeleting,
+  } = useChatSidebarActions();
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -115,7 +132,13 @@ export const ChatsSidebarPanel = () => {
           fallback={<ChatSessionListSkeleton />}
           errorMessage="Could not load conversations"
         >
-          <ChatSessionListSection />
+          <ChatSessionListSection
+            handleSelectSession={handleSelectSession}
+            handleArchive={handleArchive}
+            handleDelete={handleDelete}
+            isArchiving={isArchiving}
+            isDeleting={isDeleting}
+          />
         </SectionBoundary>
       </div>
 

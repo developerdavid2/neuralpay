@@ -16,8 +16,8 @@ const app = createExpressApp({
   port: PORT,
   allowedOrigins: [gatewayEnv.CORS_ORIGIN],
   beforeBodyParser: (app) => {
-    // Streaming proxy MUST be registered before body parser
-    // express.json() consumes the raw stream, breaking http-proxy-middleware
+    // Keep stream route before body parser, but enforce auth first
+    app.use("/chat/stream", authMiddleware);
     mountStreamingProxy(app);
   },
 });
@@ -25,7 +25,7 @@ const app = createExpressApp({
 app.use(requestLogger);
 app.use("/auth/polar", toNodeHandler(auth));
 app.use(authMiddleware);
-mountProxies(app); // auth + tRPC proxies (body already parsed here, that's fine)
+mountProxies(app);
 
 app.use(errorHandler);
 
