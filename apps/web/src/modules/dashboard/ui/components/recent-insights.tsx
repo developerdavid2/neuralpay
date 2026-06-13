@@ -1,16 +1,14 @@
 "use client";
 
-import Link from "next/link";
-
-import { useRecentInsights } from "@/hooks/insights/use-insights";
-
+import { useRecentInsightNavigation } from "@/modules/insights/hooks/mutations/use-recent-insight-navigation";
+import { useRecentInsights } from "@/modules/insights/hooks/queries/use-recent-insights";
 import {
   EmptyState,
   InsightCard,
   InsightsSkeleton,
 } from "@/modules/insights/ui/components/insight-card";
 import { ArrowUpRight } from "lucide-react";
-import { useRecentInsightNavigation } from "@/hooks/insights/use-recent-insight-navigation";
+import Link from "next/link";
 
 export function RecentInsights() {
   const { insights, isLoading } = useRecentInsights();

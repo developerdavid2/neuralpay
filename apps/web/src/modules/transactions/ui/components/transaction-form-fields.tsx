@@ -1,5 +1,3 @@
-"use client";
-
 import { AmountInput } from "@/components/amount-input";
 import { DatePicker } from "@/components/date-picker";
 import { SearchableCombobox } from "@/components/searchable-combobox";

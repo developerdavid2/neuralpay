@@ -1,12 +1,7 @@
-// modules/accounts/ui/account-view-drawer.tsx
-"use client";
-
-import { useAccountDrawer } from "@/hooks/accounts/use-account-drawer";
-import { useAccountMutations } from "@/hooks/accounts/use-account-mutations";
-import { useAccountPendingSelectors } from "@/hooks/accounts/use-account-pending";
-import { useAccountDetail } from "@/hooks/accounts/use-account-detail";
 import { useConfirm } from "@/hooks/use-confirm";
 import { formatAmount } from "@/lib/utils";
+import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
+import { useAccountPendingSelectors } from "@/modules/accounts/store/use-account-pending";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   Drawer,
@@ -33,8 +28,10 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
+import { useAccountDetail } from "../../hooks/queries/use-account-detail";
+import { useAccountDrawer } from "../../store/use-account-drawer";
 import { AccountStatusBadge, AccountTypeBadge } from "./account-badges";
-import { useAccountUrlSync } from "@/hooks/accounts/use-account-url-sync";
 
 function DetailField({
   label,

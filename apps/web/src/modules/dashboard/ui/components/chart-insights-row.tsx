@@ -1,4 +1,3 @@
-// components/chart-insights-row.tsx
 "use client";
 
 import { useRef, useState, useEffect } from "react";

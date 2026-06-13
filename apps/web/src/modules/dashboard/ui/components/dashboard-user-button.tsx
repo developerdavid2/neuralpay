@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { ChevronUp, CreditCard, Loader2, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, LogOut, CreditCard, ChevronUp } from "lucide-react";
 
+import { authClient } from "@/lib/auth-client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@neuralpay/ui/components/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,22 +30,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@neuralpay/ui/components/sidebar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@neuralpay/ui/components/alert-dialog";
-import { Button } from "@neuralpay/ui/components/button";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { authClient } from "@/lib/auth-client";
 
 export function DashboardUserButton() {
   const { data: session, isPending } = authClient.useSession();
+
   const { state } = useSidebar();
   const router = useRouter();
 

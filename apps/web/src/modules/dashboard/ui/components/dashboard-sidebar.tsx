@@ -15,11 +15,11 @@ import {
 } from "@neuralpay/ui/components/sidebar";
 
 import { NeuralPayLogo } from "@/components/logo";
+import { cn } from "@neuralpay/ui/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navGroups } from "../../constants";
 import { DashboardUserButton } from "./dashboard-user-button";
-import { cn } from "@neuralpay/ui/lib/utils";
 
 export const DashboardSidebar = () => {
   const pathname = usePathname();

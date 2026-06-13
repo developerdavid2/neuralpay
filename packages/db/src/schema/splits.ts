@@ -30,6 +30,10 @@ export const splits = pgTable("splits", {
   status: splitStatusEnum("status").default("open"),
   settledAt: timestamp("settled_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 export const splitParticipants = pgTable("split_participants", {
@@ -44,6 +48,10 @@ export const splitParticipants = pgTable("split_participants", {
   paid: boolean("paid").default(false),
   paidAt: timestamp("paid_at"),
   notes: text("notes"),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 export const splitChatMessages = pgTable("split_chat_messages", {
@@ -59,4 +67,8 @@ export const splitChatMessages = pgTable("split_chat_messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   editedAt: timestamp("edited_at"),
   deletedAt: timestamp("deleted_at"),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });

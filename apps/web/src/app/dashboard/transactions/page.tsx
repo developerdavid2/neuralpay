@@ -77,7 +77,9 @@ export default async function Page({ searchParams }: PageProps) {
 
   if (params.focus) {
     void prefetch(
-      trpc.payments.transactions.getById.queryOptions({ id: params.focus }),
+      trpc.payments.transactions.getById.queryOptions({
+        transactionId: params.focus,
+      }),
     );
   }
 

@@ -2,14 +2,14 @@
 
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { InfiniteScroll } from "@/components/infinite-scroll";
-import { useTransactionDrawer } from "@/hooks/transactions/use-transaction-drawer";
-import { useTransactionFilters } from "@/hooks/transactions/use-transaction-filters";
-import { useTransactionMutations } from "@/hooks/transactions/use-transaction-mutations";
-import { useTransactionPendingSelectors } from "@/hooks/transactions/use-transaction-pending";
-import { useTransactionUrlSync } from "@/hooks/transactions/use-transaction-url-sync";
-import { useTransactionsList } from "@/hooks/transactions/use-transactions";
 import { useConfirm } from "@/hooks/use-confirm";
+import { useQueryParam } from "@/hooks/use-query-param";
 import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
+import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
+import { useTransactionsList } from "@/modules/transactions/hooks/queries/use-transactions";
+import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
+import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
+import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
 import type {
   Transaction,
   TransactionCategory,
@@ -20,10 +20,10 @@ import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Table } from "@neuralpay/ui/components/table";
 import { Package } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTransactionDrawer } from "../../store/use-transaction-drawer";
 import { TransactionFormDrawer } from "./transaction-form-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
 import { TransactionViewDrawer } from "./transaction-view-drawer";
-import { useQueryParam } from "@/hooks/use-query-param";
 
 interface Props {
   focusTransactionId?: string;

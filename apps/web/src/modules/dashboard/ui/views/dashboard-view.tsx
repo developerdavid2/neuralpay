@@ -1,6 +1,7 @@
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
 
+import { ChartInsightsRow } from "../components/chart-insights-row";
 import {
   RecentInsights,
   RecentInsightsSkeleton,
@@ -18,7 +19,6 @@ import {
   TopCategoriesCard,
   TopCategoriesSkeleton,
 } from "../components/top-monthly-categories";
-import { ChartInsightsRow } from "../components/chart-insights-row";
 
 export function DashboardView() {
   return (

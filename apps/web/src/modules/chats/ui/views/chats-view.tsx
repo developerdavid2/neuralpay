@@ -1,0 +1,15 @@
+import { NewChatConversationArea } from "../components/new-chat-conversation-area";
+
+export const ChatsView = () => {
+  return (
+    <div className="flex w-full flex-col items-center justify-center gap-6 px-4 h-full">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-semibold">What can I help you with?</h1>
+        <p className="text-sm text-muted-foreground">
+          Ask me anything about your finances, budgets, or transactions.
+        </p>
+      </div>
+      <NewChatConversationArea />
+    </div>
+  );
+};

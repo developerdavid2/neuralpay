@@ -174,7 +174,7 @@ export const TransactionsService = {
 
       return {
         success: true,
-        data: { items: items as Transaction[], nextCursor },
+        data: { items: items, nextCursor },
       };
     } catch (err) {
       console.error("[TransactionsService.list]", err);
@@ -200,7 +200,7 @@ export const TransactionsService = {
         .orderBy(desc(transactions.date))
         .limit(limit);
 
-      return { success: true, data: rows as Transaction[] };
+      return { success: true, data: rows };
     } catch (err) {
       console.error("[TransactionsService.recent]", err);
       return {
@@ -230,7 +230,7 @@ export const TransactionsService = {
           error: "Transaction not found",
           code: "NOT_FOUND",
         };
-      return { success: true, data: row as Transaction };
+      return { success: true, data: row };
     } catch (err) {
       console.error("[TransactionsService.getById]", err);
       return {

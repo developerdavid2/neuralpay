@@ -1,6 +1,5 @@
 "use client";
 
-import { useRecentTransactions } from "@/hooks/transactions/use-transactions";
 import { formatAmount } from "@/lib/utils";
 import type { Transaction } from "@neuralpay/types";
 import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
@@ -10,6 +9,7 @@ import { ArrowUpRight, Package } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { CATEGORY_ICONS, CATEGORY_LABELS } from "../../constants";
+import { useRecentTransactions } from "@/modules/transactions/hooks/queries/use-recent-transactions";
 
 function TransactionIcon({ category }: { category: string | null }) {
   const Icon = CATEGORY_ICONS[category ?? "other"] ?? Package;

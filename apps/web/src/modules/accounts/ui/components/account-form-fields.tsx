@@ -1,5 +1,3 @@
-"use client";
-
 import { AmountInput } from "@/components/amount-input";
 import {
   Field,

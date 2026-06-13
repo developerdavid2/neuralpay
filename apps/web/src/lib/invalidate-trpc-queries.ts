@@ -36,7 +36,24 @@ export async function invalidateTransactionQueries(queryClient: QueryClient) {
   ]);
 }
 
-// CHANGE invalidateInsightsQueries too:
 export async function invalidateInsightsQueries(queryClient: QueryClient) {
   await invalidateTRPCQueries(queryClient, ["ai", "insights"]);
+}
+export async function invalidateChatQueries(queryClient: QueryClient) {
+  await invalidateTRPCQueries(queryClient, ["ai", "coach", "sessions"]);
+}
+
+export async function invalidateChatSessionQueries(
+  queryClient: QueryClient,
+  sessionId: string,
+) {
+  await Promise.all([
+    invalidateTRPCQueries(queryClient, [
+      "ai",
+      "coach",
+      "sessionById",
+      sessionId,
+    ]),
+    invalidateTRPCQueries(queryClient, ["ai", "coach", "messages", sessionId]),
+  ]);
 }

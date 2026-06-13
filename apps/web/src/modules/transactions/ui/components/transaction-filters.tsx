@@ -2,7 +2,7 @@
 
 import { DateRangePicker } from "@/components/date-range-picker";
 import { DebouncedSearchInput } from "@/components/debounced-search-input";
-import { useTransactionFilters } from "@/hooks/transactions/use-transaction-filters";
+import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
 import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
 import {
   TRANSACTION_STATUS_LABELS,

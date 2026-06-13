@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
+@source "../../node_modules/streamdown/dist/*.js";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -188,5 +189,14 @@
       var(--muted-foreground) 50%,
       transparent
     );
+  }
+
+  [role="log"] > div {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  [role="log"] > div::-webkit-scrollbar {
+    display: none !important;
   }
 }

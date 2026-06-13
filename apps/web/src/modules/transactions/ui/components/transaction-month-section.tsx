@@ -1,4 +1,3 @@
-// modules/transactions/ui/transaction-month-section.tsx
 "use client";
 
 import { DataTable } from "@/components/data-table/data-table";

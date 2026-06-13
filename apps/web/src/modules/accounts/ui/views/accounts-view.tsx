@@ -1,12 +1,11 @@
 import { DashboardHeader } from "@/components/dashboard-header";
+import { SectionBoundary } from "@/components/section-boundary";
+import { AccountFilters } from "../components/account-filters";
+import { AccountsList, AccountsListSkeleton } from "../components/account-list";
 import {
   AccountTypeCardsSkeleton,
   AccountTypeCardsView,
 } from "./account-type-cards-view";
-import { SectionBoundary } from "@/components/section-boundary";
-import { AccountsList, AccountsListSkeleton } from "../components/account-list";
-import { AccountFilters } from "../components/account-filters";
-import { NewAccountButton } from "./../components/new-account-button";
 
 interface AccountsViewProps {
   search?: string;

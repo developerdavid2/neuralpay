@@ -123,7 +123,6 @@ export type Transaction = {
   type: TransactionType;
   status: TransactionStatus | null;
   category: TransactionCategory | null;
-  customCategoryId: string | null;
   merchant: string | null;
   date: Date;
   isAnomaly: boolean;
@@ -141,9 +140,6 @@ export type Transaction = {
   currency: string | null;
   maskedNumber: string | null;
   // Joined from customCategories
-  customCategoryName: string | null;
-  customCategoryIcon: string | null;
-  customCategoryColor: string | null;
 };
 export type PaginatedTransactions = {
   items: Transaction[];

@@ -19,8 +19,8 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
-import { SourceBadge, StatusBadge } from "./transaction-badges";
 import { isSyncedSource } from "../../lib/utils";
+import { SourceBadge, StatusBadge } from "./transaction-badges";
 
 interface ColumnProps {
   onView: (tx: Transaction) => void;
@@ -136,7 +136,7 @@ export function transactionColumns({
       ),
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground">
-          {row.original.customCategoryName ??
+          {row.original.category ??
             CATEGORY_LABELS[row.original.category ?? "other"] ??
             "Other"}
         </span>

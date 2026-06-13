@@ -9,6 +9,7 @@ interface InfiniteScrollProps {
   isFetchingNextPage: boolean;
   fetchNextPage: () => void;
   isLoading?: boolean;
+  hideEndMessage?: boolean;
 }
 
 export const InfiniteScroll = ({
@@ -17,6 +18,7 @@ export const InfiniteScroll = ({
   isFetchingNextPage,
   fetchNextPage,
   isLoading = false,
+  hideEndMessage,
 }: InfiniteScrollProps) => {
   const { targetRef, isIntersecting } = useIntersectionObserver({
     threshold: 0.5,
@@ -54,11 +56,11 @@ export const InfiniteScroll = ({
             "Load more"
           )}
         </Button>
-      ) : (
+      ) : !hideEndMessage ? (
         <p className="text-xs text-muted-foreground">
           You have reached the end of the list
         </p>
-      )}
+      ) : null}
     </div>
   );
 };

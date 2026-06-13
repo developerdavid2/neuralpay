@@ -1,7 +1,6 @@
 "use client";
 
 import { DebouncedSearchInput } from "@/components/debounced-search-input";
-import { useAccountFilters } from "@/hooks/accounts/use-account-filters";
 
 import { Badge } from "@neuralpay/ui/components/badge";
 import { Button } from "@neuralpay/ui/components/button";
@@ -15,8 +14,9 @@ import {
 } from "@neuralpay/ui/components/sheet";
 import { Switch } from "@neuralpay/ui/components/switch";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { Filter, SlidersHorizontal, Tag, AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, Filter, SlidersHorizontal, Tag, X } from "lucide-react";
 import { ACCOUNT_STATUS_CONFIG, ACCOUNT_TYPE_CONFIG } from "../../constants";
+import { useAccountFilters } from "../../hooks/use-account-filters";
 
 export function AccountFilters() {
   const {

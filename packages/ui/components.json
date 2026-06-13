@@ -11,14 +11,16 @@
     "prefix": ""
   },
   "iconLibrary": "lucide",
+  "menuColor": "default",
+  "menuAccent": "subtle",
   "aliases": {
     "components": "@neuralpay/ui/components",
     "utils": "@neuralpay/ui/lib/utils",
-    "hooks": "@neuralpay/ui/hooks",
+    "ui": "@neuralpay/ui/components",
     "lib": "@neuralpay/ui/lib",
-    "ui": "@neuralpay/ui/components"
+    "hooks": "@neuralpay/ui/hooks"
   },
-  "menuColor": "default",
-  "menuAccent": "subtle",
-  "registries": {}
+  "registries": {
+    "@ai-elements": "https://ai-sdk.dev/elements/api/registry/{name}.json"
+  }
 }

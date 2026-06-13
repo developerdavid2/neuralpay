@@ -48,10 +48,10 @@ export const transactionsRouter = router({
     }),
 
   getById: protectedProcedure
-    .input(z.object({ id: z.uuid() }))
+    .input(z.object({ transactionId: z.uuid() }))
     .query(async ({ ctx, input }) => {
       const result = await TransactionsService.getById(
-        input.id,
+        input.transactionId,
         ctx.session.user.id,
       );
       if (!result.success)

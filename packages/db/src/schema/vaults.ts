@@ -35,6 +35,10 @@ export const vaults = pgTable("vaults", {
   color: text("color"),
   isPublic: boolean("is_public").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 export const vaultMembers = pgTable("vault_members", {
@@ -45,8 +49,12 @@ export const vaultMembers = pgTable("vault_members", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  role: text("role").notNull().default("contributor"), // owner, contributor
+  role: text("role").notNull().default("contributor"),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 export const vaultContributions = pgTable("vault_contributions", {
@@ -60,7 +68,10 @@ export const vaultContributions = pgTable("vault_contributions", {
   amount: decimal("amount", { precision: 18, scale: 2 }).notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 export const vaultInvitations = pgTable("vault_invitations", {
@@ -74,4 +85,8 @@ export const vaultInvitations = pgTable("vault_invitations", {
     .references(() => user.id),
   status: text("status").notNull().default("pending"),
   respondedAt: timestamp("responded_at"),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
