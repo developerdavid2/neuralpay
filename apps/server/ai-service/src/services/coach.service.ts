@@ -110,16 +110,15 @@ export const AICoachService = {
           .limit(1);
 
         if (cursorRow) {
-          const cursorRowCondition = or(
-            sql`${chatSessions.updatedAt} < ${cursorRow.updatedAt}`,
-            and(
-              eq(chatSessions.updatedAt, cursorRow.updatedAt),
-              sql`${chatSessions.id} < ${cursorRow.id}`,
-            ),
+          conditions.push(
+            or(
+              sql`${chatSessions.updatedAt} < ${cursorRow.updatedAt.toISOString()}`,
+              and(
+                sql`${chatSessions.updatedAt} = ${cursorRow.updatedAt.toISOString()}`,
+                sql`${chatSessions.id} < ${cursorRow.id}`,
+              ),
+            )!,
           );
-          if (cursorRowCondition) {
-            conditions.push(cursorRowCondition);
-          }
         }
       }
 
@@ -278,28 +277,29 @@ export const AICoachService = {
         };
       }
 
-      // Cursor-based pagination: decode cursor to get the ID
       if (cursor) {
         const cursorId = Buffer.from(cursor, "base64").toString("utf-8");
         const [cursorRow] = await db
-          .select({ id: chatMessages.id, updatedAt: chatSessions.updatedAt })
-          .from(chatSessions)
+          .select({ id: chatMessages.id, createdAt: chatMessages.createdAt })
+          .from(chatMessages)
           .where(
-            and(eq(chatSessions.id, cursorId), eq(chatSessions.userId, userId)),
+            and(
+              eq(chatMessages.id, cursorId),
+              eq(chatMessages.sessionId, sessionId),
+            ),
           )
           .limit(1);
 
         if (cursorRow) {
-          const cursorRowCondition = or(
-            sql`${chatMessages.updatedAt} < ${cursorRow.updatedAt}`,
-            and(
-              eq(chatMessages.updatedAt, cursorRow.updatedAt),
-              sql`${chatMessages.id} < ${cursorRow.id}`,
-            ),
+          conditions.push(
+            or(
+              sql`${chatMessages.createdAt} < ${cursorRow.createdAt.toISOString()}`,
+              and(
+                sql`${chatMessages.createdAt} = ${cursorRow.createdAt.toISOString()}`,
+                sql`${chatMessages.id} < ${cursorRow.id}`,
+              ),
+            )!,
           );
-          if (cursorRowCondition) {
-            conditions.push(cursorRowCondition);
-          }
         }
       }
 
@@ -307,13 +307,13 @@ export const AICoachService = {
         .select()
         .from(chatMessages)
         .where(and(...conditions))
-        .orderBy(chatMessages.createdAt)
+        .orderBy(desc(chatMessages.createdAt))
         .limit(limit + 1);
 
       const hasMore = result.length > limit;
-      const items = result.slice(0, limit);
+      const items = result.slice(0, limit).reverse();
       const nextCursor = hasMore
-        ? Buffer.from(items[items.length - 1]!.id).toString("base64")
+        ? Buffer.from(items[0]!.id).toString("base64")
         : null;
 
       return {

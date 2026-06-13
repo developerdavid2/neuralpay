@@ -3,10 +3,6 @@ import { devtools } from "zustand/middleware";
 import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
 
 interface ChatUIState {
-  // Active session
-  activeSessionId: string | null;
-  setActiveSessionId: (id: string | null) => void;
-
   // Sidebar
   sessionSidebarOpen: boolean;
   setSessionSidebarOpen: (open: boolean) => void;
@@ -31,10 +27,6 @@ interface ChatUIState {
 export const useChatStore = create<ChatUIState>()(
   devtools(
     (set) => ({
-      // Active session
-      activeSessionId: null,
-      setActiveSessionId: (id) => set({ activeSessionId: id }),
-
       // Sidebar
       sessionSidebarOpen: true,
       setSessionSidebarOpen: (open) => set({ sessionSidebarOpen: open }),

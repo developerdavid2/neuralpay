@@ -1,11 +1,7 @@
 "use client";
 
 import { formatDate } from "@/lib/utils";
-import type {
-  ChatContextType,
-  ChatSession,
-  ChatTopicType,
-} from "@neuralpay/types";
+import type { ChatSession } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   DropdownMenu,
@@ -15,24 +11,8 @@ import {
 } from "@neuralpay/ui/components/dropdown-menu";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
-import {
-  Archive,
-  Loader2,
-  MoreVertical,
-  PiggyBank,
-  Sparkles,
-  Trash2,
-  TrendingUp,
-  Wallet,
-} from "lucide-react";
+import { Archive, Loader2, MoreVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
-
-const topicIcons: Record<ChatTopicType, React.ReactNode> = {
-  budgeting: <Wallet className="size-3" />,
-  spending: <TrendingUp className="size-3" />,
-  savings: <PiggyBank className="size-3" />,
-  general: <Sparkles className="size-3" />,
-};
 
 interface ChatSessionItemProps {
   session: ChatSession;
@@ -53,7 +33,6 @@ export function ChatSessionItem({
   onArchive,
   onDelete,
 }: ChatSessionItemProps) {
-  // Track if this specific row is being archived or deleted
   const [isThisRowDeleting, setIsThisRowDeleting] = useState(false);
   const [isThisRowArchiving, setIsThisRowArchiving] = useState(false);
 
@@ -63,7 +42,6 @@ export function ChatSessionItem({
     e.stopPropagation();
     setIsThisRowArchiving(true);
     onArchive(session.id, session.title);
-    // Reset after a short delay to allow optimistic updates
     setTimeout(() => setIsThisRowArchiving(false), 500);
   };
 
@@ -71,7 +49,6 @@ export function ChatSessionItem({
     e.stopPropagation();
     setIsThisRowDeleting(true);
     onDelete(session.id, session.title);
-    // Reset after a short delay to allow optimistic updates
     setTimeout(() => setIsThisRowDeleting(false), 500);
   };
 

@@ -1,21 +1,21 @@
 "use client";
 
+import type { ChatContextType } from "@neuralpay/types";
 import {
   Suggestion,
   Suggestions,
 } from "@neuralpay/ui/components/ai-elements/suggestion";
 import { useMemo, type ElementType } from "react";
-import type { ChatContextType } from "@neuralpay/types";
 import { contextSuggestions } from "../../constants";
 import { useSessionDetails } from "../../hooks/queries/use-session-details";
 import { useChatStore } from "../../store/use-chat-store";
+import { useParams } from "next/navigation";
 
 interface ChatSuggestionsProps {
   onSuggestionClick: (text: string) => void;
   suggestions?: Array<{ text: string; icon: ElementType }>;
 }
 
-// Inner component — only rendered when sessionId exists
 function SessionSuggestions({
   sessionId,
   onSuggestionClick,
@@ -39,7 +39,6 @@ function SessionSuggestions({
   );
 }
 
-// Pure render component
 function SuggestionsList({
   suggestions,
   onSuggestionClick,
@@ -72,7 +71,8 @@ export function ChatSuggestions({
   onSuggestionClick,
   suggestions: propSuggestions,
 }: ChatSuggestionsProps) {
-  const { activeSessionId } = useChatStore();
+  const params = useParams();
+  const activeSessionId = params.sessionId as string | undefined;
 
   // Prop suggestions take priority — no session needed
   if (propSuggestions) {

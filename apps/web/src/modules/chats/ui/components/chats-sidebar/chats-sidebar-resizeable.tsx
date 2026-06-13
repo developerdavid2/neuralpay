@@ -39,7 +39,10 @@ export function ChatsSidebarResizable({ children, sidebar }: Props) {
   };
 
   return (
-    <ResizablePanelGroup direction="horizontal" className="h-full flex-1">
+    <ResizablePanelGroup
+      direction="horizontal"
+      className="h-full flex-1 overflow-hidden"
+    >
       <ResizablePanel className="h-full" defaultSize={75}>
         {children}
       </ResizablePanel>

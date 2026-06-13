@@ -1,12 +1,13 @@
 // app/ai-chat/[sessionId]/page.tsx
-import { Suspense } from "react";
+import { CHAT_SESSION_MESSAGES } from "@/modules/chats/constants";
+import { ChatIdView } from "@/modules/chats/ui/views/chat-id-view";
 import {
   HydrateClient,
-  prefetchInfinite,
   prefetch,
+  prefetchInfinite,
   trpc,
 } from "@/trpc/trpc-server";
-import { ChatIdView } from "@/modules/chats/ui/views/chat-id-view";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 interface PageProps {
@@ -23,7 +24,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   );
   void prefetchInfinite(
     trpc.ai.coach.getMessages.infiniteQueryOptions(
-      { sessionId, limit: 30 },
+      { sessionId, limit: CHAT_SESSION_MESSAGES },
       { getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined },
     ),
   );

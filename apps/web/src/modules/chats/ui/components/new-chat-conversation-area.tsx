@@ -1,11 +1,11 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useStartSession } from "../../hooks/mutations/use-start-session";
-import { useCallback, useState } from "react";
 import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
+import { contextSuggestions } from "../../constants";
+import { useStartSession } from "../../hooks/mutations/use-start-session";
 import { ChatInput } from "./chat-input";
 import { ChatSuggestions } from "./chat-suggestions";
-import { contextSuggestions } from "../../constants";
 
 export const NewChatConversationArea = () => {
   const router = useRouter();

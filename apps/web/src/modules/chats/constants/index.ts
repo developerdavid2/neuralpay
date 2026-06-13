@@ -54,3 +54,6 @@ export const contextSuggestions: Record<ChatContextType, Suggestion[]> = {
     { text: "How does this affect my budget?", icon: Wallet },
   ],
 };
+
+export const CHAT_SESSIONS_LIMIT = 20;
+export const CHAT_SESSION_MESSAGES = 30;

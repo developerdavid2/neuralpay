@@ -1,3 +1,4 @@
+import { CHAT_SESSIONS_LIMIT } from "@/modules/chats/constants";
 import { ChatsView } from "@/modules/chats/ui/views/chats-view";
 import {
   HydrateClient,
@@ -30,7 +31,7 @@ export default async function Page({ searchParams }: PageProps) {
             | "general"
             | undefined) ?? undefined,
         includeArchived: params.includeArchived === "true",
-        limit: 20,
+        limit: CHAT_SESSIONS_LIMIT,
       },
       { getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined },
     ),

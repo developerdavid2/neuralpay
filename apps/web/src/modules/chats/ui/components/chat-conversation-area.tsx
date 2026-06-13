@@ -1,18 +1,17 @@
-// chat-conversation-area.tsx
 "use client";
 
-import { Bot, Loader2 } from "lucide-react";
+import { Bot } from "lucide-react";
 import { useSessionDetails } from "../../hooks/queries/use-session-details";
 import { useAIChat } from "../../hooks/use-ai-chat";
 import { ChatContextPill } from "./chat-context-pill";
 
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
 } from "@neuralpay/ui/components/ai-elements/conversation";
 import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
-import { Button } from "@neuralpay/ui/components/button";
 import { AlertCircle } from "lucide-react";
 import { useMessages } from "../../hooks/queries/use-messages";
 import { ChatInput } from "./chat-input";
@@ -43,7 +42,7 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMessages(sessionId);
+  } = useMessages(sessionId, 2);
 
   const {
     messages: streamingMessages,
@@ -51,11 +50,13 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     handleInputChange,
     handleSubmit,
     isLoading,
-    error,
   } = useAIChat({ sessionId, initialMessage });
 
   const persistedMessages =
-    messagesData?.pages.flatMap((page) => page.items) ?? [];
+    messagesData?.pages
+      .slice()
+      .reverse()
+      .flatMap((page) => page.items) ?? [];
 
   return (
     <>
@@ -73,28 +74,19 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
       <div className="flex h-full flex-col w-4xl mx-auto ">
         <Conversation className="flex-1 min-h-0">
           <ConversationContent className="p-4 space-y-4">
-            {hasNextPage && (
-              <div className="flex justify-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => fetchNextPage()}
-                  disabled={isFetchingNextPage}
-                >
-                  {isFetchingNextPage ? (
-                    <Loader2 className="mr-2 size-3 animate-spin" />
-                  ) : null}
-                  Load older messages
-                </Button>
-              </div>
-            )}
+            <InfiniteScroll
+              hasNextPage={hasNextPage ?? false}
+              isFetchingNextPage={isFetchingNextPage}
+              fetchNextPage={fetchNextPage}
+              isManual={false}
+              hideEndMessage
+              isLoading={false}
+            />
 
-            {/* Persisted messages from tRPC (history) */}
             {persistedMessages.map((message) => (
               <ChatMessageItem key={message.id} message={message} />
             ))}
 
-            {/* Live streaming messages from useChat */}
             {streamingMessages.map((message) => {
               const textContent = message.parts
                 .filter((p) => p.type === "text")
@@ -118,6 +110,7 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
               );
             })}
 
+            {/* Thinking indicator */}
             {isLoading &&
               streamingMessages[streamingMessages.length - 1]?.role ===
                 "user" && (

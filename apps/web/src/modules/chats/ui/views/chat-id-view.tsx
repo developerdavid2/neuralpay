@@ -7,7 +7,7 @@ interface Props {
 
 export const ChatIdView = ({ sessionId, initialMessage }: Props) => {
   return (
-    <div className="flex h-[calc(100vh-4rem)] w-full flex-col">
+    <div className="flex w-full flex-col h-full">
       <ChatConversationArea
         sessionId={sessionId}
         initialMessage={initialMessage}

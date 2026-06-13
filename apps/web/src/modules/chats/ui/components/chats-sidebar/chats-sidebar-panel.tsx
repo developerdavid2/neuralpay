@@ -13,6 +13,7 @@ import { ChatSidebarFilters } from "./chat-sidebar-filters";
 import { ChatSidebarHeader } from "./chat-sidebar-header";
 import { DebouncedSearchInput } from "@/components/debounced-search-input";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { CHAT_SESSIONS_LIMIT } from "@/modules/chats/constants";
 
 function ChatSessionListSection() {
   const { currentSearch, currentTopic, currentIncludeArchived } =
@@ -26,15 +27,18 @@ function ChatSessionListSection() {
     isDeleting,
   } = useChatSidebarActions();
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isRefetching } =
-    useSessions({
-      search: currentSearch || undefined,
-      topic: (currentTopic as ChatTopicType) || undefined,
-      includeArchived: currentIncludeArchived,
-      limit: 30,
-    });
-
-  const sessions = data?.pages.flatMap((page) => page.items) ?? [];
+  const {
+    sessions,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isRefetching,
+  } = useSessions({
+    search: currentSearch || undefined,
+    topic: (currentTopic as ChatTopicType) || undefined,
+    includeArchived: currentIncludeArchived,
+    limit: CHAT_SESSIONS_LIMIT,
+  });
 
   const handleSelectSessionWithParams = useCallback(
     (sessionId: string, contextType?: string, topic?: string) => {
@@ -43,7 +47,7 @@ function ChatSessionListSection() {
     [handleSelectSession],
   );
 
-  if (isRefetching) {
+  if (sessions.length === 0 && isRefetching) {
     return <ChatSessionListSkeleton />;
   }
 
@@ -83,10 +87,10 @@ export const ChatsSidebarPanel = () => {
   const { ConfirmDialog, handleNewChat, isCreating } = useChatSidebarActions();
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       <ChatSidebarHeader onNewChat={handleNewChat} isCreating={isCreating} />
 
-      <div className="px-3 py-2 border-b">
+      <div className="px-3 py-2 border-b shrink-0">
         <DebouncedSearchInput
           value={currentSearch}
           onSearch={updateSearch}
@@ -95,16 +99,18 @@ export const ChatsSidebarPanel = () => {
         />
       </div>
 
-      <ChatSidebarFilters
-        selectedTopic={currentTopic as ChatTopicType}
-        selectedContextType={currentContextType as ChatContextType}
-        onTopicChange={updateTopic}
-        onContextTypeChange={updateContextType}
-        onClearFilters={clearAllFilters}
-        hasActiveFilters={hasActiveFilters}
-      />
+      <div className="shrink-0">
+        <ChatSidebarFilters
+          selectedTopic={currentTopic as ChatTopicType}
+          selectedContextType={currentContextType as ChatContextType}
+          onTopicChange={updateTopic}
+          onContextTypeChange={updateContextType}
+          onClearFilters={clearAllFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
+      </div>
 
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto no-scrollbar min-h-0">
         <SectionBoundary
           key={`${currentSearch}-${currentTopic}-${currentContextType}-${currentIncludeArchived}`}
           fallback={<ChatSessionListSkeleton />}
