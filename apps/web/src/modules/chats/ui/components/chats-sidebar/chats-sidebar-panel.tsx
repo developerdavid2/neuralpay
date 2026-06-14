@@ -1,38 +1,36 @@
 "use client";
 
+import { DebouncedSearchInput } from "@/components/debounced-search-input";
+import { SectionBoundary } from "@/components/section-boundary";
+import { CHAT_SESSIONS_LIMIT } from "@/modules/chats/constants";
 import { useSessions } from "@/modules/chats/hooks/queries/use-sessions";
 import { useChatFilters } from "@/modules/chats/hooks/use-chat-filters";
 import { useChatSidebarActions } from "@/modules/chats/hooks/use-chat-sidebar-actions";
-import { SectionBoundary } from "@/components/section-boundary";
 import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { useCallback } from "react";
 import { ChatSessionList, ChatSessionListSkeleton } from "../chat-session-list";
 import { ChatSidebarEmpty } from "./chat-sidebar-empty";
 import { ChatSidebarFilters } from "./chat-sidebar-filters";
 import { ChatSidebarHeader } from "./chat-sidebar-header";
-import { DebouncedSearchInput } from "@/components/debounced-search-input";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { CHAT_SESSIONS_LIMIT } from "@/modules/chats/constants";
 
 function ChatSessionListSection({
   handleSelectSession,
-  handleArchive,
-  handleDelete,
-  isArchiving,
-  isDeleting,
+  handleNewChat,
 }: {
   handleSelectSession: (
     sessionId: string,
     contextType?: string,
     topic?: string,
   ) => void;
-  handleArchive: (sessionId: string, title: string) => void;
-  handleDelete: (sessionId: string, title: string) => void;
-  isArchiving: boolean;
-  isDeleting: boolean;
+  handleNewChat: () => void;
 }) {
-  const { currentSearch, currentTopic, currentIncludeArchived } =
-    useChatFilters();
+  const {
+    currentSearch,
+    currentTopic,
+    currentContextType,
+    currentIncludeArchived,
+  } = useChatFilters();
 
   const {
     sessions,
@@ -43,6 +41,7 @@ function ChatSessionListSection({
   } = useSessions({
     search: currentSearch || undefined,
     topic: (currentTopic as ChatTopicType) || undefined,
+    contextType: (currentContextType as ChatContextType) || undefined,
     includeArchived: currentIncludeArchived,
     limit: CHAT_SESSIONS_LIMIT,
   });
@@ -59,20 +58,15 @@ function ChatSessionListSection({
   }
 
   if (sessions.length === 0) {
-    return <ChatSidebarEmpty onNewChat={() => {}} />;
+    return <ChatSidebarEmpty onNewChat={handleNewChat} />;
   }
 
   return (
     <ChatSessionList
       sessions={sessions}
       onSelect={handleSelectSessionWithParams}
-      onArchive={(sessionId, title) => handleArchive(sessionId, title)}
-      onDelete={(sessionId, title) => handleDelete(sessionId, title)}
-      isArchiving={isArchiving}
-      isDeleting={isDeleting}
       hasNextPage={hasNextPage ?? false}
       isFetchingNextPage={isFetchingNextPage}
-      isRefetching={isRefetching}
       fetchNextPage={fetchNextPage}
     />
   );
@@ -91,16 +85,8 @@ export const ChatsSidebarPanel = () => {
     hasActiveFilters,
   } = useChatFilters();
 
-  const {
-    ConfirmDialog,
-    handleNewChat,
-    isCreating,
-    handleSelectSession,
-    handleArchive,
-    handleDelete,
-    isArchiving,
-    isDeleting,
-  } = useChatSidebarActions();
+  const { handleNewChat, isCreating, handleSelectSession } =
+    useChatSidebarActions();
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -134,15 +120,10 @@ export const ChatsSidebarPanel = () => {
         >
           <ChatSessionListSection
             handleSelectSession={handleSelectSession}
-            handleArchive={handleArchive}
-            handleDelete={handleDelete}
-            isArchiving={isArchiving}
-            isDeleting={isDeleting}
+            handleNewChat={handleNewChat}
           />
         </SectionBoundary>
       </div>
-
-      <ConfirmDialog />
     </div>
   );
 };

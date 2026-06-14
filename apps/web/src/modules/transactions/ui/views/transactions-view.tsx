@@ -5,12 +5,12 @@ import {
   validateTransactionStatuses,
   validateTransactionTypes,
 } from "../../lib/validate-transaction-enums";
+import { NewTransactionButton } from "../components/new-transaction-button";
 import { TransactionFilters } from "../components/transaction-filters";
 import {
   TransactionsList,
   TransactionsListSkeleton,
 } from "../components/transaction-list";
-import { NewTransactionButton } from "../components/new-transaction-button";
 
 interface TransactionsViewProps {
   search?: string;

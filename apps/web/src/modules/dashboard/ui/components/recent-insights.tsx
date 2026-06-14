@@ -1,6 +1,6 @@
 "use client";
 
-import { useRecentInsightNavigation } from "@/modules/insights/hooks/mutations/use-recent-insight-navigation";
+import { useRecentInsightNavigation } from "@/modules/dashboard/hooks/mutations/use-recent-insight-navigation";
 import { useRecentInsights } from "@/modules/insights/hooks/queries/use-recent-insights";
 import {
   EmptyState,

@@ -79,7 +79,7 @@ export function TransactionMonthSection({
   );
 
   return (
-    <div>
+    <>
       {/* Month Header — sticky at top: 0 */}
       <div className="sticky top-0 z-20 bg-accent/50 border-y border-border px-4 py-3 backdrop-blur-md">
         <div className="flex items-center justify-between">
@@ -114,6 +114,6 @@ export function TransactionMonthSection({
         onRowSelectionChange={handleSelectionChange}
         columnVisibility={columnVisibility}
       />
-    </div>
+    </>
   );
 }

@@ -2,43 +2,28 @@ import { InfiniteScroll } from "@/components/infinite-scroll";
 import type { ChatSession } from "@neuralpay/types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Calendar, Clock } from "lucide-react";
-import { groupSessionsByDate } from "../../lib/utils";
-import { useChatStore } from "../../store/use-chat-store";
-import { ChatSessionItem, ChatSessionItemSkeleton } from "./chat-session-item";
 import { useParams } from "next/navigation";
+import { groupSessionsByDate } from "../../lib/utils";
+import { ChatSessionItem, ChatSessionItemSkeleton } from "./chat-session-item";
 
 interface ChatSessionListProps {
   sessions: ChatSession[];
   onSelect: (sessionId: string, contextType?: string, topic?: string) => void;
-  onArchive: (sessionId: string, title: string) => void;
-  onDelete: (sessionId: string, title: string) => void;
   fetchNextPage: () => void;
-  isArchiving: boolean;
-  isDeleting: boolean;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
-  isRefetching: boolean;
 }
 
 export function ChatSessionList({
   sessions,
   onSelect,
-  onArchive,
-  onDelete,
-  isArchiving,
-  isDeleting,
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
-  isRefetching,
 }: ChatSessionListProps) {
   const params = useParams();
   const activeSessionId = params.sessionId as string | undefined;
   const { recent, earlier } = groupSessionsByDate(sessions);
-
-  if (isRefetching) {
-    return <ChatSessionListSkeleton />;
-  }
 
   return (
     <div className="px-2 py-1 space-y-3">
@@ -54,11 +39,7 @@ export function ChatSessionList({
                 key={session.id}
                 session={session}
                 isActive={activeSessionId === session.id}
-                isArchiving={isArchiving}
-                isDeleting={isDeleting}
                 onSelect={onSelect}
-                onArchive={onArchive}
-                onDelete={onDelete}
               />
             ))}
           </div>
@@ -77,11 +58,7 @@ export function ChatSessionList({
                 key={session.id}
                 session={session}
                 isActive={activeSessionId === session.id}
-                isArchiving={isArchiving}
-                isDeleting={isDeleting}
                 onSelect={onSelect}
-                onArchive={onArchive}
-                onDelete={onDelete}
               />
             ))}
           </div>
