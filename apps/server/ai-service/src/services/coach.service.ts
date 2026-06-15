@@ -171,9 +171,15 @@ export const AICoachService = {
         if (existing) {
           return { success: true, data: existing };
         }
+
+        return {
+          success: false,
+          error: "Session not found",
+          code: "NOT_FOUND",
+        };
       }
 
-      // 2. Create new session
+      // 2. Create new session (only when no sessionId was provided)
       const title = generateTitle(
         options.contextType ?? "general",
         options.contextId,

@@ -21,7 +21,6 @@ export function useDeleteSession() {
         invalidateChatQueries(queryClient),
       ]);
 
-      // Auto-redirect if we deleted the currently viewed session
       const sessionRoute = `/dashboard/ai-chat/${variables.sessionId}`;
       if (pathname?.startsWith(sessionRoute)) {
         router.push("/dashboard/ai-chat" as Route);

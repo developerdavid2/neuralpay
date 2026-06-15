@@ -12,13 +12,14 @@ import {
   ConversationScrollButton,
 } from "@neuralpay/ui/components/ai-elements/conversation";
 import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
-import { Button } from "@neuralpay/ui/components/button";
 import { AlertCircle, ArchiveRestore } from "lucide-react";
-import { toast } from "sonner";
-import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session";
 import { useMessages } from "../../hooks/queries/use-messages";
 import { ChatInput } from "./chat-input";
 import { ChatMessageItem } from "./chat-message-item";
+import { Button } from "@neuralpay/ui/components/button";
+import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session";
+import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface Props {
   sessionId: string;
@@ -55,6 +56,7 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     handleInputChange,
     handleSubmit,
     isLoading,
+    setMessages,
   } = useAIChat({ sessionId, initialMessage });
 
   const unarchiveSession = useUnarchiveSession();
@@ -104,31 +106,31 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
               <ChatMessageItem key={message.id} message={message} />
             ))}
 
-            {streamingMessages.map((message) => {
-              const textContent = message.parts
-                .filter((p) => p.type === "text")
-                .map((p) => (p as { type: "text"; text: string }).text)
-                .join("");
+            {!isArchived &&
+              streamingMessages.map((message) => {
+                const textContent = message.parts
+                  .filter((p) => p.type === "text")
+                  .map((p) => (p as { type: "text"; text: string }).text)
+                  .join("");
 
-              return (
-                <ChatMessageItem
-                  key={message.id}
-                  message={{
-                    id: message.id,
-                    role: message.role as "user" | "assistant",
-                    content: textContent,
-                    createdAt: new Date(),
-                    sessionId,
-                    userId: "",
-                    tokensUsed: null,
-                    metadata: null,
-                  }}
-                />
-              );
-            })}
+                return (
+                  <ChatMessageItem
+                    key={message.id}
+                    message={{
+                      id: message.id,
+                      role: message.role as "user" | "assistant",
+                      content: textContent,
+                      createdAt: new Date(),
+                      sessionId,
+                      userId: "",
+                      tokensUsed: null,
+                      metadata: null,
+                    }}
+                  />
+                );
+              })}
 
-            {/* Thinking indicator */}
-            {isLoading &&
+            {!isLoading &&
               streamingMessages[streamingMessages.length - 1]?.role ===
                 "user" && (
                 <div className="flex gap-3 flex-row">
@@ -148,7 +150,6 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
           <ConversationScrollButton />
         </Conversation>
 
-        {/* Archived banner OR input */}
         <div className="shrink-0 border-t p-4 pb-12 space-y-3">
           {isArchived ? (
             <div className="flex flex-col items-center gap-3 py-2">
