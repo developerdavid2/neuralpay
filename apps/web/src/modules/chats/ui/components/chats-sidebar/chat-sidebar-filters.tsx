@@ -1,6 +1,4 @@
 import {
-  CONTEXT_LABELS,
-  TOPIC_LABELS,
   CHAT_CONTEXT_TYPES,
   CHAT_TOPIC_TYPES,
 } from "@/modules/chats/constants";
@@ -14,7 +12,7 @@ import {
   SelectValue,
 } from "@neuralpay/ui/components/select";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { Filter, X } from "lucide-react";
+import { Archive, Filter, X } from "lucide-react";
 
 interface ChatSidebarFiltersProps {
   selectedTopic: ChatTopicType | "";
@@ -23,6 +21,8 @@ interface ChatSidebarFiltersProps {
   onContextTypeChange: (contextType: ChatContextType | "") => void;
   onClearFilters: () => void;
   hasActiveFilters: boolean;
+  archivedCount?: number;
+  onOpenArchive: () => void;
 }
 
 export function ChatSidebarFilters({
@@ -32,6 +32,8 @@ export function ChatSidebarFilters({
   onContextTypeChange,
   onClearFilters,
   hasActiveFilters,
+  archivedCount,
+  onOpenArchive,
 }: ChatSidebarFiltersProps) {
   return (
     <div className="px-3 py-2 border-b space-y-2">
@@ -99,6 +101,19 @@ export function ChatSidebarFilters({
           </Button>
         )}
       </div>
+
+      {archivedCount !== undefined && archivedCount > 0 && (
+        <button
+          onClick={onOpenArchive}
+          className="flex items-center gap-2 w-full px-2.5 py-2 rounded-lg text-xs text-muted-foreground hover:bg-muted/60 transition-colors"
+        >
+          <Archive className="size-3.5" />
+          <span className="flex-1 text-left">Archived</span>
+          <span className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded-full">
+            {archivedCount}
+          </span>
+        </button>
+      )}
     </div>
   );
 }

@@ -74,20 +74,15 @@ export function ChatSessionItem({
       cancelLabel: "Cancel",
     });
 
-    if (confirmed) {
-      deleteSession.mutate(
-        { sessionId: session.id },
-        {
-          onSuccess: () => {
-            toast.success("Conversation deleted");
-            if (activeSessionId === session.id) {
-              router.push("/dashboard/ai-chat" as Route);
-            }
-          },
-          onError: () => toast.error("Failed to delete"),
-        },
-      );
-    }
+    if (!confirmed) return;
+
+    deleteSession.mutate(
+      { sessionId: session.id },
+      {
+        onSuccess: () => toast.success("Conversation deleted"),
+        onError: () => toast.error("Failed to delete"),
+      },
+    );
   };
 
   return (

@@ -12,7 +12,10 @@ import {
   ConversationScrollButton,
 } from "@neuralpay/ui/components/ai-elements/conversation";
 import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
-import { AlertCircle } from "lucide-react";
+import { Button } from "@neuralpay/ui/components/button";
+import { AlertCircle, ArchiveRestore } from "lucide-react";
+import { toast } from "sonner";
+import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session";
 import { useMessages } from "../../hooks/queries/use-messages";
 import { ChatInput } from "./chat-input";
 import { ChatMessageItem } from "./chat-message-item";
@@ -37,6 +40,8 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
   }
 
   const { sessionData } = useSessionDetails(sessionId);
+  const isArchived = sessionData?.session.archivedAt !== null;
+
   const {
     data: messagesData,
     fetchNextPage,
@@ -52,11 +57,23 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     isLoading,
   } = useAIChat({ sessionId, initialMessage });
 
+  const unarchiveSession = useUnarchiveSession();
+
   const persistedMessages =
     messagesData?.pages
       .slice()
       .reverse()
       .flatMap((page) => page.items) ?? [];
+
+  const handleUnarchive = () => {
+    unarchiveSession.mutate(
+      { sessionId },
+      {
+        onSuccess: () => toast.success("Conversation unarchived"),
+        onError: () => toast.error("Failed to unarchive"),
+      },
+    );
+  };
 
   return (
     <>
@@ -131,13 +148,37 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
           <ConversationScrollButton />
         </Conversation>
 
+        {/* Archived banner OR input */}
         <div className="shrink-0 border-t p-4 pb-12 space-y-3">
-          <ChatInput
-            input={input}
-            isLoading={isLoading}
-            onInputChange={handleInputChange}
-            onSubmit={handleSubmit}
-          />
+          {isArchived ? (
+            <div className="flex flex-col items-center gap-3 py-2">
+              <p className="text-sm text-muted-foreground text-center">
+                This conversation is archived. To continue, please unarchive it
+                first.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUnarchive}
+                disabled={unarchiveSession.isPending}
+                className="gap-2"
+              >
+                {unarchiveSession.isPending ? (
+                  <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  <ArchiveRestore className="size-4" />
+                )}
+                Unarchive
+              </Button>
+            </div>
+          ) : (
+            <ChatInput
+              input={input}
+              isLoading={isLoading}
+              onInputChange={handleInputChange}
+              onSubmit={handleSubmit}
+            />
+          )}
         </div>
       </div>
     </>

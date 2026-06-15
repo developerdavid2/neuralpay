@@ -1,4 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
+
 export function invalidateTRPCQueries(
   queryClient: QueryClient,
   routePath: string[],
@@ -6,16 +7,19 @@ export function invalidateTRPCQueries(
   return queryClient.invalidateQueries({
     predicate: (query) => {
       const queryKey = query.queryKey as unknown[];
-      if (!Array.isArray(queryKey[0])) return false;
-      const routeSegments = queryKey[0] as unknown[];
-      return routePath.every(
-        (segment, index) => routeSegments[index] === segment,
-      );
+      if (!Array.isArray(queryKey) || queryKey.length === 0) return false;
+
+      const path = queryKey[0];
+      if (!Array.isArray(path)) return false;
+
+      // Check if the path starts with our routePath
+      if (path.length < routePath.length) return false;
+
+      return routePath.every((segment, index) => path[index] === segment);
     },
   });
 }
 
-// CHANGE invalidateTransactionQueries to await both:
 export async function invalidateAccountsQueries(queryClient: QueryClient) {
   await Promise.all([
     invalidateTRPCQueries(queryClient, ["payments", "transactions"]),
@@ -28,6 +32,7 @@ export async function invalidateAccountsQueries(queryClient: QueryClient) {
     invalidateTRPCQueries(queryClient, ["payments", "accounts", "getById"]),
   ]);
 }
+
 export async function invalidateTransactionQueries(queryClient: QueryClient) {
   await Promise.all([
     invalidateTRPCQueries(queryClient, ["payments", "transactions", "list"]),
@@ -39,21 +44,17 @@ export async function invalidateTransactionQueries(queryClient: QueryClient) {
 export async function invalidateInsightsQueries(queryClient: QueryClient) {
   await invalidateTRPCQueries(queryClient, ["ai", "insights"]);
 }
+
 export async function invalidateChatQueries(queryClient: QueryClient) {
   await invalidateTRPCQueries(queryClient, ["ai", "coach", "sessions"]);
 }
 
 export async function invalidateChatSessionQueries(
   queryClient: QueryClient,
-  sessionId: string,
+  _sessionId: string,
 ) {
   await Promise.all([
-    invalidateTRPCQueries(queryClient, [
-      "ai",
-      "coach",
-      "sessionById",
-      sessionId,
-    ]),
-    invalidateTRPCQueries(queryClient, ["ai", "coach", "messages", sessionId]),
+    invalidateTRPCQueries(queryClient, ["ai", "coach", "sessionById"]),
+    invalidateTRPCQueries(queryClient, ["ai", "coach", "getMessages"]),
   ]);
 }

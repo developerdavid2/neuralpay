@@ -8,11 +8,13 @@ import { useChatFilters } from "@/modules/chats/hooks/use-chat-filters";
 import { useChatSidebarActions } from "@/modules/chats/hooks/use-chat-sidebar-actions";
 import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { ChatSessionList, ChatSessionListSkeleton } from "../chat-session-list";
+
 import { ChatSidebarEmpty } from "./chat-sidebar-empty";
 import { ChatSidebarFilters } from "./chat-sidebar-filters";
 import { ChatSidebarHeader } from "./chat-sidebar-header";
+import { ChatSidebarArchiveSheet } from "./chat-sidebar-archive-sheet";
 
 function ChatSessionListSection({
   handleSelectSession,
@@ -73,6 +75,8 @@ function ChatSessionListSection({
 }
 
 export const ChatsSidebarPanel = () => {
+  const [archiveSheetOpen, setArchiveSheetOpen] = useState(false);
+
   const {
     currentSearch,
     currentTopic,
@@ -88,45 +92,64 @@ export const ChatsSidebarPanel = () => {
   const { handleNewChat, isCreating, handleSelectSession } =
     useChatSidebarActions();
 
+  // Fetch ALL sessions (including archived) to get archive count
+  // We use a lightweight query — no need for full pagination here
+  const { sessions: allSessions } = useSessions({
+    includeArchived: true,
+    limit: 100, // Reasonable limit for count
+  });
+
+  const archivedCount = allSessions.filter((s) => s.archivedAt !== null).length;
+
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <ChatSidebarHeader onNewChat={handleNewChat} isCreating={isCreating} />
+    <>
+      <div className="flex flex-col h-full overflow-hidden">
+        <ChatSidebarHeader onNewChat={handleNewChat} isCreating={isCreating} />
 
-      <div className="px-3 py-2 border-b shrink-0">
-        <DebouncedSearchInput
-          value={currentSearch}
-          onSearch={updateSearch}
-          placeholder="Search chats..."
-          className="h-8"
-        />
-      </div>
-
-      <div className="shrink-0">
-        <ChatSidebarFilters
-          selectedTopic={currentTopic as ChatTopicType}
-          selectedContextType={currentContextType as ChatContextType}
-          onTopicChange={updateTopic}
-          onContextTypeChange={updateContextType}
-          onClearFilters={clearAllFilters}
-          hasActiveFilters={hasActiveFilters}
-        />
-      </div>
-
-      <div className="flex-1 overflow-y-auto no-scrollbar min-h-0">
-        <SectionBoundary
-          key={`${currentSearch}-${currentTopic}-${currentContextType}-${currentIncludeArchived}`}
-          fallback={<ChatSessionListSkeleton />}
-          errorMessage="Could not load conversations"
-        >
-          <ChatSessionListSection
-            handleSelectSession={handleSelectSession}
-            handleNewChat={handleNewChat}
+        <div className="px-3 py-2 border-b shrink-0">
+          <DebouncedSearchInput
+            value={currentSearch}
+            onSearch={updateSearch}
+            placeholder="Search chats..."
+            className="h-8"
           />
-        </SectionBoundary>
+        </div>
+
+        <div className="shrink-0">
+          <ChatSidebarFilters
+            selectedTopic={currentTopic as ChatTopicType}
+            selectedContextType={currentContextType as ChatContextType}
+            onTopicChange={updateTopic}
+            onContextTypeChange={updateContextType}
+            onClearFilters={clearAllFilters}
+            hasActiveFilters={hasActiveFilters}
+            archivedCount={archivedCount}
+            onOpenArchive={() => setArchiveSheetOpen(true)}
+          />
+        </div>
+
+        <div className="flex-1 overflow-y-auto no-scrollbar min-h-0">
+          <SectionBoundary
+            key={`${currentSearch}-${currentTopic}-${currentContextType}-${currentIncludeArchived}`}
+            fallback={<ChatSessionListSkeleton />}
+            errorMessage="Could not load conversations"
+          >
+            <ChatSessionListSection
+              handleSelectSession={handleSelectSession}
+              handleNewChat={handleNewChat}
+            />
+          </SectionBoundary>
+        </div>
       </div>
-    </div>
+
+      <ChatSidebarArchiveSheet
+        open={archiveSheetOpen}
+        onOpenChange={setArchiveSheetOpen}
+      />
+    </>
   );
 };
+
 export const ChatSidebarPanelSkeleton = () => {
   return (
     <div className="flex flex-col h-full">

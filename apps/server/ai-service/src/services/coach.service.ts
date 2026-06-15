@@ -408,6 +408,38 @@ export const AICoachService = {
     }
   },
 
+  async unarchiveSession(
+    sessionId: string,
+    userId: string,
+  ): Promise<ServiceResult<{ id: string }>> {
+    try {
+      const [result] = await db
+        .update(chatSessions)
+        .set({ archivedAt: null, updatedAt: new Date() })
+        .where(
+          and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)),
+        )
+        .returning({ id: chatSessions.id });
+
+      if (!result) {
+        return {
+          success: false,
+          error: "Session not found",
+          code: "NOT_FOUND",
+        };
+      }
+
+      return { success: true, data: { id: result.id } };
+    } catch (err) {
+      console.error("[AICoachService.unarchiveSession]", err);
+      return {
+        success: false,
+        error: "Failed to unarchive session",
+        code: "INTERNAL_SERVER_ERROR",
+      };
+    }
+  },
+
   async deleteSession(
     sessionId: string,
     userId: string,

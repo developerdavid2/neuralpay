@@ -1,4 +1,7 @@
-import { invalidateChatQueries } from "@/lib/invalidate-trpc-queries";
+import {
+  invalidateChatQueries,
+  invalidateChatSessionQueries,
+} from "@/lib/invalidate-trpc-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -8,6 +11,11 @@ export function useArchiveSession() {
 
   return useMutation({
     ...trpc.ai.coach.archiveSession.mutationOptions(),
-    onSuccess: () => invalidateChatQueries(queryClient),
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        invalidateChatSessionQueries(queryClient, variables.sessionId),
+        invalidateChatQueries(queryClient),
+      ]);
+    },
   });
 }
