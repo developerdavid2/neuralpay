@@ -4,7 +4,9 @@ import { formatDate } from "@/lib/utils";
 import { useArchiveSession } from "@/modules/chats/hooks/mutations/use-archive-session";
 import { useUnarchiveSession } from "@/modules/chats/hooks/mutations/use-unarchive-session";
 import { useDeleteSession } from "@/modules/chats/hooks/mutations/use-delete-session";
+import { useUpdateTitle } from "@/modules/chats/hooks/mutations/use-update-title";
 import { useConfirm } from "@/hooks/use-confirm";
+import { ChatRenameDialog } from "./chat-rename-dialog";
 import type { ChatSession } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import {
@@ -25,6 +27,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useState } from "react";
 import type { Route } from "next";
 
 interface ChatSessionItemProps {
@@ -42,10 +45,13 @@ export function ChatSessionItem({
   const params = useParams();
   const activeSessionId = params.sessionId as string | undefined;
 
+  const [renameOpen, setRenameOpen] = useState(false);
+
   const [ConfirmDialog, confirm] = useConfirm();
   const archiveSession = useArchiveSession();
   const unarchiveSession = useUnarchiveSession();
   const deleteSession = useDeleteSession();
+  const updateTitle = useUpdateTitle();
 
   const isArchived = session.archivedAt !== null;
   const isProcessing =
@@ -57,7 +63,6 @@ export function ChatSessionItem({
     e.stopPropagation();
 
     if (isArchived) {
-      // Unarchive
       unarchiveSession.mutate(
         { sessionId: session.id },
         {
@@ -68,7 +73,6 @@ export function ChatSessionItem({
       return;
     }
 
-    // Archive
     const confirmed = await confirm({
       title: "Archive conversation",
       message: `Are you sure you want to archive "${session.title}"?`,
@@ -114,10 +118,8 @@ export function ChatSessionItem({
     );
   };
 
-  const handleRenameClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Placeholder — modal/form will be implemented later
-    toast.info("Rename coming soon");
+  const handleRename = (sessionId: string, title: string) => {
+    updateTitle.mutate({ sessionId, title });
   };
 
   return (
@@ -169,13 +171,16 @@ export function ChatSessionItem({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
-            {/* Rename — always shown, placeholder */}
-            <DropdownMenuItem onClick={handleRenameClick}>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                setRenameOpen(true);
+              }}
+            >
               <Pencil className="mr-2 size-3.5" />
               Rename
             </DropdownMenuItem>
 
-            {/* Archive / Unarchive — toggles based on state */}
             <DropdownMenuItem
               onClick={handleArchiveToggle}
               disabled={archiveSession.isPending || unarchiveSession.isPending}
@@ -193,7 +198,6 @@ export function ChatSessionItem({
               )}
             </DropdownMenuItem>
 
-            {/* Delete — always shown */}
             <DropdownMenuItem
               className="text-destructive"
               onClick={handleDeleteClick}
@@ -207,6 +211,14 @@ export function ChatSessionItem({
       </div>
 
       <ConfirmDialog />
+
+      <ChatRenameDialog
+        session={session}
+        open={renameOpen}
+        onOpenChange={setRenameOpen}
+        onRename={handleRename}
+        isPending={updateTitle.isPending}
+      />
     </>
   );
 }
