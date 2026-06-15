@@ -1,8 +1,8 @@
-// chat-session-item.tsx
 "use client";
 
 import { formatDate } from "@/lib/utils";
 import { useArchiveSession } from "@/modules/chats/hooks/mutations/use-archive-session";
+import { useUnarchiveSession } from "@/modules/chats/hooks/mutations/use-unarchive-session";
 import { useDeleteSession } from "@/modules/chats/hooks/mutations/use-delete-session";
 import { useConfirm } from "@/hooks/use-confirm";
 import type { ChatSession } from "@neuralpay/types";
@@ -15,7 +15,14 @@ import {
 } from "@neuralpay/ui/components/dropdown-menu";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { Archive, Loader2, MoreVertical, Trash2 } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  Loader2,
+  MoreVertical,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { Route } from "next";
@@ -37,14 +44,31 @@ export function ChatSessionItem({
 
   const [ConfirmDialog, confirm] = useConfirm();
   const archiveSession = useArchiveSession();
+  const unarchiveSession = useUnarchiveSession();
   const deleteSession = useDeleteSession();
 
-  const isArchiving = archiveSession.isPending;
-  const isDeleting = deleteSession.isPending;
-  const isProcessing = isArchiving || isDeleting;
+  const isArchived = session.archivedAt !== null;
+  const isProcessing =
+    archiveSession.isPending ||
+    unarchiveSession.isPending ||
+    deleteSession.isPending;
 
-  const handleArchiveClick = async (e: React.MouseEvent) => {
+  const handleArchiveToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (isArchived) {
+      // Unarchive
+      unarchiveSession.mutate(
+        { sessionId: session.id },
+        {
+          onSuccess: () => toast.success("Conversation unarchived"),
+          onError: () => toast.error("Failed to unarchive"),
+        },
+      );
+      return;
+    }
+
+    // Archive
     const confirmed = await confirm({
       title: "Archive conversation",
       message: `Are you sure you want to archive "${session.title}"?`,
@@ -79,10 +103,21 @@ export function ChatSessionItem({
     deleteSession.mutate(
       { sessionId: session.id },
       {
-        onSuccess: () => toast.success("Conversation deleted"),
+        onSuccess: () => {
+          toast.success("Conversation deleted");
+          if (activeSessionId === session.id) {
+            router.push("/dashboard/ai-chat" as Route);
+          }
+        },
         onError: () => toast.error("Failed to delete"),
       },
     );
+  };
+
+  const handleRenameClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Placeholder — modal/form will be implemented later
+    toast.info("Rename coming soon");
   };
 
   return (
@@ -133,18 +168,36 @@ export function ChatSessionItem({
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-36">
-            <DropdownMenuItem
-              onClick={handleArchiveClick}
-              disabled={isArchiving}
-            >
-              <Archive className="mr-2 size-3.5" />
-              Archive
+          <DropdownMenuContent align="end" className="w-40">
+            {/* Rename — always shown, placeholder */}
+            <DropdownMenuItem onClick={handleRenameClick}>
+              <Pencil className="mr-2 size-3.5" />
+              Rename
             </DropdownMenuItem>
+
+            {/* Archive / Unarchive — toggles based on state */}
+            <DropdownMenuItem
+              onClick={handleArchiveToggle}
+              disabled={archiveSession.isPending || unarchiveSession.isPending}
+            >
+              {isArchived ? (
+                <>
+                  <ArchiveRestore className="mr-2 size-3.5" />
+                  Unarchive
+                </>
+              ) : (
+                <>
+                  <Archive className="mr-2 size-3.5" />
+                  Archive
+                </>
+              )}
+            </DropdownMenuItem>
+
+            {/* Delete — always shown */}
             <DropdownMenuItem
               className="text-destructive"
               onClick={handleDeleteClick}
-              disabled={isDeleting}
+              disabled={deleteSession.isPending}
             >
               <Trash2 className="mr-2 size-3.5" />
               Delete

@@ -12,14 +12,13 @@ import {
   ConversationScrollButton,
 } from "@neuralpay/ui/components/ai-elements/conversation";
 import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
+import { Button } from "@neuralpay/ui/components/button";
 import { AlertCircle, ArchiveRestore } from "lucide-react";
+import { toast } from "sonner";
+import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session";
 import { useMessages } from "../../hooks/queries/use-messages";
 import { ChatInput } from "./chat-input";
 import { ChatMessageItem } from "./chat-message-item";
-import { Button } from "@neuralpay/ui/components/button";
-import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session";
-import { toast } from "sonner";
-import { useEffect } from "react";
 
 interface Props {
   sessionId: string;
@@ -56,7 +55,6 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     handleInputChange,
     handleSubmit,
     isLoading,
-    setMessages,
   } = useAIChat({ sessionId, initialMessage });
 
   const unarchiveSession = useUnarchiveSession();
@@ -130,7 +128,7 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
                 );
               })}
 
-            {!isLoading &&
+            {isLoading &&
               streamingMessages[streamingMessages.length - 1]?.role ===
                 "user" && (
                 <div className="flex gap-3 flex-row">

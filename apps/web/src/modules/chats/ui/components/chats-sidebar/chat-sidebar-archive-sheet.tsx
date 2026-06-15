@@ -9,6 +9,7 @@ import { Sheet, SheetContent } from "@neuralpay/ui/components/sheet";
 import { Archive, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { ChatSessionList, ChatSessionListSkeleton } from "../chat-session-list";
+import { useChatSidebarActions } from "@/modules/chats/hooks/use-chat-sidebar-actions";
 
 interface ChatSidebarArchiveSheetProps {
   open: boolean;
@@ -20,6 +21,7 @@ export function ChatSidebarArchiveSheet({
   onOpenChange,
 }: ChatSidebarArchiveSheetProps) {
   const unarchiveSession = useUnarchiveSession();
+  const { handleSelectSession } = useChatSidebarActions();
 
   const {
     sessions,
@@ -91,10 +93,7 @@ export function ChatSidebarArchiveSheet({
             ) : (
               <ChatSessionList
                 sessions={archivedSessions}
-                onSelect={(sessionId) => {
-                  handleUnarchive(sessionId);
-                  onOpenChange(false);
-                }}
+                onSelect={handleSelectSession}
                 hasNextPage={hasNextPage ?? false}
                 isFetchingNextPage={isFetchingNextPage}
                 fetchNextPage={fetchNextPage}

@@ -92,11 +92,9 @@ export const ChatsSidebarPanel = () => {
   const { handleNewChat, isCreating, handleSelectSession } =
     useChatSidebarActions();
 
-  // Fetch ALL sessions (including archived) to get archive count
-  // We use a lightweight query — no need for full pagination here
   const { sessions: allSessions } = useSessions({
     includeArchived: true,
-    limit: 100, // Reasonable limit for count
+    limit: CHAT_SESSIONS_LIMIT,
   });
 
   const archivedCount = allSessions.filter((s) => s.archivedAt !== null).length;

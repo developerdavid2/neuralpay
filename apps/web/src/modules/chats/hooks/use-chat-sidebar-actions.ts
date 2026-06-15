@@ -1,13 +1,8 @@
-import { useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { toast } from "sonner";
-import { useConfirm } from "@/hooks/use-confirm";
-import { useArchiveSession } from "./mutations/use-archive-session";
-import { useDeleteSession } from "./mutations/use-delete-session";
-import { useStartSession } from "./mutations/use-start-session";
 import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
+import { useStartSession } from "./mutations/use-start-session";
 
-// useChatSidebarActions — remove handleArchive, handleDelete, isArchiving, isDeleting
 export function useChatSidebarActions() {
   const router = useRouter();
 
