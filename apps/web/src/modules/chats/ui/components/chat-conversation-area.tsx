@@ -12,10 +12,15 @@ import {
   ConversationScrollButton,
 } from "@neuralpay/ui/components/ai-elements/conversation";
 import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
-import { AlertCircle } from "lucide-react";
+import { Button } from "@neuralpay/ui/components/button";
+import { AlertCircle, ArchiveRestore } from "lucide-react";
+import { toast } from "sonner";
+import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session";
 import { useMessages } from "../../hooks/queries/use-messages";
 import { ChatInput } from "./chat-input";
 import { ChatMessageItem } from "./chat-message-item";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { CHAT_SESSION_MESSAGES } from "../../constants";
 
 interface Props {
   sessionId: string;
@@ -37,12 +42,15 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
   }
 
   const { sessionData } = useSessionDetails(sessionId);
+  const archivedAt = sessionData?.session.archivedAt;
+  const isArchived = archivedAt !== null && archivedAt !== undefined;
+
   const {
     data: messagesData,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMessages(sessionId, 2);
+  } = useMessages(sessionId, CHAT_SESSION_MESSAGES);
 
   const {
     messages: streamingMessages,
@@ -52,11 +60,23 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     isLoading,
   } = useAIChat({ sessionId, initialMessage });
 
+  const unarchiveSession = useUnarchiveSession();
+
   const persistedMessages =
     messagesData?.pages
       .slice()
       .reverse()
       .flatMap((page) => page.items) ?? [];
+
+  const handleUnarchive = () => {
+    unarchiveSession.mutate(
+      { sessionId },
+      {
+        onSuccess: () => toast.success("Conversation unarchived"),
+        onError: () => toast.error("Failed to unarchive"),
+      },
+    );
+  };
 
   return (
     <>
@@ -87,30 +107,30 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
               <ChatMessageItem key={message.id} message={message} />
             ))}
 
-            {streamingMessages.map((message) => {
-              const textContent = message.parts
-                .filter((p) => p.type === "text")
-                .map((p) => (p as { type: "text"; text: string }).text)
-                .join("");
+            {!isArchived &&
+              streamingMessages.map((message) => {
+                const textContent = message.parts
+                  .filter((p) => p.type === "text")
+                  .map((p) => (p as { type: "text"; text: string }).text)
+                  .join("");
 
-              return (
-                <ChatMessageItem
-                  key={message.id}
-                  message={{
-                    id: message.id,
-                    role: message.role as "user" | "assistant",
-                    content: textContent,
-                    createdAt: new Date(),
-                    sessionId,
-                    userId: "",
-                    tokensUsed: null,
-                    metadata: null,
-                  }}
-                />
-              );
-            })}
+                return (
+                  <ChatMessageItem
+                    key={message.id}
+                    message={{
+                      id: message.id,
+                      role: message.role as "user" | "assistant",
+                      content: textContent,
+                      createdAt: new Date(),
+                      sessionId,
+                      userId: "",
+                      tokensUsed: null,
+                      metadata: null,
+                    }}
+                  />
+                );
+              })}
 
-            {/* Thinking indicator */}
             {isLoading &&
               streamingMessages[streamingMessages.length - 1]?.role ===
                 "user" && (
@@ -132,14 +152,139 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
         </Conversation>
 
         <div className="shrink-0 border-t p-4 pb-12 space-y-3">
-          <ChatInput
-            input={input}
-            isLoading={isLoading}
-            onInputChange={handleInputChange}
-            onSubmit={handleSubmit}
-          />
+          {isArchived ? (
+            <div className="flex flex-col items-center gap-3 py-2">
+              <p className="text-sm text-muted-foreground text-center">
+                This conversation is archived. To continue, please unarchive it
+                first.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUnarchive}
+                disabled={unarchiveSession.isPending}
+                className="gap-2"
+              >
+                {unarchiveSession.isPending ? (
+                  <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  <ArchiveRestore className="size-4" />
+                )}
+                Unarchive
+              </Button>
+            </div>
+          ) : (
+            <ChatInput
+              input={input}
+              isLoading={isLoading}
+              onInputChange={handleInputChange}
+              onSubmit={handleSubmit}
+            />
+          )}
         </div>
       </div>
     </>
+  );
+}
+
+export function ChatConversationSkeleton() {
+  return (
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <header className="flex items-center border-b px-4 py-3">
+        <Skeleton className="h-4 w-48" />
+      </header>
+
+      {/* Message Area */}
+      <div className="flex h-full flex-col max-w-4xl mx-auto w-full">
+        <div className="flex-1 p-4 space-y-12 overflow-y-auto no-scrollbar">
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[50%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[50%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[40%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[30%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[30%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[20%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[50%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[70%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[20%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[40%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Real ChatInput but fully disabled */}
+        <div className="shrink-0 border-t p-4 pb-12 space-y-3 pointer-events-none opacity-50">
+          <ChatInput
+            input=""
+            isLoading={false}
+            onInputChange={() => {}}
+            onSubmit={() => {}}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

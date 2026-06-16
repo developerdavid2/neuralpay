@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { MonthYearPicker } from "@/components/month-year-picker";
-import { useMonthlyTopCategories } from "@/modules/transactions/hooks/queries/use-monthly-top-categories";
+import { useMonthlyTopCategories } from "@/modules/dashboard/hooks/queries/use-monthly-top-categories";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { format, startOfMonth } from "date-fns";
 import { Receipt, TrendingUp } from "lucide-react";

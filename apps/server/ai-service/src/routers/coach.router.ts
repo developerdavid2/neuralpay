@@ -216,9 +216,28 @@ export const coachRouter = router({
     }),
 
   archiveSession: protectedProcedure
-    .input(z.object({ sessionId: z.string().uuid() }))
+    .input(z.object({ sessionId: z.uuid() }))
     .mutation(async ({ ctx, input }) => {
       const result = await AICoachService.archiveSession(
+        input.sessionId,
+        ctx.session.user.id,
+      );
+
+      if (!result.success) {
+        throw new TRPCError({
+          code:
+            result.code === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      }
+
+      return result.data;
+    }),
+
+  unarchiveSession: protectedProcedure
+    .input(z.object({ sessionId: z.uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await AICoachService.unarchiveSession(
         input.sessionId,
         ctx.session.user.id,
       );

@@ -1,31 +1,18 @@
 import {
+  CHAT_CONTEXT_TYPES,
+  CHAT_TOPIC_TYPES,
+} from "@/modules/chats/constants";
+import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
+import { Button } from "@neuralpay/ui/components/button";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@neuralpay/ui/components/select";
-import { Button } from "@neuralpay/ui/components/button";
-import { Filter, X } from "lucide-react";
 import { cn } from "@neuralpay/ui/lib/utils";
-import type { ChatTopicType, ChatContextType } from "@neuralpay/types";
-import { CHAT_CONTEXT_TYPES, CHAT_TOPIC_TYPES } from "@neuralpay/types";
-
-const TOPIC_LABELS: Record<ChatTopicType, string> = {
-  budgeting: "Budgeting",
-  spending: "Spending",
-  savings: "Savings",
-  general: "General",
-};
-
-const CONTEXT_LABELS: Record<ChatContextType, string> = {
-  insight: "Insight",
-  transaction: "Transaction",
-  budget: "Budget",
-  vault: "Vault",
-  split: "Split",
-  general: "General",
-};
+import { Archive, Filter, X } from "lucide-react";
 
 interface ChatSidebarFiltersProps {
   selectedTopic: ChatTopicType | "";
@@ -34,6 +21,8 @@ interface ChatSidebarFiltersProps {
   onContextTypeChange: (contextType: ChatContextType | "") => void;
   onClearFilters: () => void;
   hasActiveFilters: boolean;
+  archivedCount?: number;
+  onOpenArchive: () => void;
 }
 
 export function ChatSidebarFilters({
@@ -43,6 +32,8 @@ export function ChatSidebarFilters({
   onContextTypeChange,
   onClearFilters,
   hasActiveFilters,
+  archivedCount,
+  onOpenArchive,
 }: ChatSidebarFiltersProps) {
   return (
     <div className="px-3 py-2 border-b space-y-2">
@@ -67,8 +58,8 @@ export function ChatSidebarFilters({
           <SelectContent>
             <SelectItem value="all">All topics</SelectItem>
             {CHAT_TOPIC_TYPES.map((topic) => (
-              <SelectItem key={topic} value={topic}>
-                {TOPIC_LABELS[topic]}
+              <SelectItem key={topic.value} value={topic.value}>
+                {topic.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -92,8 +83,8 @@ export function ChatSidebarFilters({
           <SelectContent>
             <SelectItem value="all">All contexts</SelectItem>
             {CHAT_CONTEXT_TYPES.map((ctx) => (
-              <SelectItem key={ctx} value={ctx}>
-                {CONTEXT_LABELS[ctx]}
+              <SelectItem key={ctx.value} value={ctx.value}>
+                {ctx.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -110,6 +101,19 @@ export function ChatSidebarFilters({
           </Button>
         )}
       </div>
+
+      {archivedCount !== undefined && archivedCount > 0 && (
+        <button
+          onClick={onOpenArchive}
+          className="flex items-center gap-2 w-full px-2.5 py-2 rounded-lg text-xs text-muted-foreground hover:bg-muted/60 transition-colors"
+        >
+          <Archive className="size-3.5" />
+          <span className="flex-1 text-left">Archived</span>
+          <span className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded-full">
+            {archivedCount}
+          </span>
+        </button>
+      )}
     </div>
   );
 }

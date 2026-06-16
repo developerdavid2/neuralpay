@@ -11,6 +11,7 @@ export function useAIChat({
 }) {
   const [input, setInput] = useState("");
   const hasSentInitial = useRef(false);
+  const prevSessionId = useRef(sessionId);
 
   const chat = useChat({
     id: sessionId,
@@ -20,6 +21,16 @@ export function useAIChat({
       body: { sessionId },
     }),
   });
+
+  useEffect(() => {
+    if (prevSessionId.current !== sessionId) {
+      prevSessionId.current = sessionId;
+      hasSentInitial.current = false;
+      if (chat.messages.length > 0) {
+        chat.setMessages([]);
+      }
+    }
+  }, [sessionId]);
 
   useEffect(() => {
     if (initialMessage && !hasSentInitial.current) {
@@ -45,5 +56,7 @@ export function useAIChat({
     handleSubmit,
     isLoading: chat.status === "submitted" || chat.status === "streaming",
     error: chat.error,
+    setMessages: chat.setMessages,
+    status: chat.status,
   };
 }

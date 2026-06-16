@@ -3,23 +3,18 @@ import { devtools } from "zustand/middleware";
 import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
 
 interface ChatUIState {
-  // Sidebar
   sessionSidebarOpen: boolean;
   setSessionSidebarOpen: (open: boolean) => void;
 
-  // Filter topic
   selectedTopic: ChatTopicType | "all";
   setSelectedTopic: (topic: ChatTopicType | "all") => void;
 
-  // filter context
   selectedContext: ChatContextType | "all";
   setSelectedContext: (context: ChatContextType | "all") => void;
 
-  // Input state (lifted for AI Elements)
   inputText: string;
   setInputText: (text: string) => void;
 
-  // Streaming state (Phase 3)
   isStreaming: boolean;
   setIsStreaming: (streaming: boolean) => void;
 }
@@ -27,23 +22,18 @@ interface ChatUIState {
 export const useChatStore = create<ChatUIState>()(
   devtools(
     (set) => ({
-      // Sidebar
       sessionSidebarOpen: true,
       setSessionSidebarOpen: (open) => set({ sessionSidebarOpen: open }),
 
-      // Filter topic
       selectedTopic: "all",
       setSelectedTopic: (topic) => set({ selectedTopic: topic }),
 
-      // context
       selectedContext: "all",
       setSelectedContext: (context) => set({ selectedContext: context }),
 
-      // Input
       inputText: "",
       setInputText: (text) => set({ inputText: text }),
 
-      // Streaming
       isStreaming: false,
       setIsStreaming: (streaming) => set({ isStreaming: streaming }),
     }),

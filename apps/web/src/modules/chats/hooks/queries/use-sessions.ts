@@ -24,8 +24,6 @@ export function useSessions(filters?: Partial<ChatSessionsFilterInput>) {
     });
   }, [query.data]);
 
-  console.log(query.data?.pages[query.data.pages.length - 1]);
-
   return {
     ...query,
     sessions,

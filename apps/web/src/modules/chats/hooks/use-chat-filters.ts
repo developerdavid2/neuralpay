@@ -1,9 +1,9 @@
 "use client";
 
+import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import type { ChatTopicType, ChatContextType } from "@neuralpay/types";
 
 const DEFAULTS = {
   search: "",

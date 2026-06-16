@@ -9,7 +9,7 @@ import { ArrowUpRight, Package } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { CATEGORY_ICONS, CATEGORY_LABELS } from "../../constants";
-import { useRecentTransactions } from "@/modules/transactions/hooks/queries/use-recent-transactions";
+import { useRecentTransactions } from "@/modules/dashboard/hooks/queries/use-recent-transactions";
 
 function TransactionIcon({ category }: { category: string | null }) {
   const Icon = CATEGORY_ICONS[category ?? "other"] ?? Package;

@@ -171,9 +171,15 @@ export const AICoachService = {
         if (existing) {
           return { success: true, data: existing };
         }
+
+        return {
+          success: false,
+          error: "Session not found",
+          code: "NOT_FOUND",
+        };
       }
 
-      // 2. Create new session
+      // 2. Create new session (only when no sessionId was provided)
       const title = generateTitle(
         options.contextType ?? "general",
         options.contextId,
@@ -403,6 +409,38 @@ export const AICoachService = {
       return {
         success: false,
         error: "Failed to archive session",
+        code: "INTERNAL_SERVER_ERROR",
+      };
+    }
+  },
+
+  async unarchiveSession(
+    sessionId: string,
+    userId: string,
+  ): Promise<ServiceResult<{ id: string }>> {
+    try {
+      const [result] = await db
+        .update(chatSessions)
+        .set({ archivedAt: null, updatedAt: new Date() })
+        .where(
+          and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)),
+        )
+        .returning({ id: chatSessions.id });
+
+      if (!result) {
+        return {
+          success: false,
+          error: "Session not found",
+          code: "NOT_FOUND",
+        };
+      }
+
+      return { success: true, data: { id: result.id } };
+    } catch (err) {
+      console.error("[AICoachService.unarchiveSession]", err);
+      return {
+        success: false,
+        error: "Failed to unarchive session",
         code: "INTERNAL_SERVER_ERROR",
       };
     }

@@ -1,5 +1,5 @@
 import type { ElementType } from "react";
-import type { ChatContextType } from "@neuralpay/types";
+import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
 import {
   TrendingUp,
   Receipt,
@@ -54,6 +54,38 @@ export const contextSuggestions: Record<ChatContextType, Suggestion[]> = {
     { text: "How does this affect my budget?", icon: Wallet },
   ],
 };
+
+export const CONTEXT_LABELS: Record<string, string> = {
+  insight: "Insight",
+  transaction: "Transaction",
+  budget: "Budget",
+  vault: "Vault",
+  split: "Split",
+  general: "General",
+};
+
+export const TOPIC_LABELS: Record<string, string> = {
+  budgeting: "Budgeting",
+  spending: "Spending",
+  savings: "Savings",
+  general: "General",
+};
+
+export const CHAT_CONTEXT_TYPES = [
+  { label: "Insight", value: "insight" },
+  { label: "Transaction", value: "transaction" },
+  { label: "Budget", value: "budget" },
+  { label: "Vault", value: "vault" },
+  { label: "Split", value: "split" },
+  { label: "General", value: "general" },
+] as const;
+
+export const CHAT_TOPIC_TYPES = [
+  { label: "Budgeting", value: "budgeting" },
+  { label: "Spending", value: "spending" },
+  { label: "Savings", value: "savings" },
+  { label: "General", value: "general" },
+] as const;
 
 export const CHAT_SESSIONS_LIMIT = 20;
 export const CHAT_SESSION_MESSAGES = 30;

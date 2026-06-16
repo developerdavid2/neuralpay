@@ -54,7 +54,7 @@ interface ChatContextPillProps {
 }
 export function ChatContextPill({ sessionId }: ChatContextPillProps) {
   const activeSessionId = sessionId;
-  const { sessionData } = useSessionDetails(activeSessionId ?? "");
+  const { sessionData } = useSessionDetails(activeSessionId);
 
   if (!sessionData || sessionData.session.contextType === "general") {
     return null;
