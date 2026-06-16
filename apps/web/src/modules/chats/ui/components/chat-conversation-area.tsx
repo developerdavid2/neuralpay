@@ -42,7 +42,8 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
   }
 
   const { sessionData } = useSessionDetails(sessionId);
-  const isArchived = sessionData?.session.archivedAt !== null;
+  const archivedAt = sessionData?.session.archivedAt;
+  const isArchived = archivedAt !== null && archivedAt !== undefined;
 
   const {
     data: messagesData,

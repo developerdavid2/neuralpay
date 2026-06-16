@@ -1,5 +1,3 @@
-// components/chat-rename-dialog.tsx
-
 "use client";
 
 import { useEffect } from "react";
@@ -21,7 +19,7 @@ import { Label } from "@neuralpay/ui/components/label";
 import { Pencil } from "lucide-react";
 
 const renameSchema = z.object({
-  title: z.string().min(1).max(100),
+  title: z.string().trim().min(1).max(100),
 });
 
 type RenameFormData = z.infer<typeof renameSchema>;
@@ -46,7 +44,6 @@ export function ChatRenameDialog({
     defaultValues: { title: session.title },
   });
 
-  // Reset form when session changes or dialog opens
   useEffect(() => {
     if (open) {
       form.reset({ title: session.title });
@@ -54,7 +51,7 @@ export function ChatRenameDialog({
   }, [open, session.title, form]);
 
   const handleSubmit = (data: RenameFormData) => {
-    if (data.title === session.title) {
+    if (data.title === session.title.trim()) {
       onOpenChange(false);
       return;
     }

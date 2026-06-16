@@ -95,9 +95,10 @@ export function useUpdateTitle() {
         },
       );
 
-      toast.success("Title updated", { position: "top-center" });
-
       return { previousSession, sessionByIdKey } as MutationContext;
+    },
+    onSuccess: () => {
+      toast.success("Title updated", { position: "top-center" });
     },
     onError: (err, variables, context) => {
       const typedContext = context as MutationContext | undefined;

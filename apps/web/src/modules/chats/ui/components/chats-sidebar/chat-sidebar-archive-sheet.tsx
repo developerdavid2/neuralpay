@@ -40,23 +40,13 @@ export function ChatSidebarArchiveSheet({
 
   const archivedSessions = sessions.filter((s) => s.archivedAt !== null);
 
-  const handleUnarchive = (sessionId: string) => {
-    unarchiveSession.mutate(
-      { sessionId },
-      {
-        onSuccess: () => toast.success("Conversation unarchived"),
-        onError: () => toast.error("Failed to unarchive"),
-      },
-    );
-  };
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
         className="w-full sm:max-w-[320px] md:max-w-[400px] p-0 flex flex-col h-full border-l bg-sidebar"
       >
-        <SheetTitle />
+        <SheetTitle className="sr-only">Archived chats</SheetTitle>
         {/* Header with back button */}
         <div className="flex items-center gap-3 px-4 py-3 border-b shrink-0">
           <Button
