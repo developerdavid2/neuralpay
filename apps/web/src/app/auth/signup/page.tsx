@@ -1,4 +1,4 @@
-import SignUpView from "@/modules/auth/ui/views/signup-view";
+import SignUpView from "@/modules/auth/ui/views/sign-up-view";
 
 const Page = async () => {
   return <SignUpView />;

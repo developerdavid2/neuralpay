@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { createExpressApp } from "@neuralpay/config/express-config";
 import { usersRouter } from "./routers";
@@ -27,7 +29,6 @@ app.use(
 
 app.listen(PORT, () => {
   console.log(`🚀 user-service running on http://localhost:${PORT}`);
-  console.log(`   tRPC at http://localhost:${PORT}/trpc`);
 });
 
 export { app };

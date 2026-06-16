@@ -28,6 +28,5 @@ app.post("/chat/stream", chatStreamHandler);
 
 app.listen(PORT, () => {
   console.log(`🚀 ai-service running on http://localhost:${PORT}`);
-  console.log(`   tRPC at http://localhost:${PORT}/trpc`);
   console.log(`   Chat stream at http://localhost:${PORT}/chat/stream`);
 });
