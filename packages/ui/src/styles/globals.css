@@ -192,11 +192,18 @@
   }
 
   [role="log"] > div {
+    scrollbar-gutter: auto !important;
     scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    height: 100% !important;
   }
 
-  [role="log"] > div::-webkit-scrollbar {
+  [role="log"] > div > div {
+    scrollbar-gutter: auto !important;
+    scrollbar-width: none !important;
+  }
+
+  [role="log"] > div::-webkit-scrollbar,
+  [role="log"] > div > div::-webkit-scrollbar {
     display: none !important;
   }
 }

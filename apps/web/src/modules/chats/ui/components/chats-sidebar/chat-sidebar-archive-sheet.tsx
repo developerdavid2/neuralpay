@@ -5,7 +5,11 @@ import { CHAT_SESSIONS_LIMIT } from "@/modules/chats/constants";
 import { useUnarchiveSession } from "@/modules/chats/hooks/mutations/use-unarchive-session";
 import { useSessions } from "@/modules/chats/hooks/queries/use-sessions";
 import { Button } from "@neuralpay/ui/components/button";
-import { Sheet, SheetContent } from "@neuralpay/ui/components/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@neuralpay/ui/components/sheet";
 import { Archive, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { ChatSessionList, ChatSessionListSkeleton } from "../chat-session-list";
@@ -52,6 +56,7 @@ export function ChatSidebarArchiveSheet({
         side="right"
         className="w-full sm:max-w-[320px] md:max-w-[400px] p-0 flex flex-col h-full border-l bg-sidebar"
       >
+        <SheetTitle />
         {/* Header with back button */}
         <div className="flex items-center gap-3 px-4 py-3 border-b shrink-0">
           <Button

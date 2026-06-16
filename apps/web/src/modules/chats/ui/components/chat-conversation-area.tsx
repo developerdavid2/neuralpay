@@ -19,6 +19,8 @@ import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session
 import { useMessages } from "../../hooks/queries/use-messages";
 import { ChatInput } from "./chat-input";
 import { ChatMessageItem } from "./chat-message-item";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { CHAT_SESSION_MESSAGES } from "../../constants";
 
 interface Props {
   sessionId: string;
@@ -47,7 +49,7 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMessages(sessionId, 2);
+  } = useMessages(sessionId, CHAT_SESSION_MESSAGES);
 
   const {
     messages: streamingMessages,
@@ -181,5 +183,107 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
         </div>
       </div>
     </>
+  );
+}
+
+export function ChatConversationSkeleton() {
+  return (
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <header className="flex items-center border-b px-4 py-3">
+        <Skeleton className="h-4 w-48" />
+      </header>
+
+      {/* Message Area */}
+      <div className="flex h-full flex-col max-w-4xl mx-auto w-full">
+        <div className="flex-1 p-4 space-y-12 overflow-y-auto no-scrollbar">
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[50%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[50%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[40%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[30%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[30%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[20%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[50%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[70%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+          {/* Assistant message */}
+          <div className="flex gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[20%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+
+          {/* User message */}
+          <div className="flex gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <div className="space-y-2 flex-1 max-w-[40%]">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Real ChatInput but fully disabled */}
+        <div className="shrink-0 border-t p-4 pb-12 space-y-3 pointer-events-none opacity-50">
+          <ChatInput
+            input=""
+            isLoading={false}
+            onInputChange={() => {}}
+            onSubmit={() => {}}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

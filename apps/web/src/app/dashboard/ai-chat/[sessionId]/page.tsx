@@ -1,5 +1,6 @@
 // app/ai-chat/[sessionId]/page.tsx
 import { CHAT_SESSION_MESSAGES } from "@/modules/chats/constants";
+import { ChatConversationSkeleton } from "@/modules/chats/ui/components/chat-conversation-area";
 import { ChatIdView } from "@/modules/chats/ui/views/chat-id-view";
 import {
   HydrateClient,
@@ -31,7 +32,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
   return (
     <HydrateClient>
-      <Suspense fallback={<p>Loading conversation…</p>}>
+      <Suspense fallback={<ChatConversationSkeleton />}>
         <ErrorBoundary fallback={<p>Error</p>}>
           <ChatIdView sessionId={sessionId} initialMessage={initialMessage} />
         </ErrorBoundary>
