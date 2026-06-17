@@ -26,6 +26,10 @@ export function GoogleSignInButton({
         callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
       },
       {
+        onSuccess: () => {
+          setIsLoading(false);
+        },
+
         onError: ({ error }) => {
           const msg = error.message || "Failed to sign in with Google";
           toast.error(msg, { position: "top-center" });
