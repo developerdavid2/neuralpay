@@ -1,3 +1,5 @@
+// packages/auth/src/index.ts
+
 import { createDb } from "@neuralpay/db";
 import * as schema from "@neuralpay/db/schema";
 import { betterAuth } from "better-auth";
@@ -13,6 +15,10 @@ export interface AuthConfig {
   polar?: {
     accessToken: string;
     successUrl: string;
+  };
+  google?: {
+    clientId: string;
+    clientSecret: string;
   };
 }
 
@@ -85,6 +91,15 @@ export function createAuth(config: AuthConfig) {
       }),
     ],
 
+    socialProviders: config.google
+      ? {
+          google: {
+            clientId: config.google.clientId,
+            clientSecret: config.google.clientSecret,
+          },
+        }
+      : undefined,
+
     advanced: {
       defaultCookieAttributes: {
         sameSite: "none",
@@ -95,7 +110,8 @@ export function createAuth(config: AuthConfig) {
   });
 }
 
-// 👇 Pre‑configured instance for server‑side use (API, web server)
+// ── Default export for services that need it ──
+// This is for server-side use only (user-service, gateway)
 const configFromEnv: AuthConfig = {
   corsOrigin: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
   secret: process.env.BETTER_AUTH_SECRET ?? "",
@@ -106,6 +122,14 @@ const configFromEnv: AuthConfig = {
         successUrl: process.env.POLAR_SUCCESS_URL ?? "",
       }
     : undefined,
+  google:
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? {
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        }
+      : undefined,
 };
 
 export const auth = createAuth(configFromEnv);
+export type Auth = ReturnType<typeof createAuth>;
