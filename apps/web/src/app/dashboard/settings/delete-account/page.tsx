@@ -1,5 +1,5 @@
 const Page = () => {
-  return <div>General</div>;
+  return <div>Delete ACcount Page</div>;
 };
 
 export default Page;

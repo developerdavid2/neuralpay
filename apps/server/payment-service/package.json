@@ -26,11 +26,13 @@
     "@neuralpay/db": "workspace:*",
     "@neuralpay/config": "workspace:*",
     "@trpc/server": "catalog:",
+    "@paralleldrive/cuid2": "^2.2.2",
     "date-fns": "catalog:",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "fastify": "^5.8.5",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "plaid": "^23.0.0"
   },
   "devDependencies": {
     "@types/bun": "catalog:",

@@ -34,6 +34,7 @@
     "next-themes": "catalog:",
     "radix-ui": "latest",
     "react": "catalog:",
+    "react-plaid-link": "^4.1.1",
     "react-currency-input-field": "^4.0.5",
     "react-day-picker": "^10.0.1",
     "react-dom": "catalog:",

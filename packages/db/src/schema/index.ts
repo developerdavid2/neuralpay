@@ -8,4 +8,5 @@ export * from "./vaults";
 export * from "./insights";
 export * from "./chats";
 export * from "./notifications";
+export * from "./plaid";
 export {};

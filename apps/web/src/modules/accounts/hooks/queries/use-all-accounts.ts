@@ -1,12 +1,13 @@
 // hooks/accounts/use-all-accounts.ts
 import { useTRPC } from "@/trpc/trpc-client";
+import type { AccountsListAllInput } from "@neuralpay/types";
 import { useQuery } from "@tanstack/react-query";
 
-export function useAllAccounts() {
+export function useAllAccounts(filter?: AccountsListAllInput) {
   const trpc = useTRPC();
 
   const { data: accountsData, isLoading: isLoadingAccounts } = useQuery({
-    ...trpc.payments.accounts.listAll.queryOptions(),
+    ...trpc.payments.accounts.listAll.queryOptions(filter),
     staleTime: 60_000,
   });
 
@@ -16,6 +17,7 @@ export function useAllAccounts() {
   }));
 
   return {
+    accountsData,
     bankAccountOptions,
     isLoadingAccounts,
   };
