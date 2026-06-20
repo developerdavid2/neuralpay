@@ -2,6 +2,7 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
 import { ConnectedBanksSkeleton } from "../components/connected-banks-skeleton";
 import { ConnectedBanksContent } from "../components/connected-banks-content";
+import { ConnectBankAccountButton } from "../components/connect-bank-button";
 
 export function ConnectedBanksView() {
   return (
@@ -9,6 +10,7 @@ export function ConnectedBanksView() {
       <DashboardHeader
         title="Connected Banks"
         description="Manage your bank connections and automatically import transactions"
+        action={<ConnectBankAccountButton />}
       />
 
       <SectionBoundary

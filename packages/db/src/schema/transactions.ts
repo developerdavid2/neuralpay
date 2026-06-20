@@ -48,7 +48,7 @@ export const transactions = pgTable(
     anomalyScore: numeric("anomaly_score", { precision: 5, scale: 4 }),
     notes: text("notes"),
     // Source tracking
-    isManual: boolean("is_manual").default(false).notNull(), // manually added
+    isManual: boolean("is_manual").default(false).notNull(),
     plaidTxId: text("plaid_tx_id").unique(),
     monoTxId: text("mono_tx_id").unique(),
     csvImportId: uuid("csv_import_id").references(() => csvImports.id, {

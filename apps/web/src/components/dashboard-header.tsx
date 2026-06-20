@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
-import { PremiumButton } from "./premium-button";
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 interface DashboardHeaderProps {
   title: string;

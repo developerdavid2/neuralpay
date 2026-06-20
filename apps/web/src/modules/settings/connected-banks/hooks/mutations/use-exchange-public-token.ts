@@ -18,10 +18,8 @@ export function useExchangePublicToken() {
         },
       });
     },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to connect bank",
-      );
+    onError: () => {
+      toast.error("Failed to connect bank");
     },
   });
 }

@@ -7,7 +7,7 @@ export function useSyncTransactions() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    ...trpc.payments.plaid.syncTransactions.mutationOptions(),
+    ...trpc.payments.plaid.syncTransactionsById.mutationOptions(),
     onSuccess: (data) => {
       toast.success(`${data.added} transactions synced`);
       queryClient.invalidateQueries({

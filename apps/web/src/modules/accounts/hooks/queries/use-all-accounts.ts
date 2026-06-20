@@ -1,4 +1,3 @@
-// hooks/accounts/use-all-accounts.ts
 import { useTRPC } from "@/trpc/trpc-client";
 import type { AccountsListAllInput } from "@neuralpay/types";
 import { useQuery } from "@tanstack/react-query";

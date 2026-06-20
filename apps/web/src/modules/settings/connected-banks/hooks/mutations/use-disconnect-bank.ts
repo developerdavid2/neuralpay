@@ -7,7 +7,7 @@ export function useDisconnectBank() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    ...trpc.payments.plaid.disconnectBank.mutationOptions(),
+    ...trpc.payments.plaid.disconnectBankById.mutationOptions(),
     onSuccess: () => {
       toast.success("Bank disconnected successfully");
       queryClient.invalidateQueries({

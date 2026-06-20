@@ -272,17 +272,18 @@ export const AccountsService = {
     }
   },
 
-  // ── DISCONNECT (soft-delete for synced accounts)
-  async disconnect(
+  // ── TOGGLE STATUS (synced accounts only)
+  async toggleStatus(
     id: string,
     userId: string,
-  ): Promise<ServiceResult<{ id: string }>> {
+    status: "active" | "inactive",
+  ): Promise<ServiceResult<BankAccount>> {
     try {
       const [updated] = await db
         .update(bankAccounts)
-        .set({ status: "disconnected", updatedAt: new Date() })
+        .set({ status, updatedAt: new Date() })
         .where(and(eq(bankAccounts.id, id), eq(bankAccounts.userId, userId)))
-        .returning({ id: bankAccounts.id });
+        .returning();
 
       if (!updated)
         return {
@@ -290,12 +291,13 @@ export const AccountsService = {
           error: "Account not found",
           code: "NOT_FOUND",
         };
-      return { success: true, data: { id: updated.id } };
+
+      return { success: true, data: updated as BankAccount };
     } catch (err) {
-      console.error("[AccountsService.disconnect]", err);
+      console.error("[AccountsService.toggleStatus]", err);
       return {
         success: false,
-        error: "Failed to disconnect account",
+        error: "Failed to toggle account",
         code: "DB_ERROR",
       };
     }

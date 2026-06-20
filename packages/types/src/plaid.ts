@@ -8,15 +8,16 @@ export type ExchangePublicTokenInput = z.infer<
   typeof exchangePublicTokenSchema
 >;
 
-export const connectedBankSchema = z.object({
+export const connectedPlaidBankSchema = z.object({
   id: z.string(),
   userId: z.string(),
   accessToken: z.string(),
-  itemId: z.string().optional(),
-  institutionName: z.string().optional(),
-  institutionId: z.string().optional(),
+  itemId: z.string().nullable(),
+  institutionName: z.string().nullable(),
+  transactionCursor: z.string().nullable(),
+  institutionId: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
-export type ConnectedBank = z.infer<typeof connectedBankSchema>;
+export type ConnectedPlaidBank = z.infer<typeof connectedPlaidBankSchema>;

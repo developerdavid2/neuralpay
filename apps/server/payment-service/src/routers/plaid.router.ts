@@ -4,8 +4,8 @@ import { z } from "zod";
 import { PlaidService } from "../services/plaid.service";
 
 export const plaidRouter = router({
-  getConnectedBank: protectedProcedure.query(async ({ ctx }) => {
-    return PlaidService.getConnectedBank(ctx.session.user.id);
+  getConnectedBanks: protectedProcedure.query(async ({ ctx }) => {
+    return PlaidService.getConnectedBanks(ctx.session.user.id);
   }),
 
   createLinkToken: protectedProcedure.mutation(async ({ ctx }) => {
@@ -30,43 +30,76 @@ export const plaidRouter = router({
         );
         return { success: true };
       } catch (err) {
-        console.error("[plaid.exchangePublicToken]", err);
+        // LOG THE FULL ERROR — check your server terminal
+        console.error("[plaid.exchangePublicToken] FULL ERROR:", err);
+        console.error(
+          "[plaid.exchangePublicToken] STACK:",
+          (err as Error).stack,
+        );
+
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to connect bank",
+          message:
+            err instanceof Error ? err.message : "Failed to connect bank",
+          cause: err,
         });
       }
     }),
 
-  disconnectBank: protectedProcedure.mutation(async ({ ctx }) => {
-    const result = await PlaidService.disconnectBank(ctx.session.user.id);
-    if (!result)
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No connected bank found",
-      });
-    return result;
-  }),
-
-  syncTransactions: protectedProcedure.mutation(async ({ ctx }) => {
-    const bank = await PlaidService.getConnectedBank(ctx.session.user.id);
-    if (!bank)
-      throw new TRPCError({ code: "NOT_FOUND", message: "No bank connected" });
-
-    try {
-      const result = await PlaidService.syncTransactions(
+  disconnectBankById: protectedProcedure
+    .input(z.object({ bankId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await PlaidService.disconnectBankById(
         ctx.session.user.id,
-        bank.accessToken,
-        bank.itemId!,
-        bank.institutionName,
+        input.bankId,
       );
+      if (!result)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Bank not found" });
       return result;
-    } catch (err) {
-      console.error("[plaid.syncTransactions]", err);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Sync failed",
-      });
-    }
-  }),
+    }),
+
+  toggleInstitutionAccounts: protectedProcedure
+    .input(
+      z.object({
+        bankId: z.string(),
+        status: z.enum(["active", "inactive"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await PlaidService.toggleInstitutionAccounts(
+        ctx.session.user.id,
+        input.bankId,
+        input.status,
+      );
+      if (!result)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Bank not found" });
+      return result;
+    }),
+
+  syncTransactionsById: protectedProcedure
+    .input(z.object({ bankId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const banks = await PlaidService.getConnectedBanks(ctx.session.user.id);
+      const bank = banks.find((b) => b.id === input.bankId);
+      if (!bank)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No bank connected",
+        });
+
+      try {
+        return await PlaidService.syncTransactions(
+          ctx.session.user.id,
+          bank.accessToken,
+          bank.itemId!,
+          bank.institutionName,
+        );
+      } catch (err) {
+        console.error("[plaid.syncTransactionsById]", err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: err instanceof Error ? err.message : "Sync failed",
+        });
+      }
+    }),
 });
