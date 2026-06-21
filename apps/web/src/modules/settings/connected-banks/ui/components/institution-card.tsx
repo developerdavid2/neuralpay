@@ -1,13 +1,19 @@
+"use client";
+
 import type { BankAccount, ConnectedPlaidBank } from "@neuralpay/types";
 import { Badge } from "@neuralpay/ui/components/badge";
 import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
 import { Separator } from "@neuralpay/ui/components/separator";
+import { Switch } from "@neuralpay/ui/components/switch";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronDown, Landmark, Wallet } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DisconnectButton } from "./disconnect-button";
 import { SyncButton } from "./sync-button";
+
+import { AccountStatusToggle } from "@/modules/accounts/ui/components/account-status-toggle";
+import { useToggleInstitutionAccounts } from "../../hooks/mutations/use-toggle-institution-accounts";
 
 export function InstitutionCard({
   bank,
@@ -17,16 +23,29 @@ export function InstitutionCard({
   accounts: BankAccount[];
 }) {
   const [expanded, setExpanded] = useState(true);
+  const toggleInstitution = useToggleInstitutionAccounts();
+
+  const institutionActive = useMemo(
+    () => accounts.some((a) => a.status === "active"),
+    [accounts],
+  );
+
+  const handleInstitutionToggle = (checked: boolean) => {
+    toggleInstitution.mutate({
+      bankId: bank.id,
+      status: checked ? "active" : "inactive",
+    });
+  };
 
   return (
-    <Card
-      className="bg-gray-400/5 cursor-pointer"
-      onClick={() => setExpanded((v) => !v)}
-    >
-      <CardHeader className="pb-0">
+    <Card className="bg-gray-400/5">
+      <CardHeader
+        className="pb-0 cursor-pointer"
+        onClick={() => setExpanded((v) => !v)}
+      >
         <div className="flex items-center justify-between">
-          {/* Left: toggle + name */}
-          <button className="flex items-center gap-3 text-left">
+          {/* Left: chevron + name */}
+          <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
               <Landmark className="h-5 w-5 text-primary" />
             </div>
@@ -37,10 +56,22 @@ export function InstitutionCard({
                 </p>
                 <Badge
                   variant="secondary"
-                  className="gap-1 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-[11px]"
+                  className={cn(
+                    "gap-1 text-[11px]",
+                    institutionActive
+                      ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+                      : "bg-muted text-muted-foreground",
+                  )}
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Active
+                  <span
+                    className={cn(
+                      "h-1.5 w-1.5 rounded-full",
+                      institutionActive
+                        ? "bg-emerald-500"
+                        : "bg-muted-foreground",
+                    )}
+                  />
+                  {institutionActive ? "Active" : "Inactive"}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
@@ -58,10 +89,19 @@ export function InstitutionCard({
                 expanded && "rotate-180",
               )}
             />
-          </button>
+          </div>
 
-          {/* Right: actions */}
-          <div className="flex items-center gap-2">
+          {/* Right: institution toggle + sync + disconnect */}
+          <div
+            className="flex items-center gap-3"
+            onClick={(e) => e.stopPropagation()} // prevent collapse when clicking actions
+          >
+            <Switch
+              checked={institutionActive}
+              onCheckedChange={handleInstitutionToggle}
+              disabled={toggleInstitution.isPending}
+              aria-label="Toggle all accounts in this institution"
+            />
             <SyncButton bankId={bank.id} />
             <DisconnectButton bankId={bank.id} />
           </div>
@@ -84,7 +124,12 @@ export function InstitutionCard({
               accounts.map((account) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between rounded-lg border border-border p-3 hover:bg-accent/50 transition-colors"
+                  className={cn(
+                    "flex items-center justify-between rounded-lg border border-border p-3 transition-colors",
+                    account.status === "active"
+                      ? "hover:bg-accent/50"
+                      : "opacity-50",
+                  )}
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -97,23 +142,13 @@ export function InstitutionCard({
                         <span className="uppercase">
                           {account.subtype && ` · ${account.subtype}`}
                         </span>
-
-                        <span>
-                          {account.maskedNumber &&
-                            ` · ••••${account.maskedNumber}`}
-                        </span>
+                        {account.maskedNumber &&
+                          ` · ••••${account.maskedNumber}`}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        account.status === "active" ? "default" : "secondary"
-                      }
-                      className="text-xs"
-                    >
-                      {account.status}
-                    </Badge>
+
+                  <div className="flex items-center gap-3">
                     {account.lastSyncedAt && (
                       <span className="text-[11px] text-muted-foreground">
                         {formatDistanceToNow(new Date(account.lastSyncedAt), {
@@ -121,6 +156,10 @@ export function InstitutionCard({
                         })}
                       </span>
                     )}
+                    <AccountStatusToggle
+                      accountId={account.id}
+                      currentStatus={account.status as "active" | "inactive"}
+                    />
                   </div>
                 </div>
               ))

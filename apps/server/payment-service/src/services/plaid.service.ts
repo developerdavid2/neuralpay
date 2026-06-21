@@ -77,23 +77,31 @@ export const PlaidService = {
         : [undefined];
 
       if (existing) {
-        console.log(
-          "[plaid] Institution already connected — updating credentials...",
-        );
+        const oldItemId = existing.itemId;
 
-        // Update credentials and reset cursor so we re-sync from scratch
         await db
           .update(connectedPlaidBanks)
           .set({
             accessToken,
             itemId,
             institutionName: institutionName ?? existing.institutionName,
-            transactionCursor: null, // reset so sync starts fresh
+            transactionCursor:
+              existing.itemId !== itemId ? null : existing.transactionCursor,
             updatedAt: new Date(),
           })
           .where(eq(connectedPlaidBanks.id, existing.id));
 
-        // Re-sync in background with new credentials
+        if (oldItemId) {
+          await db
+            .delete(bankAccounts)
+            .where(
+              and(
+                eq(bankAccounts.userId, userId),
+                eq(bankAccounts.plaidItemId, oldItemId),
+              ),
+            );
+        }
+
         this.syncTransactions(
           userId,
           accessToken,
@@ -246,6 +254,7 @@ export const PlaidService = {
               balance: (acc.balances.current ?? 0).toString(),
               bankName: institutionName ?? undefined,
               status: "active",
+              plaidItemId: itemId,
               lastSyncedAt: new Date(),
               updatedAt: new Date(),
             })
