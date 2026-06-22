@@ -5,7 +5,10 @@ import { PlaidService } from "../services/plaid.service";
 
 export const plaidRouter = router({
   getConnectedBanks: protectedProcedure.query(async ({ ctx }) => {
-    return PlaidService.getConnectedBanks(ctx.session.user.id);
+    const banks = await PlaidService.getConnectedBanks(ctx.session.user.id);
+    return banks.map(
+      ({ accessToken, itemId, transactionCursor, ...safe }) => safe,
+    );
   }),
 
   createLinkToken: protectedProcedure.mutation(async ({ ctx }) => {
@@ -30,18 +33,14 @@ export const plaidRouter = router({
         );
         return { success: true };
       } catch (err) {
-        // LOG THE FULL ERROR — check your server terminal
-        console.error("[plaid.exchangePublicToken] FULL ERROR:", err);
         console.error(
-          "[plaid.exchangePublicToken] STACK:",
-          (err as Error).stack,
+          "[plaid.exchangePublicToken] failed",
+          err instanceof Error ? err.message : err,
         );
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message:
-            err instanceof Error ? err.message : "Failed to connect bank",
-          cause: err,
+          message: "Failed to connect bank",
         });
       }
     }),

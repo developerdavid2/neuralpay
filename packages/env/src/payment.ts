@@ -11,9 +11,7 @@ export const paymentServiceEnv = createEnv({
     // Plaid
     PLAID_CLIENT_ID: z.string().min(1),
     PLAID_SECRET: z.string().min(1),
-    PLAID_ENV: z
-      .enum(["sandbox", "development", "production"])
-      .default("sandbox"),
+    PLAID_ENV: z.enum(["sandbox", "development", "production"]),
     // Mono (for African banks)
     MONO_SECRET_KEY: z.string().optional(),
   },

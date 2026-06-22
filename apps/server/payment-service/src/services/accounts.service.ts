@@ -282,7 +282,13 @@ export const AccountsService = {
       const [updated] = await db
         .update(bankAccounts)
         .set({ status, updatedAt: new Date() })
-        .where(and(eq(bankAccounts.id, id), eq(bankAccounts.userId, userId)))
+        .where(
+          and(
+            eq(bankAccounts.id, id),
+            eq(bankAccounts.userId, userId),
+            eq(bankAccounts.isManual, false),
+          ),
+        )
         .returning();
 
       if (!updated)

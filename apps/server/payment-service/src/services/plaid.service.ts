@@ -91,7 +91,7 @@ export const PlaidService = {
           })
           .where(eq(connectedPlaidBanks.id, existing.id));
 
-        if (oldItemId) {
+        if (oldItemId && oldItemId !== itemId) {
           await db
             .delete(bankAccounts)
             .where(
@@ -254,7 +254,6 @@ export const PlaidService = {
               balance: (acc.balances.current ?? 0).toString(),
               bankName: institutionName ?? undefined,
               maskedNumber: acc.mask ?? undefined,
-              status: "active",
               plaidItemId: itemId,
               lastSyncedAt: new Date(),
               updatedAt: new Date(),

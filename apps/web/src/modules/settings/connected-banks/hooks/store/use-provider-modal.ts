@@ -7,7 +7,7 @@ interface ProviderModalStore {
   selectedProvider: Provider | null;
   confirmedProvider: Provider | null;
   openModal: () => void;
-  closeModal: () => void;
+  closeModal: (options?: { cancelFlow?: boolean }) => void;
   selectProvider: (provider: Provider) => void;
   confirmProvider: () => void;
   resetState: () => void;
@@ -18,10 +18,13 @@ export const useProviderModal = create<ProviderModalStore>((set, get) => ({
   selectedProvider: null,
   confirmedProvider: null,
   openModal: () => set({ isOpen: true, selectedProvider: null }),
-  // only resets selection, does NOT touch confirmedProvider
-  closeModal: () => set({ isOpen: false, selectedProvider: null }),
+  closeModal: (options) =>
+    set((state) => ({
+      isOpen: false,
+      selectedProvider: null,
+      confirmedProvider: options?.cancelFlow ? null : state.confirmedProvider,
+    })),
   selectProvider: (provider) => set({ selectedProvider: provider }),
-  // keeps isOpen: true — PlaidController will call closeModal when ready
   confirmProvider: () =>
     set({
       confirmedProvider: get().selectedProvider,

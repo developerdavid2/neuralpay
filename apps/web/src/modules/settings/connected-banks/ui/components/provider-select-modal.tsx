@@ -27,7 +27,12 @@ export function ProviderSelectModal() {
   const isInitializing = confirmedProvider !== null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={closeModal}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !isInitializing) closeModal();
+      }}
+    >
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-2xl">Connect Your Bank</DialogTitle>
@@ -130,7 +135,9 @@ export function ProviderSelectModal() {
         <div className="flex gap-3 pt-4">
           <Button
             variant="outline"
-            onClick={closeModal}
+            onClick={(open) => {
+              if (!open && !isInitializing) closeModal();
+            }}
             disabled={isInitializing}
             className="flex-1"
           >

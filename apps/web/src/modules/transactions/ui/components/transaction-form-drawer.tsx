@@ -4,32 +4,23 @@ import {
   type CreateTransactionInput,
   type UpdateTransactionInput,
 } from "@neuralpay/types";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-} from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 
 import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
 
-import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
-import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
-import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
-import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
 import { useConfirm } from "@/hooks/use-confirm";
-import type { FormValues } from "../../types";
-import { TransactionForm } from "./transaction-form";
+import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
+import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
+import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
+import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
+import { Sheet, SheetContent } from "@neuralpay/ui/components/sheet";
 import {
   useTransactionDrawer,
   type TransactionDrawerMode,
 } from "../../store/use-transaction-drawer";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-} from "@neuralpay/ui/components/sheet";
+import type { FormValues } from "../../types";
+import { TransactionForm } from "./transaction-form";
 
 export function TransactionFormDrawer() {
   const { isOpen, onClose, transactionId, mode } = useTransactionDrawer();
@@ -57,12 +48,11 @@ export function TransactionFormDrawer() {
           "data-[vaul-drawer-direction=right]:right-0",
           "data-[vaul-drawer-direction=right]:h-full",
           "data-[vaul-drawer-direction=right]:w-full",
-          "data-[vaul-drawer-direction=right]:max-w-[420px]",
+          "data-[vaul-drawer-direction=right]:max-w-105",
           "flex flex-col",
           "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
         )}
       >
-        <SheetTitle className="sr-only" />
         <TransactionFormInner
           transactionId={transactionId}
           mode={mode}

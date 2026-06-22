@@ -18,12 +18,16 @@ export function PlaidInitializeButton() {
   const { mutate: exchangeToken, isPending: isExchanging } =
     useExchangePublicToken();
 
-  // Only run when selectedProvider is "plaid"
   useEffect(() => {
     if (selectedProvider === "plaid" && !token) {
       createToken(undefined, {
         onSuccess: (data) => {
           setToken(data.linkToken);
+        },
+        onError: () => {
+          setLinkOpened(false);
+          setToken(null);
+          resetState();
         },
       });
     }
@@ -31,13 +35,10 @@ export function PlaidInitializeButton() {
 
   const onSuccess = useCallback(
     (publicToken: string) => {
-      console.log("[plaid-button] Received public token, exchanging...");
-
       exchangeToken(
         { publicToken },
         {
           onSuccess: () => {
-            console.log("[plaid-button] Token exchanged successfully");
             setSuccess(true);
             setTimeout(() => {
               resetState();

@@ -10,26 +10,26 @@ export function useToggleAccountStatus() {
   return useMutation({
     mutationFn,
     onMutate: async ({ id, status }) => {
+      const isPaymentsAccountsQuery = (q: { queryKey: readonly unknown[] }) => {
+        const path = q.queryKey[0];
+        return (
+          Array.isArray(path) &&
+          path[0] === "payments" &&
+          path[1] === "accounts"
+        );
+      };
+
       await queryClient.cancelQueries({
-        predicate: (q) => {
-          const path = q.queryKey[0] as string[];
-          return Array.isArray(path) && path[0] === "payments";
-        },
+        predicate: isPaymentsAccountsQuery,
       });
 
       const snapshot = queryClient.getQueriesData({
-        predicate: (q) => {
-          const path = q.queryKey[0] as string[];
-          return Array.isArray(path) && path[0] === "payments";
-        },
+        predicate: isPaymentsAccountsQuery,
       });
 
       queryClient.setQueriesData(
         {
-          predicate: (q) => {
-            const path = q.queryKey[0] as string[];
-            return Array.isArray(path) && path[0] === "payments";
-          },
+          predicate: isPaymentsAccountsQuery,
         },
         (old: unknown) => {
           if (!old) return old;

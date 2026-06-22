@@ -9,7 +9,7 @@ export const connectedPlaidBanks = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     accessToken: text("access_token").notNull(),
-    itemId: text("item_id"),
+    itemId: text("item_id").notNull(),
     institutionId: text("institution_id"),
     institutionName: text("institution_name"),
     transactionCursor: text("transaction_cursor"),
@@ -24,5 +24,6 @@ export const connectedPlaidBanks = pgTable(
       t.userId,
       t.institutionId,
     ),
+    unique("connected_banks_user_item_unique").on(t.userId, t.itemId),
   ],
 );

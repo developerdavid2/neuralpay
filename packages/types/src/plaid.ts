@@ -7,8 +7,7 @@ export const exchangePublicTokenSchema = z.object({
 export type ExchangePublicTokenInput = z.infer<
   typeof exchangePublicTokenSchema
 >;
-
-export const connectedPlaidBankSchema = z.object({
+export const connectedPlaidBankInternalSchema = z.object({
   id: z.string(),
   userId: z.string(),
   accessToken: z.string(),
@@ -20,4 +19,11 @@ export const connectedPlaidBankSchema = z.object({
   updatedAt: z.date(),
 });
 
+export const connectedPlaidBankSchema = connectedPlaidBankInternalSchema.omit({
+  accessToken: true,
+});
+
+export type ConnectedPlaidBankInternal = z.infer<
+  typeof connectedPlaidBankInternalSchema
+>;
 export type ConnectedPlaidBank = z.infer<typeof connectedPlaidBankSchema>;
