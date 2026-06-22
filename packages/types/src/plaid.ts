@@ -21,6 +21,7 @@ export const connectedPlaidBankInternalSchema = z.object({
 
 export const connectedPlaidBankSchema = connectedPlaidBankInternalSchema.omit({
   accessToken: true,
+  transactionCursor: true,
 });
 
 export type ConnectedPlaidBankInternal = z.infer<
