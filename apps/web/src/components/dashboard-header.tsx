@@ -5,14 +5,12 @@ interface DashboardHeaderProps {
   title: string;
   description?: string;
   action?: ReactNode;
-  icon?: LucideIcon;
 }
 
 export function DashboardHeader({
   title,
   description,
   action,
-  icon,
 }: DashboardHeaderProps) {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

@@ -7,18 +7,21 @@ export default async function SettingsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col p-10 pb-5">
-      <div className="">
+    <div className="flex flex-col p-10 pb-5">
+      <div className="shrink-0">
         <DashboardHeader
           title="Settings"
           description="Manage preferences and configurations"
         />
       </div>
-      <div className="flex flex-row h-full rounded-md overflow-hidden mt-5 bg-card">
+
+      <div
+        className="sticky top-0 flex flex-row rounded-md overflow-hidden mt-5 bg-card"
+        style={{ height: "calc(100vh - 6rem)" }}
+      >
         <SettingsSidebar />
-        <main className="flex-1 h-full p-6 lg:p-8 overflow-y-auto">
-          <div className=" ">{children}</div>
-        </main>
+
+        <main className="flex-1 overflow-y-auto no-scrollbar">{children}</main>
       </div>
     </div>
   );

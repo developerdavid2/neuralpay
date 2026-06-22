@@ -1,5 +1,3 @@
-"use client";
-
 import type { BankAccount, ConnectedPlaidBank } from "@neuralpay/types";
 import { Badge } from "@neuralpay/ui/components/badge";
 import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
@@ -9,18 +7,22 @@ import { cn } from "@neuralpay/ui/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronDown, Landmark, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
+
+import { Show } from "@/components/show";
+import { AccountStatusToggle } from "@/modules/accounts/ui/components/account-status-toggle";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { useToggleInstitutionAccounts } from "../../hooks/mutations/use-toggle-institution-accounts";
 import { DisconnectButton } from "./disconnect-button";
 import { SyncButton } from "./sync-button";
-
-import { AccountStatusToggle } from "@/modules/accounts/ui/components/account-status-toggle";
-import { useToggleInstitutionAccounts } from "../../hooks/mutations/use-toggle-institution-accounts";
 
 export function InstitutionCard({
   bank,
   accounts,
+  isLoadingAccounts = false,
 }: {
   bank: ConnectedPlaidBank;
   accounts: BankAccount[];
+  isLoadingAccounts?: boolean;
 }) {
   const [expanded, setExpanded] = useState(true);
   const toggleInstitution = useToggleInstitutionAccounts();
@@ -30,13 +32,6 @@ export function InstitutionCard({
     [accounts],
   );
 
-  const handleInstitutionToggle = (checked: boolean) => {
-    toggleInstitution.mutate({
-      bankId: bank.id,
-      status: checked ? "active" : "inactive",
-    });
-  };
-
   return (
     <Card className="bg-gray-400/5">
       <CardHeader
@@ -44,8 +39,7 @@ export function InstitutionCard({
         onClick={() => setExpanded((v) => !v)}
       >
         <div className="flex items-center justify-between">
-          {/* Left: chevron + name */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
               <Landmark className="h-5 w-5 text-primary" />
             </div>
@@ -91,14 +85,18 @@ export function InstitutionCard({
             />
           </div>
 
-          {/* Right: institution toggle + sync + disconnect */}
           <div
             className="flex items-center gap-3"
-            onClick={(e) => e.stopPropagation()} // prevent collapse when clicking actions
+            onClick={(e) => e.stopPropagation()}
           >
             <Switch
               checked={institutionActive}
-              onCheckedChange={handleInstitutionToggle}
+              onCheckedChange={(checked) =>
+                toggleInstitution.mutate({
+                  bankId: bank.id,
+                  status: checked ? "active" : "inactive",
+                })
+              }
               disabled={toggleInstitution.isPending}
               aria-label="Toggle all accounts in this institution"
             />
@@ -108,65 +106,96 @@ export function InstitutionCard({
         </div>
       </CardHeader>
 
-      {expanded && (
+      <Show when={expanded}>
         <CardContent className="pt-4">
           <Separator className="mb-4" />
           <h4 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5 uppercase tracking-wide">
             <Wallet className="h-3.5 w-3.5" />
             Linked accounts
           </h4>
-          <div className="space-y-2">
-            {accounts.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-3 text-center">
-                No accounts found. Try syncing.
-              </p>
-            ) : (
-              accounts.map((account) => (
-                <div
-                  key={account.id}
-                  className={cn(
-                    "flex items-center justify-between rounded-lg border border-border p-3 transition-colors",
-                    account.status === "active"
-                      ? "hover:bg-accent/50"
-                      : "opacity-50",
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                      {account.name[0]?.toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{account.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">
-                        <span>{account.type}</span>
-                        <span className="uppercase">
-                          {account.subtype && ` · ${account.subtype}`}
-                        </span>
-                        {account.maskedNumber &&
-                          ` · ••••${account.maskedNumber}`}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    {account.lastSyncedAt && (
-                      <span className="text-[11px] text-muted-foreground">
-                        {formatDistanceToNow(new Date(account.lastSyncedAt), {
-                          addSuffix: true,
-                        })}
-                      </span>
+          <Show
+            when={!isLoadingAccounts}
+            fallback={<InstitutionAccountsSkeleton />}
+          >
+            <Show
+              when={accounts.length > 0}
+              fallback={
+                <p className="text-sm text-muted-foreground py-3 text-center">
+                  No accounts found. Try syncing.
+                </p>
+              }
+            >
+              <div className="space-y-2">
+                {accounts.map((account) => (
+                  <div
+                    key={account.id}
+                    className={cn(
+                      "flex items-center justify-between rounded-lg border border-border p-3 transition-colors",
+                      account.status === "active"
+                        ? "hover:bg-accent/50"
+                        : "opacity-50",
                     )}
-                    <AccountStatusToggle
-                      accountId={account.id}
-                      currentStatus={account.status as "active" | "inactive"}
-                    />
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                        {account.name[0]?.toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{account.name}</p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          <span>{account.type}</span>
+                          <span className="uppercase">
+                            {account.subtype && ` · ${account.subtype}`}
+                          </span>
+                          {account.maskedNumber &&
+                            ` · ••••${account.maskedNumber}`}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {account.lastSyncedAt && (
+                        <span className="text-[11px] text-muted-foreground">
+                          {formatDistanceToNow(new Date(account.lastSyncedAt), {
+                            addSuffix: true,
+                          })}
+                        </span>
+                      )}
+                      <AccountStatusToggle
+                        accountId={account.id}
+                        currentStatus={account.status as "active" | "inactive"}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
+                ))}
+              </div>
+            </Show>
+          </Show>
         </CardContent>
-      )}
+      </Show>
     </Card>
+  );
+}
+
+export function InstitutionAccountsSkeleton() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 2 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between rounded-lg border border-border p-3"
+        >
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-3.5 w-32" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+          <Skeleton className="h-5 w-9 rounded-full" />
+        </div>
+      ))}
+    </div>
   );
 }

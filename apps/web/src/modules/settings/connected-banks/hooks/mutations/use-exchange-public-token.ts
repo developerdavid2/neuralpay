@@ -10,11 +10,11 @@ export function useExchangePublicToken() {
     ...trpc.payments.plaid.exchangePublicToken.mutationOptions(),
     onSuccess: () => {
       toast.success("Bank connected successfully");
+
       queryClient.invalidateQueries({
         predicate: (query) => {
           const path = query.queryKey[0] as string[];
-          if (!Array.isArray(path)) return false;
-          return path[0] === "payments";
+          return Array.isArray(path) && path[0] === "payments";
         },
       });
     },

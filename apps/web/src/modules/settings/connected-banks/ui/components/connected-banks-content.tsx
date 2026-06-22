@@ -4,7 +4,6 @@ import { Landmark, Shield } from "lucide-react";
 
 import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
 import { useGetConnectedBanks } from "../../hooks/queries/use-get-connected-bank";
-import { ConnectedBanksSkeleton } from "./connected-banks-skeleton";
 
 import { ConnectBankAccountButton } from "./connect-bank-button";
 import { InstitutionCard } from "./institution-card";
@@ -12,15 +11,13 @@ import { PlaidController } from "./plaid-controller";
 import { ProviderSelectModal } from "./provider-select-modal";
 
 export function ConnectedBanksContent() {
-  const { data: connectedBanks = [], isLoading: isLoadingBanks } =
-    useGetConnectedBanks();
-  const { accountsData } = useAllAccounts({ isManual: false });
+  const { data: connectedBanks } = useGetConnectedBanks();
+  const { accountsData, isLoadingAccounts } = useAllAccounts({
+    isManual: false,
+  });
+
   const linkedAccounts = accountsData?.filter((a) => a.plaidItemId) ?? [];
   const hasConnectedBanks = connectedBanks.length > 0;
-
-  if (isLoadingBanks) {
-    return <ConnectedBanksSkeleton />;
-  }
 
   return (
     <>
@@ -66,14 +63,15 @@ export function ConnectedBanksContent() {
       {hasConnectedBanks && (
         <div className="space-y-4">
           {connectedBanks.map((bank) => {
-            const bankAccounts = linkedAccounts.filter(
-              (a) => a.plaidItemId === bank.itemId,
-            );
+            const bankAccounts = isLoadingAccounts
+              ? []
+              : linkedAccounts.filter((a) => a.plaidItemId === bank.itemId);
             return (
               <InstitutionCard
                 key={bank.id}
                 bank={bank}
                 accounts={bankAccounts}
+                isLoadingAccounts={isLoadingAccounts}
               />
             );
           })}

@@ -1,7 +1,8 @@
+import { paymentServiceEnv } from "@neuralpay/env/payment";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
-const KEY = Buffer.from(process.env.ENCRYPTION_KEY!, "hex");
+const KEY = Buffer.from(paymentServiceEnv.ENCRYPTION_KEY, "hex");
 export function encrypt(plaintext: string): string {
   const iv = randomBytes(12);
   const cipher = createCipheriv(ALGORITHM, KEY, iv);

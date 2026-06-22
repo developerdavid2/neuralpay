@@ -16,13 +16,10 @@ export function PlaidController() {
 
   // Step 1: fetch link token as soon as provider is confirmed
   useEffect(() => {
-    let cancelled = false;
     if (confirmedProvider === "plaid" && !token) {
       createToken(undefined, {
-        onSuccess: (data) => {
-          if (!cancelled) setToken(data.linkToken);
-        },
-        onError: () => resetState(),
+        onSuccess: (data) => setToken(data.linkToken),
+        onError: () => resetState(), // reset everything if token fetch fails
       });
     }
     // Clean up local state when flow is reset
@@ -30,9 +27,6 @@ export function PlaidController() {
       setToken(null);
       setLinkOpened(false);
     }
-    return () => {
-      cancelled = true;
-    };
   }, [confirmedProvider, createToken, resetState, token]);
 
   const onSuccess = useCallback(
@@ -68,9 +62,8 @@ export function PlaidController() {
   useEffect(() => {
     if (ready && token && !linkOpened && confirmedProvider === "plaid") {
       setLinkOpened(true);
-      closeModal();
-      const timer = setTimeout(() => open(), 50);
-      return () => clearTimeout(timer);
+      closeModal(); // dismiss provider modal first
+      setTimeout(() => open(), 50); // then open Plaid
     }
   }, [ready, token, linkOpened, confirmedProvider, closeModal, open]);
 

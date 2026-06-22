@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Settings } from "lucide-react";
-import { settingsSections } from "../constants";
 import { cn } from "@neuralpay/ui/lib/utils";
+import { settingsSections } from "../constants";
 
 export function SettingsSidebar() {
   const pathname = usePathname();
@@ -34,27 +33,32 @@ export function SettingsSidebar() {
                       <Link
                         href={item.href}
                         className={cn(
-                          "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-violet-300/20",
-                          !active && item.danger && "text-destructive",
+                          "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-violet-300/10",
+                          !active &&
+                            item.danger &&
+                            "text-destructive hover:bg-destructive/10",
                           active &&
                             item.danger &&
-                            "text-destructive hover:bg-destructive/10 bg-destructive/10",
+                            "text-destructive bg-destructive/10 hover:bg-destructive/10",
                           active &&
                             !item.danger &&
-                            "text-primary bg-primary/10",
+                            "text-primary dark:text-violet-300 bg-primary/10 hover:bg-primary/10",
                         )}
                       >
                         <item.icon
                           className={cn(
-                            "h-4 w-4 transition-colors",
-                            active
-                              ? "text-primary"
-                              : item.danger
-                                ? "text-destructive"
-                                : "text-muted-foreground group-hover:text-foreground",
+                            "h-4 w-4 shrink-0 transition-colors",
+                            !active &&
+                              !item.danger &&
+                              "text-muted-foreground group-hover:text-foreground",
+                            !active && item.danger && "text-destructive",
+                            active &&
+                              !item.danger &&
+                              "text-primary dark:text-violet-300",
+                            active && item.danger && "text-destructive",
                           )}
                         />
-                        {item.label}
+                        <span>{item.label}</span>
                       </Link>
                     </li>
                   );
@@ -63,19 +67,6 @@ export function SettingsSidebar() {
             </div>
           ))}
         </nav>
-
-        {/* Footer hint
-        <div className="p-4 border-t border-border">
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Need help?{" "}
-            <Link
-              href={"/support" as string}
-              className="text-primary hover:underline underline-offset-2"
-            >
-              Contact support
-            </Link>
-          </p>
-        </div> */}
       </div>
     </aside>
   );

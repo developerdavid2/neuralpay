@@ -103,7 +103,7 @@ export const PlaidService = {
             );
         }
 
-        this.syncTransactions(
+        await this.syncTransactions(
           userId,
           accessToken,
           itemId,
@@ -132,11 +132,14 @@ export const PlaidService = {
       }
 
       // Step 3: Start background sync (don't await - fire and forget)
-      this.syncTransactions(userId, accessToken, itemId, institutionName).catch(
-        (err) => {
-          console.error("[plaid] Background sync failed:", err);
-        },
-      );
+      await this.syncTransactions(
+        userId,
+        accessToken,
+        itemId,
+        institutionName,
+      ).catch((err) => {
+        console.error("[plaid] Background sync failed:", err);
+      });
 
       return { success: true };
     } catch (error) {
