@@ -11,6 +11,7 @@ import type {
 } from "@neuralpay/types";
 import { and, eq, inArray } from "drizzle-orm";
 import { CountryCode, Products } from "plaid";
+import { decrypt, encrypt } from "../lib/crypto";
 import { mapPlaidCategoryToEnum } from "../lib/plaidCategoryMap";
 import { plaidClient } from "../lib/plaidClient";
 
@@ -82,7 +83,7 @@ export const PlaidService = {
         await db
           .update(connectedPlaidBanks)
           .set({
-            accessToken,
+            accessToken: encrypt(accessToken),
             itemId,
             institutionName: institutionName ?? existing.institutionName,
             transactionCursor:
@@ -119,7 +120,7 @@ export const PlaidService = {
         .insert(connectedPlaidBanks)
         .values({
           userId,
-          accessToken,
+          accessToken: encrypt(accessToken),
           itemId,
           institutionId,
           institutionName,
@@ -161,7 +162,9 @@ export const PlaidService = {
     // Tell Plaid to invalidate the access token on their end
     if (bank.accessToken) {
       try {
-        await plaidClient.itemRemove({ access_token: bank.accessToken });
+        await plaidClient.itemRemove({
+          access_token: decrypt(bank.accessToken),
+        });
         console.log("[plaid] Item removed from Plaid");
       } catch (err) {
         // Non-fatal — still proceed with local deletion

@@ -272,7 +272,6 @@ export const AccountsService = {
     }
   },
 
-  // ── TOGGLE STATUS (synced accounts only)
   async toggleStatus(
     id: string,
     userId: string,

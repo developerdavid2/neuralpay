@@ -2,6 +2,7 @@ import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { PlaidService } from "../services/plaid.service";
+import { decrypt } from "../lib/crypto";
 
 export const plaidRouter = router({
   getConnectedBanks: protectedProcedure.query(async ({ ctx }) => {
@@ -89,7 +90,7 @@ export const plaidRouter = router({
       try {
         return await PlaidService.syncTransactions(
           ctx.session.user.id,
-          bank.accessToken,
+          decrypt(bank.accessToken),
           bank.itemId!,
           bank.institutionName,
         );
