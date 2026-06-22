@@ -1,15 +1,13 @@
 import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { PlaidService } from "../services/plaid.service";
 import { decrypt } from "../lib/crypto";
+import { PlaidService } from "../services/plaid.service";
 
 export const plaidRouter = router({
   getConnectedBanks: protectedProcedure.query(async ({ ctx }) => {
     const banks = await PlaidService.getConnectedBanks(ctx.session.user.id);
-    return banks.map(
-      ({ accessToken, itemId, transactionCursor, ...safe }) => safe,
-    );
+    return banks.map(({ accessToken, transactionCursor, ...safe }) => safe);
   }),
 
   createLinkToken: protectedProcedure.mutation(async ({ ctx }) => {
