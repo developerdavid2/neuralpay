@@ -51,13 +51,8 @@ export function AccountsList({
 
   const { onOpenView, onOpenEdit } = useAccountDrawer();
   const { setUrl } = useAccountUrlSync();
-  const {
-    handleDelete: runDelete,
-    handleDisconnect: runDisconnect,
-    handleBatchDelete,
-  } = useAccountMutations();
-  const { isRowPending, isDisconnecting, isBatchDeleting } =
-    useAccountPendingSelectors();
+  const { handleDelete: runDelete, handleBatchDelete } = useAccountMutations();
+  const { isRowPending, isBatchDeleting } = useAccountPendingSelectors();
   const [ConfirmDialog, confirm] = useConfirm();
   const { setPage } = useDataTableNavigation();
 
@@ -131,23 +126,6 @@ export function AccountsList({
     await runDelete(account.id);
   };
 
-  const handleDisconnect = async (account: BankAccount) => {
-    const ok = await confirm({
-      title: "Disconnect account",
-      message: (
-        <>
-          Are you sure you want to disconnect <strong>{account.name}</strong>{" "}
-          from {account.bankName ?? "your bank"}? Syncing will stop, but
-          existing transactions will remain in your records.
-        </>
-      ),
-      variant: "destructive",
-      confirmLabel: "Disconnect",
-    });
-    if (!ok) return;
-    await runDisconnect(account.id);
-  };
-
   useEffect(() => {
     if (!focusAccountId || bankAccounts.length === 0) return;
     const target = bankAccounts.find((a) => a.id === focusAccountId);
@@ -198,9 +176,7 @@ export function AccountsList({
           onView: handleView,
           onEdit: handleEdit,
           onDelete: handleDelete,
-          onDisconnect: handleDisconnect,
           isRowPending,
-          isDisconnecting,
         })}
         data={bankAccounts}
         pagination="paged"

@@ -5,6 +5,7 @@ export * from "./insights";
 export * from "./chats";
 export * from "./pagination";
 export * from "./accounts";
+export * from "./plaid";
 export {};
 
 export type ServiceResult<T> =

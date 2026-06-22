@@ -9,7 +9,7 @@ export const ACCOUNT_TYPES = [
   "crypto",
 ] as const;
 
-export const ACCOUNT_STATUSES = ["active", "disconnected"] as const;
+export const ACCOUNT_STATUSES = ["active", "inactive"] as const;
 export const SUPPORTED_CURRENCIES = [
   "USD",
   "EUR",

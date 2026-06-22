@@ -18,7 +18,6 @@ export function useAccountAggregates() {
   const totalBalance = ACCOUNT_TYPES.reduce((sum, type) => {
     const agg = aggregateMap?.get(type);
     if (!agg) return sum;
-    const config = ACCOUNT_TYPE_CONFIG[type];
     return sum + agg.totalBalance;
   }, 0);
 

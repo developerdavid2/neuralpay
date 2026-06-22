@@ -21,6 +21,7 @@ import { cn } from "@neuralpay/ui/lib/utils";
 interface ComboboxOption {
   label: string;
   value: string;
+  disabled?: boolean; // ← add this
 }
 
 interface Props {
@@ -81,13 +82,19 @@ export function SearchableCombobox({
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup className="overflow-visible">
+            <CommandGroup>
               {options.map((opt) => (
                 <CommandItem
                   key={opt.value}
                   value={opt.label}
-                  className="capitalize"
+                  className={cn(
+                    "capitalize",
+                    opt.disabled &&
+                      "opacity-40 cursor-not-allowed pointer-events-none",
+                  )}
+                  disabled={opt.disabled}
                   onSelect={() => {
+                    if (opt.disabled) return;
                     onChange(opt.value === value ? "" : opt.value);
                     setOpen(false);
                   }}

@@ -44,13 +44,6 @@ export function useAccountMutations() {
     },
   });
 
-  const disconnectAccount = useMutation({
-    ...trpc.payments.accounts.disconnect.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateAccountsQueries(queryClient);
-    },
-  });
-
   const handleCreate = useCallback(
     async (values: Parameters<typeof createAccount.mutateAsync>[0]) => {
       setPendingCreate(true);
@@ -107,26 +100,6 @@ export function useAccountMutations() {
     [deleteAccount, markDeleting, unmarkDeleting],
   );
 
-  const handleDisconnect = useCallback(
-    async (id: string) => {
-      markDisconnecting([id]);
-      try {
-        await disconnectAccount.mutateAsync({ id });
-        toast.success("Account disconnected successfully");
-      } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to disconnect account";
-        toast.error(message);
-        throw error;
-      } finally {
-        unmarkDisconnecting([id]);
-      }
-    },
-    [disconnectAccount, markDisconnecting, unmarkDisconnecting],
-  );
-
   const handleBatchDelete = useCallback(
     async (ids: string[]) => {
       markDeleting(ids);
@@ -164,7 +137,6 @@ export function useAccountMutations() {
     handleCreate,
     handleUpdate,
     handleDelete,
-    handleDisconnect,
     handleBatchDelete,
     ...pending,
   };

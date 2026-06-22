@@ -25,18 +25,14 @@ interface ColumnProps {
   onView: (account: BankAccount) => void;
   onEdit: (account: BankAccount) => void;
   onDelete: (account: BankAccount) => void;
-  onDisconnect: (account: BankAccount) => void;
   isRowPending: (id: string) => boolean;
-  isDisconnecting: (id: string) => boolean;
 }
 
 export function accountColumns({
   onView,
   onEdit,
   onDelete,
-  onDisconnect,
   isRowPending,
-  isDisconnecting,
 }: ColumnProps): ColumnDef<BankAccount>[] {
   return [
     {
@@ -208,8 +204,6 @@ export function accountColumns({
         const account = row.original;
         const isSynced = !account.isManual;
         const pending = isRowPending(account.id);
-        const disconnecting = isDisconnecting(account.id);
-        const canDisconnect = isSynced && account.status === "active";
 
         return (
           <DropdownMenu>
@@ -235,19 +229,7 @@ export function accountColumns({
               >
                 <Eye className="size-4 mr-2" /> View Details
               </DropdownMenuItem>
-              {canDisconnect && (
-                <DropdownMenuItem
-                  onClick={() => onDisconnect(account)}
-                  disabled={pending || disconnecting}
-                >
-                  {disconnecting ? (
-                    <Loader2 className="size-4 mr-2 animate-spin" />
-                  ) : (
-                    <Unplug className="size-4 mr-2" />
-                  )}
-                  {disconnecting ? "Disconnecting..." : "Disconnect Account"}
-                </DropdownMenuItem>
-              )}
+
               <DropdownMenuItem
                 onClick={() => onEdit(account)}
                 disabled={isSynced || pending}

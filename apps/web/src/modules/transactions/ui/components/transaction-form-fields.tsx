@@ -1,6 +1,7 @@
 import { AmountInput } from "@/components/amount-input";
 import { DatePicker } from "@/components/date-picker";
 import { SearchableCombobox } from "@/components/searchable-combobox";
+import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
 import { TRANSACTION_CATEGORY } from "@neuralpay/types";
 import {
   Field,
@@ -24,15 +25,12 @@ import type { FormValues } from "../../types";
 interface Props {
   form: UseFormReturn<FormValues>;
   disabled?: boolean;
-  bankAccountOptions: { label: string; value: string }[];
 }
 
-export function TransactionFormFields({
-  form,
-  disabled,
-  bankAccountOptions,
-}: Props) {
+export function TransactionFormFields({ form, disabled }: Props) {
   const pending = disabled || form.formState.isSubmitting;
+
+  const { bankAccountOptions } = useAllAccounts();
 
   const categoryOptions = TRANSACTION_CATEGORY.map((cat) => ({
     label: cat.replace(/_/g, " "),

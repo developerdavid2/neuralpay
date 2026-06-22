@@ -11,6 +11,7 @@ import {
   TransactionsList,
   TransactionsListSkeleton,
 } from "../components/transaction-list";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 
 interface TransactionsViewProps {
   search?: string;

@@ -1,52 +1,39 @@
 "use client";
 
 import * as React from "react";
-
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Button } from "@neuralpay/ui/components/button";
-
+import { Loader } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface PremiumButtonProps extends React.ComponentProps<typeof Button> {
   icon?: LucideIcon;
+  isLoading?: boolean;
 }
 
 export function PremiumButton({
   children,
   className,
   icon: Icon,
+  isLoading = false,
   disabled,
   type,
   ...props
 }: PremiumButtonProps) {
+  const isDisabled = disabled || isLoading;
+
   return (
     <Button
       type={type}
-      disabled={disabled}
+      disabled={isDisabled}
       className={cn(
-        // OUTER SHELL
         "group relative overflow-hidden rounded-xl p-px",
-
-        // BRAND SURFACE (Updated from blue OKLCH to true violet RGBA)
         "bg-[linear-gradient(180deg,rgba(141,68,245,1)_0%,rgba(81,30,154,1)_100%)]",
-
-        // DEPTH (Updated shadow tints from blue/indigo to rich violet)
         "shadow-[0px_0px_8px_rgba(141,68,245,0.15),0px_0px_24px_rgba(81,30,154,0.25)]",
-
-        // LIGHT MODE
-        "border border-white/10",
-
-        // DARK MODE
-        "dark:border-white/5",
-
-        // INTERACTION
+        "border border-white/10 dark:border-white/5",
         "transition-all duration-300 ease-out",
-        "hover:scale-[1.015]",
-        "active:scale-[0.985]",
-
-        // DISABLED
+        "hover:scale-[1.015] active:scale-[0.985]",
         "disabled:pointer-events-none disabled:opacity-60",
-
         className,
       )}
       {...props}
@@ -70,9 +57,12 @@ export function PremiumButton({
 
         {/* CONTENT */}
         <span className="relative z-10 flex items-center gap-3">
-          {Icon && (
+          {/* Spinner replaces icon when loading */}
+          {isLoading ? (
+            <Loader className="size-5 text-violet-100 animate-spin" />
+          ) : Icon ? (
             <Icon className="size-5 text-violet-100 transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-105" />
-          )}
+          ) : null}
 
           <span className="text-sm capitalize tracking-[0.03em] text-white">
             {children}

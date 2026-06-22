@@ -17,9 +17,10 @@ export const accountTypeEnum = pgEnum("account_type", [
   "investment",
   "crypto",
 ]);
+
 export const accountStatusEnum = pgEnum("account_status", [
   "active",
-  "disconnected",
+  "inactive",
 ]);
 
 export const bankAccounts = pgTable(

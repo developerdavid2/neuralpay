@@ -4,27 +4,23 @@ import {
   type CreateTransactionInput,
   type UpdateTransactionInput,
 } from "@neuralpay/types";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-} from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 
 import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
 
-import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
-import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
-import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
-import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
 import { useConfirm } from "@/hooks/use-confirm";
-import type { FormValues } from "../../types";
-import { TransactionForm } from "./transaction-form";
+import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
+import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
+import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
+import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
+import { Sheet, SheetContent } from "@neuralpay/ui/components/sheet";
 import {
   useTransactionDrawer,
   type TransactionDrawerMode,
 } from "../../store/use-transaction-drawer";
+import type { FormValues } from "../../types";
+import { TransactionForm } from "./transaction-form";
 
 export function TransactionFormDrawer() {
   const { isOpen, onClose, transactionId, mode } = useTransactionDrawer();
@@ -36,8 +32,7 @@ export function TransactionFormDrawer() {
   if (!isOpen || (!isEdit && !isAdd)) return null;
 
   return (
-    <Drawer
-      direction="right"
+    <Sheet
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
@@ -46,26 +41,26 @@ export function TransactionFormDrawer() {
         }
       }}
     >
-      <DrawerContent
+      <SheetContent
+        side="right"
         className={cn(
           "data-[vaul-drawer-direction=right]:inset-y-0",
           "data-[vaul-drawer-direction=right]:right-0",
           "data-[vaul-drawer-direction=right]:h-full",
           "data-[vaul-drawer-direction=right]:w-full",
-          "data-[vaul-drawer-direction=right]:max-w-[420px]",
+          "data-[vaul-drawer-direction=right]:max-w-105",
           "flex flex-col",
           "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
         )}
       >
-        <DrawerTitle />
         <TransactionFormInner
           transactionId={transactionId}
           mode={mode}
           onClose={onClose}
           clearUrl={clearUrl}
         />
-      </DrawerContent>
-    </Drawer>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -85,7 +80,7 @@ function TransactionFormInner({
   const { transaction } = useTransactionDetail(
     isEdit && transactionId ? transactionId : "",
   );
-  const { bankAccountOptions, isLoadingAccounts } = useAllAccounts();
+  const { isLoadingAccounts } = useAllAccounts();
 
   const {
     handleCreate,
@@ -186,7 +181,6 @@ function TransactionFormInner({
         isEdit={isEdit}
         isSaving={isSaving}
         isDeleting={deleting}
-        bankAccountOptions={bankAccountOptions}
         onSubmit={onSubmit}
         onDelete={isEdit ? onDelete : undefined}
         onClose={onClose}

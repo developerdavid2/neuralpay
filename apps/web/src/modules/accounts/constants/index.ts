@@ -18,8 +18,8 @@ export const ACCOUNT_STATUS_CONFIG: Record<
     color:
       "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
   },
-  disconnected: {
-    label: "Disconnected",
+  inactive: {
+    label: "Inactive",
     color:
       "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
   },

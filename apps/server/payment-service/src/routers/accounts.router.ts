@@ -131,12 +131,13 @@ export const accountsRouter = router({
     return result.data;
   }),
 
-  disconnect: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+  toggleStatus: protectedProcedure
+    .input(z.object({ id: z.uuid(), status: z.enum(["active", "inactive"]) }))
     .mutation(async ({ ctx, input }) => {
-      const result = await AccountsService.disconnect(
+      const result = await AccountsService.toggleStatus(
         input.id,
         ctx.session.user.id,
+        input.status,
       );
       if (!result.success) {
         throw new TRPCError({
