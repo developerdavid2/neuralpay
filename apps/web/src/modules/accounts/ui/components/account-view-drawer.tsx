@@ -263,17 +263,6 @@ export function AccountViewDrawer() {
                         <Separator />
                       </>
                     )}
-
-                    <DetailField
-                      label="Created"
-                      value={format(
-                        new Date(acc.createdAt),
-                        "MMM do, yyyy 'at' h:mm a",
-                      )}
-                      icon={
-                        <Calendar className="size-4 text-muted-foreground" />
-                      }
-                    />
                   </div>
                 </ScrollArea>
 

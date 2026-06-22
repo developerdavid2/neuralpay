@@ -13,6 +13,7 @@ export function useAllAccounts(filter?: AccountsListAllInput) {
   const bankAccountOptions = (accountsData ?? []).map((acc) => ({
     label: `${acc.bankName ?? "Unknown"} • ${acc.name}`,
     value: acc.id,
+    disabled: acc.status === "inactive",
   }));
 
   return {

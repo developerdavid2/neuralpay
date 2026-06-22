@@ -20,11 +20,8 @@ interface DatePickerProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-  /** Disallow future dates. Defaults to false. */
   disableFuture?: boolean;
-  /** Earliest selectable date */
   fromDate?: Date;
-  /** Latest selectable date */
   toDate?: Date;
 }
 
@@ -34,7 +31,7 @@ export function DatePicker({
   placeholder = "Select date",
   className,
   disabled,
-  disableFuture = false,
+  disableFuture = true,
   fromDate,
   toDate,
 }: DatePickerProps) {
@@ -60,6 +57,12 @@ export function DatePicker({
 
   const label = value ? format(value, "MMM d, yyyy") : placeholder;
 
+  const getTodayAtMidnight = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
+
   return (
     <Popover open={open} onOpenChange={disabled ? undefined : setOpen}>
       <PopoverTrigger asChild>
@@ -69,12 +72,12 @@ export function DatePicker({
           size="sm"
           disabled={disabled}
           className={cn(
-            "gap-2 h-8 font-normal justify-start",
-            !hasActive && "text-muted-foreground",
+            "gap-2 h-10 font-normal flex items-center",
+            !hasActive && "text-muted-foreground ",
             className,
           )}
         >
-          <CalendarIcon className="size-3.5 shrink-0" />
+          <CalendarIcon className="size-4 shrink-0 mb-1" />
           <span className="flex-1 text-left">{label}</span>
           {hasActive && (
             <span
@@ -83,7 +86,7 @@ export function DatePicker({
               className="ml-0.5 rounded-full hover:text-destructive transition-colors"
               onClick={handleClear}
             >
-              <X className="size-3" />
+              <X className="size-4" />
             </span>
           )}
         </Button>
@@ -96,12 +99,24 @@ export function DatePicker({
           defaultMonth={value}
           captionLayout="dropdown"
           startMonth={fromDate ?? new Date(2020, 0)}
-          endMonth={toDate ?? (disableFuture ? new Date() : undefined)}
+          endMonth={
+            toDate ?? (disableFuture ? getTodayAtMidnight() : undefined)
+          }
           disabled={(() => {
             const matchers: Matcher[] = [];
-            if (disableFuture) matchers.push({ after: new Date() });
-            if (fromDate) matchers.push({ before: fromDate });
-            if (toDate) matchers.push({ after: toDate });
+
+            if (disableFuture) {
+              matchers.push({ after: getTodayAtMidnight() });
+            }
+
+            if (fromDate) {
+              matchers.push({ before: fromDate });
+            }
+
+            if (toDate) {
+              matchers.push({ after: toDate });
+            }
+
             return matchers.length > 0 ? matchers : undefined;
           })()}
           autoFocus

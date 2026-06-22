@@ -24,7 +24,6 @@ export function ProviderSelectModal() {
     confirmProvider,
   } = useProviderModal();
 
-  // After Continue is clicked, confirmedProvider is set and selectedProvider is null
   const isInitializing = confirmedProvider !== null;
 
   return (

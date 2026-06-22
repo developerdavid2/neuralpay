@@ -1,10 +1,11 @@
 "use client";
 
-import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
-import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
-import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
 import { useConfirm } from "@/hooks/use-confirm";
 import { formatAmount } from "@/lib/utils";
+import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
+import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
+import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
+import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   Drawer,
@@ -36,12 +37,12 @@ import {
   X,
 } from "lucide-react";
 import { isSyncedSource } from "../../lib/utils";
-import { SourceBadge, StatusBadge } from "./transaction-badges";
-import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
 import {
   useTransactionDrawer,
   type TransactionDrawerMode,
 } from "../../store/use-transaction-drawer";
+import { SourceBadge, StatusBadge } from "./transaction-badges";
+import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
 
 function DetailField({
   label,
@@ -165,9 +166,7 @@ function TransactionViewInner({
       await handleDelete(tx.id);
       clearUrl();
       onClose();
-    } catch {
-      // Error toast handled in mutation hook
-    }
+    } catch {}
   };
 
   return (
@@ -292,7 +291,9 @@ function TransactionViewInner({
             <DetailField
               label="Category"
               value={
-                <span className="font-medium capitalize">{tx.category}</span>
+                <span className="font-medium capitalize">
+                  {CATEGORY_LABELS[tx.category ?? "other"]}
+                </span>
               }
               icon={<Tag className="size-4 text-muted-foreground" />}
             />
@@ -364,11 +365,6 @@ function TransactionViewInner({
                 <Separator />
               </>
             )}
-            <DetailField
-              label="Created"
-              value={format(new Date(tx.createdAt), "MMM do, yyyy 'at' h:mm a")}
-              icon={<Calendar className="size-4 text-muted-foreground" />}
-            />
           </div>
         </ScrollArea>
 

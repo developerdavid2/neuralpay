@@ -1,20 +1,20 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createTransactionSchema,
   updateTransactionSchema,
 } from "@neuralpay/types";
-import type { FormValues } from "../../types";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@neuralpay/ui/components/button";
 import {
-  DrawerClose,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@neuralpay/ui/components/drawer";
-import { Trash2, X, Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+  SheetClose,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@neuralpay/ui/components/sheet";
 import { cn } from "@neuralpay/ui/lib/utils";
+import { Loader2, Trash2, X } from "lucide-react";
+import { useForm } from "react-hook-form";
+import type { FormValues } from "../../types";
 import { TransactionFormFields } from "./transaction-form-fields";
 
 export function TransactionForm({
@@ -22,7 +22,6 @@ export function TransactionForm({
   isEdit,
   isSaving,
   isDeleting = false,
-  bankAccountOptions,
   onSubmit,
   onDelete,
   onClose,
@@ -32,7 +31,6 @@ export function TransactionForm({
   isEdit: boolean;
   isSaving: boolean;
   isDeleting?: boolean;
-  bankAccountOptions: { label: string; value: string }[];
   onSubmit: (values: FormValues) => Promise<void>;
   onDelete?: () => Promise<void>;
   onClose: () => void;
@@ -65,20 +63,20 @@ export function TransactionForm({
         </div>
       )}
       {/* Header */}
-      <DrawerHeader className="px-6 py-4 border-b space-y-1 shrink-0">
+      <SheetHeader className="px-6 py-4 border-b space-y-1 shrink-0">
         <div className="flex items-start justify-between">
           <div>
-            <DrawerTitle className="text-lg">
+            <SheetTitle className="text-lg">
               {isEdit ? "Edit Transaction" : "New Transaction"}
-            </DrawerTitle>
-            <DrawerDescription>
+            </SheetTitle>
+            <SheetDescription>
               {isEdit
                 ? "Update your transaction details"
                 : "Add a manual transaction"}
-            </DrawerDescription>
+            </SheetDescription>
           </div>
 
-          <div className="flex items-center gap-1 -mr-2 -mt-2">
+          <div className="flex items-center gap-1 -mr-2">
             {isEdit && onDelete && (
               <Button
                 type="button"
@@ -99,7 +97,7 @@ export function TransactionForm({
                 )}
               </Button>
             )}
-            <DrawerClose asChild>
+            <SheetClose asChild>
               <Button
                 variant="ghost"
                 size="icon"
@@ -112,22 +110,18 @@ export function TransactionForm({
               >
                 <X className="size-4" />
               </Button>
-            </DrawerClose>
+            </SheetClose>
           </div>
         </div>
-      </DrawerHeader>
+      </SheetHeader>
 
       {/* Scrollable fields */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5 scrollbar-thin">
-        <TransactionFormFields
-          form={form}
-          disabled={formDisabled}
-          bankAccountOptions={bankAccountOptions}
-        />
+        <TransactionFormFields form={form} disabled={formDisabled} />
       </div>
 
       {/* Footer */}
-      <DrawerFooter className="px-6 py-4 border-t shrink-0">
+      <SheetFooter className="px-6 py-4 border-t shrink-0">
         <Button
           type="submit"
           disabled={formDisabled || (isEdit && !form.formState.isValid)}
@@ -145,7 +139,7 @@ export function TransactionForm({
           )}
         </Button>
 
-        <DrawerClose asChild>
+        <SheetClose asChild>
           <Button
             type="button"
             variant="outline"
@@ -154,8 +148,8 @@ export function TransactionForm({
           >
             Cancel
           </Button>
-        </DrawerClose>
-      </DrawerFooter>
+        </SheetClose>
+      </SheetFooter>
     </form>
   );
 }

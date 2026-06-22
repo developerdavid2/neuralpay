@@ -253,6 +253,7 @@ export const PlaidService = {
             .set({
               balance: (acc.balances.current ?? 0).toString(),
               bankName: institutionName ?? undefined,
+              maskedNumber: acc.mask ?? undefined,
               status: "active",
               plaidItemId: itemId,
               lastSyncedAt: new Date(),
@@ -276,6 +277,7 @@ export const PlaidService = {
               status: "active",
               plaidItemId: itemId,
               plaidAccountId: acc.account_id,
+              maskedNumber: acc.mask ?? null,
               lastSyncedAt: new Date(),
             })
             .returning({ id: bankAccounts.id });

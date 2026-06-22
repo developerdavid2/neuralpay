@@ -96,6 +96,7 @@ export function transactionColumns({
     {
       accessorKey: "merchant",
       header: "Merchant / Description",
+      size: 280,
       cell: ({ row }) => {
         const tx = row.original;
         const Icon = CATEGORY_ICONS[tx.category ?? "other"];
@@ -136,9 +137,7 @@ export function transactionColumns({
       ),
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground">
-          {row.original.category ??
-            CATEGORY_LABELS[row.original.category ?? "other"] ??
-            "Other"}
+          {CATEGORY_LABELS[row.original.category ?? "Other"] ?? "Other"}
         </span>
       ),
       size: 120,

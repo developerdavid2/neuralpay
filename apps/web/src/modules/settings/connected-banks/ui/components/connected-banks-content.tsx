@@ -1,17 +1,15 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { Landmark, Plus, Shield } from "lucide-react";
+import { Landmark, Shield } from "lucide-react";
 
 import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
 import { useGetConnectedBanks } from "../../hooks/queries/use-get-connected-bank";
 import { ConnectedBanksSkeleton } from "./connected-banks-skeleton";
 
-import { useProviderModal } from "../../hooks/store/use-provider-modal";
+import { ConnectBankAccountButton } from "./connect-bank-button";
 import { InstitutionCard } from "./institution-card";
 import { PlaidController } from "./plaid-controller";
 import { ProviderSelectModal } from "./provider-select-modal";
-import { ConnectBankAccountButton } from "./connect-bank-button";
 
 export function ConnectedBanksContent() {
   const { data: connectedBanks = [], isLoading: isLoadingBanks } =

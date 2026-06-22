@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@neuralpay/ui/components/button";
 import {
@@ -21,6 +21,7 @@ import { cn } from "@neuralpay/ui/lib/utils";
 interface ComboboxOption {
   label: string;
   value: string;
+  disabled?: boolean;
 }
 
 interface Props {
@@ -45,8 +46,43 @@ export function SearchableCombobox({
   className,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const selected = options.find((o) => o.value === value);
+
+  // ✅ FIX: Force focus to the input when popover opens
+  // Bypass drawer's focus management by using a direct ref
+  useEffect(() => {
+    if (open) {
+      // Small delay to let DOM settle
+      const timer = setTimeout(() => {
+        if (inputRef.current) {
+          // Force focus directly on the input ref
+          inputRef.current.focus();
+          inputRef.current.click(); // Ensure it's activated
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  // ✅ BACKUP: Also try to focus via cmdk selector if ref didn't work
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        const input = document.querySelector(
+          "[cmdk-input]",
+        ) as HTMLInputElement;
+        if (input && document.activeElement !== input) {
+          input.focus();
+        }
+      }, 150);
+
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   return (
     <Popover
@@ -56,6 +92,7 @@ export function SearchableCombobox({
     >
       <PopoverTrigger asChild>
         <Button
+          ref={triggerRef}
           type="button"
           variant="secondary"
           role="combobox"
@@ -76,9 +113,38 @@ export function SearchableCombobox({
         className="w-[var(--radix-popover-trigger-width)] p-0"
         align="start"
         sideOffset={4}
+        // ✅ Prevent popover from being closed by arrow keys while typing
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            setOpen(false);
+          }
+        }}
       >
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+        <Command
+          shouldFilter={true}
+          // ✅ Prevent command from stealing focus
+          onKeyDown={(e) => {
+            // Allow normal typing in input
+            if (e.key !== "Tab") {
+              e.stopPropagation();
+            }
+          }}
+        >
+          {/* ✅ Use ref to directly access and focus the input */}
+          <CommandInput
+            ref={inputRef}
+            placeholder={searchPlaceholder}
+            className="placeholder:text-muted-foreground"
+            // ✅ Ensure input doesn't lose focus on any click
+            onBlur={(e) => {
+              // Re-focus if focus moves away
+              setTimeout(() => {
+                if (e.currentTarget && open) {
+                  e.currentTarget.focus();
+                }
+              }, 0);
+            }}
+          />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup className="overflow-visible">
@@ -86,8 +152,13 @@ export function SearchableCombobox({
                 <CommandItem
                   key={opt.value}
                   value={opt.label}
-                  className="capitalize"
+                  className={cn(
+                    "capitalize cursor-pointer",
+                    opt.disabled && "opacity-50 cursor-not-allowed",
+                  )}
+                  disabled={opt.disabled}
                   onSelect={() => {
+                    if (opt.disabled) return;
                     onChange(opt.value === value ? "" : opt.value);
                     setOpen(false);
                   }}
