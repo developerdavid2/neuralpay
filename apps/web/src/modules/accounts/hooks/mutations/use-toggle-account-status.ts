@@ -1,3 +1,4 @@
+import { invalidateAccountsQueries } from "@/lib/invalidate-trpc-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -78,13 +79,8 @@ export function useToggleAccountStatus() {
       }
     },
 
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        predicate: (q) => {
-          const path = q.queryKey[0] as string[];
-          return Array.isArray(path) && path[0] === "payments";
-        },
-      });
+    onSettled: async () => {
+      await invalidateAccountsQueries(queryClient);
     },
   });
 }

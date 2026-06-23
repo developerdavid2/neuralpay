@@ -25,6 +25,7 @@
     "@neuralpay/types": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/config": "workspace:*",
+    "@neuralpay/cache": "workspace:*",
     "@trpc/server": "catalog:",
     "@paralleldrive/cuid2": "^2.2.2",
     "date-fns": "catalog:",

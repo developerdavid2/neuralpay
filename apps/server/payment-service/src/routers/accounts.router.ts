@@ -142,7 +142,11 @@ export const accountsRouter = router({
       if (!result.success) {
         throw new TRPCError({
           code:
-            result.code === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR",
+            result.code === "NOT_FOUND"
+              ? "NOT_FOUND"
+              : result.code === "FORBIDDEN"
+                ? "FORBIDDEN"
+                : "INTERNAL_SERVER_ERROR",
           message: result.error,
         });
       }

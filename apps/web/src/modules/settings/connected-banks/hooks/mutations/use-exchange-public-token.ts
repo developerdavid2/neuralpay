@@ -1,3 +1,4 @@
+import { invalidateAllPaymentQueries } from "@/lib/invalidate-trpc-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -8,15 +9,9 @@ export function useExchangePublicToken() {
 
   return useMutation({
     ...trpc.payments.plaid.exchangePublicToken.mutationOptions(),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Bank connected successfully");
-
-      queryClient.invalidateQueries({
-        predicate: (query) => {
-          const path = query.queryKey[0] as string[];
-          return Array.isArray(path) && path[0] === "payments";
-        },
-      });
+      await invalidateAllPaymentQueries(queryClient);
     },
     onError: () => {
       toast.error("Failed to connect bank");

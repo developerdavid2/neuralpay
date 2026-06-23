@@ -58,3 +58,18 @@ export async function invalidateChatSessionQueries(
     invalidateTRPCQueries(queryClient, ["ai", "coach", "getMessages"]),
   ]);
 }
+
+export async function invalidatePlaidQueries(queryClient: QueryClient) {
+  await Promise.all([
+    invalidateTRPCQueries(queryClient, ["payments", "plaid"]),
+  ]);
+}
+
+export async function invalidateAllPaymentQueries(queryClient: QueryClient) {
+  await Promise.all([
+    invalidateTRPCQueries(queryClient, ["payments", "plaid"]),
+    invalidateTRPCQueries(queryClient, ["payments", "accounts"]),
+    invalidateTRPCQueries(queryClient, ["payments", "transactions"]),
+    invalidateTRPCQueries(queryClient, ["ai", "insights"]),
+  ]);
+}
