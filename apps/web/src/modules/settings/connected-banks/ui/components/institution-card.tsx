@@ -25,12 +25,28 @@ export function InstitutionCard({
   isLoadingAccounts?: boolean;
 }) {
   const [expanded, setExpanded] = useState(true);
+  const [pendingStatus, setPendingStatus] = useState<
+    "active" | "inactive" | null
+  >(null);
   const toggleInstitution = useToggleInstitutionAccounts();
 
-  const institutionActive = useMemo(
-    () => accounts.some((a) => a.status === "active"),
-    [accounts],
-  );
+  const institutionActive = useMemo(() => {
+    if (pendingStatus !== null) return pendingStatus === "active";
+    if (isLoadingAccounts) return true;
+    return accounts.some((a) => a.status === "active");
+  }, [accounts, isLoadingAccounts, pendingStatus]);
+
+  const handleInstitutionToggle = (checked: boolean) => {
+    const newStatus = checked ? "active" : "inactive";
+    setPendingStatus(newStatus);
+    toggleInstitution.mutate(
+      { bankId: bank.id, status: newStatus },
+      {
+        onSettled: () => setPendingStatus(null),
+        onError: () => setPendingStatus(null),
+      },
+    );
+  };
 
   return (
     <Card className="bg-gray-400/5">
@@ -41,7 +57,7 @@ export function InstitutionCard({
         <div className="flex items-center justify-between">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <Landmark className="h-5 w-5 text-primary" />
+              <Landmark className="h-5 w-5 text-main" />
             </div>
             <div>
               <div className="flex items-center gap-2 pb-1">
@@ -91,13 +107,8 @@ export function InstitutionCard({
           >
             <Switch
               checked={institutionActive}
-              onCheckedChange={(checked) =>
-                toggleInstitution.mutate({
-                  bankId: bank.id,
-                  status: checked ? "active" : "inactive",
-                })
-              }
-              disabled={toggleInstitution.isPending}
+              onCheckedChange={handleInstitutionToggle}
+              disabled={toggleInstitution.isPending || isLoadingAccounts}
               aria-label="Toggle all accounts in this institution"
             />
             <SyncButton bankId={bank.id} />

@@ -1,103 +1,59 @@
+// hooks/accounts/use-account-mutations.ts
 "use client";
 
-import { invalidateAccountsQueries } from "@/lib/invalidate-trpc-queries";
-import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import {
   useAccountPendingSelectors,
   useAccountPendingStore,
-} from "../../store/use-account-pending";
+} from "../store/use-account-pending";
+import { useCreateAccount } from "./use-create-account";
+import { useUpdateAccount } from "./use-update-account";
+import { useDeleteAccount } from "./use-delete-account";
 
 export function useAccountMutations() {
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
-  const {
-    markDeleting,
-    unmarkDeleting,
-    markDisconnecting,
-    unmarkDisconnecting,
-    setPendingUpdateId,
-    setPendingCreate,
-  } = useAccountPendingStore();
+  const { markDeleting, unmarkDeleting, setPendingUpdateId, setPendingCreate } =
+    useAccountPendingStore();
   const pending = useAccountPendingSelectors();
 
-  const createAccount = useMutation({
-    ...trpc.payments.accounts.create.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateAccountsQueries(queryClient);
-    },
-  });
-
-  const updateAccount = useMutation({
-    ...trpc.payments.accounts.update.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateAccountsQueries(queryClient);
-    },
-  });
-
-  const deleteAccount = useMutation({
-    ...trpc.payments.accounts.delete.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateAccountsQueries(queryClient);
-    },
-  });
+  const create = useCreateAccount();
+  const update = useUpdateAccount();
+  const deleteMut = useDeleteAccount();
 
   const handleCreate = useCallback(
-    async (values: Parameters<typeof createAccount.mutateAsync>[0]) => {
+    async (values: Parameters<typeof create.mutateAsync>[0]) => {
       setPendingCreate(true);
       try {
-        const result = await createAccount.mutateAsync(values);
-        toast.success("Account created successfully");
-        return result;
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to create account";
-        toast.error(message);
-        throw error;
+        return await create.mutateAsync(values);
       } finally {
         setPendingCreate(false);
       }
     },
-    [createAccount, setPendingCreate],
+    [create, setPendingCreate],
   );
 
   const handleUpdate = useCallback(
-    async (values: Parameters<typeof updateAccount.mutateAsync>[0]) => {
+    async (values: Parameters<typeof update.mutateAsync>[0]) => {
       setPendingUpdateId(values.id);
       try {
-        const result = await updateAccount.mutateAsync(values);
-        toast.success("Account updated successfully");
-        return result;
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to update account";
-        toast.error(message);
-        throw error;
+        return await update.mutateAsync(values);
       } finally {
         setPendingUpdateId(null);
       }
     },
-    [updateAccount, setPendingUpdateId],
+    [update, setPendingUpdateId],
   );
 
   const handleDelete = useCallback(
     async (id: string) => {
       markDeleting([id]);
       try {
-        await deleteAccount.mutateAsync({ id });
-        toast.success("Account deleted successfully");
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to delete account";
-        toast.error(message);
-        throw error;
+        return await deleteMut.mutateAsync({ id });
       } finally {
         unmarkDeleting([id]);
       }
     },
-    [deleteAccount, markDeleting, unmarkDeleting],
+    [deleteMut, markDeleting, unmarkDeleting],
   );
 
   const handleBatchDelete = useCallback(
@@ -105,32 +61,18 @@ export function useAccountMutations() {
       markDeleting(ids);
       try {
         const results = await Promise.allSettled(
-          ids.map((id) => deleteAccount.mutateAsync({ id })),
+          ids.map((id) => deleteMut.mutateAsync({ id })),
         );
         const failures = results.filter((r) => r.status === "rejected");
-        const successes = results.filter((r) => r.status === "fulfilled");
-
-        if (failures.length === 0) {
-          toast.success(
-            `${ids.length} account${ids.length > 1 ? "s" : ""} deleted`,
-          );
-        } else if (successes.length > 0) {
-          toast.warning(
-            `${successes.length} of ${ids.length} accounts deleted. ${failures.length} failed.`,
-          );
-        } else {
-          throw new Error("All deletions failed");
+        if (failures.length > 0) {
+          toast.warning(`${failures.length} of ${ids.length} deletions failed`);
         }
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to delete accounts";
-        toast.error(message);
-        throw error;
+        return results;
       } finally {
         unmarkDeleting(ids);
       }
     },
-    [deleteAccount, markDeleting, unmarkDeleting],
+    [deleteMut, markDeleting, unmarkDeleting],
   );
 
   return {

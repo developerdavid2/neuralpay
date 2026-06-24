@@ -1,32 +1,25 @@
-import { ACCOUNT_TYPE_CONFIG } from "@/modules/accounts/constants";
 import { useTRPC } from "@/trpc/trpc-client";
-import { ACCOUNT_TYPES } from "@neuralpay/types";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 export function useAccountAggregates() {
   const trpc = useTRPC();
 
   const {
-    data: aggAccType,
+    data: aggregates,
     isPending,
     isError,
-  } = useSuspenseQuery(trpc.payments.accounts.aggregateByType.queryOptions());
+  } = useSuspenseQuery({
+    ...trpc.payments.accounts.aggregateByType.queryOptions(),
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const aggregateMap = new Map(aggAccType?.map((a) => [a.type, a]));
+  const aggregateMap = new Map(aggregates.byType.map((a) => [a.type, a]));
 
-  // Net worth: assets minus credit liabilities
-  const totalBalance = ACCOUNT_TYPES.reduce((sum, type) => {
-    const agg = aggregateMap?.get(type);
-    if (!agg) return sum;
-    return sum + agg.totalBalance;
-  }, 0);
-
-  const totalCount = aggAccType.reduce((sum, a) => sum + a.accountCount, 0);
   return {
-    aggAccType,
+    aggAccType: aggregates.byType,
     aggregateMap,
-    totalCount,
-    totalBalance,
+    totalCount: aggregates.totalCount,
+    totalBalance: Number(aggregates.totalBalance),
     isLoading: isPending,
     isError,
   };

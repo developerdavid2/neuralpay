@@ -7,7 +7,6 @@ import { PlaidService } from "../services/plaid.service";
 export const plaidRouter = router({
   getConnectedBanks: protectedProcedure.query(async ({ ctx }) => {
     const banks = await PlaidService.getConnectedBanks(ctx.session.user.id);
-    console.log("[bank response]", banks);
     return banks.map(({ accessToken, transactionCursor, ...safe }) => safe);
   }),
 

@@ -22,238 +22,187 @@ import {
   or,
   sql,
 } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
+
+/**
+ * Caching policy:
+ * - list, listAll, getById  → NO Redis. Fast indexed PG queries; React Query owns client-side caching.
+ * - getTotalBalance, getAggregateBalanceByType → Redis. Aggregate queries worth caching server-side.
+ * TTLs here should match staleTime in the corresponding React Query hooks.
+ */
+
+async function invalidateAggregateCache(userId: string) {
+  await Promise.all([
+    cache.del(cacheKeys.accounts.totalBalance(userId)),
+    cache.del(cacheKeys.accounts.aggregate(userId)),
+  ]);
+}
 
 export const AccountsService = {
-  // ── LIST (paginated, filterable) — cached per user + filter fingerprint
+  // ── LIST (paginated, filterable)
   async listByUser(
     userId: string,
     input: AccountsFilterInput,
   ): Promise<ServiceResult<PaginatedAccounts>> {
-    const cacheKey = cacheKeys.accounts.list(
-      userId,
-      JSON.stringify({
-        page: input.page,
-        limit: input.limit,
-        search: input.search,
-        type: input.type,
-        status: input.status,
-        tags: input.tags,
-      }),
-    );
+    try {
+      const { limit, search, type, status, tags } = input;
 
-    return cache.getOrSet(
-      cacheKey,
-      async () => {
-        try {
-          const { limit, search, type, status, tags } = input;
+      const conditions = [eq(bankAccounts.userId, userId)];
 
-          const conditions = [eq(bankAccounts.userId, userId)];
-
-          if (type) {
-            const types = Array.isArray(type) ? type : [type];
-            if (types.length > 0 && types.length < ACCOUNT_TYPES.length) {
-              conditions.push(
-                inArray(
-                  bankAccounts.type,
-                  types as (typeof ACCOUNT_TYPES)[number][],
-                ),
-              );
-            }
-          }
-          if (status) {
-            const statuses = Array.isArray(status) ? status : [status];
-            if (
-              statuses.length > 0 &&
-              statuses.length < ACCOUNT_STATUSES.length
-            ) {
-              conditions.push(
-                inArray(
-                  bankAccounts.status,
-                  statuses as (typeof ACCOUNT_STATUSES)[number][],
-                ),
-              );
-            }
-          }
-
-          if (tags?.length) {
-            conditions.push(sql`${bankAccounts.tags} && ${tags}`);
-          }
-
-          if (search) {
-            const s = `%${search}%`;
-            const searchCond = or(
-              ilike(bankAccounts.name, s),
-              ilike(bankAccounts.bankName, s),
-              ilike(bankAccounts.maskedNumber, s),
-            );
-            if (searchCond) conditions.push(searchCond);
-          }
-
-          const page = input.page ?? 1;
-          const offset = (page - 1) * limit;
-
-          const [rows, countRows] = await Promise.all([
-            db
-              .select(getTableColumns(bankAccounts))
-              .from(bankAccounts)
-              .where(and(...conditions))
-              .orderBy(desc(bankAccounts.createdAt), desc(bankAccounts.id))
-              .limit(limit)
-              .offset(offset),
-            db
-              .select({ count: sql<number>`count(*)::int` })
-              .from(bankAccounts)
-              .where(and(...conditions)),
-          ]);
-
-          const totalCount = countRows[0]?.count ?? 0;
-          const pageCount = Math.ceil(totalCount / limit);
-
-          return {
-            success: true,
-            data: {
-              items: rows as BankAccount[],
-              totalCount,
-              pageCount,
-            },
-          };
-        } catch (err) {
-          console.error("[AccountsService.listByUser]", err);
-          return {
-            success: false,
-            error: "Failed to fetch accounts",
-            code: "DB_ERROR",
-          };
+      if (type) {
+        const types = Array.isArray(type) ? type : [type];
+        if (types.length > 0 && types.length < ACCOUNT_TYPES.length) {
+          conditions.push(
+            inArray(
+              bankAccounts.type,
+              types as (typeof ACCOUNT_TYPES)[number][],
+            ),
+          );
         }
-      },
-      60, // 1 min TTL for paginated lists
-    );
+      }
+      if (status) {
+        const statuses = Array.isArray(status) ? status : [status];
+        if (statuses.length > 0 && statuses.length < ACCOUNT_STATUSES.length) {
+          conditions.push(
+            inArray(
+              bankAccounts.status,
+              statuses as (typeof ACCOUNT_STATUSES)[number][],
+            ),
+          );
+        }
+      }
+      if (tags?.length) {
+        conditions.push(sql`${bankAccounts.tags} && ${tags}`);
+      }
+      if (search) {
+        const s = `%${search}%`;
+        const searchCond = or(
+          ilike(bankAccounts.name, s),
+          ilike(bankAccounts.bankName, s),
+          ilike(bankAccounts.maskedNumber, s),
+        );
+        if (searchCond) conditions.push(searchCond);
+      }
+
+      const page = input.page ?? 1;
+      const offset = (page - 1) * limit;
+
+      const [rows, countRows] = await Promise.all([
+        db
+          .select(getTableColumns(bankAccounts))
+          .from(bankAccounts)
+          .where(and(...conditions))
+          .orderBy(desc(bankAccounts.createdAt), desc(bankAccounts.id))
+          .limit(limit)
+          .offset(offset),
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(bankAccounts)
+          .where(and(...conditions)),
+      ]);
+
+      const totalCount = countRows[0]?.count ?? 0;
+      const pageCount = Math.ceil(totalCount / limit);
+
+      return {
+        success: true,
+        data: { items: rows as BankAccount[], totalCount, pageCount },
+      };
+    } catch (err) {
+      console.error("[AccountsService.listByUser]", err);
+      return {
+        success: false,
+        error: "Failed to fetch accounts",
+        code: "DB_ERROR",
+      };
+    }
   },
 
-  // ── LIST ALL (no pagination) — used in dropdowns, filters
-  // FIX: cache key now includes a filter fingerprint so different filter
-  // combinations don't collide on the same cached result.
+  // ── LIST ALL (no pagination)
   async listAllByUser(
     userId: string,
     input: AccountsListAllInput,
   ): Promise<ServiceResult<BankAccount[]>> {
-    const cacheKey = cacheKeys.accounts.listAll(
-      userId,
-      JSON.stringify({
-        search: input.search,
-        type: input.type,
-        status: input.status,
-        tags: input.tags,
-        isManual: input.isManual,
-      }),
-    );
+    try {
+      const { search, type, status, tags, isManual } = input;
 
-    return cache.getOrSet(
-      cacheKey,
-      async () => {
-        try {
-          const { search, type, status, tags, isManual } = input;
+      const conditions = [eq(bankAccounts.userId, userId)];
 
-          const conditions = [eq(bankAccounts.userId, userId)];
+      if (type?.length) {
+        conditions.push(
+          inArray(bankAccounts.type, type as (typeof ACCOUNT_TYPES)[number][]),
+        );
+      }
+      if (status?.length) {
+        conditions.push(
+          inArray(
+            bankAccounts.status,
+            status as (typeof ACCOUNT_STATUSES)[number][],
+          ),
+        );
+      }
+      if (tags?.length) {
+        conditions.push(sql`${bankAccounts.tags} && ${tags}`);
+      }
+      if (isManual !== undefined) {
+        conditions.push(eq(bankAccounts.isManual, isManual));
+      }
+      if (search) {
+        const s = `%${search}%`;
+        const searchCond = or(
+          ilike(bankAccounts.name, s),
+          ilike(bankAccounts.bankName, s),
+          ilike(bankAccounts.maskedNumber, s),
+        );
+        if (searchCond) conditions.push(searchCond);
+      }
 
-          if (type?.length) {
-            conditions.push(
-              inArray(
-                bankAccounts.type,
-                type as (typeof ACCOUNT_TYPES)[number][],
-              ),
-            );
-          }
-          if (status?.length) {
-            conditions.push(
-              inArray(
-                bankAccounts.status,
-                status as (typeof ACCOUNT_STATUSES)[number][],
-              ),
-            );
-          }
-          if (tags?.length) {
-            conditions.push(sql`${bankAccounts.tags} && ${tags}`);
-          }
-          if (isManual !== undefined) {
-            conditions.push(eq(bankAccounts.isManual, isManual));
-          }
-          if (search) {
-            const s = `%${search}%`;
-            const searchCond = or(
-              ilike(bankAccounts.name, s),
-              ilike(bankAccounts.bankName, s),
-              ilike(bankAccounts.maskedNumber, s),
-            );
-            if (searchCond) conditions.push(searchCond);
-          }
+      const rows = await db
+        .select(getTableColumns(bankAccounts))
+        .from(bankAccounts)
+        .where(and(...conditions))
+        .orderBy(desc(bankAccounts.createdAt));
 
-          const rows = await db
-            .select(getTableColumns(bankAccounts))
-            .from(bankAccounts)
-            .where(and(...conditions))
-            .orderBy(desc(bankAccounts.createdAt));
-
-          return {
-            success: true,
-            data: rows as BankAccount[],
-          };
-        } catch (err) {
-          console.error("[AccountsService.listAllByUser]", err);
-          return {
-            success: false,
-            error: "Failed to fetch accounts",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      300, // 5 min TTL for listAll
-    );
+      return { success: true, data: rows as BankAccount[] };
+    } catch (err) {
+      console.error("[AccountsService.listAllByUser]", err);
+      return {
+        success: false,
+        error: "Failed to fetch accounts",
+        code: "DB_ERROR",
+      };
+    }
   },
 
-  // ── GET BY ID — cached per account + user
-  // FIX: cache key now includes userId so one user's cached result can never
-  // be served to a different user making the same account id request.
   async getById(
     id: string,
     userId: string,
   ): Promise<ServiceResult<BankAccount>> {
-    const cacheKey = cacheKeys.accounts.byId(id, userId);
-    console.log("[AccountService.getById]", { cacheKey });
+    try {
+      const [row] = await db
+        .select()
+        .from(bankAccounts)
+        .where(and(eq(bankAccounts.id, id), eq(bankAccounts.userId, userId)))
+        .limit(1);
 
-    return cache.getOrSet(
-      cacheKey,
-      async () => {
-        try {
-          const [row] = await db
-            .select()
-            .from(bankAccounts)
-            .where(
-              and(eq(bankAccounts.id, id), eq(bankAccounts.userId, userId)),
-            )
-            .limit(1);
+      if (!row)
+        return {
+          success: false,
+          error: "Account not found",
+          code: "NOT_FOUND",
+        };
 
-          if (!row)
-            return {
-              success: false,
-              error: "Account not found",
-              code: "NOT_FOUND",
-            };
-          return { success: true, data: row as BankAccount };
-        } catch (err) {
-          console.error("[AccountsService.getById]", err);
-          return {
-            success: false,
-            error: "Failed to fetch account",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      300, // 5 min TTL
-    );
+      return { success: true, data: row as BankAccount };
+    } catch (err) {
+      console.error("[AccountsService.getById]", err);
+      return {
+        success: false,
+        error: "Failed to fetch account",
+        code: "DB_ERROR",
+      };
+    }
   },
 
-  // ── CREATE — invalidate user account caches
   async create(
     userId: string,
     input: CreateAccountInput,
@@ -276,9 +225,7 @@ export const AccountsService = {
         })
         .returning();
 
-      await cache.delPattern(`accounts:*:${userId}*`);
-      await cache.del(cacheKeys.accounts.totalBalance(userId));
-      await cache.del(cacheKeys.accounts.aggregate(userId));
+      await invalidateAggregateCache(userId);
 
       return { success: true, data: created! as BankAccount };
     } catch (err) {
@@ -291,7 +238,6 @@ export const AccountsService = {
     }
   },
 
-  // ── UPDATE — invalidate specific + user caches
   async update(
     userId: string,
     input: UpdateAccountInput,
@@ -324,10 +270,7 @@ export const AccountsService = {
           code: "NOT_FOUND",
         };
 
-      await cache.del(cacheKeys.accounts.byId(input.id, userId));
-      await cache.delPattern(`accounts:*:${userId}*`);
-      await cache.del(cacheKeys.accounts.totalBalance(userId));
-      await cache.del(cacheKeys.accounts.aggregate(userId));
+      await invalidateAggregateCache(userId);
 
       return { success: true, data: updated as BankAccount };
     } catch (err) {
@@ -340,9 +283,6 @@ export const AccountsService = {
     }
   },
 
-  // ── TOGGLE STATUS — for synced accounts only
-  // FIX: prefetch the account first so we can return FORBIDDEN (not NOT_FOUND)
-  // when someone tries to toggle a manual account's status.
   async toggleStatus(
     id: string,
     userId: string,
@@ -383,10 +323,7 @@ export const AccountsService = {
           code: "NOT_FOUND",
         };
 
-      await cache.del(cacheKeys.accounts.byId(id, userId));
-      await cache.delPattern(`accounts:*:${userId}*`);
-      await cache.del(cacheKeys.accounts.totalBalance(userId));
-      await cache.del(cacheKeys.accounts.aggregate(userId));
+      await invalidateAggregateCache(userId);
 
       return { success: true, data: updated as BankAccount };
     } catch (err) {
@@ -399,7 +336,6 @@ export const AccountsService = {
     }
   },
 
-  // ── DELETE — hard delete manual accounts only
   async delete(
     id: string,
     userId: string,
@@ -418,23 +354,19 @@ export const AccountsService = {
           code: "NOT_FOUND",
         };
 
-      if (!account.isManual) {
+      if (!account.isManual)
         return {
           success: false,
           error: "Synced accounts cannot be deleted. Disconnect instead.",
           code: "FORBIDDEN",
         };
-      }
 
       const [deleted] = await db
         .delete(bankAccounts)
         .where(and(eq(bankAccounts.id, id), eq(bankAccounts.userId, userId)))
         .returning({ id: bankAccounts.id });
 
-      await cache.del(cacheKeys.accounts.byId(id, userId));
-      await cache.delPattern(`accounts:*:${userId}*`);
-      await cache.del(cacheKeys.accounts.totalBalance(userId));
-      await cache.del(cacheKeys.accounts.aggregate(userId));
+      await invalidateAggregateCache(userId);
 
       return { success: true, data: { id: deleted!.id } };
     } catch (err) {
@@ -447,70 +379,25 @@ export const AccountsService = {
     }
   },
 
-  // ── GET TOTAL BALANCE — SQL aggregate, cached
-  // FIX: sum computed in SQL instead of fetching all rows and summing in JS.
-  async getTotalBalance(
-    userId: string,
-  ): Promise<ServiceResult<{ totalBalance: number; accountCount: number }>> {
-    const cacheKey = cacheKeys.accounts.totalBalance(userId);
-
-    return cache.getOrSet(
-      cacheKey,
-      async () => {
-        try {
-          const [row] = await db
-            .select({
-              totalBalance: sql<number>`coalesce(sum(${bankAccounts.balance}::numeric), 0)::float`,
-              accountCount: sql<number>`count(*)::int`,
-            })
-            .from(bankAccounts)
-            .where(
-              and(
-                eq(bankAccounts.userId, userId),
-                eq(bankAccounts.status, "active"),
-              ),
-            );
-
-          return {
-            success: true,
-            data: {
-              totalBalance: Number(row?.totalBalance) || 0,
-              accountCount: row?.accountCount ?? 0,
-            },
-          };
-        } catch (err) {
-          console.error("[AccountsService.getTotalBalance]", err);
-          return {
-            success: false,
-            error: "Failed to aggregate balances",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      300, // 5 min TTL
-    );
-  },
-
-  // ── GET AGGREGATED BALANCE BY TYPE — cached
   async getAggregateBalanceByType(userId: string): Promise<
-    ServiceResult<
-      Array<{
+    ServiceResult<{
+      byType: Array<{
         type: string;
-        totalBalance: number;
+        totalBalance: string;
         accountCount: number;
-      }>
-    >
+      }>;
+      totalBalance: string;
+      totalCount: number;
+    }>
   > {
-    const cacheKey = cacheKeys.accounts.aggregate(userId);
-
     return cache.getOrSet(
-      cacheKey,
+      cacheKeys.accounts.aggregate(userId),
       async () => {
         try {
           const result = await db
             .select({
               type: bankAccounts.type,
-              totalBalance: sql<number>`sum(${bankAccounts.balance}::numeric)::float`,
+              totalBalance: sql<string>`sum(${bankAccounts.balance})::numeric::text`,
               accountCount: sql<number>`count(*)::int`,
             })
             .from(bankAccounts)
@@ -522,24 +409,34 @@ export const AccountsService = {
             )
             .groupBy(bankAccounts.type);
 
+          const totalBalance = result
+            .reduce((sum, r) => sum + parseFloat(r.totalBalance ?? "0"), 0)
+            .toFixed(2);
+
+          const totalCount = result.reduce((sum, r) => sum + r.accountCount, 0);
+
           return {
             success: true,
-            data: result.map((r) => ({
-              type: r.type,
-              totalBalance: Number(r.totalBalance) || 0,
-              accountCount: r.accountCount,
-            })),
+            data: {
+              byType: result.map((r) => ({
+                type: r.type,
+                totalBalance: parseFloat(r.totalBalance ?? "0").toFixed(2),
+                accountCount: r.accountCount,
+              })),
+              totalBalance,
+              totalCount,
+            },
           };
         } catch (err) {
-          console.error("[AccountsService.getBalanceByType]", err);
+          console.error("[AccountsService.getAggregateBalanceByType]", err);
           return {
             success: false,
-            error: "Failed to aggregate balances by type",
+            error: "Failed to aggregate balances",
             code: "DB_ERROR",
           };
         }
       },
-      300, // 5 min TTL
+      300,
     );
   },
 } as const;

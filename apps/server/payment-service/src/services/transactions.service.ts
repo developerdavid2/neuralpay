@@ -48,262 +48,201 @@ function transactionSelect() {
   };
 }
 
-async function invalidateUserTransactionCache(userId: string) {
+async function invalidateAggregateCache(userId: string) {
   await Promise.all([
-    cache.delPattern(`transactions:list:${userId}*`),
-    cache.delPattern(`transactions:recent:${userId}*`),
     cache.delPattern(`transactions:overview:${userId}*`),
     cache.delPattern(`transactions:topCats:${userId}*`),
-    cache.del(cacheKeys.transactions.spendingOverview(userId, "*")),
+    cache.delPattern(`transactions:monthSpend:${userId}*`),
   ]);
 }
 
 export const TransactionsService = {
-  // ── LIST (cursor-paginated, filterable) — cached per user + filter fingerprint
   async list(
     userId: string,
     input: TransactionsFilterInput,
   ): Promise<ServiceResult<PaginatedTransactions>> {
-    const cacheKey = cacheKeys.transactions.list(
-      userId,
-      JSON.stringify({
-        bankAccountId: input.bankAccountId,
-        category: input.category,
-        type: input.type,
-        status: input.status,
-        isAnomaly: input.isAnomaly,
-        isManual: input.isManual,
-        search: input.search,
-        dateFrom: input.dateFrom,
-        dateTo: input.dateTo,
-        minAmount: input.minAmount,
-        maxAmount: input.maxAmount,
-        limit: input.limit,
-        cursor: input.cursor,
-      }),
-    );
+    try {
+      const {
+        bankAccountId,
+        category,
+        type,
+        status,
+        isAnomaly,
+        isManual,
+        search,
+        dateFrom,
+        dateTo,
+        minAmount,
+        maxAmount,
+        limit,
+        cursor,
+      } = input;
 
-    return cache.getOrSet(
-      cacheKey,
-      async () => {
-        try {
-          const {
-            bankAccountId,
-            category,
-            type,
-            status,
-            isAnomaly,
-            isManual,
-            search,
-            dateFrom,
-            dateTo,
-            minAmount,
-            maxAmount,
-            limit,
-            cursor,
-          } = input;
+      const conditions = [eq(transactions.userId, userId)];
 
-          const conditions = [eq(transactions.userId, userId)];
-
-          if (bankAccountId)
-            conditions.push(eq(transactions.bankAccountId, bankAccountId));
-          if (type) {
-            const types = Array.isArray(type) ? type : [type];
-            if (types.length > 0 && types.length < TRANSACTION_TYPE.length) {
-              conditions.push(
-                inArray(
-                  transactions.type,
-                  types as (typeof TRANSACTION_TYPE)[number][],
-                ),
-              );
-            }
-          }
-          if (status) {
-            const statuses = Array.isArray(status) ? status : [status];
-            if (
-              statuses.length > 0 &&
-              statuses.length < TRANSACTION_STATUS.length
-            ) {
-              conditions.push(
-                inArray(
-                  transactions.status,
-                  statuses as (typeof TRANSACTION_STATUS)[number][],
-                ),
-              );
-            }
-          }
-          if (isAnomaly !== undefined)
-            conditions.push(eq(transactions.isAnomaly, isAnomaly));
-          if (isManual !== undefined)
-            conditions.push(eq(transactions.isManual, isManual));
-          if (dateFrom)
-            conditions.push(gte(transactions.date, new Date(dateFrom)));
-          if (dateTo) conditions.push(lte(transactions.date, new Date(dateTo)));
-          if (minAmount !== undefined)
-            conditions.push(gte(transactions.amount, minAmount.toString()));
-          if (maxAmount !== undefined)
-            conditions.push(lte(transactions.amount, maxAmount.toString()));
-
-          if (search) {
-            const s = `%${search}%`;
-            const searchCond = or(
-              ilike(transactions.description, s),
-              ilike(transactions.merchant, s),
-            );
-            if (searchCond) conditions.push(searchCond);
-          }
-
-          if (category) {
-            const categories = Array.isArray(category) ? category : [category];
-            if (
-              categories.length > 0 &&
-              categories.length < TRANSACTION_CATEGORY.length
-            ) {
-              conditions.push(
-                inArray(
-                  transactions.category,
-                  categories as (typeof TRANSACTION_CATEGORY)[number][],
-                ),
-              );
-            }
-          }
-
-          if (cursor) {
-            const cursorId = Buffer.from(cursor, "base64url").toString("utf-8");
-            const [cursorRow] = await db
-              .select({ id: transactions.id, date: transactions.date })
-              .from(transactions)
-              .where(
-                and(
-                  eq(transactions.id, cursorId),
-                  eq(transactions.userId, userId),
-                ),
-              )
-              .limit(1);
-
-            if (cursorRow) {
-              const cursorRowCondition = or(
-                sql`${transactions.date} < ${cursorRow.date}`,
-                and(
-                  eq(transactions.date, cursorRow.date),
-                  sql`${transactions.id} < ${cursorRow.id}`,
-                ),
-              );
-              if (cursorRowCondition) conditions.push(cursorRowCondition);
-            }
-          }
-
-          const rows = await db
-            .select(transactionSelect())
-            .from(transactions)
-            .leftJoin(
-              bankAccounts,
-              eq(transactions.bankAccountId, bankAccounts.id),
-            )
-            .where(and(...conditions))
-            .orderBy(desc(transactions.date), desc(transactions.id))
-            .limit(limit + 1);
-
-          const hasMore = rows.length > limit;
-          const items = hasMore ? rows.slice(0, -1) : rows;
-          const last = items[items.length - 1];
-          const nextCursor =
-            hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
-
-          return { success: true, data: { items, nextCursor } };
-        } catch (err) {
-          console.error("[TransactionsService.list]", err);
-          return {
-            success: false,
-            error: "Failed to fetch transactions",
-            code: "DB_ERROR",
-          };
+      if (bankAccountId)
+        conditions.push(eq(transactions.bankAccountId, bankAccountId));
+      if (type) {
+        const types = Array.isArray(type) ? type : [type];
+        if (types.length > 0 && types.length < TRANSACTION_TYPE.length) {
+          conditions.push(
+            inArray(
+              transactions.type,
+              types as (typeof TRANSACTION_TYPE)[number][],
+            ),
+          );
         }
-      },
-      30, // 30s TTL — list pages are cursor-keyed so churn is low, but data should feel fresh
-    );
+      }
+      if (status) {
+        const statuses = Array.isArray(status) ? status : [status];
+        if (
+          statuses.length > 0 &&
+          statuses.length < TRANSACTION_STATUS.length
+        ) {
+          conditions.push(
+            inArray(
+              transactions.status,
+              statuses as (typeof TRANSACTION_STATUS)[number][],
+            ),
+          );
+        }
+      }
+      if (isAnomaly !== undefined)
+        conditions.push(eq(transactions.isAnomaly, isAnomaly));
+      if (isManual !== undefined)
+        conditions.push(eq(transactions.isManual, isManual));
+      if (dateFrom) conditions.push(gte(transactions.date, new Date(dateFrom)));
+      if (dateTo) conditions.push(lte(transactions.date, new Date(dateTo)));
+      if (minAmount !== undefined)
+        conditions.push(gte(transactions.amount, minAmount.toString()));
+      if (maxAmount !== undefined)
+        conditions.push(lte(transactions.amount, maxAmount.toString()));
+
+      if (search) {
+        const s = `%${search}%`;
+        const searchCond = or(
+          ilike(transactions.description, s),
+          ilike(transactions.merchant, s),
+        );
+        if (searchCond) conditions.push(searchCond);
+      }
+
+      if (category) {
+        const categories = Array.isArray(category) ? category : [category];
+        if (
+          categories.length > 0 &&
+          categories.length < TRANSACTION_CATEGORY.length
+        ) {
+          conditions.push(
+            inArray(
+              transactions.category,
+              categories as (typeof TRANSACTION_CATEGORY)[number][],
+            ),
+          );
+        }
+      }
+
+      if (cursor) {
+        const cursorId = Buffer.from(cursor, "base64url").toString("utf-8");
+        const [cursorRow] = await db
+          .select({ id: transactions.id, date: transactions.date })
+          .from(transactions)
+          .where(
+            and(eq(transactions.id, cursorId), eq(transactions.userId, userId)),
+          )
+          .limit(1);
+
+        if (cursorRow) {
+          const cursorRowCondition = or(
+            sql`${transactions.date} < ${cursorRow.date}`,
+            and(
+              eq(transactions.date, cursorRow.date),
+              sql`${transactions.id} < ${cursorRow.id}`,
+            ),
+          );
+          if (cursorRowCondition) conditions.push(cursorRowCondition);
+        }
+      }
+
+      const rows = await db
+        .select(transactionSelect())
+        .from(transactions)
+        .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
+        .where(and(...conditions))
+        .orderBy(desc(transactions.date), desc(transactions.id))
+        .limit(limit + 1);
+
+      const hasMore = rows.length > limit;
+      const items = hasMore ? rows.slice(0, -1) : rows;
+      const last = items[items.length - 1];
+      const nextCursor =
+        hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
+
+      return { success: true, data: { items, nextCursor } };
+    } catch (err) {
+      console.error("[TransactionsService.list]", err);
+      return {
+        success: false,
+        error: "Failed to fetch transactions",
+        code: "DB_ERROR",
+      };
+    }
   },
 
-  // ── RECENT — cached, short TTL since it shows on the dashboard
   async recent(
     userId: string,
     limit = 7,
   ): Promise<ServiceResult<Transaction[]>> {
-    const cacheKey = cacheKeys.transactions.recent(userId, limit);
+    try {
+      const rows = await db
+        .select(transactionSelect())
+        .from(transactions)
+        .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
+        .where(eq(transactions.userId, userId))
+        .orderBy(desc(transactions.date))
+        .limit(limit);
 
-    return cache.getOrSet(
-      cacheKey,
-      async () => {
-        try {
-          const rows = await db
-            .select(transactionSelect())
-            .from(transactions)
-            .leftJoin(
-              bankAccounts,
-              eq(transactions.bankAccountId, bankAccounts.id),
-            )
-            .where(eq(transactions.userId, userId))
-            .orderBy(desc(transactions.date))
-            .limit(limit);
-
-          return { success: true, data: rows };
-        } catch (err) {
-          console.error("[TransactionsService.recent]", err);
-          return {
-            success: false,
-            error: "Failed to fetch recent transactions",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      60, // 1 min TTL
-    );
+      return { success: true, data: rows };
+    } catch (err) {
+      console.error("[TransactionsService.recent]", err);
+      return {
+        success: false,
+        error: "Failed to fetch recent transactions",
+        code: "DB_ERROR",
+      };
+    }
   },
 
-  // ── GET BY ID — cached per transaction + user (ownership-scoped)
   async getById(
     id: string,
     userId: string,
   ): Promise<ServiceResult<Transaction>> {
-    const cacheKey = cacheKeys.transactions.byId(id, userId);
+    try {
+      const [row] = await db
+        .select(transactionSelect())
+        .from(transactions)
+        .leftJoin(bankAccounts, eq(transactions.bankAccountId, bankAccounts.id))
+        .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+        .limit(1);
 
-    return cache.getOrSet(
-      cacheKey,
-      async () => {
-        try {
-          const [row] = await db
-            .select(transactionSelect())
-            .from(transactions)
-            .leftJoin(
-              bankAccounts,
-              eq(transactions.bankAccountId, bankAccounts.id),
-            )
-            .where(
-              and(eq(transactions.id, id), eq(transactions.userId, userId)),
-            )
-            .limit(1);
+      if (!row)
+        return {
+          success: false,
+          error: "Transaction not found",
+          code: "NOT_FOUND",
+        };
 
-          if (!row)
-            return {
-              success: false,
-              error: "Transaction not found",
-              code: "NOT_FOUND",
-            };
-          return { success: true, data: row };
-        } catch (err) {
-          console.error("[TransactionsService.getById]", err);
-          return {
-            success: false,
-            error: "Failed to fetch transaction",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      300, // 5 min TTL
-    );
+      return { success: true, data: row };
+    } catch (err) {
+      console.error("[TransactionsService.getById]", err);
+      return {
+        success: false,
+        error: "Failed to fetch transaction",
+        code: "DB_ERROR",
+      };
+    }
   },
 
-  // ── CREATE — invalidate user caches
   async create(
     userId: string,
     input: CreateTransactionInput,
@@ -320,13 +259,12 @@ export const TransactionsService = {
         )
         .limit(1);
 
-      if (!account) {
+      if (!account)
         return {
           success: false,
           error: "Bank account not found",
           code: "NOT_FOUND",
         };
-      }
 
       const [created] = await db
         .insert(transactions)
@@ -346,7 +284,7 @@ export const TransactionsService = {
         })
         .returning();
 
-      await invalidateUserTransactionCache(userId);
+      await invalidateAggregateCache(userId);
 
       return this.getById(created!.id, userId);
     } catch (err) {
@@ -359,7 +297,6 @@ export const TransactionsService = {
     }
   },
 
-  // ── UPDATE — invalidate specific entry + user caches
   async update(
     userId: string,
     input: UpdateTransactionInput,
@@ -416,8 +353,7 @@ export const TransactionsService = {
           code: "NOT_FOUND",
         };
 
-      await cache.del(cacheKeys.transactions.byId(input.id, userId));
-      await invalidateUserTransactionCache(userId);
+      await invalidateAggregateCache(userId);
 
       return this.getById(input.id, userId);
     } catch (err) {
@@ -430,7 +366,6 @@ export const TransactionsService = {
     }
   },
 
-  // ── DELETE — invalidate caches
   async delete(
     id: string,
     userId: string,
@@ -448,8 +383,7 @@ export const TransactionsService = {
           code: "NOT_FOUND",
         };
 
-      await cache.del(cacheKeys.transactions.byId(id, userId));
-      await invalidateUserTransactionCache(userId);
+      await invalidateAggregateCache(userId);
 
       return { success: true, data: { id: deleted.id } };
     } catch (err) {
@@ -462,7 +396,6 @@ export const TransactionsService = {
     }
   },
 
-  // ── BATCH DELETE — invalidate caches
   async batchDelete(
     userId: string,
     input: BatchDeleteInput,
@@ -479,13 +412,7 @@ export const TransactionsService = {
         )
         .returning({ id: transactions.id });
 
-      // Invalidate individual byId entries for each deleted tx
-      await Promise.all(
-        deleted.map((d) =>
-          cache.del(cacheKeys.transactions.byId(d.id, userId)),
-        ),
-      );
-      await invalidateUserTransactionCache(userId);
+      await invalidateAggregateCache(userId);
 
       return {
         success: true,
@@ -501,7 +428,6 @@ export const TransactionsService = {
     }
   },
 
-  // ── SPENDING OVERVIEW — expensive aggregate, cached per user + period key
   async getSpendingOverview(
     userId: string,
     input: {
@@ -514,10 +440,9 @@ export const TransactionsService = {
       input.period === "custom"
         ? `custom:${input.from}:${input.to}`
         : (input.period ?? "30d");
-    const cacheKey = cacheKeys.transactions.spendingOverview(userId, periodKey);
 
     return cache.getOrSet(
-      cacheKey,
+      cacheKeys.transactions.spendingOverview(userId, periodKey),
       async () => {
         try {
           const { period = "30d", from, to } = input;
@@ -545,7 +470,7 @@ export const TransactionsService = {
           const categoryResult = await db
             .select({
               category: transactions.category,
-              total: sql<number>`sum(${transactions.amount}::numeric)::float`,
+              total: sql<string>`sum(${transactions.amount}::numeric)::text`,
             })
             .from(transactions)
             .where(
@@ -561,7 +486,7 @@ export const TransactionsService = {
 
           const categorySpending = categoryResult.map((r) => ({
             category: r.category ?? "other",
-            total: Number(r.total) || 0,
+            total: parseFloat(r.total ?? "0"),
           }));
 
           const trendDay = sql<Date>`date_trunc('day', ${transactions.date})`;
@@ -569,7 +494,7 @@ export const TransactionsService = {
             .select({
               date: trendDay,
               name: sql<string>`to_char(${trendDay}, 'Mon DD')`,
-              value: sql<number>`sum(${transactions.amount}::numeric)::float`,
+              value: sql<string>`sum(${transactions.amount}::numeric)::text`,
             })
             .from(transactions)
             .where(
@@ -637,9 +562,9 @@ export const TransactionsService = {
             const budgetProgress = dailyBudget * (daysElapsedInRange + 1);
             return {
               name: t.name,
-              value: Number(t.value) || 0,
-              budget: Number(budgetProgress.toFixed(2)),
-              dailyBudget: Number(dailyBudget.toFixed(2)),
+              value: parseFloat(t.value ?? "0"),
+              budget: parseFloat(budgetProgress.toFixed(2)),
+              dailyBudget: parseFloat(dailyBudget.toFixed(2)),
             };
           });
 
@@ -671,21 +596,19 @@ export const TransactionsService = {
           };
         }
       },
-      120, // 2 min TTL — aggregate is expensive; stale by 2 min is acceptable
+      120,
     );
   },
 
-  // ── TOP CATEGORIES — cached per user + month/year
+  // ── TOP CATEGORIES — Redis cached aggregate per month/year
   async getTopCategories(
     userId: string,
     month: number,
     year: number,
     limit = 5,
   ): Promise<ServiceResult<TopMonthlyCategories>> {
-    const cacheKey = cacheKeys.transactions.topCategories(userId, month, year);
-
     return cache.getOrSet(
-      cacheKey,
+      cacheKeys.transactions.topCategories(userId, month, year),
       async () => {
         try {
           const startDate = new Date(year, month - 1, 1);
@@ -695,7 +618,7 @@ export const TransactionsService = {
             db
               .select({
                 category: transactions.category,
-                total: sql<number>`sum(${transactions.amount}::numeric)::float`,
+                total: sql<string>`sum(${transactions.amount}::numeric)::text`,
                 count: sql<number>`count(*)::int`,
               })
               .from(transactions)
@@ -713,7 +636,7 @@ export const TransactionsService = {
 
             db
               .select({
-                total: sql<number>`coalesce(sum(${transactions.amount}::numeric), 0)::float`,
+                total: sql<string>`coalesce(sum(${transactions.amount}::numeric), '0')::text`,
               })
               .from(transactions)
               .where(
@@ -725,8 +648,6 @@ export const TransactionsService = {
                 ),
               ),
           ]);
-
-          const totalSpending = totalResult[0]?.total ?? 0;
 
           if (!categoryResult.length) {
             return {
@@ -741,21 +662,26 @@ export const TransactionsService = {
             };
           }
 
+          const totalSpendingRaw = parseFloat(totalResult[0]?.total ?? "0");
+
           return {
             success: true,
             data: {
               month,
               year,
-              categories: categoryResult.map((r) => ({
-                category: r.category ?? "other",
-                total: r.total,
-                count: r.count,
-                percentage:
-                  totalSpending > 0
-                    ? Math.round((r.total / totalSpending) * 1000) / 10
-                    : 0,
-              })),
-              totalSpending,
+              categories: categoryResult.map((r) => {
+                const total = parseFloat(r.total ?? "0");
+                return {
+                  category: r.category ?? "other",
+                  total,
+                  count: r.count,
+                  percentage:
+                    totalSpendingRaw > 0
+                      ? Math.round((total / totalSpendingRaw) * 1000) / 10
+                      : 0,
+                };
+              }),
+              totalSpending: totalSpendingRaw,
               hasData: true,
             },
           };
@@ -768,22 +694,15 @@ export const TransactionsService = {
           };
         }
       },
-      300, // 5 min TTL — monthly aggregates change infrequently
+      300,
     );
   },
 
-  // ── CURRENT MONTH SPENDING — dashboard stat, cached short
   async getCurrentMonthSpending(
     userId: string,
   ): Promise<ServiceResult<number>> {
-    // Key by user + current month so it naturally expires at month boundary
     const now = new Date();
-    const cacheKey =
-      cacheKeys.transactions.topCategories(
-        userId,
-        now.getMonth() + 1,
-        now.getFullYear(),
-      ) + ":monthSpend";
+    const cacheKey = `transactions:monthSpend:${userId}:${now.getFullYear()}-${now.getMonth() + 1}`;
 
     return cache.getOrSet(
       cacheKey,
@@ -791,7 +710,7 @@ export const TransactionsService = {
         try {
           const [result] = await db
             .select({
-              total: sql<number>`coalesce(sum(${transactions.amount}::numeric), 0)::float`,
+              total: sql<string>`coalesce(sum(${transactions.amount}::numeric), '0')::text`,
             })
             .from(transactions)
             .where(
@@ -803,7 +722,10 @@ export const TransactionsService = {
               ),
             );
 
-          return { success: true, data: result?.total ?? 0 };
+          return {
+            success: true,
+            data: parseFloat(result?.total ?? "0"),
+          };
         } catch (err) {
           console.error("[TransactionsService.getCurrentMonthSpending]", err);
           return {
@@ -813,7 +735,7 @@ export const TransactionsService = {
           };
         }
       },
-      60, // 1 min TTL — shown on dashboard, should feel reasonably live
+      60,
     );
   },
 } as const;
