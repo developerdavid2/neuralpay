@@ -7,7 +7,8 @@ export function useSpendingOverview(params: {
   to?: string;
 }) {
   const trpc = useTRPC();
-  return useSuspenseQuery(
-    trpc.payments.transactions.spendingOverview.queryOptions(params),
-  );
+  return useSuspenseQuery({
+    ...trpc.payments.transactions.spendingOverview.queryOptions(params),
+    staleTime: 120_000,
+  });
 }

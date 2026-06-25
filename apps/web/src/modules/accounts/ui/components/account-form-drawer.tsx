@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
+import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
 import {
   type CreateAccountInput,
   type SupportedCurrencies,
@@ -8,15 +10,13 @@ import {
 import { Drawer, DrawerContent } from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
-import { useAccountPendingSelectors } from "@/modules/accounts/store/use-account-pending";
-import { useConfirm } from "@/hooks/use-confirm";
 import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
 import { useAccountDetail } from "../../hooks/queries/use-account-detail";
 import {
   useAccountDrawer,
   type AccountDrawerMode,
-} from "../../store/use-account-drawer";
+} from "../../hooks/store/use-account-drawer";
+import { useAccountPendingSelectors } from "../../hooks/store/use-account-pending";
 import type { FormValues } from "../../types";
 import { AccountForm } from "./account-form";
 
@@ -45,7 +45,7 @@ export function AccountFormDrawer() {
           "data-[vaul-drawer-direction=right]:right-0",
           "data-[vaul-drawer-direction=right]:h-full",
           "data-[vaul-drawer-direction=right]:w-full",
-          "data-[vaul-drawer-direction=right]:max-w-[420px]",
+          "data-[vaul-drawer-direction=right]:max-w-105",
           "flex flex-col",
           "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
         )}

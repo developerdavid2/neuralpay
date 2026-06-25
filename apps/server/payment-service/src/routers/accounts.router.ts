@@ -120,17 +120,6 @@ export const accountsRouter = router({
     return result.data;
   }),
 
-  totalBalance: protectedProcedure.query(async ({ ctx }) => {
-    const result = await AccountsService.getTotalBalance(ctx.session.user.id);
-    if (!result.success) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: result.error,
-      });
-    }
-    return result.data;
-  }),
-
   toggleStatus: protectedProcedure
     .input(z.object({ id: z.uuid(), status: z.enum(["active", "inactive"]) }))
     .mutation(async ({ ctx, input }) => {
@@ -142,7 +131,11 @@ export const accountsRouter = router({
       if (!result.success) {
         throw new TRPCError({
           code:
-            result.code === "NOT_FOUND" ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR",
+            result.code === "NOT_FOUND"
+              ? "NOT_FOUND"
+              : result.code === "FORBIDDEN"
+                ? "FORBIDDEN"
+                : "INTERNAL_SERVER_ERROR",
           message: result.error,
         });
       }

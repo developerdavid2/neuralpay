@@ -13,6 +13,7 @@ import { Lock, CheckCircle2, Loader } from "lucide-react";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { useProviderModal } from "../../hooks/store/use-provider-modal";
 import { PROVIDERS } from "../../constants";
+import PlaidLogo from "@/public/assets/logos/plaid";
 
 export function ProviderSelectModal() {
   const {
@@ -84,8 +85,13 @@ export function ProviderSelectModal() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit">
-                      <Icon className="size-5" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-200 text-primary mr-2">
+                      <Icon
+                        className={cn(
+                          "text-primary",
+                          provider.id === "plaid" ? "size-7" : "size-5", // SVG logos often need slightly more room
+                        )}
+                      />
                     </div>
                     <div>
                       <h3 className="font-semibold text-base">
@@ -136,7 +142,7 @@ export function ProviderSelectModal() {
           <Button
             variant="outline"
             onClick={(open) => {
-              if (!open && !isInitializing) closeModal();
+              if (open && !isInitializing) closeModal();
             }}
             disabled={isInitializing}
             className="flex-1"

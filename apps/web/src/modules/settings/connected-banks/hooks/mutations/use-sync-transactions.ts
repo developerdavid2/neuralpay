@@ -1,3 +1,4 @@
+import { invalidateAllPaymentQueries } from "@/lib/invalidate-trpc-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -8,15 +9,9 @@ export function useSyncTransactions() {
 
   return useMutation({
     ...trpc.payments.plaid.syncTransactionsById.mutationOptions(),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(`${data.added} transactions synced`);
-      queryClient.invalidateQueries({
-        predicate: (query) => {
-          const path = query.queryKey[0] as string[];
-          if (!Array.isArray(path)) return false;
-          return path[0] === "payments";
-        },
-      });
+      await invalidateAllPaymentQueries(queryClient);
     },
     onError: (error) => {
       toast.error(

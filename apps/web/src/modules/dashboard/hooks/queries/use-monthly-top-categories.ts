@@ -9,11 +9,12 @@ export function useMonthlyTopCategories(params?: {
   const trpc = useTRPC();
   const now = new Date();
 
-  return useSuspenseQuery(
-    trpc.payments.transactions.topCategories.queryOptions({
+  return useSuspenseQuery({
+    ...trpc.payments.transactions.topCategories.queryOptions({
       month: params?.month ?? now.getMonth() + 1,
       year: params?.year ?? now.getFullYear(),
       limit: params?.limit ?? 5,
     }),
-  );
+    staleTime: 300_000,
+  });
 }

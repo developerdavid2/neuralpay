@@ -7,6 +7,9 @@ import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import Fastify from "fastify";
 import { paymentsRouter } from "./routers";
 import type { TRPCError } from "@trpc/server";
+import { renderTrpcPanel } from "trpc-panel";
+import { PlaidService } from "./services/plaid.service";
+import { AccountsService } from "./services/accounts.service";
 
 const PORT = Number(process.env.PORT) || 4002;
 const server = Fastify({ logger: true });
