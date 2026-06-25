@@ -6,14 +6,14 @@ import { cn } from "@neuralpay/ui/lib/utils";
 import { cardTemplates } from "../../constants";
 
 export function StatCards() {
-  const { totalBalance, monthSpending, savingsRate, totalCount } =
+  const { totalBalance, monthSpending, savingsRate, accountCount } =
     useStatCards();
 
   const values = [
     totalBalance,
     monthSpending,
     Number(savingsRate.toFixed(2)),
-    totalCount,
+    accountCount,
   ];
 
   return (
