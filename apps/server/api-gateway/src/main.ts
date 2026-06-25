@@ -20,7 +20,7 @@ const app = createExpressApp({
   port: PORT,
   allowedOrigins: [gatewayEnv.CORS_ORIGIN],
   beforeBodyParser: (app) => {
-    app.use("/chat/stream", authMiddleware);
+    app.use("/v1/chat/stream", authMiddleware);
     mountStreamingProxy(app);
   },
 });

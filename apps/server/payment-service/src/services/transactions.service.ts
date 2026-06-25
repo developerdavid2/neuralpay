@@ -452,19 +452,19 @@ export const TransactionsService = {
           let endDate: Date;
 
           if (period === "7d") {
-            startDate = startOfDay(subDays(new Date(), 7));
+            startDate = startOfDay(subDays(new Date(), 6));
             endDate = endOfDay(new Date());
           } else if (period === "30d") {
-            startDate = startOfDay(subDays(new Date(), 30));
+            startDate = startOfDay(subDays(new Date(), 29));
             endDate = endOfDay(new Date());
           } else if (period === "90d") {
-            startDate = startOfDay(subDays(new Date(), 90));
+            startDate = startOfDay(subDays(new Date(), 89));
             endDate = endOfDay(new Date());
           } else if (from && to) {
             startDate = startOfDay(new Date(from));
             endDate = endOfDay(new Date(to));
           } else {
-            startDate = startOfDay(subDays(new Date(), 30));
+            startDate = startOfDay(subDays(new Date(), 29));
             endDate = endOfDay(new Date());
           }
 
@@ -544,8 +544,24 @@ export const TransactionsService = {
 
           const categoryBudgetMap = new Map<string, number>();
           budgetResult.forEach((b) => {
+            const budgetMonthStart = startOfMonth(
+              new Date(b.year, b.month - 1, 1),
+            );
+            const budgetMonthEnd = endOfMonth(budgetMonthStart);
+            const overlapStart =
+              startDate > budgetMonthStart ? startDate : budgetMonthStart;
+            const overlapEnd =
+              endDate < budgetMonthEnd ? endDate : budgetMonthEnd;
+            const overlapDays = Math.max(
+              0,
+              differenceInDays(overlapEnd, overlapStart) + 1,
+            );
+            const monthDays =
+              differenceInDays(budgetMonthEnd, budgetMonthStart) + 1;
+            const proratedLimit =
+              Number(b.limitAmount) * (overlapDays / monthDays);
             const current = categoryBudgetMap.get(b.category) || 0;
-            categoryBudgetMap.set(b.category, current + Number(b.limitAmount));
+            categoryBudgetMap.set(b.category, current + proratedLimit);
           });
 
           const totalBudget = Array.from(categoryBudgetMap.values()).reduce(

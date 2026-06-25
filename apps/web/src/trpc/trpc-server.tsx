@@ -66,7 +66,7 @@ export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
   queryOptions: T,
 ) {
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(queryOptions);
+  return queryClient.prefetchQuery(queryOptions);
 }
 
 export function prefetchInfinite<T extends ReturnType<TRPCQueryOptions<any>>>(

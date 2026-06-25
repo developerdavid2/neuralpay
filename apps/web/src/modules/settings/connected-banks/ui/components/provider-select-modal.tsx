@@ -141,8 +141,8 @@ export function ProviderSelectModal() {
         <div className="flex gap-3 pt-4">
           <Button
             variant="outline"
-            onClick={(open) => {
-              if (open && !isInitializing) closeModal();
+            onClick={() => {
+              if (!isInitializing) closeModal();
             }}
             disabled={isInitializing}
             className="flex-1"
