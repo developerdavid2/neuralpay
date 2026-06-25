@@ -4,11 +4,13 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { gatewayEnv } from "@neuralpay/env/gateway";
 import { logger } from "../utils/logger";
 
+// ── Error handler ─────────────────────────────────────────────────────────────
 const proxyError = (err: Error, res: any, _next: any) => {
   logger.error(`Proxy error: ${err.message}`);
   res.status(502).json({ success: false, message: "Service unavailable" });
 };
 
+// ── Header decorators ─────────────────────────────────────────────────────────
 // Used for public routes (auth) — no user identity injected
 const baseHeaders = (proxyReqOpts: any) => {
   proxyReqOpts.headers ??= {};
@@ -39,6 +41,15 @@ const withUserId = (proxyReqOpts: any, srcReq: Request) => {
   return proxyReqOpts;
 };
 
+// ── tRPC namespace router ─────────────────────────────────────────────────────
+// tRPC procedure names are dot-separated: "users.profile.me", "payments.transactions.list"
+// The first segment is the namespace — use it to route to the correct service.
+//
+// Batched requests: tRPC can send multiple procedures in one HTTP call
+// e.g. POST /v1/trpc/users.profile.me,payments.accounts.list
+// We don't split batches — each service receives the full batch path.
+// Cross-service batches are rare; if needed, add a batch-splitter middleware.
+
 function trpcNamespaceProxy(app: Express) {
   const NAMESPACE_MAP: Record<string, string> = {
     users: gatewayEnv.USER_SERVICE_URL,
@@ -48,6 +59,7 @@ function trpcNamespaceProxy(app: Express) {
   };
 
   app.use("/v1/trpc", (req: Request, res: Response, next: NextFunction) => {
+    // req.url here is e.g. "/users.profile.me" or "/users.profile.me,payments.accounts.list"
     const rawPath = req.url.split("?")[0]?.replace(/^\//, "") ?? "";
 
     // For batched calls the path looks like "users.profile.me,payments.accounts.list"
@@ -95,7 +107,7 @@ function trpcNamespaceProxy(app: Express) {
     })(req, res, next);
   });
 }
-// ── Mount all proxies
+// ── Mount all proxies ─────────────────────────────────────────────────────────
 // In proxy.ts — add this separate export
 export function mountStreamingProxy(app: Express) {
   app.use(

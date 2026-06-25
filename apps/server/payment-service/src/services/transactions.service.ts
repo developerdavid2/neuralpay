@@ -35,8 +35,8 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import { cache, cacheKeys } from "@neuralpay/cache";
 
+// Build the joined select columns (transaction + account + custom category)
 function transactionSelect() {
   return {
     ...getTableColumns(transactions),
@@ -48,16 +48,8 @@ function transactionSelect() {
   };
 }
 
-async function invalidateAggregateCache(userId: string) {
-  await Promise.all([
-    cache.delPattern(`transactions:overview:${userId}*`),
-    cache.delPattern(`transactions:topCats:${userId}*`),
-    cache.delPattern(`transactions:monthSpend:${userId}*`),
-    cache.delPattern(`transactions:monthlySummaries:${userId}*`),
-  ]);
-}
-
 export const TransactionsService = {
+  // ── LIST (cursor-paginated, filterable)
   async list(
     userId: string,
     input: TransactionsFilterInput,
@@ -142,7 +134,6 @@ export const TransactionsService = {
           );
         }
       }
-
       if (cursor) {
         const cursorId = Buffer.from(cursor, "base64url").toString("utf-8");
         const [cursorRow] = await db
@@ -176,10 +167,15 @@ export const TransactionsService = {
       const hasMore = rows.length > limit;
       const items = hasMore ? rows.slice(0, -1) : rows;
       const last = items[items.length - 1];
+
+      // Encode cursor as base64url of the transaction ID
       const nextCursor =
         hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
 
-      return { success: true, data: { items, nextCursor } };
+      return {
+        success: true,
+        data: { items: items, nextCursor },
+      };
     } catch (err) {
       console.error("[TransactionsService.list]", err);
       return {
@@ -190,6 +186,7 @@ export const TransactionsService = {
     }
   },
 
+  // ── RECENT (no pagination, just latest N) ──────────────────────────────────
   async recent(
     userId: string,
     limit = 7,
@@ -214,6 +211,7 @@ export const TransactionsService = {
     }
   },
 
+  // ── GET BY ID
   async getById(
     id: string,
     userId: string,
@@ -232,7 +230,6 @@ export const TransactionsService = {
           error: "Transaction not found",
           code: "NOT_FOUND",
         };
-
       return { success: true, data: row };
     } catch (err) {
       console.error("[TransactionsService.getById]", err);
@@ -244,11 +241,13 @@ export const TransactionsService = {
     }
   },
 
+  // ── CREATE
   async create(
     userId: string,
     input: CreateTransactionInput,
   ): Promise<ServiceResult<Transaction>> {
     try {
+      // Verify the bank account belongs to this user
       const [account] = await db
         .select({ id: bankAccounts.id })
         .from(bankAccounts)
@@ -260,12 +259,13 @@ export const TransactionsService = {
         )
         .limit(1);
 
-      if (!account)
+      if (!account) {
         return {
           success: false,
           error: "Bank account not found",
           code: "NOT_FOUND",
         };
+      }
 
       const [created] = await db
         .insert(transactions)
@@ -285,8 +285,7 @@ export const TransactionsService = {
         })
         .returning();
 
-      await invalidateAggregateCache(userId);
-
+      // Fetch with joins for consistent return shape
       return this.getById(created!.id, userId);
     } catch (err) {
       console.error("[TransactionsService.create]", err);
@@ -298,6 +297,7 @@ export const TransactionsService = {
     }
   },
 
+  // ── UPDATE
   async update(
     userId: string,
     input: UpdateTransactionInput,
@@ -333,7 +333,9 @@ export const TransactionsService = {
         updateData.amount = input.amount.toString();
       if (input.type !== undefined) updateData.type = input.type;
       if (input.status !== undefined) updateData.status = input.status;
-      if (input.category !== undefined) updateData.category = input.category;
+      if (input.category !== undefined) {
+        updateData.category = input.category;
+      }
 
       if (Object.keys(updateData).length === 0) {
         return this.getById(input.id, userId);
@@ -354,8 +356,6 @@ export const TransactionsService = {
           code: "NOT_FOUND",
         };
 
-      await invalidateAggregateCache(userId);
-
       return this.getById(input.id, userId);
     } catch (err) {
       console.error("[TransactionsService.update]", err);
@@ -367,6 +367,7 @@ export const TransactionsService = {
     }
   },
 
+  // ── DELETE (single)
   async delete(
     id: string,
     userId: string,
@@ -383,9 +384,6 @@ export const TransactionsService = {
           error: "Transaction not found",
           code: "NOT_FOUND",
         };
-
-      await invalidateAggregateCache(userId);
-
       return { success: true, data: { id: deleted.id } };
     } catch (err) {
       console.error("[TransactionsService.delete]", err);
@@ -397,6 +395,7 @@ export const TransactionsService = {
     }
   },
 
+  // ── BATCH DELETE ───────────────────────────────────────────────────────────
   async batchDelete(
     userId: string,
     input: BatchDeleteInput,
@@ -408,12 +407,13 @@ export const TransactionsService = {
           and(
             eq(transactions.userId, userId),
             inArray(transactions.id, input.ids),
+            // Only allow deleting manual transactions + CSV imports
+            // Plaid/Mono transactions should be soft-deleted or not deletable
+            // Comment this out if you want to allow deleting synced transactions
             eq(transactions.isManual, true),
           ),
         )
         .returning({ id: transactions.id });
-
-      await invalidateAggregateCache(userId);
 
       return {
         success: true,
@@ -429,6 +429,7 @@ export const TransactionsService = {
     }
   },
 
+  // ── SPENDING OVERVIEW ──────────────────────────────────────────────────────
   async getSpendingOverview(
     userId: string,
     input: {
@@ -437,369 +438,288 @@ export const TransactionsService = {
       to?: string;
     },
   ): Promise<ServiceResult<OverviewTotal>> {
-    const periodKey =
-      input.period === "custom"
-        ? `custom:${input.from}:${input.to}`
-        : (input.period ?? "30d");
+    try {
+      const { period = "30d", from, to } = input;
 
-    return cache.getOrSet(
-      cacheKeys.transactions.spendingOverview(userId, periodKey),
-      async () => {
-        try {
-          const { period = "30d", from, to } = input;
+      let startDate: Date;
+      let endDate: Date;
 
-          let startDate: Date;
-          let endDate: Date;
+      if (period === "7d") {
+        startDate = startOfDay(subDays(new Date(), 7));
+        endDate = endOfDay(new Date());
+      } else if (period === "30d") {
+        startDate = startOfDay(subDays(new Date(), 30));
+        endDate = endOfDay(new Date());
+      } else if (period === "90d") {
+        startDate = startOfDay(subDays(new Date(), 90));
+        endDate = endOfDay(new Date());
+      } else if (from && to) {
+        startDate = startOfDay(new Date(from));
+        endDate = endOfDay(new Date(to));
+      } else {
+        startDate = startOfDay(subDays(new Date(), 30));
+        endDate = endOfDay(new Date());
+      }
 
-          if (period === "7d") {
-            startDate = startOfDay(subDays(new Date(), 7));
-            endDate = endOfDay(new Date());
-          } else if (period === "30d") {
-            startDate = startOfDay(subDays(new Date(), 30));
-            endDate = endOfDay(new Date());
-          } else if (period === "90d") {
-            startDate = startOfDay(subDays(new Date(), 90));
-            endDate = endOfDay(new Date());
-          } else if (from && to) {
-            startDate = startOfDay(new Date(from));
-            endDate = endOfDay(new Date(to));
-          } else {
-            startDate = startOfDay(subDays(new Date(), 30));
-            endDate = endOfDay(new Date());
-          }
+      // 1. Category Spending (for Pie Chart)
+      const categoryResult = await db
+        .select({
+          category: transactions.category,
+          total: sql<number>`sum(${transactions.amount}::numeric)::float`,
+        })
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            eq(transactions.type, "debit"),
+            gte(transactions.date, startDate),
+            lte(transactions.date, endDate),
+          ),
+        )
+        .groupBy(transactions.category)
+        .orderBy(desc(sql`sum(${transactions.amount}::numeric)`));
 
-          const categoryResult = await db
-            .select({
-              category: transactions.category,
-              total: sql<string>`sum(${transactions.amount}::numeric)::text`,
-            })
-            .from(transactions)
-            .where(
-              and(
-                eq(transactions.userId, userId),
-                eq(transactions.type, "debit"),
-                gte(transactions.date, startDate),
-                lte(transactions.date, endDate),
-              ),
-            )
-            .groupBy(transactions.category)
-            .orderBy(desc(sql`sum(${transactions.amount}::numeric)`));
+      const categorySpending = categoryResult.map((r) => ({
+        category: r.category ?? "other",
+        total: Number(r.total) || 0,
+      }));
 
-          const categorySpending = categoryResult.map((r) => ({
-            category: r.category ?? "other",
-            total: parseFloat(r.total ?? "0"),
-          }));
+      // 2. Trend Data with DAILY granularity (for Bar / Area charts)
+      const trendDay = sql<Date>`date_trunc('day', ${transactions.date})`;
+      const trendResult = await db
+        .select({
+          date: trendDay,
+          name: sql<string>`to_char(${trendDay}, 'Mon DD')`,
+          value: sql<number>`sum(${transactions.amount}::numeric)::float`,
+        })
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            eq(transactions.type, "debit"),
+            gte(transactions.date, startDate),
+            lte(transactions.date, endDate),
+          ),
+        )
+        .groupBy(trendDay)
+        .orderBy(trendDay);
 
-          const trendDay = sql<Date>`date_trunc('day', ${transactions.date})`;
-          const trendResult = await db
-            .select({
-              date: trendDay,
-              name: sql<string>`to_char(${trendDay}, 'Mon DD')`,
-              value: sql<string>`sum(${transactions.amount}::numeric)::text`,
-            })
-            .from(transactions)
-            .where(
-              and(
-                eq(transactions.userId, userId),
-                eq(transactions.type, "debit"),
-                gte(transactions.date, startDate),
-                lte(transactions.date, endDate),
-              ),
-            )
-            .groupBy(trendDay)
-            .orderBy(trendDay);
+      // 3. Generate (month, year) pairs for the query period
+      const monthYearPairs: Array<{ month: number; year: number }> = [];
+      let currentDate = startOfMonth(startDate);
+      const periodEnd = endOfMonth(endDate);
 
-          const monthYearPairs: Array<{ month: number; year: number }> = [];
-          let currentDate = startOfMonth(startDate);
-          const periodEnd = endOfMonth(endDate);
+      while (currentDate <= periodEnd) {
+        monthYearPairs.push({
+          month: currentDate.getMonth() + 1,
+          year: currentDate.getFullYear(),
+        });
+        currentDate = startOfMonth(subMonths(currentDate, -1)); // Move to next month
+      }
 
-          while (currentDate <= periodEnd) {
-            monthYearPairs.push({
-              month: currentDate.getMonth() + 1,
-              year: currentDate.getFullYear(),
-            });
-            currentDate = startOfMonth(subMonths(currentDate, -1));
-          }
+      // Query budgets for all months in the period
+      let budgetResult: Array<any> = [];
+      if (monthYearPairs.length > 0) {
+        // Build OR conditions for each (month, year) pair
+        const monthYearConditions = monthYearPairs.map((p) =>
+          and(eq(budgets.month, p.month), eq(budgets.year, p.year)),
+        );
 
-          let budgetResult: Array<any> = [];
-          if (monthYearPairs.length > 0) {
-            const monthYearConditions = monthYearPairs.map((p) =>
-              and(eq(budgets.month, p.month), eq(budgets.year, p.year)),
-            );
-            const whereCondition =
-              monthYearConditions.length === 1
-                ? monthYearConditions[0]
-                : or(...monthYearConditions);
+        const whereCondition =
+          monthYearConditions.length === 1
+            ? monthYearConditions[0]
+            : or(...monthYearConditions);
 
-            budgetResult = await db
-              .select({
-                category: budgets.category,
-                month: budgets.month,
-                year: budgets.year,
-                limitAmount: sql<number>`${budgets.limitAmount}::numeric`,
-              })
-              .from(budgets)
-              .where(and(eq(budgets.userId, userId), whereCondition));
-          }
+        budgetResult = await db
+          .select({
+            category: budgets.category,
+            month: budgets.month,
+            year: budgets.year,
+            limitAmount: sql<number>`${budgets.limitAmount}::numeric`,
+          })
+          .from(budgets)
+          .where(and(eq(budgets.userId, userId), whereCondition));
+      }
 
-          const categoryBudgetMap = new Map<string, number>();
-          budgetResult.forEach((b) => {
-            const current = categoryBudgetMap.get(b.category) || 0;
-            categoryBudgetMap.set(b.category, current + Number(b.limitAmount));
-          });
+      // Aggregate budgets by category (sum limits per category across all months)
+      const categoryBudgetMap = new Map<string, number>();
+      budgetResult.forEach((b) => {
+        const current = categoryBudgetMap.get(b.category) || 0;
+        categoryBudgetMap.set(b.category, current + Number(b.limitAmount));
+      });
 
-          const totalBudget = Array.from(categoryBudgetMap.values()).reduce(
-            (sum, amount) => sum + amount,
-            0,
-          );
-          const daysInPeriod = differenceInDays(endDate, startDate) + 1;
-          const dailyBudget = daysInPeriod > 0 ? totalBudget / daysInPeriod : 0;
+      // Calculate budget metrics
+      const totalBudget = Array.from(categoryBudgetMap.values()).reduce(
+        (sum, amount) => sum + amount,
+        0,
+      );
+      const daysInPeriod = differenceInDays(endDate, startDate) + 1; // +1 to include both start and end days
+      const dailyBudget = daysInPeriod > 0 ? totalBudget / daysInPeriod : 0;
 
-          const trendData = trendResult.map((t) => {
-            const daysElapsedInRange = differenceInDays(
-              new Date(t.date),
-              startDate,
-            );
-            const budgetProgress = dailyBudget * (daysElapsedInRange + 1);
-            return {
-              name: t.name,
-              value: parseFloat(t.value ?? "0"),
-              budget: parseFloat(budgetProgress.toFixed(2)),
-              dailyBudget: parseFloat(dailyBudget.toFixed(2)),
-            };
-          });
+      // 4. Build trend data with spending + budget
+      const trendData = trendResult.map((t) => {
+        // Calculate days elapsed from start of period to this date
+        const daysElapsedInRange = differenceInDays(
+          new Date(t.date),
+          startDate,
+        );
+        const budgetProgress = dailyBudget * (daysElapsedInRange + 1); // +1 to include the current day
 
-          const categorySpendingWithBudget = categorySpending.map((item) => ({
-            ...item,
-            budget: categoryBudgetMap.get(item.category) || 0,
-          }));
+        return {
+          name: t.name,
+          value: Number(t.value) || 0,
+          budget: Number(budgetProgress.toFixed(2)),
+          dailyBudget: Number(dailyBudget.toFixed(2)),
+        };
+      });
 
-          const totalSpending = categorySpending.reduce(
-            (sum, item) => sum + item.total,
-            0,
-          );
+      // 5. Category spending vs budget (for pie chart comparison)
+      const categorySpendingWithBudget = categorySpending.map((item) => ({
+        ...item,
+        budget: categoryBudgetMap.get(item.category) || 0,
+      }));
 
-          return {
-            success: true,
-            data: {
-              totalSpending,
-              totalBudget,
-              categorySpending: categorySpendingWithBudget,
-              trendData,
-            },
-          };
-        } catch (err) {
-          console.error("[TransactionsService.getSpendingOverview]", err);
-          return {
-            success: false,
-            error: "Failed to fetch spending overview",
-            code: "INTERNAL_SERVER_ERROR",
-          };
-        }
-      },
-      120,
-    );
+      const totalSpending = categorySpending.reduce(
+        (sum, item) => sum + item.total,
+        0,
+      );
+
+      return {
+        success: true,
+        data: {
+          totalSpending,
+          totalBudget,
+          categorySpending: categorySpendingWithBudget,
+          trendData,
+        },
+      };
+    } catch (err) {
+      console.error("[TransactionsService.getSpendingOverview]", err);
+      return {
+        success: false,
+        error: "Failed to fetch spending overview",
+        code: "INTERNAL_SERVER_ERROR",
+      };
+    }
   },
 
+  // ── TOP CATEGORIES ─────────────────────────────────────────────────────────
   async getTopCategories(
     userId: string,
     month: number,
     year: number,
     limit = 5,
   ): Promise<ServiceResult<TopMonthlyCategories>> {
-    return cache.getOrSet(
-      cacheKeys.transactions.topCategories(userId, month, year),
-      async () => {
-        try {
-          const startDate = new Date(year, month - 1, 1);
-          const endDate = new Date(year, month, 0, 23, 59, 59);
+    try {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59);
 
-          const [categoryResult, totalResult] = await Promise.all([
-            db
-              .select({
-                category: transactions.category,
-                total: sql<string>`sum(${transactions.amount}::numeric)::text`,
-                count: sql<number>`count(*)::int`,
-              })
-              .from(transactions)
-              .where(
-                and(
-                  eq(transactions.userId, userId),
-                  eq(transactions.type, "debit"),
-                  gte(transactions.date, startDate),
-                  lte(transactions.date, endDate),
-                ),
-              )
-              .groupBy(transactions.category)
-              .orderBy(desc(sql`sum(${transactions.amount}::numeric)`))
-              .limit(limit),
+      const [categoryResult, totalResult] = await Promise.all([
+        db
+          .select({
+            category: transactions.category,
+            total: sql<number>`sum(${transactions.amount}::numeric)::float`,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(transactions)
+          .where(
+            and(
+              eq(transactions.userId, userId),
+              eq(transactions.type, "debit"),
+              gte(transactions.date, startDate),
+              lte(transactions.date, endDate),
+            ),
+          )
+          .groupBy(transactions.category)
+          .orderBy(desc(sql`sum(${transactions.amount}::numeric)`))
+          .limit(limit),
 
-            db
-              .select({
-                total: sql<string>`coalesce(sum(${transactions.amount}::numeric), '0')::text`,
-              })
-              .from(transactions)
-              .where(
-                and(
-                  eq(transactions.userId, userId),
-                  eq(transactions.type, "debit"),
-                  gte(transactions.date, startDate),
-                  lte(transactions.date, endDate),
-                ),
-              ),
-          ]);
+        db
+          .select({
+            total: sql<number>`coalesce(sum(${transactions.amount}::numeric), 0)::float`,
+          })
+          .from(transactions)
+          .where(
+            and(
+              eq(transactions.userId, userId),
+              eq(transactions.type, "debit"),
+              gte(transactions.date, startDate),
+              lte(transactions.date, endDate),
+            ),
+          ),
+      ]);
 
-          if (!categoryResult.length) {
-            return {
-              success: true,
-              data: {
-                month,
-                year,
-                categories: [],
-                totalSpending: 0,
-                hasData: false,
-              },
-            };
-          }
+      const totalSpending = totalResult[0]?.total ?? 0;
 
-          const totalSpendingRaw = parseFloat(totalResult[0]?.total ?? "0");
+      if (!categoryResult.length) {
+        return {
+          success: true,
+          data: {
+            month,
+            year,
+            categories: [],
+            totalSpending: 0,
+            hasData: false,
+          },
+        };
+      }
 
-          return {
-            success: true,
-            data: {
-              month,
-              year,
-              categories: categoryResult.map((r) => {
-                const total = parseFloat(r.total ?? "0");
-                return {
-                  category: r.category ?? "other",
-                  total,
-                  count: r.count,
-                  percentage:
-                    totalSpendingRaw > 0
-                      ? Math.round((total / totalSpendingRaw) * 1000) / 10
-                      : 0,
-                };
-              }),
-              totalSpending: totalSpendingRaw,
-              hasData: true,
-            },
-          };
-        } catch (err) {
-          console.error("[TransactionsService.getTopCategories]", err);
-          return {
-            success: false,
-            error: "Failed to fetch top categories",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      300,
-    );
+      return {
+        success: true,
+        data: {
+          month,
+          year,
+          categories: categoryResult.map((r) => ({
+            category: r.category ?? "other",
+            total: r.total,
+            count: r.count,
+            percentage:
+              totalSpending > 0
+                ? Math.round((r.total / totalSpending) * 1000) / 10
+                : 0,
+          })),
+          totalSpending,
+          hasData: true,
+        },
+      };
+    } catch (err) {
+      console.error("[TransactionsService.getTopCategories]", err);
+      return {
+        success: false,
+        error: "Failed to fetch top categories",
+        code: "DB_ERROR",
+      };
+    }
   },
 
+  // ── CURRENT MONTH SPENDING ─────────────────────────────────────────────────
   async getCurrentMonthSpending(
     userId: string,
   ): Promise<ServiceResult<number>> {
-    const now = new Date();
-    const cacheKey = `transactions:monthSpend:${userId}:${now.getFullYear()}-${now.getMonth() + 1}`;
-
-    return cache.getOrSet(
-      cacheKey,
-      async () => {
-        try {
-          const [result] = await db
-            .select({
-              total: sql<string>`coalesce(sum(${transactions.amount}::numeric), '0')::text`,
-            })
-            .from(transactions)
-            .where(
-              and(
-                eq(transactions.userId, userId),
-                eq(transactions.type, "debit"),
-                gte(transactions.date, startOfMonth(now)),
-                lte(transactions.date, endOfMonth(now)),
-              ),
-            );
-
-          return {
-            success: true,
-            data: parseFloat(result?.total ?? "0"),
-          };
-        } catch (err) {
-          console.error("[TransactionsService.getCurrentMonthSpending]", err);
-          return {
-            success: false,
-            error: "Failed to calculate spending",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      60,
-    );
-  },
-
-  async getMonthlySummaries(
-    userId: string,
-    input: {
-      dateFrom?: string;
-      dateTo?: string;
-      bankAccountId?: string;
-    },
-  ): Promise<
-    ServiceResult<
-      Array<{ monthKey: string; count: number; totalSpent: number }>
-    >
-  > {
-    return cache.getOrSet(
-      `transactions:monthlySummaries:${userId}:${JSON.stringify(input)}`,
-      async () => {
-        try {
-          const conditions = [
+    try {
+      const now = new Date();
+      const [result] = await db
+        .select({
+          total: sql<number>`coalesce(sum(${transactions.amount}::numeric), 0)::float`,
+        })
+        .from(transactions)
+        .where(
+          and(
             eq(transactions.userId, userId),
             eq(transactions.type, "debit"),
-          ];
+            gte(transactions.date, startOfMonth(now)),
+            lte(transactions.date, endOfMonth(now)),
+          ),
+        );
 
-          if (input.dateFrom)
-            conditions.push(gte(transactions.date, new Date(input.dateFrom)));
-          if (input.dateTo)
-            conditions.push(lte(transactions.date, new Date(input.dateTo)));
-          if (input.bankAccountId)
-            conditions.push(
-              eq(transactions.bankAccountId, input.bankAccountId),
-            );
-
-          const monthCol = sql<string>`to_char(date_trunc('month', ${transactions.date}), 'YYYY-MM')`;
-
-          const rows = await db
-            .select({
-              monthKey: monthCol,
-              count: sql<number>`count(*)::int`,
-              totalSpent: sql<string>`coalesce(sum(${transactions.amount}::numeric), '0')::text`,
-            })
-            .from(transactions)
-            .where(and(...conditions))
-            .groupBy(monthCol)
-            .orderBy(desc(monthCol));
-
-          return {
-            success: true,
-            data: rows.map((r) => ({
-              monthKey: r.monthKey,
-              count: r.count,
-              totalSpent: parseFloat(r.totalSpent),
-            })),
-          };
-        } catch (err) {
-          console.error("[TransactionsService.getMonthlySummaries]", err);
-          return {
-            success: false,
-            error: "Failed to fetch monthly summaries",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      60,
-    );
+      return { success: true, data: result?.total ?? 0 };
+    } catch (err) {
+      console.error("[TransactionsService.getCurrentMonthSpending]", err);
+      return {
+        success: false,
+        error: "Failed to calculate spending",
+        code: "DB_ERROR",
+      };
+    }
   },
 } as const;

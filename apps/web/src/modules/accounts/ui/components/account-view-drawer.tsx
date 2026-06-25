@@ -1,6 +1,7 @@
 import { useConfirm } from "@/hooks/use-confirm";
 import { formatAmount } from "@/lib/utils";
 import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
+import { useAccountPendingSelectors } from "@/modules/accounts/store/use-account-pending";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   Drawer,
@@ -29,10 +30,8 @@ import {
 } from "lucide-react";
 import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
 import { useAccountDetail } from "../../hooks/queries/use-account-detail";
-
+import { useAccountDrawer } from "../../store/use-account-drawer";
 import { AccountStatusBadge, AccountTypeBadge } from "./account-badges";
-import { useAccountDrawer } from "../../hooks/store/use-account-drawer";
-import { useAccountPendingSelectors } from "../../hooks/store/use-account-pending";
 
 function DetailField({
   label,
