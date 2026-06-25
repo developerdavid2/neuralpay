@@ -14,6 +14,7 @@ import { CountryCode, Products } from "plaid";
 import { decrypt, encrypt } from "../lib/crypto";
 import { mapPlaidCategoryToEnum } from "../lib/plaidCategoryMap";
 import { plaidClient } from "../lib/plaidClient";
+import { cache, cacheKeys } from "@neuralpay/cache";
 
 export const PlaidService = {
   async getConnectedBanks(userId: string) {
@@ -170,13 +171,10 @@ export const PlaidService = {
         });
         console.log("[plaid] Item removed from Plaid");
       } catch (err) {
-        // Non-fatal — still proceed with local deletion
         console.error("[plaid] itemRemove failed:", err);
       }
     }
 
-    // transactions cascade automatically from bankAccounts (onDelete: cascade)
-    // so we only need to delete bankAccounts, then the connectedPlaidBanks row
     if (bank.itemId) {
       await db
         .delete(bankAccounts)
@@ -191,6 +189,11 @@ export const PlaidService = {
     await db
       .delete(connectedPlaidBanks)
       .where(eq(connectedPlaidBanks.id, bankId));
+
+    await Promise.all([
+      cache.del(cacheKeys.accounts.totalBalance(userId)),
+      cache.del(cacheKeys.accounts.aggregate(userId)),
+    ]);
 
     return { id: bankId };
   },
@@ -223,6 +226,10 @@ export const PlaidService = {
         ),
       );
 
+    await Promise.all([
+      cache.del(cacheKeys.accounts.totalBalance(userId)),
+      cache.del(cacheKeys.accounts.aggregate(userId)),
+    ]);
     return { id: bankId, status };
   },
 
@@ -409,6 +416,10 @@ export const PlaidService = {
           );
       }
 
+      await Promise.all([
+        cache.del(cacheKeys.accounts.totalBalance(userId)),
+        cache.del(cacheKeys.accounts.aggregate(userId)),
+      ]);
       return {
         added: txToInsert.length,
         modified: modified.length,

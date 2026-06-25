@@ -71,6 +71,11 @@ export async function invalidateAllPaymentQueries(queryClient: QueryClient) {
     invalidateTRPCQueries(queryClient, ["payments", "plaid"]),
     invalidateTRPCQueries(queryClient, ["payments", "accounts"]),
     invalidateTRPCQueries(queryClient, ["payments", "transactions"]),
+    invalidateTRPCQueries(queryClient, [
+      "payments",
+      "accounts",
+      "aggregateByType",
+    ]),
     invalidateTRPCQueries(queryClient, ["ai", "insights"]),
   ]);
 }

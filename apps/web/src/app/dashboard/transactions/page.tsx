@@ -75,6 +75,8 @@ export default async function Page({ searchParams }: PageProps) {
     }),
   );
 
+  void prefetch(trpc.payments.accounts.listAll.queryOptions());
+
   if (params.focus) {
     void prefetch(
       trpc.payments.transactions.getById.queryOptions({

@@ -254,4 +254,27 @@ export const transactionsRouter = router({
       });
     return result.data;
   }),
+
+  monthlySummaries: protectedProcedure
+    .input(
+      z
+        .object({
+          dateFrom: z.iso.datetime().optional(),
+          dateTo: z.iso.datetime().optional(),
+          bankAccountId: z.uuid().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const result = await TransactionsService.getMonthlySummaries(
+        ctx.session.user.id,
+        input ?? {},
+      );
+      if (!result.success)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: result.error,
+        });
+      return result.data;
+    }),
 });

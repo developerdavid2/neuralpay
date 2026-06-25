@@ -5,7 +5,7 @@ import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 export default async function Page() {
   const now = new Date();
   await Promise.allSettled([
-    prefetch(trpc.payments.accounts.totalBalance.queryOptions()),
+    prefetch(trpc.payments.accounts.aggregateByType.queryOptions()),
     prefetch(trpc.payments.accounts.list.queryOptions()),
     prefetch(trpc.payments.transactions.currentMonthSpending.queryOptions()),
     prefetch(

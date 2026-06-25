@@ -1,3 +1,4 @@
+import { cache, cacheKeys } from "@neuralpay/cache";
 import { db } from "@neuralpay/db";
 import { bankAccounts } from "@neuralpay/db/schema";
 import {
@@ -11,7 +12,6 @@ import {
   type ServiceResult,
   type UpdateAccountInput,
 } from "@neuralpay/types";
-import { cache, cacheKeys } from "@neuralpay/cache";
 import {
   and,
   desc,
@@ -22,14 +22,6 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import { TRPCError } from "@trpc/server";
-
-/**
- * Caching policy:
- * - list, listAll, getById  → NO Redis. Fast indexed PG queries; React Query owns client-side caching.
- * - getTotalBalance, getAggregateBalanceByType → Redis. Aggregate queries worth caching server-side.
- * TTLs here should match staleTime in the corresponding React Query hooks.
- */
 
 async function invalidateAggregateCache(userId: string) {
   await Promise.all([

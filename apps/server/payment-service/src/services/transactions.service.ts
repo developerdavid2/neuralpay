@@ -53,6 +53,7 @@ async function invalidateAggregateCache(userId: string) {
     cache.delPattern(`transactions:overview:${userId}*`),
     cache.delPattern(`transactions:topCats:${userId}*`),
     cache.delPattern(`transactions:monthSpend:${userId}*`),
+    cache.delPattern(`transactions:monthlySummaries:${userId}*`),
   ]);
 }
 
@@ -600,7 +601,6 @@ export const TransactionsService = {
     );
   },
 
-  // ── TOP CATEGORIES — Redis cached aggregate per month/year
   async getTopCategories(
     userId: string,
     month: number,
@@ -731,6 +731,70 @@ export const TransactionsService = {
           return {
             success: false,
             error: "Failed to calculate spending",
+            code: "DB_ERROR",
+          };
+        }
+      },
+      60,
+    );
+  },
+
+  async getMonthlySummaries(
+    userId: string,
+    input: {
+      dateFrom?: string;
+      dateTo?: string;
+      bankAccountId?: string;
+    },
+  ): Promise<
+    ServiceResult<
+      Array<{ monthKey: string; count: number; totalSpent: number }>
+    >
+  > {
+    return cache.getOrSet(
+      `transactions:monthlySummaries:${userId}:${JSON.stringify(input)}`,
+      async () => {
+        try {
+          const conditions = [
+            eq(transactions.userId, userId),
+            eq(transactions.type, "debit"),
+          ];
+
+          if (input.dateFrom)
+            conditions.push(gte(transactions.date, new Date(input.dateFrom)));
+          if (input.dateTo)
+            conditions.push(lte(transactions.date, new Date(input.dateTo)));
+          if (input.bankAccountId)
+            conditions.push(
+              eq(transactions.bankAccountId, input.bankAccountId),
+            );
+
+          const monthCol = sql<string>`to_char(date_trunc('month', ${transactions.date}), 'YYYY-MM')`;
+
+          const rows = await db
+            .select({
+              monthKey: monthCol,
+              count: sql<number>`count(*)::int`,
+              totalSpent: sql<string>`coalesce(sum(${transactions.amount}::numeric), '0')::text`,
+            })
+            .from(transactions)
+            .where(and(...conditions))
+            .groupBy(monthCol)
+            .orderBy(desc(monthCol));
+
+          return {
+            success: true,
+            data: rows.map((r) => ({
+              monthKey: r.monthKey,
+              count: r.count,
+              totalSpent: parseFloat(r.totalSpent),
+            })),
+          };
+        } catch (err) {
+          console.error("[TransactionsService.getMonthlySummaries]", err);
+          return {
+            success: false,
+            error: "Failed to fetch monthly summaries",
             code: "DB_ERROR",
           };
         }

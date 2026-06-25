@@ -74,6 +74,11 @@ export function useToggleAccountStatus() {
         invalidateTRPCQueries(queryClient, ["payments", "accounts", "listAll"]),
         invalidateTRPCQueries(queryClient, ["payments", "accounts", "getById"]),
         invalidateTRPCQueries(queryClient, ["payments", "accounts", "list"]),
+        invalidateTRPCQueries(queryClient, [
+          "payments",
+          "accounts",
+          "aggregateByType",
+        ]),
       ]);
     },
   });
