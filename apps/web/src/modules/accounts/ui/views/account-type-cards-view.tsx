@@ -139,7 +139,7 @@ export function AccountTypeCardsView() {
                 >
                   <AccountTypeCard
                     type={type}
-                    totalBalance={Number(agg?.totalBalance) ?? 0}
+                    totalBalance={agg?.totalBalance ?? 0}
                     accountCount={agg?.accountCount ?? 0}
                     isBalanceVisible={isBalanceVisible}
                   />

@@ -3,7 +3,7 @@
 import { PremiumButton } from "@/components/premium-button";
 
 import { PlusIcon } from "lucide-react";
-import { useAccountDrawer } from "../../hooks/store/use-account-drawer";
+import { useAccountDrawer } from "../../store/use-account-drawer";
 
 export function NewAccountButton() {
   const { onOpenAdd } = useAccountDrawer();

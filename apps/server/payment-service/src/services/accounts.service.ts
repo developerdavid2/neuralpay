@@ -1,4 +1,3 @@
-import { cache, cacheKeys } from "@neuralpay/cache";
 import { db } from "@neuralpay/db";
 import { bankAccounts } from "@neuralpay/db/schema";
 import {
@@ -23,15 +22,8 @@ import {
   sql,
 } from "drizzle-orm";
 
-async function invalidateAggregateCache(userId: string) {
-  await Promise.all([
-    cache.del(cacheKeys.accounts.totalBalance(userId)),
-    cache.del(cacheKeys.accounts.aggregate(userId)),
-  ]);
-}
-
 export const AccountsService = {
-  // ── LIST (paginated, filterable)
+  // ── LIST (cursor-paginated, filterable)
   async listByUser(
     userId: string,
     input: AccountsFilterInput,
@@ -63,9 +55,11 @@ export const AccountsService = {
           );
         }
       }
+
       if (tags?.length) {
         conditions.push(sql`${bankAccounts.tags} && ${tags}`);
       }
+
       if (search) {
         const s = `%${search}%`;
         const searchCond = or(
@@ -98,7 +92,11 @@ export const AccountsService = {
 
       return {
         success: true,
-        data: { items: rows as BankAccount[], totalCount, pageCount },
+        data: {
+          items: rows as BankAccount[],
+          totalCount,
+          pageCount,
+        },
       };
     } catch (err) {
       console.error("[AccountsService.listByUser]", err);
@@ -110,7 +108,7 @@ export const AccountsService = {
     }
   },
 
-  // ── LIST ALL (no pagination)
+  // server/services/accounts.service.ts
   async listAllByUser(
     userId: string,
     input: AccountsListAllInput,
@@ -155,7 +153,10 @@ export const AccountsService = {
         .where(and(...conditions))
         .orderBy(desc(bankAccounts.createdAt));
 
-      return { success: true, data: rows as BankAccount[] };
+      return {
+        success: true,
+        data: rows as BankAccount[],
+      };
     } catch (err) {
       console.error("[AccountsService.listAllByUser]", err);
       return {
@@ -165,7 +166,7 @@ export const AccountsService = {
       };
     }
   },
-
+  // ── GET BY ID
   async getById(
     id: string,
     userId: string,
@@ -183,7 +184,6 @@ export const AccountsService = {
           error: "Account not found",
           code: "NOT_FOUND",
         };
-
       return { success: true, data: row as BankAccount };
     } catch (err) {
       console.error("[AccountsService.getById]", err);
@@ -195,6 +195,7 @@ export const AccountsService = {
     }
   },
 
+  // ── CREATE
   async create(
     userId: string,
     input: CreateAccountInput,
@@ -217,8 +218,6 @@ export const AccountsService = {
         })
         .returning();
 
-      await invalidateAggregateCache(userId);
-
       return { success: true, data: created! as BankAccount };
     } catch (err) {
       console.error("[AccountsService.create]", err);
@@ -230,6 +229,7 @@ export const AccountsService = {
     }
   },
 
+  // ── UPDATE
   async update(
     userId: string,
     input: UpdateAccountInput,
@@ -261,9 +261,6 @@ export const AccountsService = {
           error: "Account not found",
           code: "NOT_FOUND",
         };
-
-      await invalidateAggregateCache(userId);
-
       return { success: true, data: updated as BankAccount };
     } catch (err) {
       console.error("[AccountsService.update]", err);
@@ -281,31 +278,16 @@ export const AccountsService = {
     status: "active" | "inactive",
   ): Promise<ServiceResult<BankAccount>> {
     try {
-      const [account] = await db
-        .select({ isManual: bankAccounts.isManual })
-        .from(bankAccounts)
-        .where(and(eq(bankAccounts.id, id), eq(bankAccounts.userId, userId)))
-        .limit(1);
-
-      if (!account)
-        return {
-          success: false,
-          error: "Account not found",
-          code: "NOT_FOUND",
-        };
-
-      if (account.isManual)
-        return {
-          success: false,
-          error:
-            "Manual accounts cannot have their status toggled. Edit the account directly.",
-          code: "FORBIDDEN",
-        };
-
       const [updated] = await db
         .update(bankAccounts)
         .set({ status, updatedAt: new Date() })
-        .where(and(eq(bankAccounts.id, id), eq(bankAccounts.userId, userId)))
+        .where(
+          and(
+            eq(bankAccounts.id, id),
+            eq(bankAccounts.userId, userId),
+            eq(bankAccounts.isManual, false),
+          ),
+        )
         .returning();
 
       if (!updated)
@@ -314,8 +296,6 @@ export const AccountsService = {
           error: "Account not found",
           code: "NOT_FOUND",
         };
-
-      await invalidateAggregateCache(userId);
 
       return { success: true, data: updated as BankAccount };
     } catch (err) {
@@ -328,11 +308,13 @@ export const AccountsService = {
     }
   },
 
+  // ── DELETE (hard delete — manual accounts only)
   async delete(
     id: string,
     userId: string,
   ): Promise<ServiceResult<{ id: string }>> {
     try {
+      // Only allow deleting manual accounts
       const [account] = await db
         .select({ isManual: bankAccounts.isManual })
         .from(bankAccounts)
@@ -346,19 +328,18 @@ export const AccountsService = {
           code: "NOT_FOUND",
         };
 
-      if (!account.isManual)
+      if (!account.isManual) {
         return {
           success: false,
           error: "Synced accounts cannot be deleted. Disconnect instead.",
           code: "FORBIDDEN",
         };
+      }
 
       const [deleted] = await db
         .delete(bankAccounts)
         .where(and(eq(bankAccounts.id, id), eq(bankAccounts.userId, userId)))
         .returning({ id: bankAccounts.id });
-
-      await invalidateAggregateCache(userId);
 
       return { success: true, data: { id: deleted!.id } };
     } catch (err) {
@@ -371,64 +352,81 @@ export const AccountsService = {
     }
   },
 
+  // ── GET TOTAL BALANCE
+  async getTotalBalance(
+    userId: string,
+  ): Promise<ServiceResult<{ totalBalance: number; accountCount: number }>> {
+    try {
+      const rows = await db
+        .select({ balance: bankAccounts.balance })
+        .from(bankAccounts)
+        .where(
+          and(
+            eq(bankAccounts.userId, userId),
+            eq(bankAccounts.status, "active"),
+          ),
+        );
+
+      const totalBalance = rows.reduce(
+        (sum, r) => sum + parseFloat(r.balance ?? "0"),
+        0,
+      );
+
+      return {
+        success: true,
+        data: { totalBalance, accountCount: rows.length },
+      };
+    } catch (err) {
+      console.error("[AccountsService.getTotalBalance]", err);
+      return {
+        success: false,
+        error: "Failed to aggregate balances",
+        code: "DB_ERROR",
+      };
+    }
+  },
+
+  // ── GET AGGREGATED BALANCE BY TYPE (for stats cards)
   async getAggregateBalanceByType(userId: string): Promise<
-    ServiceResult<{
-      byType: Array<{
+    ServiceResult<
+      Array<{
         type: string;
-        totalBalance: string;
+        totalBalance: number;
         accountCount: number;
-      }>;
-      totalBalance: string;
-      totalCount: number;
-    }>
+      }>
+    >
   > {
-    return cache.getOrSet(
-      cacheKeys.accounts.aggregate(userId),
-      async () => {
-        try {
-          const result = await db
-            .select({
-              type: bankAccounts.type,
-              totalBalance: sql<string>`sum(${bankAccounts.balance})::numeric::text`,
-              accountCount: sql<number>`count(*)::int`,
-            })
-            .from(bankAccounts)
-            .where(
-              and(
-                eq(bankAccounts.userId, userId),
-                eq(bankAccounts.status, "active"),
-              ),
-            )
-            .groupBy(bankAccounts.type);
+    try {
+      const result = await db
+        .select({
+          type: bankAccounts.type,
+          totalBalance: sql<number>`sum(${bankAccounts.balance}::numeric)::float`,
+          accountCount: sql<number>`count(*)::int`,
+        })
+        .from(bankAccounts)
+        .where(
+          and(
+            eq(bankAccounts.userId, userId),
+            eq(bankAccounts.status, "active"),
+          ),
+        )
+        .groupBy(bankAccounts.type);
 
-          const totalBalance = result
-            .reduce((sum, r) => sum + parseFloat(r.totalBalance ?? "0"), 0)
-            .toFixed(2);
-
-          const totalCount = result.reduce((sum, r) => sum + r.accountCount, 0);
-
-          return {
-            success: true,
-            data: {
-              byType: result.map((r) => ({
-                type: r.type,
-                totalBalance: parseFloat(r.totalBalance ?? "0").toFixed(2),
-                accountCount: r.accountCount,
-              })),
-              totalBalance,
-              totalCount,
-            },
-          };
-        } catch (err) {
-          console.error("[AccountsService.getAggregateBalanceByType]", err);
-          return {
-            success: false,
-            error: "Failed to aggregate balances",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      300,
-    );
+      return {
+        success: true,
+        data: result.map((r) => ({
+          type: r.type,
+          totalBalance: Number(r.totalBalance) || 0,
+          accountCount: r.accountCount,
+        })),
+      };
+    } catch (err) {
+      console.error("[AccountsService.getBalanceByType]", err);
+      return {
+        success: false,
+        error: "Failed to aggregate balances by type",
+        code: "DB_ERROR",
+      };
+    }
   },
 } as const;

@@ -37,6 +37,7 @@ import {
   Tag,
   X,
 } from "lucide-react";
+import { SearchableCombobox } from "@/components/searchable-combobox";
 
 const ACCOUNT_TYPES = [
   { value: "checking", label: "Checking", icon: Banknote },
@@ -223,6 +224,13 @@ export function TransactionFilters() {
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5 scrollbar-thin">
+            <SearchableCombobox
+              options={[]}
+              value={""}
+              onChange={() => {}}
+              placeholder="string"
+              searchPlaceholder="string"
+            />
             {/* Account Type */}
             <div className="space-y-2">
               <h3 className="text-sm font-semibold">Account Type</h3>

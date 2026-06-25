@@ -25,7 +25,7 @@ export function ConnectedBanksContent() {
       {/* Trust Banner */}
       <div className="flex items-center gap-4 rounded-xl border border-border bg-card/50 p-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-          <Shield className="h-5 w-5 text-main" />
+          <Shield className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1">
           <p className="text-sm font-medium">Bank-grade security</p>
@@ -45,7 +45,7 @@ export function ConnectedBanksContent() {
         <div className="border-dashed">
           <div className="flex flex-col items-center justify-center py-16 gap-5">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-              <Landmark className="h-8 w-8 text-primary dark:text-violet-400" />
+              <Landmark className="h-8 w-8 text-primary" />
             </div>
             <div className="text-center max-w-sm">
               <h3 className="text-lg font-semibold">No bank connected</h3>
