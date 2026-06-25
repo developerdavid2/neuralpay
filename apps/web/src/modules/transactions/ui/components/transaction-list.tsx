@@ -24,6 +24,7 @@ import { useTransactionDrawer } from "../../store/use-transaction-drawer";
 import { TransactionFormDrawer } from "./transaction-form-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
 import { TransactionViewDrawer } from "./transaction-view-drawer";
+import { useTransactionsMonthlySummaries } from "../../hooks/queries/use-transactions-monthly-summaries";
 
 interface Props {
   focusTransactionId?: string;
@@ -73,8 +74,17 @@ export function TransactionsList({
     useTransactionMutations();
   const { isRowPending, isBatchDeleting } = useTransactionPendingSelectors();
   const [ConfirmDialog, confirm] = useConfirm();
+  const { data: summaries } = useTransactionsMonthlySummaries({
+    dateFrom: currentDateFrom || undefined,
+    dateTo: currentDateTo || undefined,
+    bankAccountId: currentAccountId || undefined,
+  });
   const { currentValue: limitFromUrl } = useQueryParam("limit");
   const displayLimit = limitFromUrl ? Number(limitFromUrl) : currentLimit;
+  const summaryMap = useMemo(
+    () => new Map(summaries?.map((s) => [s.monthKey, s]) ?? []),
+    [summaries],
+  );
 
   const handleView = (tx: Transaction) => {
     onOpenView(tx.id, tx);
@@ -139,7 +149,6 @@ export function TransactionsList({
       currentLimit,
     ],
   );
-
   const {
     allTransactions,
     grouped,
@@ -223,20 +232,25 @@ export function TransactionsList({
 
       <div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 scrollbar-hide">
         <Table noWrapper>
-          {sortedMonths.map((monthKey) => (
-            <TransactionMonthSection
-              key={monthKey}
-              monthKey={monthKey}
-              transactions={grouped.get(monthKey)!}
-              globalSelection={globalSelection}
-              onSelectionChange={setGlobalSelection}
-              onView={handleView}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              isRowPending={isRowPending}
-              columnVisibility={columnVisibility}
-            />
-          ))}
+          {sortedMonths.map((monthKey) => {
+            const summary = summaryMap.get(monthKey);
+            return (
+              <TransactionMonthSection
+                key={monthKey}
+                monthKey={monthKey}
+                transactions={grouped.get(monthKey)!}
+                totalCount={summary?.count ?? 0}
+                totalSpent={summary?.totalSpent ?? 0}
+                globalSelection={globalSelection}
+                onSelectionChange={setGlobalSelection}
+                onView={handleView}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                isRowPending={isRowPending}
+                columnVisibility={columnVisibility}
+              />
+            );
+          })}
         </Table>
         <InfiniteScroll
           hasNextPage={hasNextPage ?? false}
@@ -259,8 +273,8 @@ export function TransactionsListSkeleton() {
       {/* Toolbar skeleton */}
       <div className="sticky top-0 z-30 mx-6 py-2 flex items-center justify-between gap-4 border-t">
         <div className="flex items-center gap-2">
-          <Skeleton className="h-7 w-[90px] rounded-md" />
-          <Skeleton className="h-7 w-[90px] rounded-md" />
+          <Skeleton className="h-7 w-22.5 rounded-md" />
+          <Skeleton className="h-7 w-22.5 rounded-md" />
         </div>
       </div>
 
@@ -280,22 +294,22 @@ export function TransactionsListSkeleton() {
           {/* Column headers */}
           <div className="flex items-center px-4 py-2.5 border-b border-border bg-muted/20">
             <Skeleton className="size-4 rounded-sm mr-4" />
-            <div className="flex items-center gap-1.5 w-[100px]">
+            <div className="flex items-center gap-1.5 w-25">
               <Skeleton className="h-3 w-8" />
               <Skeleton className="size-3" />
             </div>
             <div className="flex-1">
               <Skeleton className="h-3 w-32" />
             </div>
-            <div className="flex items-center gap-1.5 w-[140px]">
+            <div className="flex items-center gap-1.5 w-35">
               <Skeleton className="h-3 w-14" />
               <Skeleton className="size-3" />
             </div>
-            <div className="flex items-center gap-1.5 w-[100px] justify-end">
+            <div className="flex items-center gap-1.5 w-25 justify-end">
               <Skeleton className="h-3 w-12" />
               <Skeleton className="size-3" />
             </div>
-            <div className="flex items-center gap-1.5 w-[100px] justify-end">
+            <div className="flex items-center gap-1.5 w-25 justify-end">
               <Skeleton className="h-3 w-12" />
               <Skeleton className="size-3" />
             </div>
@@ -312,7 +326,7 @@ export function TransactionsListSkeleton() {
               <Skeleton className="size-4 rounded-sm mr-4 shrink-0" />
 
               {/* Date: "May 25" + "12:13" */}
-              <div className="w-[100px] shrink-0 space-y-0.5">
+              <div className="w-25 shrink-0 space-y-0.5">
                 <Skeleton className="h-4 w-14" />
                 <Skeleton className="h-3 w-10" />
               </div>
@@ -327,17 +341,17 @@ export function TransactionsListSkeleton() {
               </div>
 
               {/* Category */}
-              <div className="w-[140px] shrink-0">
+              <div className="w-35 shrink-0">
                 <Skeleton className="h-4 w-24" />
               </div>
 
               {/* Amount (right-aligned) */}
-              <div className="w-[100px] shrink-0 flex justify-end">
+              <div className="w-25 shrink-0 flex justify-end">
                 <Skeleton className="h-4 w-16" />
               </div>
 
               {/* Status badge */}
-              <div className="w-[100px] shrink-0 flex justify-end">
+              <div className="w-25 shrink-0 flex justify-end">
                 <Skeleton className="h-5 w-20 rounded-full" />
               </div>
 
@@ -359,22 +373,22 @@ export function TransactionsListSkeleton() {
           </div>
           <div className="flex items-center px-4 py-2.5 border-b border-border bg-muted/20">
             <Skeleton className="size-4 rounded-sm mr-4" />
-            <div className="flex items-center gap-1.5 w-[100px]">
+            <div className="flex items-center gap-1.5 w-25">
               <Skeleton className="h-3 w-8" />
               <Skeleton className="size-3" />
             </div>
             <div className="flex-1">
               <Skeleton className="h-3 w-32" />
             </div>
-            <div className="flex items-center gap-1.5 w-[140px]">
+            <div className="flex items-center gap-1.5 w-35">
               <Skeleton className="h-3 w-14" />
               <Skeleton className="size-3" />
             </div>
-            <div className="flex items-center gap-1.5 w-[100px] justify-end">
+            <div className="flex items-center gap-1.5 w-25 justify-end">
               <Skeleton className="h-3 w-12" />
               <Skeleton className="size-3" />
             </div>
-            <div className="flex items-center gap-1.5 w-[100px] justify-end">
+            <div className="flex items-center gap-1.5 w-25 justify-end">
               <Skeleton className="h-3 w-12" />
               <Skeleton className="size-3" />
             </div>
@@ -386,7 +400,7 @@ export function TransactionsListSkeleton() {
               className="flex items-center px-4 py-3 border-b border-border last:border-b-0"
             >
               <Skeleton className="size-4 rounded-sm mr-4 shrink-0" />
-              <div className="w-[100px] shrink-0 space-y-0.5">
+              <div className="w-25 shrink-0 space-y-0.5">
                 <Skeleton className="h-4 w-14" />
                 <Skeleton className="h-3 w-10" />
               </div>
@@ -397,13 +411,13 @@ export function TransactionsListSkeleton() {
                   <Skeleton className="h-3 w-16" />
                 </div>
               </div>
-              <div className="w-[140px] shrink-0">
+              <div className="w-35 shrink-0">
                 <Skeleton className="h-4 w-24" />
               </div>
-              <div className="w-[100px] shrink-0 flex justify-end">
+              <div className="w-25 shrink-0 flex justify-end">
                 <Skeleton className="h-4 w-16" />
               </div>
-              <div className="w-[100px] shrink-0 flex justify-end">
+              <div className="w-25 shrink-0 flex justify-end">
                 <Skeleton className="h-5 w-20 rounded-full" />
               </div>
               <Skeleton className="size-4 ml-4 shrink-0" />

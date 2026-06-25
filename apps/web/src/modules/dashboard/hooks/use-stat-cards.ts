@@ -1,36 +1,28 @@
+import { useAccountAggregates } from "@/modules/accounts/hooks/queries/use-account-aggregates";
+import { useAccountsList } from "@/modules/accounts/hooks/queries/use-accounts";
+import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-// hooks/dashboard/use-stat-cards.ts
 export function useStatCards() {
   const trpc = useTRPC();
 
-  const { data: balance } = useSuspenseQuery(
-    trpc.payments.accounts.totalBalance.queryOptions(),
-  );
-  const { data: accounts } = useSuspenseQuery(
-    trpc.payments.accounts.list.queryOptions(),
-  );
+  const { totalBalance, totalCount } = useAccountAggregates();
+  const { accountsData: allAccounts } = useAllAccounts({});
   const { data: monthSpending } = useSuspenseQuery(
     trpc.payments.transactions.currentMonthSpending.queryOptions(),
   );
 
-  const allAccounts = accounts.items;
-  const totalBalance = balance.totalBalance;
   const savingsBalance = allAccounts
     .filter((a) => a.type === "savings")
     .reduce((sum, account) => sum + parseFloat(account.balance ?? "0"), 0);
   const savingsRate =
     totalBalance > 0 ? (savingsBalance / totalBalance) * 100 : 0;
-  const accountCount = balance.accountCount;
-
   return {
-    balance,
-    accounts,
-    monthSpending,
     totalBalance,
+    monthSpending,
     savingsRate,
-    accountCount,
+    totalCount,
   };
 }

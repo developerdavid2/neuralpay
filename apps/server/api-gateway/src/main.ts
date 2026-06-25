@@ -1,14 +1,13 @@
 // apps/api-gateway/src/main.ts
 
-import * as trpcExpress from "@trpc/server/adapters/express";
 import { createExpressApp } from "@neuralpay/config/express-config";
 import { gatewayEnv } from "@neuralpay/env/gateway";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
-import { requestLogger } from "./middleware/logger.middleware";
 import { authMiddleware } from "./middleware/auth.middleware";
-import { mountProxies, mountStreamingProxy } from "./proxy";
 import { errorHandler } from "./middleware/error.middleware";
+import { requestLogger } from "./middleware/logger.middleware";
+import { mountProxies, mountStreamingProxy } from "./proxy";
 
 const PORT = Number(gatewayEnv.PORT) || 4000;
 

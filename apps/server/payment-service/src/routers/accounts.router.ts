@@ -120,17 +120,6 @@ export const accountsRouter = router({
     return result.data;
   }),
 
-  totalBalance: protectedProcedure.query(async ({ ctx }) => {
-    const result = await AccountsService.getTotalBalance(ctx.session.user.id);
-    if (!result.success) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: result.error,
-      });
-    }
-    return result.data;
-  }),
-
   toggleStatus: protectedProcedure
     .input(z.object({ id: z.uuid(), status: z.enum(["active", "inactive"]) }))
     .mutation(async ({ ctx, input }) => {
