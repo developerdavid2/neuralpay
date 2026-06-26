@@ -833,7 +833,7 @@ async function seed() {
   let totalChats = 0;
 
   for (const user of users) {
-    console.log(`\n👤 Seeding for user: ${user.email}`);
+    console.log(`\n👤 Seeding for user`);
     const userId = user.id;
 
     // ── 3. Bank Accounts ─────────────────────────────────────────────────────
@@ -1159,7 +1159,7 @@ async function seed() {
         anomalyScore: null,
         notes: "Biweekly salary deposit",
         isManual: false,
-        plaidTxId: `plaid_salary_${date.toISOString().slice(0, 10)}`,
+        plaidTxId: `plaid_salary_${userId}_${date.toISOString().slice(0, 10)}`,
         monoTxId: null,
         csvImportId: null,
       });
@@ -1183,7 +1183,7 @@ async function seed() {
         notes: `Invoice #${2000 + i}`,
         isManual: false,
         plaidTxId: null,
-        monoTxId: `mono_fl_${i}`,
+        monoTxId: `mono_fl_${userId}_${i}`,
         csvImportId: null,
       });
     }
@@ -1591,7 +1591,7 @@ async function seed() {
           const isUser = j % 2 === 0;
           messages.push({
             sessionId: session.id,
-            userId: isUser ? userId : null,
+            userId,
             role: isUser ? "user" : "assistant",
             content: isUser
               ? pickRandom(userQuestions)
@@ -1648,8 +1648,10 @@ async function seed() {
         relatedType: category,
         relatedId: Math.random() > 0.5 ? `rel_${i}_${Date.now()}` : null,
         actionUrl: Math.random() > 0.5 ? `/dashboard/${category}s` : null,
-        read: Math.random() > 0.6,
-        dismissed: Math.random() > 0.9,
+        readAt:
+          Math.random() > 0.5 ? randomDateBetween(startDate, endDate) : null,
+        dismissedAt:
+          Math.random() > 0.85 ? randomDateBetween(startDate, endDate) : null,
         createdAt: randomDateBetween(startDate, endDate),
       });
     }

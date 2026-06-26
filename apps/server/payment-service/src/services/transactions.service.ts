@@ -763,10 +763,7 @@ export const TransactionsService = {
       const data = await cache.getOrSet(
         cacheKeys.transactions.monthlySummaries(userId, JSON.stringify(input)),
         async () => {
-          const conditions = [
-            eq(transactions.userId, userId),
-            eq(transactions.type, "debit"),
-          ];
+          const conditions = [eq(transactions.userId, userId)];
 
           if (input.bankAccountId)
             conditions.push(

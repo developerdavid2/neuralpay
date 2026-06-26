@@ -20,6 +20,10 @@ async function invalidatePlaidAccountCache(userId: string): Promise<void> {
   await Promise.allSettled([
     cache.del(cacheKeys.accounts.totalBalance(userId)),
     cache.del(cacheKeys.accounts.aggregate(userId)),
+    cache.delPattern(cacheKeys.transactions.patterns.overview(userId)),
+    cache.delPattern(cacheKeys.transactions.patterns.topCats(userId)),
+    cache.delPattern(cacheKeys.transactions.patterns.monthSpend(userId)),
+    cache.delPattern(cacheKeys.transactions.patterns.monthlySummaries(userId)),
   ]).then((results) => {
     results.forEach((r) => {
       if (r.status === "rejected") {

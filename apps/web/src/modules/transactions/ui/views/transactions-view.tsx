@@ -69,6 +69,7 @@ export function TransactionsView({
         {/* Scrollable content area */}
         <div className="flex-1 min-h-0 scrollbar-hide overflow-hidden">
           <TransactionDrawerInit
+            key={`${focusMode ?? "view"}:${focusTransactionId ?? ""}`}
             focusId={focusTransactionId}
             mode={focusMode}
           />

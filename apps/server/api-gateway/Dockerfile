@@ -23,7 +23,7 @@ RUN bun run build --filter=@neuralpay/api-gateway
 FROM oven/bun:1.3.11-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV=
+ENV NODE_ENV=production
 
 RUN addgroup -S app && adduser -S -G app app
 

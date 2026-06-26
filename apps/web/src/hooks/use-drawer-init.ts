@@ -19,10 +19,11 @@ export function useDrawerInit<TData, TState extends DrawerActions<TData>>(
   getState: () => TState,
   getCurrentId: (state: TState) => string | null | undefined,
 ) {
-  const initialized = useRef(false);
+  const appliedKey = useRef<string | null>(null);
 
   useEffect(() => {
-    if (initialized.current) return;
+    const nextKey = `${mode ?? "view"}:${focusId ?? ""}`;
+    if (appliedKey.current === nextKey) return;
 
     const drawer = getState();
     const isAddMode = mode === "add";
@@ -31,7 +32,7 @@ export function useDrawerInit<TData, TState extends DrawerActions<TData>>(
       if (!drawer.isOpen || drawer.mode !== "add") {
         drawer.onOpenAdd();
       }
-      initialized.current = true;
+      appliedKey.current = nextKey;
       return;
     }
 
@@ -48,6 +49,6 @@ export function useDrawerInit<TData, TState extends DrawerActions<TData>>(
       }
     }
 
-    initialized.current = true;
+    appliedKey.current = nextKey;
   }, [focusId, mode, data, isLoading, getState, getCurrentId]);
 }

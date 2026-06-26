@@ -11,6 +11,7 @@ export function useAccountAggregates() {
   } = useSuspenseQuery({
     ...trpc.payments.accounts.aggregateByType.queryOptions(),
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const aggregateMap = new Map(aggregates.byType.map((a) => [a.type, a]));
