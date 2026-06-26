@@ -1,0 +1,9 @@
+node_modules
+.turbo
+.git
+.next
+dist
+*.log
+.env
+.env.*
+!.env.example

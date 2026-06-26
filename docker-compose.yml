@@ -1,0 +1,110 @@
+name: neuralpay
+
+services:
+  # ── Infrastructure
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379" # ← localhost only, not exposed to network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend services
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/server/user-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 4001
+    env_file: .env.production
+    ports:
+      - "127.0.0.1:4001:4001" # ← localhost only
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: apps/server/payment-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379
+      PORT: 4002
+    env_file: .env.production
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:4002:4002" # ← localhost only
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: apps/server/ai-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 4003
+    env_file: .env.production
+    ports:
+      - "127.0.0.1:4003:4003" # ← localhost only
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/server/notification-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 4004
+    env_file: .env.production
+    ports:
+      - "127.0.0.1:4004:4004" # ← localhost only
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/server/api-gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 4000
+      REDIS_URL: redis://redis:6379
+      USER_SERVICE_URL: http://user-service:4001
+      PAYMENT_SERVICE_URL: http://payment-service:4002
+      AI_SERVICE_URL: http://ai-service:4003
+      NOTIFICATION_SERVICE_URL: http://notification-service:4004
+    env_file: .env.production
+    depends_on:
+      - user-service
+      - payment-service
+      - ai-service
+      - notification-service
+      - redis
+    ports:
+      - "4000:4000" # ← gateway stays public, frontend talks to it
+
+  # ── Frontend
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # ← No :- defaults — fails loudly if .env.production is missing these
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+        NEXT_PUBLIC_BETTER_AUTH_URL: ${NEXT_PUBLIC_BETTER_AUTH_URL}
+        NEXT_PUBLIC_AUTH_BASE_PATH: ${NEXT_PUBLIC_AUTH_BASE_PATH}
+    env_file: .env.production
+    environment:
+      PORT: 3001
+    depends_on:
+      - api-gateway
+    ports:
+      - "3001:3001"
+
+volumes:
+  redis_data:

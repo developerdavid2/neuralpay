@@ -4,7 +4,6 @@ import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 
-import { useAccountPendingSelectors } from "@/modules/accounts/store/use-account-pending";
 import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
 import { useAccountsList } from "@/modules/accounts/hooks/queries/use-accounts";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -17,12 +16,11 @@ import { useEffect, useMemo, useState } from "react";
 import { accountColumns } from "./account-columns";
 import { AccountFormDrawer } from "./account-form-drawer";
 import { AccountViewDrawer } from "./account-view-drawer";
-import { useAccountDrawer } from "../../store/use-account-drawer";
+import { useAccountDrawer } from "../../hooks/store/use-account-drawer";
 import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
+import { useAccountPendingSelectors } from "../../hooks/store/use-account-pending";
 
 interface Props {
-  focusTransactionId?: string;
-  focusMode?: string;
   currentSearch: string;
   currentTypes?: string[];
   currentStatuses?: string[];
@@ -39,8 +37,6 @@ export function AccountsList({
   currentIsManual,
   currentLimit,
   currentPage,
-  focusAccountId,
-  focusMode,
 }: Props) {
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
@@ -125,18 +121,6 @@ export function AccountsList({
     if (!ok) return;
     await runDelete(account.id);
   };
-
-  useEffect(() => {
-    if (!focusAccountId || bankAccounts.length === 0) return;
-    const target = bankAccounts.find((a) => a.id === focusAccountId);
-    if (!target) return;
-
-    if (focusMode === "edit") {
-      onOpenEdit(focusAccountId);
-    } else {
-      onOpenView(focusAccountId);
-    }
-  }, [focusAccountId, focusMode, bankAccounts, onOpenView, onOpenEdit]);
 
   const emptyState = (
     <div className="flex flex-col items-center justify-center h-64 text-center px-6">

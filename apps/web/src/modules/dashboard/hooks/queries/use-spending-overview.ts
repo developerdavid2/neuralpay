@@ -8,6 +8,10 @@ export function useSpendingOverview(params: {
 }) {
   const trpc = useTRPC();
   return useSuspenseQuery(
-    trpc.payments.transactions.spendingOverview.queryOptions(params),
+    trpc.payments.transactions.spendingOverview.queryOptions({
+      period: params.period,
+      from: params.from,
+      to: params.to,
+    }),
   );
 }

@@ -9,7 +9,9 @@ export function useAccountDetail(bankAccountId: string) {
     isPending,
     isError,
   } = useQuery({
-    ...trpc.payments.accounts.getById.queryOptions({ id: bankAccountId }),
+    ...trpc.payments.accounts.getById.queryOptions({
+      accountId: bankAccountId,
+    }),
     enabled: !!bankAccountId,
     staleTime: 30_000,
   });

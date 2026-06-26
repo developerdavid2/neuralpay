@@ -45,10 +45,10 @@ export const accountsRouter = router({
     }),
 
   getById: protectedProcedure
-    .input(z.object({ id: z.uuid() }))
+    .input(z.object({ accountId: z.uuid() }))
     .query(async ({ ctx, input }) => {
       const result = await AccountsService.getById(
-        input.id,
+        input.accountId,
         ctx.session.user.id,
       );
       if (!result.success) {
@@ -111,17 +111,6 @@ export const accountsRouter = router({
     const result = await AccountsService.getAggregateBalanceByType(
       ctx.session.user.id,
     );
-    if (!result.success) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: result.error,
-      });
-    }
-    return result.data;
-  }),
-
-  totalBalance: protectedProcedure.query(async ({ ctx }) => {
-    const result = await AccountsService.getTotalBalance(ctx.session.user.id);
     if (!result.success) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",

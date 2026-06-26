@@ -24,6 +24,7 @@ export async function invalidateAccountsQueries(queryClient: QueryClient) {
   await Promise.all([
     invalidateTRPCQueries(queryClient, ["payments", "transactions"]),
     invalidateTRPCQueries(queryClient, ["payments", "accounts", "list"]),
+    invalidateTRPCQueries(queryClient, ["payments", "accounts", "listAll"]),
     invalidateTRPCQueries(queryClient, [
       "payments",
       "accounts",
@@ -37,12 +38,21 @@ export async function invalidateTransactionQueries(queryClient: QueryClient) {
   await Promise.all([
     invalidateTRPCQueries(queryClient, ["payments", "transactions", "list"]),
     invalidateTRPCQueries(queryClient, ["payments", "transactions", "getById"]),
+    invalidateTRPCQueries(queryClient, [
+      "payments",
+      "transactions",
+      "currentMonthSpending",
+    ]),
     invalidateTRPCQueries(queryClient, ["ai", "insights"]),
   ]);
 }
 
 export async function invalidateInsightsQueries(queryClient: QueryClient) {
-  await invalidateTRPCQueries(queryClient, ["ai", "insights"]);
+  await Promise.all([
+    invalidateTRPCQueries(queryClient, ["ai", "insights", "list"]),
+    invalidateTRPCQueries(queryClient, ["ai", "insights", "getInsightById"]),
+    invalidateTRPCQueries(queryClient, ["ai", "insights", "recent"]),
+  ]);
 }
 
 export async function invalidateChatQueries(queryClient: QueryClient) {
@@ -56,5 +66,25 @@ export async function invalidateChatSessionQueries(
   await Promise.all([
     invalidateTRPCQueries(queryClient, ["ai", "coach", "sessionById"]),
     invalidateTRPCQueries(queryClient, ["ai", "coach", "getMessages"]),
+  ]);
+}
+
+export async function invalidatePlaidQueries(queryClient: QueryClient) {
+  await Promise.all([
+    invalidateTRPCQueries(queryClient, ["payments", "plaid"]),
+  ]);
+}
+
+export async function invalidateAllPaymentQueries(queryClient: QueryClient) {
+  await Promise.all([
+    invalidateTRPCQueries(queryClient, ["payments", "plaid"]),
+    invalidateTRPCQueries(queryClient, ["payments", "accounts"]),
+    invalidateTRPCQueries(queryClient, ["payments", "transactions"]),
+    invalidateTRPCQueries(queryClient, [
+      "payments",
+      "accounts",
+      "aggregateByType",
+    ]),
+    invalidateTRPCQueries(queryClient, ["ai", "insights"]),
   ]);
 }

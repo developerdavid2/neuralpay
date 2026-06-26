@@ -30,9 +30,7 @@ export type TransactionCategory = (typeof TRANSACTION_CATEGORY)[number];
 export type TransactionType = (typeof TRANSACTION_TYPE)[number];
 export type TransactionStatus = (typeof TRANSACTION_STATUS)[number];
 
-export const transactionsFilterSchema = z.object({
-  limit: z.number().int().min(1).max(50).default(20),
-  cursor: z.string().optional(),
+const transactionFilterFields = {
   bankAccountId: z.uuid().optional(),
   category: z
     .union([
@@ -53,6 +51,18 @@ export const transactionsFilterSchema = z.object({
   dateTo: z.string().datetime().optional(),
   minAmount: z.number().min(0).optional(),
   maxAmount: z.number().min(0).optional(),
+} as const;
+
+// ── List schema (has pagination on top of shared fields)
+export const transactionsFilterSchema = z.object({
+  limit: z.number().int().min(1).max(50).default(20),
+  cursor: z.string().optional(),
+  ...transactionFilterFields,
+});
+
+// ── Monthly summaries schema (same filters, no pagination)
+export const txMonthlySummaryFilterSchema = z.object({
+  ...transactionFilterFields,
 });
 
 export const createTransactionSchema = z.object({
@@ -107,7 +117,9 @@ export const csvImportSchema = z.object({
 });
 
 export type TransactionsFilterInput = z.infer<typeof transactionsFilterSchema>;
-export type ListTransactionsInput = z.infer<typeof transactionsFilterSchema>;
+export type TxMonthlySummaryFilterInput = z.infer<
+  typeof txMonthlySummaryFilterSchema
+>;
 export type CreateTransactionInput = z.input<typeof createTransactionSchema>;
 export type UpdateTransactionInput = z.input<typeof updateTransactionSchema>;
 export type BatchDeleteInput = z.infer<typeof batchDeleteSchema>;

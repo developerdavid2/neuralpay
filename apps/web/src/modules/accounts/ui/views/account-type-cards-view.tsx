@@ -31,7 +31,7 @@ function TotalCard({
     <div
       className={cn(
         "relative overflow-hidden rounded-2xl bg-card",
-        "border border-white/[0.06] drop-shadow-xl",
+        "border border-white/6 drop-shadow-xl",
         "p-6",
       )}
     >
@@ -139,7 +139,7 @@ export function AccountTypeCardsView() {
                 >
                   <AccountTypeCard
                     type={type}
-                    totalBalance={agg?.totalBalance ?? 0}
+                    totalBalance={Number(agg?.totalBalance ?? 0)}
                     accountCount={agg?.accountCount ?? 0}
                     isBalanceVisible={isBalanceVisible}
                   />
@@ -199,14 +199,14 @@ export function AccountTypeCardsSkeleton() {
   return (
     <div className="space-y-4 my-6">
       {/* Total card skeleton */}
-      <div className="rounded-2xl bg-card animate-pulse h-[100px]" />
+      <div className="rounded-2xl bg-card animate-pulse h-25" />
 
       {/* Carousel skeleton */}
       <div className="flex gap-3 overflow-hidden ">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="pl-3 basis-full sm:basis-1/2 lg:basis-1/3 min-w-[280px] flex-1 rounded-2xl h-[300px] bg-card animate-pulse"
+            className="pl-3 basis-full sm:basis-1/2 lg:basis-1/3 min-w-70 flex-1 rounded-2xl h-75 bg-card animate-pulse"
           />
         ))}
       </div>

@@ -5,7 +5,6 @@ import { formatAmount } from "@/lib/utils";
 import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
 import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
 import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
-import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   Drawer,
@@ -40,9 +39,10 @@ import { isSyncedSource } from "../../lib/utils";
 import {
   useTransactionDrawer,
   type TransactionDrawerMode,
-} from "../../store/use-transaction-drawer";
+} from "../../hooks/store/use-transaction-drawer";
 import { SourceBadge, StatusBadge } from "./transaction-badges";
 import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
+import { useTransactionPendingSelectors } from "../../hooks/store/use-transaction-pending";
 
 function DetailField({
   label,
@@ -96,7 +96,7 @@ export function TransactionViewDrawer() {
           data-[vaul-drawer-direction=right]:right-0 
           data-[vaul-drawer-direction=right]:h-full 
           data-[vaul-drawer-direction=right]:w-full 
-          data-[vaul-drawer-direction=right]:max-w-[420px]
+          data-[vaul-drawer-direction=right]:max-w-105
           flex flex-col
         "
       >

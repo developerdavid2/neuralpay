@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { TransactionDrawerMode } from "../store/use-transaction-drawer";
+import type { TransactionDrawerMode } from "./store/use-transaction-drawer";
 
 export function useTransactionUrlSync() {
   const syncToUrl = useCallback(
@@ -7,10 +7,10 @@ export function useTransactionUrlSync() {
       const params = new URLSearchParams(window.location.search);
       if (mode === "add") {
         params.set("mode", "add");
-        params.delete("focus");
+        params.delete("focusTransactionId");
       } else if (txId) {
         params.set("mode", mode);
-        params.set("focus", txId);
+        params.set("focusTransactionId", txId);
       }
 
       const query = params.toString();
@@ -27,7 +27,7 @@ export function useTransactionUrlSync() {
 
   const clearUrl = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
-    params.delete("focus");
+    params.delete("focusTransactionId");
     params.delete("mode");
     const query = params.toString();
     window.history.replaceState(

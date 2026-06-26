@@ -144,8 +144,8 @@ export function accountColumns({
           .slice(-4)
           .padStart(4, "•");
         return (
-          <div className="text-center font-mono text-sm text-muted-foreground tabular-nums tracking-wide">
-            **** **** {maskedNumber}
+          <div className="text-right mr-10 font-mono text-sm text-muted-foreground tabular-nums tracking-wide">
+            ** **** {maskedNumber}
           </div>
         );
       },

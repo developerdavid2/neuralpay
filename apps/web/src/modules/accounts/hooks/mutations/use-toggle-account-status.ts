@@ -1,71 +1,64 @@
 import { useTRPC } from "@/trpc/trpc-client";
+import {
+  invalidateAccountsQueries,
+  invalidateTRPCQueries,
+} from "@/lib/invalidate-trpc-queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useToggleAccountStatus() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-
   const { mutationFn } = trpc.payments.accounts.toggleStatus.mutationOptions();
+
+  const predicate = (q: { queryKey: readonly unknown[] }) => {
+    const path = q.queryKey[0];
+    return (
+      Array.isArray(path) && path[0] === "payments" && path[1] === "accounts"
+    );
+  };
 
   return useMutation({
     mutationFn,
+
     onMutate: async ({ id, status }) => {
-      const isPaymentsAccountsQuery = (q: { queryKey: readonly unknown[] }) => {
-        const path = q.queryKey[0];
-        return (
-          Array.isArray(path) &&
-          path[0] === "payments" &&
-          path[1] === "accounts"
-        );
-      };
+      // ← No cancelQueries here — it was cancelling institution toggle refetches
 
-      await queryClient.cancelQueries({
-        predicate: isPaymentsAccountsQuery,
+      const snapshot = queryClient.getQueriesData({ predicate });
+
+      queryClient.setQueriesData({ predicate }, (old: unknown) => {
+        if (!old) return old;
+
+        if (Array.isArray(old)) {
+          return old.map((acc: { id: string; status: string }) =>
+            acc.id === id ? { ...acc, status } : acc,
+          );
+        }
+
+        if (
+          typeof old === "object" &&
+          old !== null &&
+          "items" in old &&
+          Array.isArray((old as { items: unknown[] }).items)
+        ) {
+          return {
+            ...(old as object),
+            items: (
+              old as { items: { id: string; status: string }[] }
+            ).items.map((acc) => (acc.id === id ? { ...acc, status } : acc)),
+          };
+        }
+
+        if (
+          typeof old === "object" &&
+          old !== null &&
+          "id" in old &&
+          (old as { id: string }).id === id
+        ) {
+          return { ...(old as object), status };
+        }
+
+        return old;
       });
-
-      const snapshot = queryClient.getQueriesData({
-        predicate: isPaymentsAccountsQuery,
-      });
-
-      queryClient.setQueriesData(
-        {
-          predicate: isPaymentsAccountsQuery,
-        },
-        (old: unknown) => {
-          if (!old) return old;
-
-          if (Array.isArray(old)) {
-            return old.map((acc: { id: string; status: string }) =>
-              acc.id === id ? { ...acc, status } : acc,
-            );
-          }
-
-          if (
-            typeof old === "object" &&
-            old !== null &&
-            "items" in old &&
-            Array.isArray((old as { items: unknown[] }).items)
-          ) {
-            return {
-              ...(old as object),
-              items: (
-                old as { items: { id: string; status: string }[] }
-              ).items.map((acc) => (acc.id === id ? { ...acc, status } : acc)),
-            };
-          }
-
-          if (
-            typeof old === "object" &&
-            old !== null &&
-            "id" in old &&
-            (old as { id: string }).id === id
-          ) {
-            return { ...(old as object), status };
-          }
-
-          return old;
-        },
-      );
 
       return { snapshot };
     },
@@ -78,13 +71,6 @@ export function useToggleAccountStatus() {
       }
     },
 
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        predicate: (q) => {
-          const path = q.queryKey[0] as string[];
-          return Array.isArray(path) && path[0] === "payments";
-        },
-      });
-    },
+    onSettled: async () => await invalidateAccountsQueries(queryClient),
   });
 }

@@ -167,6 +167,7 @@ export const PERIOD_LABELS: Record<Period, string> = {
   "7d": "Last 7 days",
   "30d": "Last 30 days",
   "90d": "Last 90 days",
+  custom: "Custom Range",
 };
 
 // CHART TYPE

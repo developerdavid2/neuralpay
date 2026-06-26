@@ -534,14 +534,23 @@ export function SpendingChart() {
             <CardTitle className="text-base font-semibold">
               Spending Overview
             </CardTitle>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {customRange ? "Custom range" : PERIOD_LABELS[period]}
-              {displayBudget > 0 && (
-                <span className="ml-2 text-xs text-main">
-                  Budget: {formatAmount(displayBudget)}
-                </span>
-              )}
-            </p>
+            <div className="mt-0.5 text-sm text-muted-foreground">
+              <span>
+                {customRange ? "Custom Range:" : PERIOD_LABELS[period]}
+              </span>
+              <span className="space-x-4">
+                {displayBudget > 0 && (
+                  <span className="text-xs text-main">
+                    Budget: {formatAmount(displayBudget)}
+                  </span>
+                )}
+                {totalSpending > 0 && (
+                  <span className="text-xs text-amber-400">
+                    Spending: {formatAmount(totalSpending)}
+                  </span>
+                )}
+              </span>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

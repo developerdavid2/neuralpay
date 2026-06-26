@@ -32,11 +32,17 @@ export function DashboardView() {
         <SectionBoundary
           fallback={<StatCardsSkeleton />}
           errorMessage="Could not load account summary"
+          queryKeys={[
+            [["payments", "accounts", "aggregateByType"], { type: "query" }],
+            [
+              ["payments", "transactions", "currentMonthSpending"],
+              { type: "query" },
+            ],
+          ]}
         >
           <StatCards />
         </SectionBoundary>
 
-        {/* Shared height row — both columns constrained to same height */}
         <ChartInsightsRow
           chart={
             <SectionBoundary
@@ -50,6 +56,7 @@ export function DashboardView() {
             <SectionBoundary
               fallback={<RecentInsightsSkeleton />}
               errorMessage="Could not load insights"
+              queryKeys={[[["ai", "insights"], { type: "query" }]]}
             >
               <RecentInsights />
             </SectionBoundary>

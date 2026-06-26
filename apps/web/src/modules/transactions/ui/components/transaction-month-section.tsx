@@ -19,11 +19,15 @@ interface Props {
   onDelete: (tx: Transaction) => void;
   isRowPending: (id: string) => boolean;
   columnVisibility: Record<string, boolean>;
+  totalCount: number;
+  totalSpent: number;
 }
 
 export function TransactionMonthSection({
   monthKey,
   transactions,
+  totalCount,
+  totalSpent,
   globalSelection,
   onSelectionChange,
   onView,
@@ -34,14 +38,6 @@ export function TransactionMonthSection({
 }: Props) {
   const router = useRouter();
   const date = parseISO(`${monthKey}-01`);
-
-  const totalSpent = useMemo(
-    () =>
-      transactions
-        .filter((t) => t.type === "debit")
-        .reduce((sum, t) => sum + Number(t.amount), 0),
-    [transactions],
-  );
 
   const handleMonthChange = useCallback(
     (date: Date) => {
@@ -86,7 +82,7 @@ export function TransactionMonthSection({
           <div className="flex items-center gap-3">
             <MonthYearPicker value={date} onChange={handleMonthChange} />
             <span className="text-xs text-muted-foreground">
-              {transactions.length} transactions
+              {totalCount} transactions
             </span>
           </div>
           <span className="text-sm font-medium text-muted-foreground">

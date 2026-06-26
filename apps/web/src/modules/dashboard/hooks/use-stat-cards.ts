@@ -1,36 +1,23 @@
+import { useAccountAggregates } from "@/modules/accounts/hooks/queries/use-account-aggregates";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
 
-// hooks/dashboard/use-stat-cards.ts
 export function useStatCards() {
   const trpc = useTRPC();
 
-  const { data: balance } = useSuspenseQuery(
-    trpc.payments.accounts.totalBalance.queryOptions(),
-  );
-  const { data: accounts } = useSuspenseQuery(
-    trpc.payments.accounts.list.queryOptions(),
-  );
-  const { data: monthSpending } = useSuspenseQuery(
-    trpc.payments.transactions.currentMonthSpending.queryOptions(),
-  );
+  const { totalBalance, totalCount, aggregateMap } = useAccountAggregates();
+  const { data: monthSpending } = useSuspenseQuery({
+    ...trpc.payments.transactions.currentMonthSpending.queryOptions(),
+    refetchOnWindowFocus: false,
+  });
 
-  const allAccounts = accounts.items;
-  const totalBalance = balance.totalBalance;
-  const savingsBalance = allAccounts
-    .filter((a) => a.type === "savings")
-    .reduce((sum, account) => sum + parseFloat(account.balance ?? "0"), 0);
+  const savingsBalance = Number(aggregateMap.get("savings")?.totalBalance ?? 0);
   const savingsRate =
     totalBalance > 0 ? (savingsBalance / totalBalance) * 100 : 0;
-  const accountCount = balance.accountCount;
-
   return {
-    balance,
-    accounts,
-    monthSpending,
     totalBalance,
+    monthSpending,
     savingsRate,
-    accountCount,
+    totalCount,
   };
 }

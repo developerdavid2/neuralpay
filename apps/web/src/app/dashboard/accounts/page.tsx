@@ -17,7 +17,7 @@ interface PageProps {
     isManual?: string;
     limit?: string;
     page?: string;
-    focusId?: string;
+    focusAccountId?: string;
     mode?: string;
   }>;
 }
@@ -48,6 +48,14 @@ const Page = async ({ searchParams }: PageProps) => {
 
   void prefetch(trpc.payments.accounts.aggregateByType.queryOptions());
 
+  if (params.focusAccountId) {
+    void prefetch(
+      trpc.payments.accounts.getById.queryOptions({
+        accountId: params.focusAccountId,
+      }),
+    );
+  }
+
   return (
     <HydrateClient>
       <AccountsView
@@ -56,7 +64,7 @@ const Page = async ({ searchParams }: PageProps) => {
         statuses={validatedStatuses ?? []}
         tags={params.tags ?? []}
         isManual={params.isManual === "true"}
-        focusAccountId={params.focusId}
+        focusAccountId={params.focusAccountId}
         focusMode={params.mode}
         limit={limit}
         currentPage={page}

@@ -6,6 +6,7 @@ import {
   AccountTypeCardsSkeleton,
   AccountTypeCardsView,
 } from "./account-type-cards-view";
+import { AccountDrawerInit } from "../components/account-drawer-init";
 
 interface AccountsViewProps {
   search?: string;
@@ -41,9 +42,13 @@ export function AccountsView({
         <SectionBoundary
           fallback={<AccountTypeCardsSkeleton />}
           errorMessage="Could not load accounts types"
+          queryKeys={[
+            [["payments", "accounts", "aggregateByType"], { type: "query" }],
+          ]}
         >
           <AccountTypeCardsView />
         </SectionBoundary>
+        <AccountDrawerInit focusId={focusAccountId} mode={focusMode} />
         <div className="flex flex-col bg-card border border-muted shadow rounded-2xl flex-1 min-h-0 overflow-hidden">
           <div className="shrink-0 px-10 py-4 border-b border-border">
             <AccountFilters />
@@ -60,8 +65,6 @@ export function AccountsView({
               currentIsManual={isManual}
               currentLimit={limit}
               currentPage={currentPage}
-              focusAccountId={focusAccountId}
-              focusMode={focusMode}
             />
           </SectionBoundary>
         </div>
