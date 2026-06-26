@@ -9,6 +9,7 @@ import {
   type TopMonthlyCategories,
   type Transaction,
   type TransactionsFilterInput,
+  type TxMonthlySummaryFilterInput,
   type UpdateTransactionInput,
   TRANSACTION_CATEGORY,
   TRANSACTION_STATUS,
@@ -49,11 +50,11 @@ function transactionSelect() {
 }
 
 async function invalidateAggregateCache(userId: string) {
-  await Promise.all([
-    cache.delPattern(`transactions:overview:${userId}*`),
-    cache.delPattern(`transactions:topCats:${userId}*`),
-    cache.delPattern(`transactions:monthSpend:${userId}*`),
-    cache.delPattern(`transactions:monthlySummaries:${userId}*`),
+  await Promise.allSettled([
+    cache.delPattern(cacheKeys.transactions.patterns.overview(userId)),
+    cache.delPattern(cacheKeys.transactions.patterns.topCats(userId)),
+    cache.delPattern(cacheKeys.transactions.patterns.monthSpend(userId)),
+    cache.delPattern(cacheKeys.transactions.patterns.monthlySummaries(userId)),
   ]);
 }
 
@@ -442,32 +443,29 @@ export const TransactionsService = {
         ? `custom:${input.from}:${input.to}`
         : (input.period ?? "30d");
 
-    return cache.getOrSet(
-      cacheKeys.transactions.spendingOverview(userId, periodKey),
-      async () => {
-        try {
+    try {
+      const data = await cache.getOrSet(
+        cacheKeys.transactions.spendingOverview(userId, periodKey),
+        async () => {
           const { period = "30d", from, to } = input;
 
           let startDate: Date;
           let endDate: Date;
+          const now = new Date();
 
-          if (period === "7d") {
-            startDate = startOfDay(subDays(new Date(), 7));
-            endDate = endOfDay(new Date());
-          } else if (period === "30d") {
-            startDate = startOfDay(subDays(new Date(), 30));
-            endDate = endOfDay(new Date());
-          } else if (period === "90d") {
-            startDate = startOfDay(subDays(new Date(), 90));
-            endDate = endOfDay(new Date());
-          } else if (from && to) {
+          if (from && to) {
             startDate = startOfDay(new Date(from));
             endDate = endOfDay(new Date(to));
+          } else if (period === "7d") {
+            startDate = startOfDay(subDays(now, 6));
+            endDate = endOfDay(now);
+          } else if (period === "90d") {
+            startDate = startOfDay(subDays(now, 89));
+            endDate = endOfDay(now);
           } else {
-            startDate = startOfDay(subDays(new Date(), 30));
-            endDate = endOfDay(new Date());
+            startDate = startOfDay(subDays(now, 29));
+            endDate = endOfDay(now);
           }
-
           const categoryResult = await db
             .select({
               category: transactions.category,
@@ -536,17 +534,34 @@ export const TransactionsService = {
                 category: budgets.category,
                 month: budgets.month,
                 year: budgets.year,
-                limitAmount: sql<number>`${budgets.limitAmount}::numeric`,
+                limitAmount: sql<string>`${budgets.limitAmount}::numeric::text`,
               })
               .from(budgets)
               .where(and(eq(budgets.userId, userId), whereCondition));
           }
 
           const categoryBudgetMap = new Map<string, number>();
-          budgetResult.forEach((b) => {
+
+          for (const b of budgetResult) {
+            const monthStart = new Date(b.year, b.month - 1, 1);
+            const monthEnd = endOfMonth(monthStart);
+
+            // Clamp to the selected range
+            const overlapStart =
+              monthStart < startDate ? startDate : monthStart;
+            const overlapEnd = monthEnd > endDate ? endDate : monthEnd;
+
+            const overlapDays = differenceInDays(overlapEnd, overlapStart) + 1;
+            const totalDaysInMonth = differenceInDays(monthEnd, monthStart) + 1;
+
+            // Prorate: only count the fraction of the budget that overlaps the window
+            const prorated =
+              (parseFloat(b.limitAmount ?? "0") * overlapDays) /
+              totalDaysInMonth;
+
             const current = categoryBudgetMap.get(b.category) || 0;
-            categoryBudgetMap.set(b.category, current + Number(b.limitAmount));
-          });
+            categoryBudgetMap.set(b.category, current + prorated);
+          }
 
           const totalBudget = Array.from(categoryBudgetMap.values()).reduce(
             (sum, amount) => sum + amount,
@@ -580,25 +595,24 @@ export const TransactionsService = {
           );
 
           return {
-            success: true,
-            data: {
-              totalSpending,
-              totalBudget,
-              categorySpending: categorySpendingWithBudget,
-              trendData,
-            },
+            totalSpending,
+            totalBudget,
+            categorySpending: categorySpendingWithBudget,
+            trendData,
           };
-        } catch (err) {
-          console.error("[TransactionsService.getSpendingOverview]", err);
-          return {
-            success: false,
-            error: "Failed to fetch spending overview",
-            code: "INTERNAL_SERVER_ERROR",
-          };
-        }
-      },
-      120,
-    );
+        },
+        120,
+      );
+
+      return { success: true, data };
+    } catch (err) {
+      console.error("[TransactionsService.getSpendingOverview]", err);
+      return {
+        success: false,
+        error: "Failed to fetch spending overview",
+        code: "INTERNAL_SERVER_ERROR",
+      };
+    }
   },
 
   async getTopCategories(
@@ -607,10 +621,10 @@ export const TransactionsService = {
     year: number,
     limit = 5,
   ): Promise<ServiceResult<TopMonthlyCategories>> {
-    return cache.getOrSet(
-      cacheKeys.transactions.topCategories(userId, month, year),
-      async () => {
-        try {
+    try {
+      const data = await cache.getOrSet(
+        `${cacheKeys.transactions.topCategories(userId, month, year)}:${limit}`,
+        async () => {
           const startDate = new Date(year, month - 1, 1);
           const endDate = new Date(year, month, 0, 23, 59, 59);
 
@@ -651,63 +665,62 @@ export const TransactionsService = {
 
           if (!categoryResult.length) {
             return {
-              success: true,
-              data: {
-                month,
-                year,
-                categories: [],
-                totalSpending: 0,
-                hasData: false,
-              },
+              month,
+              year,
+              categories: [],
+              totalSpending: 0,
+              hasData: false,
             };
           }
 
           const totalSpendingRaw = parseFloat(totalResult[0]?.total ?? "0");
 
           return {
-            success: true,
-            data: {
-              month,
-              year,
-              categories: categoryResult.map((r) => {
-                const total = parseFloat(r.total ?? "0");
-                return {
-                  category: r.category ?? "other",
-                  total,
-                  count: r.count,
-                  percentage:
-                    totalSpendingRaw > 0
-                      ? Math.round((total / totalSpendingRaw) * 1000) / 10
-                      : 0,
-                };
-              }),
-              totalSpending: totalSpendingRaw,
-              hasData: true,
-            },
+            month,
+            year,
+            categories: categoryResult.map((r) => {
+              const total = parseFloat(r.total ?? "0");
+              return {
+                category: r.category ?? "other",
+                total,
+                count: r.count,
+                percentage:
+                  totalSpendingRaw > 0
+                    ? Math.round((total / totalSpendingRaw) * 1000) / 10
+                    : 0,
+              };
+            }),
+            totalSpending: totalSpendingRaw,
+            hasData: true,
           };
-        } catch (err) {
-          console.error("[TransactionsService.getTopCategories]", err);
-          return {
-            success: false,
-            error: "Failed to fetch top categories",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      300,
-    );
+        },
+        300,
+      );
+
+      return { success: true, data };
+    } catch (err) {
+      console.error("[TransactionsService.getTopCategories]", err);
+      return {
+        success: false,
+        error: "Failed to fetch top categories",
+        code: "DB_ERROR",
+      };
+    }
   },
 
   async getCurrentMonthSpending(
     userId: string,
   ): Promise<ServiceResult<number>> {
     const now = new Date();
-    const cacheKey = `transactions:monthSpend:${userId}:${now.getFullYear()}-${now.getMonth() + 1}`;
 
-    return cache.getOrSet(
-      cacheKey,
-      async () => {
-        try {
+    try {
+      const data = await cache.getOrSet(
+        cacheKeys.transactions.monthSpend(
+          userId,
+          now.getFullYear(),
+          now.getMonth() + 1,
+        ),
+        async () => {
           const [result] = await db
             .select({
               total: sql<string>`coalesce(sum(${transactions.amount}::numeric), '0')::text`,
@@ -722,52 +735,110 @@ export const TransactionsService = {
               ),
             );
 
-          return {
-            success: true,
-            data: parseFloat(result?.total ?? "0"),
-          };
-        } catch (err) {
-          console.error("[TransactionsService.getCurrentMonthSpending]", err);
-          return {
-            success: false,
-            error: "Failed to calculate spending",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      60,
-    );
+          return parseFloat(result?.total ?? "0");
+        },
+        60,
+      );
+
+      return { success: true, data };
+    } catch (err) {
+      console.error("[TransactionsService.getCurrentMonthSpending]", err);
+      return {
+        success: false,
+        error: "Failed to calculate spending",
+        code: "DB_ERROR",
+      };
+    }
   },
 
   async getMonthlySummaries(
     userId: string,
-    input: {
-      dateFrom?: string;
-      dateTo?: string;
-      bankAccountId?: string;
-    },
+    input: TxMonthlySummaryFilterInput,
   ): Promise<
     ServiceResult<
       Array<{ monthKey: string; count: number; totalSpent: number }>
     >
   > {
-    return cache.getOrSet(
-      `transactions:monthlySummaries:${userId}:${JSON.stringify(input)}`,
-      async () => {
-        try {
+    try {
+      const data = await cache.getOrSet(
+        cacheKeys.transactions.monthlySummaries(userId, JSON.stringify(input)),
+        async () => {
           const conditions = [
             eq(transactions.userId, userId),
             eq(transactions.type, "debit"),
           ];
 
-          if (input.dateFrom)
-            conditions.push(gte(transactions.date, new Date(input.dateFrom)));
-          if (input.dateTo)
-            conditions.push(lte(transactions.date, new Date(input.dateTo)));
           if (input.bankAccountId)
             conditions.push(
               eq(transactions.bankAccountId, input.bankAccountId),
             );
+          if (input.type) {
+            const types = Array.isArray(input.type) ? input.type : [input.type];
+            if (types.length > 0 && types.length < TRANSACTION_TYPE.length) {
+              conditions.push(
+                inArray(
+                  transactions.type,
+                  types as (typeof TRANSACTION_TYPE)[number][],
+                ),
+              );
+            }
+          }
+          if (input.status) {
+            const statuses = Array.isArray(input.status)
+              ? input.status
+              : [input.status];
+            if (
+              statuses.length > 0 &&
+              statuses.length < TRANSACTION_STATUS.length
+            ) {
+              conditions.push(
+                inArray(
+                  transactions.status,
+                  statuses as (typeof TRANSACTION_STATUS)[number][],
+                ),
+              );
+            }
+          }
+          if (input.category) {
+            const categories = Array.isArray(input.category)
+              ? input.category
+              : [input.category];
+            if (
+              categories.length > 0 &&
+              categories.length < TRANSACTION_CATEGORY.length
+            ) {
+              conditions.push(
+                inArray(
+                  transactions.category,
+                  categories as (typeof TRANSACTION_CATEGORY)[number][],
+                ),
+              );
+            }
+          }
+          if (input.isAnomaly !== undefined)
+            conditions.push(eq(transactions.isAnomaly, input.isAnomaly));
+          if (input.isManual !== undefined)
+            conditions.push(eq(transactions.isManual, input.isManual));
+          if (input.dateFrom)
+            conditions.push(gte(transactions.date, new Date(input.dateFrom)));
+          if (input.dateTo)
+            conditions.push(lte(transactions.date, new Date(input.dateTo)));
+          if (input.minAmount !== undefined)
+            conditions.push(
+              gte(transactions.amount, input.minAmount.toString()),
+            );
+          if (input.maxAmount !== undefined)
+            conditions.push(
+              lte(transactions.amount, input.maxAmount.toString()),
+            );
+          if (input.search) {
+            const s = `%${input.search}%`;
+            const searchCond = or(
+              ilike(transactions.description, s),
+              ilike(transactions.merchant, s),
+            );
+            if (searchCond) conditions.push(searchCond);
+          }
 
           const monthCol = sql<string>`to_char(date_trunc('month', ${transactions.date}), 'YYYY-MM')`;
 
@@ -782,24 +853,23 @@ export const TransactionsService = {
             .groupBy(monthCol)
             .orderBy(desc(monthCol));
 
-          return {
-            success: true,
-            data: rows.map((r) => ({
-              monthKey: r.monthKey,
-              count: r.count,
-              totalSpent: parseFloat(r.totalSpent),
-            })),
-          };
-        } catch (err) {
-          console.error("[TransactionsService.getMonthlySummaries]", err);
-          return {
-            success: false,
-            error: "Failed to fetch monthly summaries",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      60,
-    );
+          return rows.map((r) => ({
+            monthKey: r.monthKey,
+            count: r.count,
+            totalSpent: parseFloat(r.totalSpent),
+          }));
+        },
+        60,
+      );
+
+      return { success: true, data };
+    } catch (err) {
+      console.error("[TransactionsService.getMonthlySummaries]", err);
+      return {
+        success: false,
+        error: "Failed to fetch monthly summaries",
+        code: "DB_ERROR",
+      };
+    }
   },
 } as const;

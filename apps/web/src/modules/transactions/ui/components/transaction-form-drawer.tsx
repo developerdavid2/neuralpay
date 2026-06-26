@@ -13,14 +13,14 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
 import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
 import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
-import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
 import { Sheet, SheetContent } from "@neuralpay/ui/components/sheet";
 import {
   useTransactionDrawer,
   type TransactionDrawerMode,
-} from "../../store/use-transaction-drawer";
+} from "../../hooks/store/use-transaction-drawer";
 import type { FormValues } from "../../types";
 import { TransactionForm } from "./transaction-form";
+import { useTransactionPendingSelectors } from "../../hooks/store/use-transaction-pending";
 
 export function TransactionFormDrawer() {
   const { isOpen, onClose, transactionId, mode } = useTransactionDrawer();

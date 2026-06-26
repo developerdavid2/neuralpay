@@ -6,6 +6,7 @@ import {
   AccountTypeCardsSkeleton,
   AccountTypeCardsView,
 } from "./account-type-cards-view";
+import { AccountDrawerInit } from "../components/account-drawer-init";
 
 interface AccountsViewProps {
   search?: string;
@@ -48,6 +49,7 @@ export function AccountsView({
           <div className="shrink-0 px-10 py-4 border-b border-border">
             <AccountFilters />
           </div>
+          <AccountDrawerInit focusId={focusAccountId} mode={focusMode} />
           <SectionBoundary
             key={`${search}-${types.join(",")}-${statuses.join(",")}-${isManual}-${limit}-${currentPage}`}
             fallback={<AccountsListSkeleton />}
@@ -60,8 +62,6 @@ export function AccountsView({
               currentIsManual={isManual}
               currentLimit={limit}
               currentPage={currentPage}
-              focusAccountId={focusAccountId}
-              focusMode={focusMode}
             />
           </SectionBoundary>
         </div>

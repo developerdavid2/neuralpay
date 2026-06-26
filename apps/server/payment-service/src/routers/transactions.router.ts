@@ -6,6 +6,7 @@ import {
   updateTransactionSchema,
   batchDeleteSchema,
   csvColumnMappingSchema,
+  txMonthlySummaryFilterSchema,
 } from "@neuralpay/types";
 import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import { TransactionsService } from "../services/transactions.service";
@@ -126,7 +127,6 @@ export const transactionsRouter = router({
       return result.data;
     }),
 
-  // Preview CSV before committing — returns parsed rows, no DB write
   previewCsv: protectedProcedure
     .input(
       z.object({
@@ -256,15 +256,7 @@ export const transactionsRouter = router({
   }),
 
   monthlySummaries: protectedProcedure
-    .input(
-      z
-        .object({
-          dateFrom: z.iso.datetime().optional(),
-          dateTo: z.iso.datetime().optional(),
-          bankAccountId: z.uuid().optional(),
-        })
-        .optional(),
-    )
+    .input(txMonthlySummaryFilterSchema.optional())
     .query(async ({ ctx, input }) => {
       const result = await TransactionsService.getMonthlySummaries(
         ctx.session.user.id,

@@ -25,9 +25,14 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+RUN addgroup -S app && adduser -S -G app app
+
+
 # Copy only the built output and production deps
-COPY --from=builder /app/apps/server/ai-service/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder --chown=app:app /app/apps/server/ai-service/dist ./dist
+COPY --from=builder --chown=app:app /app/node_modules ./node_modules
+
+USER app
 
 EXPOSE 4003
 

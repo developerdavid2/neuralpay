@@ -9,7 +9,6 @@ import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/
 import { useTransactionsList } from "@/modules/transactions/hooks/queries/use-transactions";
 import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
 import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
-import { useTransactionPendingSelectors } from "@/modules/transactions/store/use-transaction-pending";
 import type {
   Transaction,
   TransactionCategory,
@@ -20,15 +19,14 @@ import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Table } from "@neuralpay/ui/components/table";
 import { Package } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useTransactionDrawer } from "../../store/use-transaction-drawer";
+import { useTransactionDrawer } from "../../hooks/store/use-transaction-drawer";
 import { TransactionFormDrawer } from "./transaction-form-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
 import { TransactionViewDrawer } from "./transaction-view-drawer";
 import { useTransactionsMonthlySummaries } from "../../hooks/queries/use-transactions-monthly-summaries";
+import { useTransactionPendingSelectors } from "../../hooks/store/use-transaction-pending";
 
 interface Props {
-  focusTransactionId?: string;
-  focusMode?: string;
   currentSearch: string;
   currentTypes?: string[];
   currentStatuses?: string[];
@@ -45,8 +43,6 @@ interface Props {
 }
 
 export function TransactionsList({
-  focusTransactionId,
-  focusMode,
   currentSearch,
   currentTypes,
   currentStatuses,
@@ -74,13 +70,29 @@ export function TransactionsList({
     useTransactionMutations();
   const { isRowPending, isBatchDeleting } = useTransactionPendingSelectors();
   const [ConfirmDialog, confirm] = useConfirm();
-  const { data: summaries } = useTransactionsMonthlySummaries({
-    dateFrom: currentDateFrom || undefined,
-    dateTo: currentDateTo || undefined,
-    bankAccountId: currentAccountId || undefined,
-  });
+
   const { currentValue: limitFromUrl } = useQueryParam("limit");
   const displayLimit = limitFromUrl ? Number(limitFromUrl) : currentLimit;
+
+  const { data: summaries } = useTransactionsMonthlySummaries({
+    bankAccountId: currentAccountId || undefined,
+    category: currentCategories?.length
+      ? (currentCategories as TransactionCategory[])
+      : undefined,
+    type: currentTypes?.length
+      ? (currentTypes as TransactionType[])
+      : undefined,
+    status: currentStatuses?.length
+      ? (currentStatuses as TransactionStatus[])
+      : undefined,
+    isManual: currentIsManual || undefined,
+    isAnomaly: currentIsAnomaly || undefined,
+    search: currentSearch || undefined,
+    dateFrom: currentDateFrom || undefined,
+    dateTo: currentDateTo || undefined,
+    minAmount: currentAmountMin ? Number(currentAmountMin) : undefined,
+    maxAmount: currentAmountMax ? Number(currentAmountMax) : undefined,
+  });
   const summaryMap = useMemo(
     () => new Map(summaries?.map((s) => [s.monthKey, s]) ?? []),
     [summaries],
@@ -158,19 +170,6 @@ export function TransactionsList({
     fetchNextPage,
     isLoading,
   } = useTransactionsList(filters);
-
-  useEffect(() => {
-    if (!focusTransactionId) return;
-
-    const { isOpen, transactionId } = useTransactionDrawer.getState();
-    if (isOpen && transactionId === focusTransactionId) return;
-
-    if (focusMode === "edit") {
-      onOpenEdit(focusTransactionId);
-    } else {
-      onOpenView(focusTransactionId);
-    }
-  }, [focusTransactionId, focusMode]);
 
   const deletableIds = useMemo(
     () =>

@@ -45,10 +45,10 @@ export const accountsRouter = router({
     }),
 
   getById: protectedProcedure
-    .input(z.object({ id: z.uuid() }))
+    .input(z.object({ accountId: z.uuid() }))
     .query(async ({ ctx, input }) => {
       const result = await AccountsService.getById(
-        input.id,
+        input.accountId,
         ctx.session.user.id,
       );
       if (!result.success) {

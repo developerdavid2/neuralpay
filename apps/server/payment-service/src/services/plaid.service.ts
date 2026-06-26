@@ -16,6 +16,22 @@ import { mapPlaidCategoryToEnum } from "../lib/plaidCategoryMap";
 import { plaidClient } from "../lib/plaidClient";
 import { cache, cacheKeys } from "@neuralpay/cache";
 
+async function invalidatePlaidAccountCache(userId: string): Promise<void> {
+  await Promise.allSettled([
+    cache.del(cacheKeys.accounts.totalBalance(userId)),
+    cache.del(cacheKeys.accounts.aggregate(userId)),
+  ]).then((results) => {
+    results.forEach((r) => {
+      if (r.status === "rejected") {
+        console.error(
+          "[plaid] Cache invalidation failed (non-fatal):",
+          r.reason,
+        );
+      }
+    });
+  });
+}
+
 export const PlaidService = {
   async getConnectedBanks(userId: string) {
     return db
@@ -190,10 +206,7 @@ export const PlaidService = {
       .delete(connectedPlaidBanks)
       .where(eq(connectedPlaidBanks.id, bankId));
 
-    await Promise.all([
-      cache.del(cacheKeys.accounts.totalBalance(userId)),
-      cache.del(cacheKeys.accounts.aggregate(userId)),
-    ]);
+    await invalidatePlaidAccountCache(userId);
 
     return { id: bankId };
   },
@@ -226,10 +239,7 @@ export const PlaidService = {
         ),
       );
 
-    await Promise.all([
-      cache.del(cacheKeys.accounts.totalBalance(userId)),
-      cache.del(cacheKeys.accounts.aggregate(userId)),
-    ]);
+    await invalidatePlaidAccountCache(userId);
     return { id: bankId, status };
   },
 
@@ -416,10 +426,7 @@ export const PlaidService = {
           );
       }
 
-      await Promise.all([
-        cache.del(cacheKeys.accounts.totalBalance(userId)),
-        cache.del(cacheKeys.accounts.aggregate(userId)),
-      ]);
+      await invalidatePlaidAccountCache(userId);
       return {
         added: txToInsert.length,
         modified: modified.length,

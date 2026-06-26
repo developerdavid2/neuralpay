@@ -25,8 +25,8 @@ import {
 
 async function invalidateAggregateCache(userId: string) {
   await Promise.all([
-    cache.del(cacheKeys.accounts.totalBalance(userId)),
     cache.del(cacheKeys.accounts.aggregate(userId)),
+    cache.del(cacheKeys.accounts.totalBalance(userId)),
   ]);
 }
 
@@ -382,10 +382,10 @@ export const AccountsService = {
       totalCount: number;
     }>
   > {
-    return cache.getOrSet(
-      cacheKeys.accounts.aggregate(userId),
-      async () => {
-        try {
+    try {
+      const data = await cache.getOrSet(
+        cacheKeys.accounts.aggregate(userId),
+        async () => {
           const result = await db
             .select({
               type: bankAccounts.type,
@@ -408,27 +408,25 @@ export const AccountsService = {
           const totalCount = result.reduce((sum, r) => sum + r.accountCount, 0);
 
           return {
-            success: true,
-            data: {
-              byType: result.map((r) => ({
-                type: r.type,
-                totalBalance: parseFloat(r.totalBalance ?? "0").toFixed(2),
-                accountCount: r.accountCount,
-              })),
-              totalBalance,
-              totalCount,
-            },
+            byType: result.map((r) => ({
+              type: r.type,
+              totalBalance: parseFloat(r.totalBalance ?? "0").toFixed(2),
+              accountCount: r.accountCount,
+            })),
+            totalBalance,
+            totalCount,
           };
-        } catch (err) {
-          console.error("[AccountsService.getAggregateBalanceByType]", err);
-          return {
-            success: false,
-            error: "Failed to aggregate balances",
-            code: "DB_ERROR",
-          };
-        }
-      },
-      300,
-    );
+        },
+        300,
+      );
+      return { success: true, data };
+    } catch (err) {
+      console.error("[AccountsService.getAggregateBalanceByType]", err);
+      return {
+        success: false,
+        error: "Failed to aggregate balances",
+        code: "DB_ERROR",
+      };
+    }
   },
 } as const;

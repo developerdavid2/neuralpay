@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useMemo } from "react";
 import type { Transaction } from "@neuralpay/types";
-import { useTransactionDrawer } from "../../store/use-transaction-drawer";
+import { useTransactionDrawer } from "../store/use-transaction-drawer";
 
 export function useTransactionDetail(transactionId: string) {
   const trpc = useTRPC();

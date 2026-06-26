@@ -8,15 +8,12 @@ import { useMemo } from "react";
 export function useStatCards() {
   const trpc = useTRPC();
 
-  const { totalBalance, totalCount } = useAccountAggregates();
-  const { accountsData: allAccounts } = useAllAccounts({});
+  const { totalBalance, totalCount, aggregateMap } = useAccountAggregates();
   const { data: monthSpending } = useSuspenseQuery(
     trpc.payments.transactions.currentMonthSpending.queryOptions(),
   );
 
-  const savingsBalance = allAccounts
-    .filter((a) => a.type === "savings")
-    .reduce((sum, account) => sum + parseFloat(account.balance ?? "0"), 0);
+  const savingsBalance = Number(aggregateMap.get("savings")?.totalBalance ?? 0);
   const savingsRate =
     totalBalance > 0 ? (savingsBalance / totalBalance) * 100 : 0;
   return {

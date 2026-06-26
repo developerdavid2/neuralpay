@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import {
   useTransactionPendingSelectors,
   useTransactionPendingStore,
-} from "../../store/use-transaction-pending";
+} from "../store/use-transaction-pending";
 
 export function useTransactionMutations() {
   const trpc = useTRPC();

@@ -33,10 +33,15 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/apps/web/.next/standalone ./
-COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=builder /app/apps/web/public ./apps/web/public
+RUN addgroup -S app && adduser -S -G app app
+
+COPY --from=builder --chown=app:app /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=app:app /app/apps/web/public ./apps/web/public
+
+USER app
 
 EXPOSE 3001
+
 
 CMD ["bun", "apps/web/server.js"]

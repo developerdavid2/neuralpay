@@ -26,7 +26,7 @@ interface PageProps {
     isAnomaly?: string;
     amountMin?: string;
     amountMax?: string;
-    focus?: string;
+    focusTransactionId?: string;
     mode?: string;
     limit?: string;
   }>;
@@ -77,10 +77,10 @@ export default async function Page({ searchParams }: PageProps) {
 
   void prefetch(trpc.payments.accounts.listAll.queryOptions());
 
-  if (params.focus) {
+  if (params.focusTransactionId) {
     void prefetch(
       trpc.payments.transactions.getById.queryOptions({
-        transactionId: params.focus,
+        transactionId: params.focusTransactionId,
       }),
     );
   }
@@ -100,7 +100,7 @@ export default async function Page({ searchParams }: PageProps) {
         isAnomaly={params.isAnomaly === "true"}
         amountMin={params.amountMin ?? ""}
         amountMax={params.amountMax ?? ""}
-        focusTransactionId={params.focus}
+        focusTransactionId={params.focusTransactionId}
         focusMode={params.mode}
         limit={limit}
       />

@@ -25,9 +25,14 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy only the built output and production deps
-COPY --from=builder /app/apps/server/notification-service/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+RUN addgroup -S app && adduser -S -G app app
+ 
+ # Copy only the built output and production deps
+COPY --from=builder --chown=app:app /app/apps/server/notification-service/dist ./dist
+COPY --from=builder --chown=app:app /app/node_modules ./node_modules
+
+USER app
+
 
 EXPOSE 4004
 

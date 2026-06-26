@@ -23,11 +23,17 @@ RUN bun run build --filter=@neuralpay/api-gateway
 FROM oven/bun:1.3.11-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
+ENV NODE_ENV=
+
+RUN addgroup -S app && adduser -S -G app app
+
 
 # Copy only the built output and production deps
-COPY --from=builder /app/apps/server/api-gateway/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder --chown=app:app /app/apps/server/api-gateway/dist ./dist
+COPY --from=builder --chown=app:app /app/node_modules ./node_modules
+
+USER app
+
 
 EXPOSE 4000
 

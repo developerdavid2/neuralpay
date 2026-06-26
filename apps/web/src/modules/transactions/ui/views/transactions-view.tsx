@@ -12,6 +12,7 @@ import {
   TransactionsListSkeleton,
 } from "../components/transaction-list";
 import { SearchableCombobox } from "@/components/searchable-combobox";
+import { TransactionDrawerInit } from "../components/transaction-drawer-init";
 
 interface TransactionsViewProps {
   search?: string;
@@ -67,6 +68,11 @@ export function TransactionsView({
 
         {/* Scrollable content area */}
         <div className="flex-1 min-h-0 scrollbar-hide overflow-hidden">
+          <TransactionDrawerInit
+            focusId={focusTransactionId}
+            mode={focusMode}
+          />
+
           <SectionBoundary
             key={`${types.join(",")}-${statuses.join(",")}-${search}-${accountType}-${accountId}-${dateFrom}-${dateTo}-${categories.join(",")}-${isManual}-${isAnomaly}-${amountMin}-${amountMax}-${limit}`}
             fallback={<TransactionsListSkeleton />}
@@ -86,8 +92,6 @@ export function TransactionsView({
               currentAmountMin={amountMin}
               currentAmountMax={amountMax}
               currentLimit={limit}
-              focusTransactionId={focusTransactionId}
-              focusMode={focusMode}
             />
           </SectionBoundary>
         </div>
