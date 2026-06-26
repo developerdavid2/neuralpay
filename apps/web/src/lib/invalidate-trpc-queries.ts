@@ -38,12 +38,21 @@ export async function invalidateTransactionQueries(queryClient: QueryClient) {
   await Promise.all([
     invalidateTRPCQueries(queryClient, ["payments", "transactions", "list"]),
     invalidateTRPCQueries(queryClient, ["payments", "transactions", "getById"]),
+    invalidateTRPCQueries(queryClient, [
+      "payments",
+      "transactions",
+      "currentMonthSpending",
+    ]),
     invalidateTRPCQueries(queryClient, ["ai", "insights"]),
   ]);
 }
 
 export async function invalidateInsightsQueries(queryClient: QueryClient) {
-  await invalidateTRPCQueries(queryClient, ["ai", "insights"]);
+  await Promise.all([
+    invalidateTRPCQueries(queryClient, ["ai", "insights", "list"]),
+    invalidateTRPCQueries(queryClient, ["ai", "insights", "getInsightById"]),
+    invalidateTRPCQueries(queryClient, ["ai", "insights", "recent"]),
+  ]);
 }
 
 export async function invalidateChatQueries(queryClient: QueryClient) {

@@ -4,13 +4,9 @@ import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 export default async function ConnectedBanksPage() {
   void prefetch(trpc.payments.plaid.getConnectedBanks.queryOptions());
 
-  try {
-    void prefetch(
-      trpc.payments.accounts.listAll.queryOptions({ isManual: false }),
-    );
-  } catch {
-    // Bank not connected, skip prefetch
-  }
+  void prefetch(
+    trpc.payments.accounts.listAll.queryOptions({ isManual: false }),
+  );
 
   return (
     <HydrateClient>
