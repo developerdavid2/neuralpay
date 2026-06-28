@@ -1,7 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import GoogleIconIcon from "@/public/assets/icons/google";
+import GoogleIconIcon from "../../../../../public/assets/icons/google";
 import { Button } from "@neuralpay/ui/components/button";
 import { Loader } from "lucide-react";
 import { useState } from "react";

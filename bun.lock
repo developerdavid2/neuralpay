@@ -256,6 +256,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@trpc/server": "catalog:",
+        "better-auth": "catalog:",
         "cors": "^2.8.6",
         "express": "^5.2.1",
         "helmet": "^8.1.0",
