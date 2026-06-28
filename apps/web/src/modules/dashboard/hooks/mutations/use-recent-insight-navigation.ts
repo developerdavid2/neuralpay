@@ -1,12 +1,12 @@
+import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { invalidateInsightsQueries } from "@/lib/invalidate-trpc-queries";
 
 export function useRecentInsightNavigation() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const { invalidateInsights } = useInvalidateQueries();
   const router = useRouter();
 
   const [pendingDismissId, setPendingDismissId] = useState<string | null>(null);
@@ -14,14 +14,14 @@ export function useRecentInsightNavigation() {
   const dismiss = useMutation({
     ...trpc.ai.insights.dismiss.mutationOptions(),
     onSuccess: () => {
-      invalidateInsightsQueries(queryClient);
+      invalidateInsights();
     },
   });
 
   const markRead = useMutation({
     ...trpc.ai.insights.markRead.mutationOptions(),
     onSuccess: () => {
-      invalidateInsightsQueries(queryClient);
+      invalidateInsights();
     },
   });
 

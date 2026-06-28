@@ -8,6 +8,7 @@ export function useStatCards() {
   const { totalBalance, totalCount, aggregateMap } = useAccountAggregates();
   const { data: monthSpending } = useSuspenseQuery({
     ...trpc.payments.transactions.currentMonthSpending.queryOptions(),
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 

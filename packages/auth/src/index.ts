@@ -1,5 +1,3 @@
-// packages/auth/src/index.ts
-
 import { createDb } from "@neuralpay/db";
 import * as schema from "@neuralpay/db/schema";
 import { betterAuth } from "better-auth";

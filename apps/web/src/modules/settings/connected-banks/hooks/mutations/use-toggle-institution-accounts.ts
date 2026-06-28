@@ -1,13 +1,13 @@
-import { invalidateAccountsQueries } from "@/lib/invalidate-trpc-queries";
+import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 export function useToggleInstitutionAccounts() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const { invalidateAccounts } = useInvalidateQueries();
 
   return useMutation({
     ...trpc.payments.plaid.toggleInstitutionAccounts.mutationOptions(),
-    onSettled: async () => await invalidateAccountsQueries(queryClient),
+    onSettled: async () => await invalidateAccounts(),
   });
 }

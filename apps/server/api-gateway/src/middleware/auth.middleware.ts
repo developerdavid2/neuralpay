@@ -5,26 +5,37 @@ import { logger } from "../utils/logger";
 
 export async function authMiddleware(
   req: Request,
-  _res: Response,
+  res: Response,
   next: NextFunction,
 ) {
+  // Skip auth for public better-auth routes
+  if (req.path.startsWith("/auth")) {
+    return next();
+  }
+
   try {
-    // Extract session from headers using better-auth
     const headers = fromNodeHeaders(req.headers);
     const session = await auth.api.getSession({ headers });
 
     if (session?.user) {
-      // Attach user to request object so proxy decorators can access it
+      // Attach to req for any direct gateway use
       (req as any).user = session.user;
+
+      // ── CRITICAL: Set headers so proxy forwards them to services ──
+      req.headers["x-user-id"] = session.user.id;
+      req.headers["x-user-email"] = session.user.email ?? "";
+      req.headers["x-user-name"] = session.user.name ?? "";
+
       logger.info(`[auth] Session established for user: ${session.user.id}`);
     } else {
-      logger.debug("[auth] No valid session found in request headers");
+      logger.debug("[auth] No valid session found");
+      // For protected routes, block. Remove this if you have public proxies too.
+      return res.status(401).json({ error: "Unauthorized" });
     }
   } catch (error) {
-    // Non-critical — if auth fails, we just don't attach user
-    // Services can still try cookie-based auth as fallback
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.warn(`[auth] Failed to extract session: ${errorMessage}`);
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   next();

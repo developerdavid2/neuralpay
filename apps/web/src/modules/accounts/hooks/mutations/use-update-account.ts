@@ -1,22 +1,20 @@
+import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { invalidateAccountsQueries } from "@/lib/invalidate-trpc-queries";
-import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 export function useUpdateAccount() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const { invalidateAccounts } = useInvalidateQueries();
 
   return useMutation({
     ...trpc.payments.accounts.update.mutationOptions(),
     onSuccess: async () => {
-      toast.success("Account updated successfully");
-      await invalidateAccountsQueries(queryClient);
+      await invalidateAccounts();
     },
     onError: (error) => {
       const message =
         error instanceof Error ? error.message : "Failed to update account";
-      toast.error(message);
+      console.error(message);
     },
   });
 }

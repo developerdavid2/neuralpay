@@ -1,5 +1,3 @@
-// apps/api-gateway/src/main.ts
-
 import { createExpressApp } from "@neuralpay/config/express-config";
 import { gatewayEnv } from "@neuralpay/env/gateway";
 import { toNodeHandler } from "better-auth/node";
@@ -23,15 +21,12 @@ const app = createExpressApp({
 
 app.use(requestLogger);
 
-// ── PUBLIC AUTH ROUTES — must be BEFORE authMiddleware ──
-// These routes don't require an existing session
 app.use("/auth/polar", toNodeHandler(auth));
-
-// Mount proxy for /v1/auth BEFORE authMiddleware so it's public
-mountProxies(app);
 
 // ── PROTECTED ROUTES — authMiddleware applied after public routes ──
 app.use(authMiddleware);
+// Mount proxy for /v1/auth BEFORE authMiddleware so it's public
+mountProxies(app);
 
 // Any additional protected routes go here
 

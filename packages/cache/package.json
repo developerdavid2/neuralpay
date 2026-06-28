@@ -13,7 +13,6 @@
     "rate-limiter-flexible": "^11.2.0"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
     "@types/bun": "catalog:",
     "typescript": "catalog:"
   }
