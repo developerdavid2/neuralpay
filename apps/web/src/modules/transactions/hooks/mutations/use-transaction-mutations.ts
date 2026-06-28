@@ -1,49 +1,24 @@
 "use client";
 
-import { invalidateTransactionQueries } from "@/lib/invalidate-trpc-queries";
-import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import {
   useTransactionPendingSelectors,
   useTransactionPendingStore,
 } from "../store/use-transaction-pending";
+import { useBatchDeleteTransaction } from "./use-batch-delete-transaction";
+import { useCreateTransaction } from "./use-create-transaction";
+import { useDeleteTransaction } from "./use-delete-transaction";
+import { useUpdateTransaction } from "./use-update-transaction";
 
 export function useTransactionMutations() {
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const { markDeleting, unmarkDeleting, setPendingUpdateId, setPendingCreate } =
     useTransactionPendingStore();
   const pending = useTransactionPendingSelectors();
-
-  const createTx = useMutation({
-    ...trpc.payments.transactions.create.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateTransactionQueries(queryClient);
-    },
-  });
-
-  const updateTx = useMutation({
-    ...trpc.payments.transactions.update.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateTransactionQueries(queryClient);
-    },
-  });
-
-  const deleteTx = useMutation({
-    ...trpc.payments.transactions.delete.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateTransactionQueries(queryClient);
-    },
-  });
-
-  const batchDelete = useMutation({
-    ...trpc.payments.transactions.batchDelete.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateTransactionQueries(queryClient);
-    },
-  });
+  const createTx = useCreateTransaction();
+  const updateTx = useUpdateTransaction();
+  const deleteTx = useDeleteTransaction();
+  const batchDeleteTx = useBatchDeleteTransaction();
 
   const handleCreate = useCallback(
     async (values: Parameters<typeof createTx.mutateAsync>[0]) => {
@@ -111,7 +86,7 @@ export function useTransactionMutations() {
     async (ids: string[]) => {
       markDeleting(ids);
       try {
-        await batchDelete.mutateAsync({ ids });
+        await batchDeleteTx.mutateAsync({ ids });
         toast.success(
           `${ids.length} transaction${ids.length > 1 ? "s" : ""} deleted`,
         );
@@ -126,7 +101,7 @@ export function useTransactionMutations() {
         unmarkDeleting(ids);
       }
     },
-    [batchDelete, markDeleting, unmarkDeleting],
+    [batchDeleteTx, markDeleting, unmarkDeleting],
   );
 
   return {

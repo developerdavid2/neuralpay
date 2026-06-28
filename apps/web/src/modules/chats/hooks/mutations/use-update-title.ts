@@ -1,7 +1,4 @@
-import {
-  invalidateChatQueries,
-  invalidateChatSessionQueries,
-} from "@/lib/invalidate-trpc-queries";
+import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import type {
   ChatSession,
@@ -26,6 +23,8 @@ export function useUpdateTitle() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
+  const { invalidateChats, invalidateChatSession } = useInvalidateQueries();
+
   return useMutation<
     ChatSession,
     any,
@@ -33,32 +32,28 @@ export function useUpdateTitle() {
     MutationContext
   >({
     ...trpc.ai.coach.updateTitle.mutationOptions(),
-    onMutate: async (variables: UpdateSessionTitleInput) => {
-      await queryClient.cancelQueries({
-        predicate: (query) => {
-          const key = query.queryKey as unknown[];
-          const path = key[0] as unknown[];
-          return (
-            Array.isArray(path) &&
-            path[0] === "ai" &&
-            path[1] === "coach" &&
-            (path[2] === "sessionById" || path[2] === "sessions")
-          );
-        },
-      });
+
+    onMutate: async (variables) => {
+      // Cancel coach-related queries
+      await Promise.all([
+        queryClient.cancelQueries(trpc.ai.coach.sessions.pathFilter()),
+
+        queryClient.cancelQueries(trpc.ai.coach.sessionById.pathFilter()),
+      ]);
 
       const sessionByIdKey = trpc.ai.coach.sessionById.queryOptions({
         sessionId: variables.sessionId,
         limit: 50,
       }).queryKey;
 
-      // Snapshot previous data
+      // Snapshot current data
       const previousSession =
         queryClient.getQueryData<SessionByIdResponse>(sessionByIdKey);
 
-      // Optimistically patch sessionById
+      // Optimistically update current session
       queryClient.setQueryData<SessionByIdResponse>(sessionByIdKey, (old) => {
         if (!old) return old;
+
         return {
           ...old,
           session: {
@@ -68,53 +63,53 @@ export function useUpdateTitle() {
         };
       });
 
-      // Also patch all sessions list queries
+      // Optimistically update all session lists
       queryClient.setQueriesData<PaginatedChatSessions>(
-        {
-          predicate: (query) => {
-            const key = query.queryKey as unknown[];
-            const path = key[0] as unknown[];
-            return (
-              Array.isArray(path) &&
-              path[0] === "ai" &&
-              path[1] === "coach" &&
-              path[2] === "sessions"
-            );
-          },
-        },
+        trpc.ai.coach.sessions.pathFilter(),
         (old) => {
           if (!old?.items) return old;
+
           return {
             ...old,
             items: old.items.map((session) =>
               session.id === variables.sessionId
-                ? { ...session, title: variables.title }
+                ? {
+                    ...session,
+                    title: variables.title,
+                  }
                 : session,
             ),
           };
         },
       );
 
-      return { previousSession, sessionByIdKey } as MutationContext;
+      return {
+        previousSession,
+        sessionByIdKey,
+      };
     },
+
     onSuccess: () => {
-      toast.success("Title updated", { position: "top-center" });
+      toast.success("Title updated", {
+        position: "top-center",
+      });
     },
-    onError: (err, variables, context) => {
-      const typedContext = context as MutationContext | undefined;
-      if (typedContext?.previousSession && typedContext?.sessionByIdKey) {
-        queryClient.setQueryData<SessionByIdResponse>(
-          typedContext.sessionByIdKey,
-          typedContext.previousSession,
+
+    onError: (_err, _variables, context) => {
+      if (context?.previousSession && context.sessionByIdKey) {
+        queryClient.setQueryData(
+          context.sessionByIdKey,
+          context.previousSession,
         );
       }
-      toast.error("Failed to update title", { position: "top-center" });
+
+      toast.error("Failed to update title", {
+        position: "top-center",
+      });
     },
-    onSettled: async (_, __, variables) => {
-      await Promise.all([
-        invalidateChatQueries(queryClient),
-        invalidateChatSessionQueries(queryClient, variables.sessionId),
-      ]);
+
+    onSettled: async () => {
+      await Promise.all([invalidateChats(), invalidateChatSession()]);
     },
   });
 }

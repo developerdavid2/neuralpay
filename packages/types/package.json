@@ -10,7 +10,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
     "typescript": "catalog:"
   }
 }

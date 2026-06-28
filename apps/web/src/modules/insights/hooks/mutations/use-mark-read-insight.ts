@@ -1,15 +1,13 @@
-"use client";
-
 import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation } from "@tanstack/react-query";
 
-export function useStartSession() {
+export function useMarkReadInsight() {
   const trpc = useTRPC();
-  const { invalidateChats } = useInvalidateQueries();
+  const { invalidateInsights } = useInvalidateQueries();
 
   return useMutation({
-    ...trpc.ai.coach.startSession.mutationOptions(),
-    onSuccess: () => invalidateChats(),
+    ...trpc.ai.insights.markRead.mutationOptions(),
+    onSuccess: invalidateInsights,
   });
 }

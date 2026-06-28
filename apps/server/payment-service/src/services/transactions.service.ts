@@ -619,7 +619,7 @@ export const TransactionsService = {
     userId: string,
     month: number,
     year: number,
-    limit = 5,
+    limit = 10,
   ): Promise<ServiceResult<TopMonthlyCategories>> {
     try {
       const data = await cache.getOrSet(
@@ -737,7 +737,7 @@ export const TransactionsService = {
 
           return parseFloat(result?.total ?? "0");
         },
-        60,
+        300,
       );
 
       return { success: true, data };

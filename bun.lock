@@ -227,7 +227,6 @@
       "name": "@neuralpay/auth",
       "dependencies": {
         "@neuralpay/db": "workspace:*",
-        "@neuralpay/env": "workspace:*",
         "@polar-sh/better-auth": "catalog:",
         "@polar-sh/sdk": "^0.42.2",
         "better-auth": "catalog:",
@@ -236,7 +235,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@neuralpay/config": "workspace:*",
         "@types/nodemailer": "^8.0.0",
         "typescript": "catalog:",
       },
@@ -249,7 +247,6 @@
         "rate-limiter-flexible": "^11.2.0",
       },
       "devDependencies": {
-        "@neuralpay/config": "workspace:*",
         "@types/bun": "catalog:",
         "typescript": "catalog:",
       },
@@ -276,15 +273,12 @@
       "name": "@neuralpay/db",
       "version": "0.0.0",
       "dependencies": {
-        "@neuralpay/env": "workspace:*",
-        "@neuralpay/types": "workspace:*",
         "drizzle-orm": "catalog:",
         "pg": "^8.17.1",
         "server-only": "^0.0.1",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@neuralpay/config": "workspace:*",
         "@types/pg": "^8.16.0",
         "dotenv": "catalog:",
         "drizzle-kit": "^0.31.8",
@@ -302,7 +296,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@neuralpay/config": "workspace:*",
         "@types/bun": "catalog:",
         "typescript": "catalog:",
       },
@@ -314,7 +307,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@neuralpay/config": "workspace:*",
         "typescript": "catalog:",
       },
     },

@@ -1,14 +1,13 @@
 "use client";
 
+import { Suspense, type ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import {
-  useQueryClient,
-  useQueryErrorResetBoundary,
-} from "@tanstack/react-query";
+import { useQueryErrorResetBoundary } from "@tanstack/react-query";
+
 import { AlertCircle, RefreshCw } from "lucide-react";
-import { Suspense, type ReactNode, useSyncExternalStore } from "react";
-import { cn } from "@neuralpay/ui/lib/utils";
+
 import { Button } from "@neuralpay/ui/components/button";
+import { cn } from "@neuralpay/ui/lib/utils";
 
 interface SectionErrorFallbackProps {
   error: unknown;
@@ -17,7 +16,7 @@ interface SectionErrorFallbackProps {
   compact?: boolean;
 }
 
-export function SectionErrorFallback({
+function SectionErrorFallback({
   error,
   resetErrorBoundary,
   message = "Failed to load",
@@ -33,7 +32,9 @@ export function SectionErrorFallback({
       )}
     >
       <AlertCircle className="size-5 text-destructive" />
+
       <p className="text-sm font-medium">{message}</p>
+
       <Button
         onClick={resetErrorBoundary}
         variant="secondary"
@@ -47,43 +48,11 @@ export function SectionErrorFallback({
   );
 }
 
-// ── Only true when there's an actual network request in flight ─────────────
-function useIsNetworkFetching(queryKeys: readonly unknown[][]) {
-  const queryClient = useQueryClient();
-
-  return useSyncExternalStore(
-    (callback) => queryClient.getQueryCache().subscribe(callback),
-    () =>
-      queryKeys.some((key) => {
-        const query = queryClient.getQueryCache().find({ queryKey: key });
-        // fetchStatus === "fetching" means actual HTTP request, not cache check
-        return query?.state.fetchStatus === "fetching";
-      }),
-    () => false,
-  );
-}
-
-function RefetchOverlay({
-  queryKeys,
-  fallback,
-  children,
-}: {
-  queryKeys: readonly unknown[][];
-  fallback: ReactNode;
-  children: ReactNode;
-}) {
-  const isNetworkFetching = useIsNetworkFetching(queryKeys);
-
-  if (isNetworkFetching) return <>{fallback}</>;
-  return <>{children}</>;
-}
-
 interface SectionBoundaryProps {
   children: ReactNode;
   fallback: ReactNode;
   errorMessage?: string;
   compact?: boolean;
-  queryKeys?: readonly unknown[][];
 }
 
 export function SectionBoundary({
@@ -91,17 +60,8 @@ export function SectionBoundary({
   fallback,
   errorMessage,
   compact,
-  queryKeys,
 }: SectionBoundaryProps) {
   const { reset } = useQueryErrorResetBoundary();
-
-  const content = queryKeys?.length ? (
-    <RefetchOverlay queryKeys={queryKeys} fallback={fallback}>
-      {children}
-    </RefetchOverlay>
-  ) : (
-    children
-  );
 
   return (
     <ErrorBoundary
@@ -115,7 +75,7 @@ export function SectionBoundary({
         />
       )}
     >
-      <Suspense fallback={fallback}>{content}</Suspense>
+      <Suspense fallback={fallback}>{children}</Suspense>
     </ErrorBoundary>
   );
 }

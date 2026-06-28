@@ -13,7 +13,7 @@ export function useMonthlyTopCategories(params?: {
     trpc.payments.transactions.topCategories.queryOptions({
       month: params?.month ?? now.getMonth() + 1,
       year: params?.year ?? now.getFullYear(),
-      limit: params?.limit ?? 5,
+      limit: params?.limit ?? 10,
     }),
   );
 }

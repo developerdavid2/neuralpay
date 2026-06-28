@@ -1,13 +1,11 @@
-import { invalidateInsightsQueries } from "@/lib/invalidate-trpc-queries";
 import type { Insight } from "@/modules/insights/types";
-import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
+import { useDismissInsight } from "./use-dismiss-insight";
+import { useMarkReadInsight } from "./use-mark-read-insight";
+import { useRestoreInsight } from "./use-restore-insight";
 
 export function useInsightMutations() {
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 
   const [pendingDismissId, setPendingDismissId] = useState<string | null>(null);
@@ -18,21 +16,9 @@ export function useInsightMutations() {
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Mutations
-  const dismiss = useMutation({
-    ...trpc.ai.insights.dismiss.mutationOptions(),
-    onSuccess: () => invalidateInsightsQueries(queryClient),
-  });
-
-  const restore = useMutation({
-    ...trpc.ai.insights.restore.mutationOptions(),
-    onSuccess: () => invalidateInsightsQueries(queryClient),
-  });
-
-  const markRead = useMutation({
-    ...trpc.ai.insights.markRead.mutationOptions(),
-    onSuccess: () => invalidateInsightsQueries(queryClient),
-  });
+  const dismiss = useDismissInsight();
+  const restore = useRestoreInsight();
+  const markRead = useMarkReadInsight();
 
   const syncFocusToUrl = useCallback((insightId: string) => {
     const params = new URLSearchParams(searchParams.toString());

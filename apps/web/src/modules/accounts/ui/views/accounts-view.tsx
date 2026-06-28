@@ -42,9 +42,6 @@ export function AccountsView({
         <SectionBoundary
           fallback={<AccountTypeCardsSkeleton />}
           errorMessage="Could not load accounts types"
-          queryKeys={[
-            [["payments", "accounts", "aggregateByType"], { type: "query" }],
-          ]}
         >
           <AccountTypeCardsView />
         </SectionBoundary>

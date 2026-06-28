@@ -7,6 +7,7 @@ import { useMonthlyTopCategories } from "@/modules/dashboard/hooks/queries/use-m
 import { cn } from "@neuralpay/ui/lib/utils";
 import { format, startOfMonth } from "date-fns";
 import { Receipt, TrendingUp } from "lucide-react";
+import { CATEGORY_LABELS } from "../../constants";
 
 export function TopCategoriesCard() {
   const [selectedDate, setSelectedDate] = useState(() =>
@@ -62,10 +63,13 @@ export function TopCategoriesCard() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-medium capitalize truncate">
-                    {cat.category.replace(/_/g, " ")}
+                    {CATEGORY_LABELS[cat.category]}
                   </span>
                   <span className="text-xs text-muted-foreground tabular-nums shrink-0 ml-2">
-                    {cat.percentage}% · ${cat.total.toFixed(2)}
+                    {cat.percentage}% ·
+                    <span className="font-bold text-foreground">
+                      ${cat.total.toFixed(2)}
+                    </span>
                   </span>
                 </div>
                 <div className="h-1.5 rounded-full bg-accent overflow-hidden">

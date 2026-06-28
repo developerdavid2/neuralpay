@@ -38,7 +38,6 @@ function sessionFromGatewayHeaders(
   const email = nodeHeaders["x-user-email"] as string | undefined;
   const name = nodeHeaders["x-user-name"] as string | undefined;
 
-  // Check for non-empty user ID (gateway auth middleware attaches it)
   if (userId && userId.trim()) {
     return {
       user: {
@@ -52,92 +51,114 @@ function sessionFromGatewayHeaders(
   return null;
 }
 
-// Unified createContext for Express
-export async function createExpressContext(opts: {
-  req: { headers: NodeJS.Dict<string | string[]> };
-}): Promise<BaseContext> {
-  // 1. Try gateway header first (proxied requests)
-  const gatewaySession = sessionFromGatewayHeaders(opts.req.headers);
-  if (gatewaySession) {
-    const headers = new Headers();
-    // Reconstruct minimal headers if needed downstream
-    Object.entries(opts.req.headers).forEach(([k, v]) => {
-      if (v !== undefined) headers.set(k, Array.isArray(v) ? v.join(", ") : v);
-    });
-    return { session: gatewaySession, _headers: headers };
-  }
-
-  // 2. Fallback: direct auth via better-auth (for direct API access, webhooks, etc.)
-  // Only import dynamically to avoid loading auth in contexts where it's not needed
-  const { auth } = await import("@neuralpay/auth");
-  const { fromNodeHeaders } = await import("better-auth/node");
-
-  const headers = fromNodeHeaders(opts.req.headers);
-
-  try {
-    const session = await auth.api.getSession({ headers });
-
-    return {
-      session: session
-        ? {
-            user: {
-              ...session.user,
-              id: session.user.id,
-              email: session.user.email ?? "",
-              name: session.user.name ?? "",
-            },
-          }
-        : null,
-      _headers: headers,
-    };
-  } catch (error) {
-    // If better-auth fails, return null session (will trigger 401 on protected procedures)
-    console.error("Failed to get session from better-auth:", error);
-    return { session: null, _headers: headers };
-  }
+function headersFromNodeHeaders(
+  nodeHeaders: NodeJS.Dict<string | string[]>,
+): Headers {
+  const headers = new Headers();
+  Object.entries(nodeHeaders).forEach(([k, v]) => {
+    if (v !== undefined) headers.set(k, Array.isArray(v) ? v.join(", ") : v);
+  });
+  return headers;
 }
 
-// Unified createContext for Fastify
-export async function createFastifyContext(opts: {
+// ── Auth injection type (loosely typed to avoid importing better-auth) ──
+export interface AuthAPI {
+  api: {
+    getSession: (opts: { headers: Headers }) => Promise<{
+      user: {
+        id: string;
+        email: string;
+        name?: string | null;
+        [key: string]: unknown;
+      };
+    } | null>;
+  };
+}
+
+// ── Express ──
+export interface ExpressContextOptions {
   req: { headers: NodeJS.Dict<string | string[]> };
-}): Promise<BaseContext> {
-  // 1. Try gateway header first (proxied requests)
+  auth?: AuthAPI;
+}
+
+export async function createExpressContext(
+  opts: ExpressContextOptions,
+): Promise<BaseContext> {
   const gatewaySession = sessionFromGatewayHeaders(opts.req.headers);
+  const baseHeaders = headersFromNodeHeaders(opts.req.headers);
+
   if (gatewaySession) {
-    const headers = new Headers();
-    // Reconstruct minimal headers if needed downstream
-    Object.entries(opts.req.headers).forEach(([k, v]) => {
-      if (v !== undefined) headers.set(k, Array.isArray(v) ? v.join(", ") : v);
-    });
-    return { session: gatewaySession, _headers: headers };
+    return { session: gatewaySession, _headers: baseHeaders };
   }
 
-  // 2. Fallback: direct auth via better-auth (for direct API access, webhooks, etc.)
-  // Only import dynamically to avoid loading auth in contexts where it's not needed
-  const { auth } = await import("@neuralpay/auth");
-  const { fromNodeHeaders } = await import("better-auth/node");
+  if (opts.auth) {
+    const { fromNodeHeaders } = await import("better-auth/node");
+    const headers = fromNodeHeaders(opts.req.headers);
 
-  const headers = fromNodeHeaders(opts.req.headers);
-
-  try {
-    const session = await auth.api.getSession({ headers });
-
-    return {
-      session: session
-        ? {
-            user: {
-              ...session.user,
-              id: session.user.id,
-              email: session.user.email ?? "",
-              name: session.user.name ?? "",
-            },
-          }
-        : null,
-      _headers: headers,
-    };
-  } catch (error) {
-    // If better-auth fails, return null session (will trigger 401 on protected procedures)
-    console.error("Failed to get session from better-auth:", error);
-    return { session: null, _headers: headers };
+    try {
+      const session = await opts.auth.api.getSession({ headers });
+      return {
+        session: session
+          ? {
+              user: {
+                ...session.user,
+                id: session.user.id,
+                email: session.user.email ?? "",
+                name: session.user.name ?? "",
+              },
+            }
+          : null,
+        _headers: headers,
+      };
+    } catch (error) {
+      console.error("Failed to get session from better-auth:", error);
+      return { session: null, _headers: headers };
+    }
   }
+
+  return { session: null, _headers: baseHeaders };
+}
+
+// ── Fastify ──
+export interface FastifyContextOptions {
+  req: { headers: NodeJS.Dict<string | string[]> };
+  auth?: AuthAPI;
+}
+
+export async function createFastifyContext(
+  opts: FastifyContextOptions,
+): Promise<BaseContext> {
+  const gatewaySession = sessionFromGatewayHeaders(opts.req.headers);
+  const baseHeaders = headersFromNodeHeaders(opts.req.headers);
+
+  if (gatewaySession) {
+    return { session: gatewaySession, _headers: baseHeaders };
+  }
+
+  if (opts.auth) {
+    const { fromNodeHeaders } = await import("better-auth/node");
+    const headers = fromNodeHeaders(opts.req.headers);
+
+    try {
+      const session = await opts.auth.api.getSession({ headers });
+      return {
+        session: session
+          ? {
+              user: {
+                ...session.user,
+                id: session.user.id,
+                email: session.user.email ?? "",
+                name: session.user.name ?? "",
+              },
+            }
+          : null,
+        _headers: headers,
+      };
+    } catch (error) {
+      console.error("Failed to get session from better-auth:", error);
+      return { session: null, _headers: headers };
+    }
+  }
+
+  return { session: null, _headers: baseHeaders };
 }
