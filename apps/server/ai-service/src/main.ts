@@ -1,5 +1,3 @@
-// apps/server/ai-service/src/main.ts
-
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { createExpressApp } from "@neuralpay/config/express-config";
 import { aiRouter } from "./routers";

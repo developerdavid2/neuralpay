@@ -22,7 +22,7 @@ export interface AuthConfig {
 
 export function createAuth(config: AuthConfig) {
   const db = createDb();
-
+  const isDev = process.env.NODE_ENV !== "production";
   return betterAuth({
     basePath: "/auth",
     database: drizzleAdapter(db, { provider: "pg", schema }),
@@ -100,7 +100,7 @@ export function createAuth(config: AuthConfig) {
 
     advanced: {
       defaultCookieAttributes: {
-        sameSite: "none",
+        sameSite: "lax",
         secure: true,
         httpOnly: true,
       },

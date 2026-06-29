@@ -1,11 +1,13 @@
 import { createExpressApp } from "@neuralpay/config/express-config";
 import { gatewayEnv } from "@neuralpay/env/gateway";
-import { toNodeHandler } from "better-auth/node";
-import { auth } from "./lib/auth";
 import { authMiddleware } from "./middleware/auth.middleware";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";
-import { mountProxies, mountStreamingProxy } from "./proxy";
+import {
+  mountProxies,
+  mountStreamingProxy,
+  mountNotificationStreamProxy,
+} from "./proxy";
 
 const PORT = Number(gatewayEnv.PORT) || 4000;
 
@@ -14,23 +16,22 @@ const app = createExpressApp({
   port: PORT,
   allowedOrigins: [gatewayEnv.CORS_ORIGIN],
   beforeBodyParser: (app) => {
+    // Streaming routes that need auth BEFORE body parser
     app.use("/v1/chat/stream", authMiddleware);
     mountStreamingProxy(app);
+
+    // Notification SSE — same pattern
+    app.use("/v1/notifications/stream", authMiddleware);
+    mountNotificationStreamProxy(app);
   },
 });
 
 app.use(requestLogger);
-
-app.use("/auth/polar", toNodeHandler(auth));
-
-// ── PROTECTED ROUTES — authMiddleware applied after public routes ──
-app.use(authMiddleware);
-// Mount proxy for /v1/auth BEFORE authMiddleware so it's public
+app.use(authMiddleware); // For non-streaming protected routes
 mountProxies(app);
-
-// Any additional protected routes go here
-
 app.use(errorHandler);
+
+console.log("Routes:");
 
 app.listen(PORT, () => {
   console.log(`🚀 api-gateway-service running on http://localhost:${PORT}`);

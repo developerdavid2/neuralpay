@@ -47,5 +47,11 @@ export function useInvalidateQueries() {
         queryClient.invalidateQueries(trpc.ai.insights.pathFilter()),
       ]);
     },
+
+    //Notifications:
+    invalidateNotifications: () =>
+      queryClient.invalidateQueries(
+        trpc.notifications.appNotifications.pathFilter(),
+      ),
   };
 }

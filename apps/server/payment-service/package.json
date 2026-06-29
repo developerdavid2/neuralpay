@@ -21,7 +21,7 @@
     "@fastify/helmet": "^13.0.2",
     "@fastify/rate-limit": "^10.3.0",
     "@neuralpay/auth": "workspace:*",
-    "@neuralpay/cache": "workspace:*",
+    "@neuralpay/redis": "workspace:*",
     "@neuralpay/config": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",

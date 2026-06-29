@@ -23,6 +23,7 @@
       "react": "^19.2.3",
       "react-dom": "^19.2.3",
       "sonner": "^2.0.5",
+      "ioredis": "^5.11.1",
       "@trpc/client": "^11.16.0",
       "@polar-sh/better-auth": "^1.8.3",
       "@types/react": "^19.2.10",

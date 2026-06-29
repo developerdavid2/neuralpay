@@ -132,6 +132,33 @@ export function mountStreamingProxy(app: Express) {
   );
 }
 
+export function mountNotificationStreamProxy(app: Express) {
+  app.use(
+    "/v1/notifications/stream",
+    createProxyMiddleware({
+      target: gatewayEnv.NOTIFICATION_SERVICE_URL,
+      changeOrigin: true,
+      pathRewrite: () => "/stream", // ← strip the /v1/notifications prefix
+      on: {
+        proxyReq: (proxyReq, req) => {
+          proxyReq.setHeader("x-internal-source", "api-gateway");
+          proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
+          const userId = (req as any).headers["x-user-id"];
+          const userEmail = (req as any).headers["x-user-email"];
+          if (userId) proxyReq.setHeader("x-user-id", userId);
+          if (userEmail) proxyReq.setHeader("x-user-email", userEmail);
+        },
+        error: (err, _req, res) => {
+          logger.error(`[notifications proxy] error: ${err.message}`);
+          (res as Response)
+            .status(502)
+            .json({ error: "Notification service unavailable" });
+        },
+      },
+    }),
+  );
+}
+
 // And remove it from mountProxies
 export function mountProxies(app: Express) {
   // 1. Better Auth routes → user-service

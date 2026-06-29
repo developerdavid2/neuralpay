@@ -1,39 +1,37 @@
-/**
- * notification-service — Express + Socket.io
- * Responsibilities: WebSocket server, push alert dispatch, RabbitMQ consumer fan-out
- * Port: 4004
- */
-import http from "http";
-import { Server as SocketIOServer } from "socket.io";
-import { createExpressApp } from "@neuralpay/config/express";
+import { notificationsServiceEnv } from "@neuralpay/env/notifications";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import cors from "cors";
+import express from "express";
+import { notificationsRouter } from "./routers";
+import { notifyStreamHandler } from "./routers/notify-stream.router";
+import { startNotificationWorker } from "./services/bullmq.service";
+import { createContext } from "./trpc/context";
 
-const PORT = Number(process.env.PORT) || 4004;
-const app = createExpressApp({
-  serviceName: "notification-service",
-  port: PORT,
-  allowedOrigins: ["http://localhost:3000"],
-});
-const httpServer = http.createServer(app);
-const io = new SocketIOServer(httpServer, {
-  cors: { origin: ["http://localhost:3000"], credentials: true },
-  transports: ["websocket", "polling"],
-});
+const PORT = Number(notificationsServiceEnv.PORT) || 4004;
+const app = express();
 
-// TODO: Add socket auth middleware to verify access token before connection is accepted.
-// io.use(socketAuthMiddleware);
-io.on("connection", (socket) => {
-  console.log(`Socket connected: ${socket.id}`);
-  // TODO: Resolve user identity and join personal room for targeted notifications.
-  // socket.join(`user:${socket.data.userId}`);
-  socket.on("disconnect", () => console.log(`Socket disconnected: ${socket.id}`));
-});
+// notification-service main.ts
+app.use(
+  cors({
+    origin: process.env.WEB_URL ?? "http://localhost:3001",
+    credentials: true,
+  }),
+);
+app.use(express.json());
 
-app.set("io", io);
-// TODO: Mount notificationsRouter for in-app notification reads and acknowledgment updates.
-// app.use("/notifications", notificationsRouter);
-httpServer.listen(PORT, () => {
-  console.log(`🚀 notification-service running on http://localhost:${PORT}`);
-  console.log(`   Socket.io ready on ws://localhost:${PORT}`);
-});
+app.get("/health", (_req, res) =>
+  res.json({ status: "ok", service: "notification-service", port: PORT }),
+);
 
-export { io };
+// ── SSE endpoint ──
+app.get("/stream", notifyStreamHandler);
+
+app.use(
+  "/trpc",
+  createExpressMiddleware({ router: notificationsRouter, createContext }),
+);
+
+app.listen(PORT, () => {
+  console.log(`🔔 notification-service on http://localhost:${PORT}`);
+  startNotificationWorker();
+});

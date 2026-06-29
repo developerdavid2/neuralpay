@@ -21,6 +21,7 @@
     "@neuralpay/env": "workspace:*",
     "@neuralpay/payment-service": "workspace:*",
     "@neuralpay/user-service": "workspace:*",
+    "@neuralpay/notification-service": "workspace:*",
     "@trpc/server": "catalog:",
     "better-auth": "catalog:",
     "cors": "^2.8.5",

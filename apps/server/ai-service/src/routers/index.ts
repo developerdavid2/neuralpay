@@ -1,6 +1,6 @@
 import { router } from "@neuralpay/config/trpc";
-import { insightsRouter } from "./insights.router";
 import { coachRouter } from "./coach.router";
+import { insightsRouter } from "./insights.router";
 
 export const aiRouter = router({
   insights: insightsRouter,

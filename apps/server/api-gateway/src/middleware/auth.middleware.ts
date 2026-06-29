@@ -8,8 +8,8 @@ export async function authMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  // Skip auth for public better-auth routes
-  if (req.path.startsWith("/auth")) {
+  // Always skip for auth routes — they handle their own auth
+  if (req.path.startsWith("/v1/auth") || req.path.startsWith("/auth")) {
     return next();
   }
 
@@ -18,25 +18,20 @@ export async function authMiddleware(
     const session = await auth.api.getSession({ headers });
 
     if (session?.user) {
-      // Attach to req for any direct gateway use
-      (req as any).user = session.user;
-
-      // ── CRITICAL: Set headers so proxy forwards them to services ──
+      // Inject user identity for downstream services
       req.headers["x-user-id"] = session.user.id;
       req.headers["x-user-email"] = session.user.email ?? "";
       req.headers["x-user-name"] = session.user.name ?? "";
-
       logger.info(`[auth] Session established for user: ${session.user.id}`);
     } else {
-      logger.debug("[auth] No valid session found");
-      // For protected routes, block. Remove this if you have public proxies too.
-      return res.status(401).json({ error: "Unauthorized" });
+      logger.debug("[auth] No valid session — passing through unauthenticated");
+      // ← Don't return 401 here — let downstream decide
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.warn(`[auth] Failed to extract session: ${errorMessage}`);
-    return res.status(401).json({ error: "Unauthorized" });
+    logger.warn(`[auth] Session extraction failed: ${errorMessage}`);
+    // ← Don't return 401 here either — fail open, let downstream decide
   }
 
-  next();
+  next(); // always continue
 }

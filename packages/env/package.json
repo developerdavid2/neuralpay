@@ -9,6 +9,7 @@
     "./payment": "./src/payment.ts",
     "./user-service": "./src/user-service.ts",
     "./ai-service": "./src/ai-service.ts",
+    "./notifications": "./src/notifications.ts",
     "./web": "./src/web.ts"
   },
   "dependencies": {
