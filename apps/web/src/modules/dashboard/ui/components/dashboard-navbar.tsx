@@ -13,11 +13,9 @@ import { BellRing, SearchIcon } from "lucide-react";
 
 const DashboardNavbar = () => {
   const { requestPermission } = useNotificationPermission();
-  useNotificationStream(); // ← SSE connection
 
   return (
     <>
-      <NotificationToast />
       <nav className="flex px-4 gap-x-2 items-center py-3 border-b shadow-xs bg-sidebar shrink-0 fixed w-full z-50">
         <SidebarTrigger className={cn("size-9 cursor-pointer")} />
         <Separator orientation="vertical" className="mx-2 h-4" />

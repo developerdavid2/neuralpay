@@ -1,11 +1,10 @@
 "use client";
 
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Toaster } from "@neuralpay/ui/components/sonner";
-import { ThemeProvider } from "./theme-provider";
 import { TRPCReactProvider } from "@/trpc/trpc-client";
+import { Toaster } from "@neuralpay/ui/components/sonner";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect } from "react";
-import { NotificationInitializer } from "@/modules/notifications/ui/components/notification-initializer";
+import { ThemeProvider } from "./theme-provider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -25,7 +24,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <TRPCReactProvider>
-        <NotificationInitializer />
         {children}
         <ReactQueryDevtools />
       </TRPCReactProvider>

@@ -5,7 +5,8 @@ let redis: Redis | null = null;
 export function getRedisClient(url?: string): Redis {
   if (redis) return redis;
 
-  const redisUrl = url || process.env.REDIS_URL || "redis://localhost:6379";
+  const redisUrl: string =
+    url || process.env.REDIS_URL || "redis://localhost:6379";
 
   redis = new Redis(redisUrl, {
     maxRetriesPerRequest: null,
@@ -30,3 +31,5 @@ export async function closeRedis(): Promise<void> {
     redis = null;
   }
 }
+
+export { redisEnv } from "./env";

@@ -1,37 +1,70 @@
-import { fromNodeHeaders } from "better-auth/node";
+import { getCachedSession, setCachedSession } from "@/lib/session-cache";
+import { gatewayEnv } from "@neuralpay/env/gateway";
 import type { NextFunction, Request, Response } from "express";
-import { auth } from "../lib/auth";
-import { logger } from "../utils/logger";
+
+interface SessionResponse {
+  user: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+  };
+}
 
 export async function authMiddleware(
   req: Request,
   res: Response,
   next: NextFunction,
 ) {
-  // Always skip for auth routes — they handle their own auth
+  console.log(`[authMiddleware] hit: ${req.method} ${req.path}`); // ← temp debug
+
   if (req.path.startsWith("/v1/auth") || req.path.startsWith("/auth")) {
     return next();
   }
 
-  try {
-    const headers = fromNodeHeaders(req.headers);
-    const session = await auth.api.getSession({ headers });
-
-    if (session?.user) {
-      // Inject user identity for downstream services
-      req.headers["x-user-id"] = session.user.id;
-      req.headers["x-user-email"] = session.user.email ?? "";
-      req.headers["x-user-name"] = session.user.name ?? "";
-      logger.info(`[auth] Session established for user: ${session.user.id}`);
-    } else {
-      logger.debug("[auth] No valid session — passing through unauthenticated");
-      // ← Don't return 401 here — let downstream decide
-    }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.warn(`[auth] Session extraction failed: ${errorMessage}`);
-    // ← Don't return 401 here either — fail open, let downstream decide
+  const cookie = req.headers.cookie;
+  if (!cookie) {
+    console.log("[authMiddleware] no cookie present"); // ← temp debug
+    return next();
   }
 
-  next(); // always continue
+  try {
+    const cached = await getCachedSession(cookie);
+    if (cached) {
+      console.log("[authMiddleware] cache hit, user:", cached.user?.id); // ← temp debug
+      attachUserHeaders(req, cached);
+      return next();
+    }
+
+    const sessionRes = await fetch(
+      `${gatewayEnv.USER_SERVICE_URL}/auth/get-session`,
+      { headers: { cookie } },
+    );
+
+    console.log(
+      "[authMiddleware] user-service response status:",
+      sessionRes.status,
+    ); // ← temp debug
+
+    if (!sessionRes.ok) {
+      return next();
+    }
+
+    const session = (await sessionRes.json()) as SessionResponse | null;
+    console.log("[authMiddleware] session:", session); // ← temp debug
+
+    if (session?.user) {
+      attachUserHeaders(req, session);
+      await setCachedSession(cookie, session);
+    }
+  } catch (error) {
+    console.log("[authMiddleware] error:", error); // ← temp debug
+  }
+
+  next();
+}
+
+function attachUserHeaders(req: Request, session: SessionResponse) {
+  req.headers["x-user-id"] = session.user.id;
+  req.headers["x-user-email"] = session.user.email ?? "";
+  req.headers["x-user-name"] = session.user.name ?? "";
 }

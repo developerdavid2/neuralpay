@@ -58,6 +58,7 @@
         "@neuralpay/env": "workspace:*",
         "@neuralpay/notification-service": "workspace:*",
         "@neuralpay/payment-service": "workspace:*",
+        "@neuralpay/redis": "workspace:*",
         "@neuralpay/user-service": "workspace:*",
         "@trpc/server": "catalog:",
         "better-auth": "catalog:",
@@ -125,7 +126,6 @@
         "@neuralpay/config": "workspace:*",
         "@neuralpay/db": "workspace:*",
         "@neuralpay/env": "workspace:*",
-        "@neuralpay/notification-service": "workspace:*",
         "@neuralpay/redis": "workspace:*",
         "@neuralpay/types": "workspace:*",
         "@paralleldrive/cuid2": "^2.2.2",
@@ -286,6 +286,8 @@
       "name": "@neuralpay/env",
       "version": "0.0.0",
       "dependencies": {
+        "@neuralpay/db": "workspace:*",
+        "@neuralpay/redis": "workspace:*",
         "@t3-oss/env-core": "^0.13.1",
         "@t3-oss/env-nextjs": "^0.13.1",
         "dotenv": "catalog:",
@@ -300,7 +302,7 @@
       "name": "@neuralpay/redis",
       "version": "0.0.0",
       "dependencies": {
-        "@neuralpay/types": "workspace:*",
+        "@neuralpay/db": "workspace:*",
         "bullmq": "^5.79.2",
         "ioredis": "catalog:",
         "rate-limiter-flexible": "^11.2.0",

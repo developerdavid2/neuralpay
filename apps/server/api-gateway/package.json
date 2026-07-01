@@ -15,10 +15,11 @@
     "start": "bun run dist/index.mjs"
   },
   "dependencies": {
-    "@neuralpay/ai-service": "workspace:*",
     "@neuralpay/auth": "workspace:*",
     "@neuralpay/config": "workspace:*",
     "@neuralpay/env": "workspace:*",
+    "@neuralpay/redis": "workspace:*",
+    "@neuralpay/ai-service": "workspace:*",
     "@neuralpay/payment-service": "workspace:*",
     "@neuralpay/user-service": "workspace:*",
     "@neuralpay/notification-service": "workspace:*",

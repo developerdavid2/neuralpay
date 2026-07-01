@@ -17,16 +17,15 @@ const app = createExpressApp({
   allowedOrigins: [gatewayEnv.CORS_ORIGIN],
   beforeBodyParser: (app) => {
     // Streaming routes that need auth BEFORE body parser
-    app.use("/v1/chat/stream", authMiddleware);
+    app.use("/v1/ai/chat/stream", authMiddleware);
     mountStreamingProxy(app);
 
-    // Notification SSE — same pattern
     app.use("/v1/notifications/stream", authMiddleware);
     mountNotificationStreamProxy(app);
   },
 });
-
 app.use(requestLogger);
+
 app.use(authMiddleware); // For non-streaming protected routes
 mountProxies(app);
 app.use(errorHandler);

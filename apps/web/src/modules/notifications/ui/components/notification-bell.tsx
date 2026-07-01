@@ -3,14 +3,36 @@
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Bell } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { NotificationDropdown } from "./notification-dropdown";
 import { useUnreadCountNotifications } from "../../hooks/queries/use-unread-count-notifications";
+import { NotificationDropdown } from "./notification-dropdown";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { data: unreadCount = 0 } = useUnreadCountNotifications();
+  const { data: serverCount = 0 } = useUnreadCountNotifications();
+
+  // Optimistic bump — incremented instantly on push, reset when
+  // the server count catches up (i.e. after invalidation refetch)
+  const [optimisticDelta, setOptimisticDelta] = useState(0);
+  const prevServerCount = useRef(serverCount);
+
+  // When the server count changes (refetch resolved), reset the delta
+  useEffect(() => {
+    if (serverCount !== prevServerCount.current) {
+      prevServerCount.current = serverCount;
+      setOptimisticDelta(0);
+    }
+  }, [serverCount]);
+
+  // Listen for instant push from the SSE hook
+  useEffect(() => {
+    const handler = () => setOptimisticDelta((d) => d + 1);
+    window.addEventListener("inapp-notification", handler);
+    return () => window.removeEventListener("inapp-notification", handler);
+  }, []);
+
+  const unreadCount = serverCount + optimisticDelta;
 
   // Close on outside click
   useEffect(() => {

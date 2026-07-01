@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "ioredis": "catalog:",
-    "@neuralpay/types": "workspace:*",
+    "@neuralpay/db": "workspace:*",
     "bullmq": "^5.79.2",
     "rate-limiter-flexible": "^11.2.0"
   },

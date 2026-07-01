@@ -1,7 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 import { RateLimiterRedis, RateLimiterRes } from "rate-limiter-flexible";
-import { redis } from "../lib/redis";
 import { logger } from "../utils/logger";
+import { getRedisClient } from "@neuralpay/redis";
+import { gatewayEnv } from "@neuralpay/env/gateway";
+
+const redis = getRedisClient(gatewayEnv.REDIS_URL);
 
 // Global — all requests through the gateway
 const globalLimiter = new RateLimiterRedis({
@@ -18,7 +21,7 @@ const authLimiter = new RateLimiterRedis({
   keyPrefix: "rl_auth",
   points: 20,
   duration: 60,
-  blockDuration: 120, // 2 min block on auth abuse
+  blockDuration: 120,
 });
 
 // Plaid routes — each call costs money, protect aggressively
@@ -51,7 +54,7 @@ function rateLimitResponse(res: Response, retryAfter: number) {
   });
 }
 
-// ── Middleware factories ───────────────────────────────────────────────────
+// ── Middleware factories
 
 function createLimiterMiddleware(limiter: RateLimiterRedis) {
   return async (req: Request, res: Response, next: NextFunction) => {

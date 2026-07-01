@@ -115,11 +115,18 @@ export function mountStreamingProxy(app: Express) {
     createProxyMiddleware({
       target: gatewayEnv.AI_SERVICE_URL,
       changeOrigin: true,
-      pathRewrite: (_path) => "/chat/stream", // always rewrite to exactly this
+      pathRewrite: (_path) => "/chat/stream",
       on: {
         proxyReq: (proxyReq, req) => {
           proxyReq.setHeader("x-internal-source", "api-gateway");
           proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
+
+          const userId = (req as any).headers["x-user-id"];
+          const userEmail = (req as any).headers["x-user-email"];
+          const userName = (req as any).headers["x-user-name"];
+          if (userId) proxyReq.setHeader("x-user-id", userId);
+          if (userEmail) proxyReq.setHeader("x-user-email", userEmail);
+          if (userName) proxyReq.setHeader("x-user-name", userName);
         },
         error: (err, _req, res) => {
           logger.error(`[stream proxy] error: ${err.message}`);
