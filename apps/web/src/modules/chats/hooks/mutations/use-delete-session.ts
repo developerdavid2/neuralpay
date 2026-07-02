@@ -13,12 +13,15 @@ export function useDeleteSession() {
   return useMutation({
     ...trpc.ai.coach.deleteSession.mutationOptions(),
     onSuccess: async (_, variables) => {
-      await Promise.all([invalidateChatSession(), invalidateChats()]);
-
       const sessionRoute = `/dashboard/ai-chat/${variables.sessionId}`;
-      if (pathname?.startsWith(sessionRoute)) {
+      const deletingActiveSession = pathname?.startsWith(sessionRoute);
+      if (deletingActiveSession) {
         router.push("/dashboard/ai-chat" as Route);
       }
+      await Promise.all([
+        invalidateChatSession(),
+        deletingActiveSession ? Promise.resolve() : invalidateChatSession(),
+      ]);
     },
   });
 }

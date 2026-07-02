@@ -29,7 +29,10 @@ export function DashboardView() {
       />
 
       <div className="bg-background border-muted shadow rounded-2xl p-5 space-y-4">
-        <SectionBoundary fallback={<StatCardsSkeleton />}>
+        <SectionBoundary
+          fallback={<StatCardsSkeleton />}
+          errorMessage="Could not load overview stats"
+        >
           <StatCards />
         </SectionBoundary>
 
@@ -43,18 +46,27 @@ export function DashboardView() {
             </SectionBoundary>
           }
           insights={
-            <SectionBoundary fallback={<RecentInsightsSkeleton />}>
+            <SectionBoundary
+              fallback={<RecentInsightsSkeleton />}
+              errorMessage="Could not load recent insights"
+            >
               <RecentInsights />
             </SectionBoundary>
           }
         />
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
-          <SectionBoundary fallback={<RecentTransactionsSkeleton />}>
+          <SectionBoundary
+            fallback={<RecentTransactionsSkeleton />}
+            errorMessage="Could not load recent transactions"
+          >
             <RecentTransactions />
           </SectionBoundary>
 
-          <SectionBoundary fallback={<TopCategoriesSkeleton />}>
+          <SectionBoundary
+            fallback={<TopCategoriesSkeleton />}
+            errorMessage="Could not load top categories"
+          >
             <TopCategoriesCard />
           </SectionBoundary>
         </div>

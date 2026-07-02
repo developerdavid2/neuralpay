@@ -22,8 +22,7 @@ interface MutationContext {
 export function useUpdateTitle() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-
-  const { invalidateChats, invalidateChatSession } = useInvalidateQueries();
+  const { invalidateChats } = useInvalidateQueries();
 
   return useMutation<
     ChatSession,
@@ -109,7 +108,10 @@ export function useUpdateTitle() {
     },
 
     onSettled: async () => {
-      await Promise.all([invalidateChats(), invalidateChatSession()]);
+      await Promise.all([
+        invalidateChats(),
+        queryClient.invalidateQueries(trpc.ai.coach.sessionById.pathFilter()),
+      ]);
     },
   });
 }

@@ -13,7 +13,9 @@ export function useBatchDeleteTransaction() {
     },
     onError: (error) => {
       const message =
-        error instanceof Error ? error.message : "Failed to update account";
+        error instanceof Error
+          ? error.message
+          : "Failed to delete transactions";
       console.error(message);
     },
   });
