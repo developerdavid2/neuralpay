@@ -1,15 +1,15 @@
 "use client";
 
-import { invalidateChatQueries } from "@/lib/invalidate-trpc-queries";
+import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 export function useStartSession() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const { invalidateChats } = useInvalidateQueries();
 
   return useMutation({
     ...trpc.ai.coach.startSession.mutationOptions(),
-    onSuccess: () => invalidateChatQueries(queryClient),
+    onSuccess: () => invalidateChats(),
   });
 }

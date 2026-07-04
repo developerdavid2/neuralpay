@@ -1,48 +1,23 @@
 "use client";
 
-import { invalidateAccountsQueries } from "@/lib/invalidate-trpc-queries";
-import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import {
   useAccountPendingSelectors,
   useAccountPendingStore,
 } from "../store/use-account-pending";
+import { useCreateAccount } from "./use-create-account";
+import { useDeleteAccount } from "./use-delete-account";
+import { useUpdateAccount } from "./use-update-account";
 
 export function useAccountMutations() {
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
-  const {
-    markDeleting,
-    unmarkDeleting,
-    markDisconnecting,
-    unmarkDisconnecting,
-    setPendingUpdateId,
-    setPendingCreate,
-  } = useAccountPendingStore();
+  const { markDeleting, unmarkDeleting, setPendingUpdateId, setPendingCreate } =
+    useAccountPendingStore();
   const pending = useAccountPendingSelectors();
 
-  const createAccount = useMutation({
-    ...trpc.payments.accounts.create.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateAccountsQueries(queryClient);
-    },
-  });
-
-  const updateAccount = useMutation({
-    ...trpc.payments.accounts.update.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateAccountsQueries(queryClient);
-    },
-  });
-
-  const deleteAccount = useMutation({
-    ...trpc.payments.accounts.delete.mutationOptions(),
-    onSuccess: async () => {
-      await invalidateAccountsQueries(queryClient);
-    },
-  });
+  const createAccount = useCreateAccount();
+  const updateAccount = useUpdateAccount();
+  const deleteAccount = useDeleteAccount();
 
   const handleCreate = useCallback(
     async (values: Parameters<typeof createAccount.mutateAsync>[0]) => {

@@ -9,16 +9,18 @@
     "./payment": "./src/payment.ts",
     "./user-service": "./src/user-service.ts",
     "./ai-service": "./src/ai-service.ts",
+    "./notifications": "./src/notifications.ts",
     "./web": "./src/web.ts"
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.1",
     "@t3-oss/env-nextjs": "^0.13.1",
+    "@neuralpay/redis": "workspace:*",
+    "@neuralpay/db": "workspace:*",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
     "@types/bun": "catalog:",
     "typescript": "catalog:"
   }

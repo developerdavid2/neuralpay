@@ -14,7 +14,7 @@ import { CountryCode, Products } from "plaid";
 import { decrypt, encrypt } from "../lib/crypto";
 import { mapPlaidCategoryToEnum } from "../lib/plaidCategoryMap";
 import { plaidClient } from "../lib/plaidClient";
-import { cache, cacheKeys } from "@neuralpay/cache";
+import { cache, cacheKeys } from "@neuralpay/redis";
 
 async function invalidatePlaidAccountCache(userId: string): Promise<void> {
   await Promise.allSettled([

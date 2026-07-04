@@ -31,14 +31,7 @@ export function DashboardView() {
       <div className="bg-background border-muted shadow rounded-2xl p-5 space-y-4">
         <SectionBoundary
           fallback={<StatCardsSkeleton />}
-          errorMessage="Could not load account summary"
-          queryKeys={[
-            [["payments", "accounts", "aggregateByType"], { type: "query" }],
-            [
-              ["payments", "transactions", "currentMonthSpending"],
-              { type: "query" },
-            ],
-          ]}
+          errorMessage="Could not load overview stats"
         >
           <StatCards />
         </SectionBoundary>
@@ -55,8 +48,7 @@ export function DashboardView() {
           insights={
             <SectionBoundary
               fallback={<RecentInsightsSkeleton />}
-              errorMessage="Could not load insights"
-              queryKeys={[[["ai", "insights"], { type: "query" }]]}
+              errorMessage="Could not load recent insights"
             >
               <RecentInsights />
             </SectionBoundary>
@@ -66,14 +58,14 @@ export function DashboardView() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
           <SectionBoundary
             fallback={<RecentTransactionsSkeleton />}
-            errorMessage="Could not load transactions"
+            errorMessage="Could not load recent transactions"
           >
             <RecentTransactions />
           </SectionBoundary>
 
           <SectionBoundary
             fallback={<TopCategoriesSkeleton />}
-            errorMessage="Could not load categories"
+            errorMessage="Could not load top categories"
           >
             <TopCategoriesCard />
           </SectionBoundary>

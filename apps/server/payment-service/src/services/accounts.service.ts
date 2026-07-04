@@ -1,4 +1,4 @@
-import { cache, cacheKeys } from "@neuralpay/cache";
+import { cache, cacheKeys } from "@neuralpay/redis";
 import { db } from "@neuralpay/db";
 import { bankAccounts } from "@neuralpay/db/schema";
 import {

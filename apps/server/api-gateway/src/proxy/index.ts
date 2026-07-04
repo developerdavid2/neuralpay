@@ -4,13 +4,13 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { gatewayEnv } from "@neuralpay/env/gateway";
 import { logger } from "../utils/logger";
 
-// ── Error handler ─────────────────────────────────────────────────────────────
+// ── Error handler
 const proxyError = (err: Error, res: any, _next: any) => {
   logger.error(`Proxy error: ${err.message}`);
   res.status(502).json({ success: false, message: "Service unavailable" });
 };
 
-// ── Header decorators ─────────────────────────────────────────────────────────
+// ── Header decorators
 // Used for public routes (auth) — no user identity injected
 const baseHeaders = (proxyReqOpts: any) => {
   proxyReqOpts.headers ??= {};
@@ -27,9 +27,30 @@ const withUserId = (proxyReqOpts: any, srcReq: Request) => {
   proxyReqOpts.headers["Origin"] = gatewayEnv.CORS_ORIGIN;
   proxyReqOpts.headers["x-internal-source"] = "api-gateway";
 
-  // Inject session headers from req.user (attached by authMiddleware)
+  // Prefer headers already attached by authMiddleware, then fall back to req.user.
+  const forwardedUserId = srcReq.headers["x-user-id"];
+  const forwardedUserEmail = srcReq.headers["x-user-email"];
+  const forwardedUserName = srcReq.headers["x-user-name"];
+  const forwardedPlanTier = srcReq.headers["x-user-plan-tier"];
+
+  if (typeof forwardedUserId === "string" && forwardedUserId) {
+    proxyReqOpts.headers["x-user-id"] = forwardedUserId;
+  }
+
+  if (typeof forwardedUserEmail === "string" && forwardedUserEmail) {
+    proxyReqOpts.headers["x-user-email"] = forwardedUserEmail;
+  }
+
+  if (typeof forwardedUserName === "string" && forwardedUserName) {
+    proxyReqOpts.headers["x-user-name"] = forwardedUserName;
+  }
+
+  if (typeof forwardedPlanTier === "string" && forwardedPlanTier) {
+    proxyReqOpts.headers["x-user-plan-tier"] = forwardedPlanTier;
+  }
+
   const user = (srcReq as any).user;
-  if (user?.id) {
+  if (!proxyReqOpts.headers["x-user-id"] && user?.id) {
     proxyReqOpts.headers["x-user-id"] = user.id;
     proxyReqOpts.headers["x-user-email"] = user.email ?? "";
     proxyReqOpts.headers["x-user-name"] = user.name ?? "";
@@ -41,7 +62,7 @@ const withUserId = (proxyReqOpts: any, srcReq: Request) => {
   return proxyReqOpts;
 };
 
-// ── tRPC namespace router ─────────────────────────────────────────────────────
+// ── tRPC namespace router
 // tRPC procedure names are dot-separated: "users.profile.me", "payments.transactions.list"
 // The first segment is the namespace — use it to route to the correct service.
 //
@@ -96,7 +117,7 @@ function trpcNamespaceProxy(app: Express) {
           )
           .join(",");
 
-        const query = url.search; // preserve ?batch=1&input=... etc
+        const query = url.search;
         return `/trpc/${stripped}${query}`;
       },
       proxyReqOptDecorator: withUserId,
@@ -107,25 +128,59 @@ function trpcNamespaceProxy(app: Express) {
     })(req, res, next);
   });
 }
-// ── Mount all proxies ─────────────────────────────────────────────────────────
-// In proxy.ts — add this separate export
+
+// ── Mount all proxies
 export function mountStreamingProxy(app: Express) {
   app.use(
     "/v1/ai/chat/stream",
     createProxyMiddleware({
       target: gatewayEnv.AI_SERVICE_URL,
       changeOrigin: true,
-      pathRewrite: (_path) => "/chat/stream", // always rewrite to exactly this
+      pathRewrite: (_path) => "/chat/stream",
       on: {
         proxyReq: (proxyReq, req) => {
           proxyReq.setHeader("x-internal-source", "api-gateway");
           proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
+
+          const userId = (req as any).headers["x-user-id"];
+          const userEmail = (req as any).headers["x-user-email"];
+          const userName = (req as any).headers["x-user-name"];
+          if (userId) proxyReq.setHeader("x-user-id", userId);
+          if (userEmail) proxyReq.setHeader("x-user-email", userEmail);
+          if (userName) proxyReq.setHeader("x-user-name", userName);
         },
         error: (err, _req, res) => {
           logger.error(`[stream proxy] error: ${err.message}`);
           (res as Response)
             .status(502)
             .json({ success: false, message: "AI service unavailable" });
+        },
+      },
+    }),
+  );
+}
+
+export function mountNotificationStreamProxy(app: Express) {
+  app.use(
+    "/v1/notifications/stream",
+    createProxyMiddleware({
+      target: gatewayEnv.NOTIFICATION_SERVICE_URL,
+      changeOrigin: true,
+      pathRewrite: () => "/stream",
+      on: {
+        proxyReq: (proxyReq, req) => {
+          proxyReq.setHeader("x-internal-source", "api-gateway");
+          proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
+          const userId = (req as any).headers["x-user-id"];
+          const userEmail = (req as any).headers["x-user-email"];
+          if (userId) proxyReq.setHeader("x-user-id", userId);
+          if (userEmail) proxyReq.setHeader("x-user-email", userEmail);
+        },
+        error: (err, _req, res) => {
+          logger.error(`[notifications proxy] error: ${err.message}`);
+          (res as Response)
+            .status(502)
+            .json({ error: "Notification service unavailable" });
         },
       },
     }),

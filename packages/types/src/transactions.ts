@@ -145,13 +145,11 @@ export type Transaction = {
   monoTxId: string | null;
   csvImportId: string | null;
   createdAt: Date;
-  // Joined from bankAccounts
   bankAccountName: string | null;
   bankAccountType: string | null;
   bankName: string | null;
   currency: string | null;
   maskedNumber: string | null;
-  // Joined from customCategories
 };
 export type PaginatedTransactions = {
   items: Transaction[];

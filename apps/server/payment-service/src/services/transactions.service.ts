@@ -1,3 +1,4 @@
+import { emitNotification } from "@neuralpay/redis";
 import { db } from "@neuralpay/db";
 import { bankAccounts, budgets, transactions } from "@neuralpay/db/schema";
 import {
@@ -36,7 +37,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import { cache, cacheKeys } from "@neuralpay/cache";
+import { cache, cacheKeys } from "@neuralpay/redis";
 
 function transactionSelect() {
   return {
@@ -286,7 +287,37 @@ export const TransactionsService = {
         })
         .returning();
 
+      if (!created) {
+        return {
+          success: false,
+          error: "Transaction could not be created",
+          code: "BAD_REQUEST",
+        };
+      }
       await invalidateAggregateCache(userId);
+
+      // Fire notification — non-blocking, don't let it fail the request
+      try {
+        await emitNotification({
+          event: {
+            type: "transaction_created",
+            payload: {
+              userId: created.userId,
+              transactionId: created.id,
+              amount: Number(created.amount),
+              currency: "USD",
+              merchant: created.merchant ?? "Unknown",
+              category: created.category ?? "Others",
+            },
+          },
+        });
+      } catch (notifErr) {
+        console.error(
+          "[TransactionsService.create] Notification failed:",
+          notifErr,
+        );
+        // Don't return error — transaction is already created
+      }
 
       return this.getById(created!.id, userId);
     } catch (err) {
@@ -619,7 +650,7 @@ export const TransactionsService = {
     userId: string,
     month: number,
     year: number,
-    limit = 5,
+    limit = 10,
   ): Promise<ServiceResult<TopMonthlyCategories>> {
     try {
       const data = await cache.getOrSet(
@@ -737,7 +768,7 @@ export const TransactionsService = {
 
           return parseFloat(result?.total ?? "0");
         },
-        60,
+        300,
       );
 
       return { success: true, data };

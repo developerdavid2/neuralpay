@@ -1,30 +1,28 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signUpSchema, type SignUpInput } from "@neuralpay/types";
 import { Eye, EyeOff, OctagonAlertIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaApple } from "react-icons/fa";
-import { signUpSchema, type SignUpInput } from "@neuralpay/types";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { Input } from "@neuralpay/ui/components/input";
 import { Alert, AlertTitle } from "@neuralpay/ui/components/alert";
+import { Button } from "@neuralpay/ui/components/button";
 import {
   Field,
-  FieldLabel,
   FieldError,
   FieldGroup,
+  FieldLabel,
   FieldSeparator,
 } from "@neuralpay/ui/components/field";
+import { Input } from "@neuralpay/ui/components/input";
 import { cn } from "@neuralpay/ui/lib/utils";
-import GoogleIconIcon from "@/public/assets/icons/google";
 import { toast } from "sonner";
-import { GoogleSignInButton } from "../components/google-sign-in-button";
 import { AppleSignInButton } from "../components/apple-sign-in-button";
+import { GoogleSignInButton } from "../components/google-sign-in-button";
 
 type FormStatus =
   | { type: "idle" }

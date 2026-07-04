@@ -1,5 +1,3 @@
-// packages/auth/src/index.ts
-
 import { createDb } from "@neuralpay/db";
 import * as schema from "@neuralpay/db/schema";
 import { betterAuth } from "better-auth";
@@ -24,7 +22,6 @@ export interface AuthConfig {
 
 export function createAuth(config: AuthConfig) {
   const db = createDb();
-
   return betterAuth({
     basePath: "/auth",
     database: drizzleAdapter(db, { provider: "pg", schema }),
@@ -102,7 +99,7 @@ export function createAuth(config: AuthConfig) {
 
     advanced: {
       defaultCookieAttributes: {
-        sameSite: "none",
+        sameSite: "lax",
         secure: true,
         httpOnly: true,
       },

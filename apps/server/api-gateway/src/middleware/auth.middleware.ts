@@ -1,31 +1,60 @@
-import { fromNodeHeaders } from "better-auth/node";
+import { getCachedSession, setCachedSession } from "@/lib/session-cache";
+import { gatewayEnv } from "@neuralpay/env/gateway";
 import type { NextFunction, Request, Response } from "express";
-import { auth } from "../lib/auth";
-import { logger } from "../utils/logger";
+
+interface SessionResponse {
+  user: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+    planTier?: string | null;
+  };
+}
 
 export async function authMiddleware(
   req: Request,
-  _res: Response,
+  _: Response,
   next: NextFunction,
 ) {
-  try {
-    // Extract session from headers using better-auth
-    const headers = fromNodeHeaders(req.headers);
-    const session = await auth.api.getSession({ headers });
-
-    if (session?.user) {
-      // Attach user to request object so proxy decorators can access it
-      (req as any).user = session.user;
-      logger.info(`[auth] Session established for user: ${session.user.id}`);
-    } else {
-      logger.debug("[auth] No valid session found in request headers");
-    }
-  } catch (error) {
-    // Non-critical — if auth fails, we just don't attach user
-    // Services can still try cookie-based auth as fallback
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.warn(`[auth] Failed to extract session: ${errorMessage}`);
+  if (req.path.startsWith("/v1/auth") || req.path.startsWith("/auth")) {
+    return next();
   }
 
+  const cookie = req.headers.cookie;
+  if (!cookie) {
+    return next();
+  }
+
+  try {
+    const cached = await getCachedSession(cookie);
+    if (cached) {
+      attachUserHeaders(req, cached);
+      return next();
+    }
+
+    const sessionRes = await fetch(
+      `${gatewayEnv.USER_SERVICE_URL}/auth/get-session`,
+      { headers: { cookie } },
+    );
+
+    if (!sessionRes.ok) {
+      return next();
+    }
+
+    const session = (await sessionRes.json()) as SessionResponse | null;
+
+    if (session?.user) {
+      attachUserHeaders(req, session);
+      await setCachedSession(cookie, session);
+    }
+  } catch (error) {}
+
   next();
+}
+
+function attachUserHeaders(req: Request, session: SessionResponse) {
+  req.headers["x-user-id"] = session.user.id;
+  req.headers["x-user-email"] = session.user.email ?? "";
+  req.headers["x-user-name"] = session.user.name ?? "";
+  req.headers["x-user-plan-tier"] = session.user.planTier ?? "free";
 }

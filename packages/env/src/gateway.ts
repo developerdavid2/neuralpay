@@ -1,20 +1,18 @@
+import { redisEnv } from "@neuralpay/redis/client";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
-import { baseServerEnv, authEnv } from "./server";
+import { baseServerEnv } from "./server";
 
 export const gatewayEnv = createEnv({
   server: {
     ...baseServerEnv,
-    ...authEnv,
+    ...redisEnv,
     PORT: z.coerce.number().default(4000),
-    CORS_ORIGIN: z.string().url(),
-    POLAR_ACCESS_TOKEN: z.string().min(1),
-    POLAR_SUCCESS_URL: z.string().url(),
+    CORS_ORIGIN: z.url(),
     USER_SERVICE_URL: z.url(),
     PAYMENT_SERVICE_URL: z.url(),
     AI_SERVICE_URL: z.url(),
     NOTIFICATION_SERVICE_URL: z.url(),
-    REDIS_URL: z.string().min(1),
   },
   runtimeEnv: process.env,
 });

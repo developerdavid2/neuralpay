@@ -6,6 +6,7 @@ export * from "./chats";
 export * from "./pagination";
 export * from "./accounts";
 export * from "./plaid";
+export * from "./notifications";
 export {};
 
 export type ServiceResult<T> =

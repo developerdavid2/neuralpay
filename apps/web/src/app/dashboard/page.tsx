@@ -37,7 +37,7 @@ export default async function Page() {
     trpc.payments.transactions.topCategories.queryOptions({
       month: now.getMonth() + 1,
       year: now.getFullYear(),
-      limit: 5,
+      limit: 10,
     }),
   );
 

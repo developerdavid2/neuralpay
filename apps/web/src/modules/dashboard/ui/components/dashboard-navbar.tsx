@@ -1,33 +1,21 @@
 "use client";
 
 import { ModeToggle } from "@/components/mode-toggle";
+import { NotificationToast } from "@/components/notification-toast";
+import { useNotificationPermission } from "@/modules/notifications/hooks/mutations/use-notification-permission";
+import { useNotificationStream } from "@/modules/notifications/hooks/queries/use-notifications-stream";
+import { NotificationBell } from "@/modules/notifications/ui/components/notification-bell";
 import { Button } from "@neuralpay/ui/components/button";
 import { Separator } from "@neuralpay/ui/components/separator";
 import { SidebarTrigger } from "@neuralpay/ui/components/sidebar";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { SearchIcon } from "lucide-react";
-import { useState } from "react";
+import { BellRing, SearchIcon } from "lucide-react";
 
 const DashboardNavbar = () => {
-  const [openCommand, setOpenCommand] = useState(false);
-
-  // TODO: re-enable once DashboardCommand is wired up
-  // useEffect(() => {
-  //   const down = (e: KeyboardEvent) => {
-  //     if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-  //       e.preventDefault();
-  //       setOpenCommand((open) => !open);
-  //     }
-  //   };
-
-  //   document.addEventListener("keydown", down);
-
-  //   return () => document.removeEventListener("keydown", down);
-  // }, []);
+  const { requestPermission } = useNotificationPermission();
 
   return (
     <>
-      {/* <DashboardCommand open={openCommand} setOpen={setOpenCommand} /> */}
       <nav className="flex px-4 gap-x-2 items-center py-3 border-b shadow-xs bg-sidebar shrink-0 fixed w-full z-50">
         <SidebarTrigger className={cn("size-9 cursor-pointer")} />
         <Separator orientation="vertical" className="mx-2 h-4" />
@@ -35,9 +23,7 @@ const DashboardNavbar = () => {
           className="h-9 w-fit justify-start font-normal text-muted-foreground hover:text-muted-foreground"
           variant="outline"
           size="sm"
-          onClick={() => {
-            // setOpenCommand((open) => !open);
-          }}
+          onClick={() => {}}
         >
           <SearchIcon />
           Search or type a command
@@ -46,8 +32,20 @@ const DashboardNavbar = () => {
           </kbd>
         </Button>
         <ModeToggle />
+
+        <NotificationBell />
+        <button
+          onClick={async () => {
+            const token = await requestPermission();
+            if (token) console.log("Push registered:", token);
+          }}
+          className="p-2 rounded-lg hover:bg-muted"
+        >
+          <BellRing className="size-5" />
+        </button>
       </nav>
     </>
   );
 };
+
 export default DashboardNavbar;

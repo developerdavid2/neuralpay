@@ -1,22 +1,20 @@
+import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { invalidateAccountsQueries } from "@/lib/invalidate-trpc-queries";
-import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 export function useDeleteAccount() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const { invalidateAccounts } = useInvalidateQueries();
 
   return useMutation({
     ...trpc.payments.accounts.delete.mutationOptions(),
     onSuccess: async () => {
-      toast.success("Account deleted successfully");
-      await invalidateAccountsQueries(queryClient);
+      await invalidateAccounts();
     },
     onError: (error) => {
       const message =
         error instanceof Error ? error.message : "Failed to delete account";
-      toast.error(message);
+      console.error(message);
     },
   });
 }

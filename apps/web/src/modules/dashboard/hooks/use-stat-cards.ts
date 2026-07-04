@@ -1,15 +1,12 @@
 import { useAccountAggregates } from "@/modules/accounts/hooks/queries/use-account-aggregates";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useCurrentMonthSpending } from "./queries/use-current-month-spending";
 
 export function useStatCards() {
   const trpc = useTRPC();
 
   const { totalBalance, totalCount, aggregateMap } = useAccountAggregates();
-  const { data: monthSpending } = useSuspenseQuery({
-    ...trpc.payments.transactions.currentMonthSpending.queryOptions(),
-    refetchOnWindowFocus: false,
-  });
+  const { data: monthSpending } = useCurrentMonthSpending();
 
   const savingsBalance = Number(aggregateMap.get("savings")?.totalBalance ?? 0);
   const savingsRate =
