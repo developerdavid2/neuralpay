@@ -31,19 +31,19 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
   const hasUnread = notifications.some((n) => !n.isRead);
 
   return (
-    <div className="absolute right-0 top-full mt-2.5 w-[420px] z-50">
+    <div className="absolute right-0 top-full mt-2.5 w-105 z-50">
       {/* Glassmorphism container */}
       <div
         className={cn(
           "rounded-2xl overflow-hidden",
           "bg-white/70 dark:bg-[#1B1A22]/70",
-          "backdrop-blur-[20px] backdrop-saturate-[180%]",
-          "border border-white/30 dark:border-white/[0.08]",
+          "backdrop-blur-[20px] backdrop-saturate-180",
+          "border border-white/30 dark:border-white/8",
           "shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/20 dark:border-white/[0.06]">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/20 dark:border-white/6">
           <h3 className="font-semibold text-sm">Notifications</h3>
           <div className="flex items-center gap-1">
             {hasUnread && (
@@ -76,7 +76,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
         </div>
 
         {/* Notifications List */}
-        <div className="max-h-[440px] overflow-y-auto scrollbar-thin">
+        <div className="max-h-110 overflow-y-auto scrollbar-thin">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-14">
               <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
@@ -95,7 +95,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
           ) : (
             Object.entries(grouped).map(([group, items]) => (
               <div key={group}>
-                <div className="px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 bg-white/30 dark:bg-white/[0.03]">
+                <div className="px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 bg-white/30 dark:bg-white/3">
                   {formatGroupLabel(group as any)}
                 </div>
                 {(items as AppNotification[]).map((notification) => (
@@ -113,13 +113,13 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
 
         {/* Footer */}
         {notifications.length > 0 && (
-          <div className="border-t border-white/20 dark:border-white/[0.06] px-5 py-3">
+          <div className="border-t border-white/20 dark:border-white/6 px-5 py-3">
             <Link
               href="/dashboard/notifications"
               onClick={onClose}
               className={cn(
                 "flex items-center justify-center gap-2 text-sm font-medium",
-                "text-primary hover:underline transition-colors",
+                "text-main hover:underline transition-colors",
               )}
             >
               View All Notifications

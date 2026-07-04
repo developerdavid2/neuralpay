@@ -3,6 +3,13 @@ import { z } from "zod";
 import { fromNodeHeaders } from "better-auth/node";
 import { handleStreamChat } from "../services/streaming.service";
 import { auth } from "@neuralpay/auth";
+
+function getHeaderValue(headers: Request["headers"], key: string) {
+  const value = headers[key];
+  if (Array.isArray(value)) return value[0];
+  return value ?? undefined;
+}
+
 const streamRequestSchema = z.object({
   sessionId: z.uuid(),
   messages: z.array(
@@ -28,17 +35,26 @@ export async function chatStreamHandler(
   let planTier: string = "free"; // safe default
 
   try {
-    const headers = fromNodeHeaders(req.headers);
-    const session = await auth.api.getSession({ headers });
+    const forwardedUserId = getHeaderValue(req.headers, "x-user-id");
+    const forwardedSource = getHeaderValue(req.headers, "x-internal-source");
+    const forwardedPlanTier = getHeaderValue(req.headers, "x-user-plan-tier");
 
-    if (!session?.user?.id) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
+    if (forwardedSource === "api-gateway" && forwardedUserId) {
+      userId = forwardedUserId;
+      planTier = forwardedPlanTier ?? "free";
+    } else {
+      const headers = fromNodeHeaders(req.headers);
+      const session = await auth.api.getSession({ headers });
+
+      if (!session?.user?.id) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
+      userId = session.user.id;
+      // Derive planTier from authenticated session (from @neuralpay/auth schema)
+      planTier = (session.user as any).planTier ?? "free";
     }
-
-    userId = session.user.id;
-    // Derive planTier from authenticated session (from @neuralpay/auth schema)
-    planTier = (session.user as any).planTier ?? "free";
   } catch {
     // Auth validation failed - return 401
     res.status(401).json({ error: "Unauthorized" });
