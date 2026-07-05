@@ -59,7 +59,9 @@ export async function getNotifications(
       const cursorDate = new Date(
         Buffer.from(cursor, "base64url").toString("utf-8"),
       );
-      conditions.push(sql`${notifications.createdAt} < ${cursorDate}`);
+      if (!isNaN(cursorDate.getTime())) {
+        conditions.push(sql`${notifications.createdAt} < ${cursorDate}`);
+      }
     }
 
     const rows = await db
@@ -72,8 +74,12 @@ export async function getNotifications(
     const hasMore = rows.length > limit;
     const data = hasMore ? rows.slice(0, -1) : rows;
     const last = data[data.length - 1];
+
+    // Cursor encode — use createdAt, not id
     const nextCursor =
-      hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
+      hasMore && last
+        ? Buffer.from(last.createdAt.toISOString()).toString("base64url")
+        : null;
 
     return {
       success: true,

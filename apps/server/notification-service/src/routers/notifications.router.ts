@@ -20,10 +20,19 @@ import {
 
 export const appNotificationRouter = router({
   list: protectedProcedure
-    .input(notificationsFilterSchema.optional())
+    .input(
+      notificationsFilterSchema
+        .extend({
+          cursor: z.string().uuid().optional(), // cursor for pagination
+        })
+        .optional(),
+    )
     .query(async ({ ctx, input }) => {
       const parsed = notificationsFilterSchema.parse(input ?? {});
-      const result = await getNotifications(ctx.session.user.id, parsed);
+      const result = await getNotifications(ctx.session.user.id, {
+        ...parsed,
+        cursor: input?.cursor,
+      });
       if (!result.success) throw new Error(result.error);
       return result.data;
     }),
