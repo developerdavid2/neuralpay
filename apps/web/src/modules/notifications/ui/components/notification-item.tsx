@@ -1,15 +1,12 @@
-"use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useMarkReadNotification } from "../../hooks/mutations/use-mark-read-notification";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { formatDateTimeSmart, formatRelative, formatTime } from "@/lib/utils";
 import type { AppNotification } from "@neuralpay/types";
-import type { Route } from "next";
-import { categoryColors, categoryIcons, categoryLabels } from "../../constants";
-import { formatRelative, formatDateTimeSmart, formatTime } from "@/lib/utils";
 import { Badge } from "@neuralpay/ui/components/badge";
 import { Card } from "@neuralpay/ui/components/card";
+import { cn } from "@neuralpay/ui/lib/utils";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import { categoryColors, categoryIcons, categoryLabels } from "../../constants";
+import { useMarkReadNotification } from "../../hooks/mutations/use-mark-read-notification";
 
 interface NotificationItemProps {
   notification: AppNotification;
@@ -45,7 +42,7 @@ export function NotificationItem({
   const createdAt = new Date(notification.createdAt);
 
   return (
-    <div className="flex items-center gap-3 px-3 py-1.5">
+    <div className="flex items-center gap-3 mx-6 py-1.5">
       {/* Checkbox — outside card */}
       {selectable && (
         <div
@@ -70,7 +67,7 @@ export function NotificationItem({
           "border border-border/50 rounded-xl",
           isCompact ? "px-4 py-3" : "px-5 py-4",
           !notification.isRead
-            ? "bg-primary/[0.03] shadow-sm"
+            ? "bg-gray-400/5 shadow-sm"
             : "bg-transparent shadow-none",
           selected && "ring-1 ring-primary/30 bg-primary/[0.04]",
           "hover:bg-accent dark:hover:bg-white/[0.04]",
@@ -145,14 +142,6 @@ export function NotificationItem({
               <span className="text-[11px] text-muted-foreground/60">
                 {formatDateTimeSmart(createdAt)}
               </span>
-              {notification.data?.relatedType && (
-                <Badge
-                  variant="outline"
-                  className="text-[10px] px-1.5 py-0 h-4 border-white/20"
-                >
-                  {notification.data.relatedType}
-                </Badge>
-              )}
             </div>
           )}
         </div>

@@ -78,7 +78,7 @@ export function NotificationList({
   return (
     <div className="flex flex-col gap-0">
       {Object.entries(grouped).map(([group, items]) => (
-        <div key={group} className="border-b border-border/70 last:border-b-0">
+        <div key={group} className="">
           <div className="bg-muted/40 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             {formatGroupLabel(group as any)}
           </div>
