@@ -330,7 +330,12 @@ export type CreateNotificationInput = z.infer<typeof createNotificationSchema>;
 export const notificationsFilterSchema = z.object({
   limit: z.number().int().min(1).max(100).default(50),
   cursor: z.string().optional(),
-  search: z.string().max(200).optional(),
+  search: z
+    .string()
+    .max(200)
+    .optional()
+    .nullable()
+    .transform((val) => val ?? undefined),
   category: z.enum([...NOTIFICATION_CATEGORY, "all" as const]).default("all"),
   status: z.enum(["all", "read", "unread"]).default("all"),
 });

@@ -54,13 +54,27 @@ export async function getNotifications(
       );
     }
 
-    // Cursor pagination
+    // Decode cursor by fetching the actual row — avoids timestamp precision loss
     if (cursor) {
-      const cursorDate = new Date(
-        Buffer.from(cursor, "base64url").toString("utf-8"),
-      );
-      if (!isNaN(cursorDate.getTime())) {
-        conditions.push(sql`${notifications.createdAt} < ${cursorDate}`);
+      const cursorId = Buffer.from(cursor, "base64url").toString("utf-8");
+      const [cursorRow] = await db
+        .select({ id: notifications.id, createdAt: notifications.createdAt })
+        .from(notifications)
+        .where(
+          and(eq(notifications.id, cursorId), eq(notifications.userId, userId)),
+        )
+        .limit(1);
+
+      if (cursorRow) {
+        conditions.push(
+          sql`(
+            ${notifications.createdAt} < ${cursorRow.createdAt}
+            OR (
+              ${notifications.createdAt} = ${cursorRow.createdAt}
+              AND ${notifications.id} < ${cursorRow.id}
+            )
+          )`,
+        );
       }
     }
 
@@ -68,18 +82,16 @@ export async function getNotifications(
       .select()
       .from(notifications)
       .where(and(...conditions))
-      .orderBy(desc(notifications.createdAt))
+      .orderBy(desc(notifications.createdAt), desc(notifications.id))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
     const data = hasMore ? rows.slice(0, -1) : rows;
     const last = data[data.length - 1];
 
-    // Cursor encode — use createdAt, not id
+    // Encode only the id — same pattern as TransactionsService
     const nextCursor =
-      hasMore && last
-        ? Buffer.from(last.createdAt.toISOString()).toString("base64url")
-        : null;
+      hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
 
     return {
       success: true,

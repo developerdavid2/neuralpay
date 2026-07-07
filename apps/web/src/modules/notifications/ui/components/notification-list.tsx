@@ -39,10 +39,14 @@ export function NotificationList({
       status: currentStatus,
     });
 
-  const notifications = useMemo(
-    () => data?.pages.flatMap((page) => page.items) ?? [],
-    [data],
-  );
+  const notifications = useMemo(() => {
+    const seen = new Set<string>();
+    return (data?.pages.flatMap((page) => page.items) ?? []).filter((n) => {
+      if (seen.has(n.id)) return false;
+      seen.add(n.id);
+      return true;
+    });
+  }, [data]);
 
   const grouped = useMemo(() => {
     return groupByDate(notifications, (notification: AppNotification) =>
@@ -102,6 +106,7 @@ export function NotificationList({
         isFetchingNextPage={isFetchingNextPage}
         fetchNextPage={fetchNextPage}
         isLoading={false}
+        isManual={true}
         hideEndMessage={false}
       />
     </div>

@@ -1,15 +1,51 @@
-import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { AppNotification } from "@neuralpay/types";
 
 export function useMarkReadNotification() {
   const trpc = useTRPC();
-  const { invalidateNotifications } = useInvalidateQueries();
+  const queryClient = useQueryClient();
+
+  const { mutationFn } =
+    trpc.notifications.appNotifications.markRead.mutationOptions();
+
+  const notificationsFilter = trpc.notifications.appNotifications.pathFilter();
 
   return useMutation({
-    ...trpc.notifications.appNotifications.markRead.mutationOptions(),
-    onSuccess: () => {
-      invalidateNotifications();
+    mutationFn,
+    onMutate: async ({ id }) => {
+      const snapshot = queryClient.getQueriesData(notificationsFilter);
+
+      queryClient.setQueriesData(
+        trpc.notifications.appNotifications.list.pathFilter(),
+        (old: any) => {
+          if (!old?.pages) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page: any) => ({
+              ...page,
+              items: page.items.map((n: AppNotification) =>
+                n.id === id ? { ...n, isRead: true, readAt: new Date() } : n,
+              ),
+            })),
+          };
+        },
+      );
+
+      queryClient.setQueryData(
+        trpc.notifications.appNotifications.unreadCount.queryKey(),
+        (old: number = 0) => Math.max(0, old - 1),
+      );
+
+      return { snapshot };
+    },
+    onError: (_err, _vars, ctx) => {
+      ctx?.snapshot.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(notificationsFilter);
     },
   });
 }
