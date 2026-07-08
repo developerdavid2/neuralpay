@@ -1,4 +1,5 @@
 import { formatDateTimeSmart, formatRelative, formatTime } from "@/lib/utils";
+
 import type { AppNotification } from "@neuralpay/types";
 import { Badge } from "@neuralpay/ui/components/badge";
 import { Card } from "@neuralpay/ui/components/card";
@@ -7,6 +8,8 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { categoryColors, categoryIcons, categoryLabels } from "../../constants";
 import { useMarkReadNotification } from "../../hooks/mutations/use-mark-read-notification";
+import { Input } from "@neuralpay/ui/components/input";
+import { buildNotificationUrl } from "../../lib/notification-urls";
 
 interface NotificationItemProps {
   notification: AppNotification;
@@ -32,11 +35,16 @@ export function NotificationItem({
   const colorClass = categoryColors[notification.category];
   const categoryLabel = categoryLabels[notification.category];
 
+  const destinationUrl: Route = buildNotificationUrl(
+    notification.type,
+    notification.data as Record<string, unknown>,
+  );
+
   const handleBodyClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest("[data-checkbox]")) return;
     if (!notification.isRead) markRead.mutate({ id: notification.id });
     onClick?.();
-    router.push(notification.data.actionUrl as Route);
+    router.push(destinationUrl);
   };
 
   const createdAt = new Date(notification.createdAt);
@@ -50,7 +58,7 @@ export function NotificationItem({
           className="shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <input
+          <Input
             type="checkbox"
             checked={selected}
             onChange={(e) => onSelect?.(notification.id, e.target.checked)}
@@ -69,8 +77,8 @@ export function NotificationItem({
           !notification.isRead
             ? "bg-gray-400/5 shadow-sm"
             : "bg-transparent shadow-none",
-          selected && "ring-1 ring-primary/30 bg-primary/[0.04]",
-          "hover:bg-accent dark:hover:bg-white/[0.04]",
+          selected && "ring-1 ring-primary/30 bg-primary/4",
+          "hover:bg-accent dark:hover:bg-white/4",
         )}
       >
         {/* Unread dot */}
