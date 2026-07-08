@@ -4,11 +4,13 @@ import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import {
   markReadSchema,
   notificationsFilterSchema,
+  notificationsSummarySchema,
   registerDeviceSchema,
   updatePreferencesSchema,
 } from "@neuralpay/types";
 import {
   getNotifications,
+  getNotificationsSummary,
   getUnreadCount,
   markAllRead,
   markManyRead,
@@ -72,6 +74,17 @@ export const appNotificationRouter = router({
     if (!result.success) throw new Error(result.error);
     return result.data;
   }),
+  // notification-service router
+  summary: protectedProcedure
+    .input(
+      notificationsFilterSchema.omit({ cursor: true, limit: true }).optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const parsed = notificationsSummarySchema.parse(input ?? {});
+      const result = await getNotificationsSummary(ctx.session.user.id, parsed);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    }),
 
   registerDevice: protectedProcedure
     .input(registerDeviceSchema)

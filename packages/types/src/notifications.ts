@@ -344,6 +344,14 @@ export type NotificationsFilterInput = z.infer<
   typeof notificationsFilterSchema
 >;
 
+export const notificationsSummarySchema = notificationsFilterSchema.omit({
+  cursor: true,
+  limit: true,
+});
+export type NotificationsSummaryInput = z.infer<
+  typeof notificationsSummarySchema
+>;
+
 // ── Paginated Response
 export interface PaginatedNotifications {
   items: AppNotification[];

@@ -1,15 +1,15 @@
-"use client";
-
 import { Button } from "@neuralpay/ui/components/button";
 import { CheckCheck, MailOpen, MailPlus } from "lucide-react";
 import { useMarkAllRead } from "../../hooks/mutations/use-mark-all-read-notifications";
 import { useMarkManyReadNotifications } from "../../hooks/mutations/use-mark-many-read-notifications";
 import { useMarkManyUnreadNotifications } from "../../hooks/mutations/use-mark-many-unread-notifications";
+import { Input } from "@neuralpay/ui/components/input";
 
 interface NotificationToolbarProps {
   selectedCount?: number;
   selectedIds?: string[];
   totalCount?: number;
+  unreadCount?: number;
   allNotificationIds?: string[];
   onClearSelection?: () => void;
   onSelectAll?: (ids: string[]) => void;
@@ -19,6 +19,7 @@ export function NotificationToolbar({
   selectedCount = 0,
   selectedIds = [],
   totalCount = 0,
+  unreadCount = 0,
   allNotificationIds = [],
   onClearSelection,
   onSelectAll,
@@ -35,7 +36,7 @@ export function NotificationToolbar({
       <div className="flex items-center justify-between gap-2 rounded-xl border border-border/70 bg-muted/40 px-3 py-2">
         <div className="flex items-center gap-2.5">
           {/* Checkbox reflects all/partial state */}
-          <input
+          <Input
             type="checkbox"
             checked={isAllSelected}
             ref={(el) => {
@@ -104,7 +105,7 @@ export function NotificationToolbar({
         variant="outline"
         size="sm"
         onClick={() => markAllRead.mutate()}
-        disabled={markAllRead.isPending || totalCount === 0}
+        disabled={markAllRead.isPending || totalCount === 0 || unreadCount == 0}
       >
         <MailPlus className="mr-1.5 size-3.5" />
         Mark all read

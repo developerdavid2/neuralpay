@@ -7,6 +7,8 @@ export function useNotifications(input: NotificationsFilterInput) {
   return useSuspenseInfiniteQuery(
     trpc.notifications.appNotifications.list.infiniteQueryOptions(input, {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+      staleTime: 60_000,
+      refetchOnWindowFocus: false,
     }),
   );
 }

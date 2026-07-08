@@ -44,8 +44,23 @@ export function useMarkReadNotification() {
         queryClient.setQueryData(key, data);
       });
     },
+    // In all 5 optimistic mutation hooks, replace onSettled with:
     onSettled: () => {
-      queryClient.invalidateQueries(notificationsFilter);
+      // Don't refetch the entire list — cache is already updated optimistically
+      // Only reconcile the counts which we can't easily predict server-side
+      queryClient.invalidateQueries({
+        ...trpc.notifications.appNotifications.unreadCount.pathFilter(),
+        refetchType: "active",
+      });
+      queryClient.invalidateQueries({
+        ...trpc.notifications.appNotifications.summary.pathFilter(),
+        refetchType: "active",
+      });
+      // Invalidate list but don't immediately refetch all pages
+      queryClient.invalidateQueries({
+        ...trpc.notifications.appNotifications.list.pathFilter(),
+        refetchType: "none", // mark stale but don't trigger cascade refetch
+      });
     },
   });
 }

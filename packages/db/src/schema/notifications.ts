@@ -1,5 +1,6 @@
 import {
   boolean,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -86,6 +87,8 @@ export const notifications = pgTable("notifications", {
   readAt: timestamp("read_at"),
   pushSentAt: timestamp("push_sent_at"),
   pushDelivered: boolean("push_delivered").default(false),
+  // In your schema
+  seq: integer("seq").generatedAlwaysAsIdentity(),
   emailSentAt: timestamp("email_sent_at"),
   emailDelivered: boolean("email_delivered").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),

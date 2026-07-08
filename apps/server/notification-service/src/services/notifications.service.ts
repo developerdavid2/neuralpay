@@ -5,6 +5,7 @@ import type {
   CreateNotificationInput,
   NotificationCategory,
   NotificationsFilterInput,
+  NotificationsSummaryInput,
   PaginatedNotifications,
   ServiceResult,
 } from "@neuralpay/types";
@@ -54,45 +55,28 @@ export async function getNotifications(
       );
     }
 
-    // Decode cursor by fetching the actual row — avoids timestamp precision loss
     if (cursor) {
-      const cursorId = Buffer.from(cursor, "base64url").toString("utf-8");
-      const [cursorRow] = await db
-        .select({ id: notifications.id, createdAt: notifications.createdAt })
-        .from(notifications)
-        .where(
-          and(eq(notifications.id, cursorId), eq(notifications.userId, userId)),
-        )
-        .limit(1);
-
-      if (cursorRow) {
-        conditions.push(
-          sql`(
-            ${notifications.createdAt} < ${cursorRow.createdAt}
-            OR (
-              ${notifications.createdAt} = ${cursorRow.createdAt}
-              AND ${notifications.id} < ${cursorRow.id}
-            )
-          )`,
-        );
-      }
+      const cursorSeq = parseInt(
+        Buffer.from(cursor, "base64url").toString("utf-8"),
+      );
+      conditions.push(sql`${notifications.seq} < ${cursorSeq}`);
     }
 
     const rows = await db
       .select()
       .from(notifications)
       .where(and(...conditions))
-      .orderBy(desc(notifications.createdAt), desc(notifications.id))
+      .orderBy(desc(notifications.seq))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
     const data = hasMore ? rows.slice(0, -1) : rows;
     const last = data[data.length - 1];
 
-    // Encode only the id — same pattern as TransactionsService
     const nextCursor =
-      hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
-
+      hasMore && last
+        ? Buffer.from(String(last.seq)).toString("base64url")
+        : null;
     return {
       success: true,
       data: {
@@ -285,6 +269,51 @@ export async function getUnreadCount(userId: string): Promise<number> {
   } catch (err) {
     console.error("[getUnreadCount]", err);
     return 0;
+  }
+}
+
+export async function getNotificationsSummary(
+  userId: string,
+  input: NotificationsSummaryInput,
+): Promise<ServiceResult<{ total: number; unread: number }>> {
+  try {
+    const { search, category, status } = input;
+    const conditions = [eq(notifications.userId, userId)];
+
+    if (category && category !== "all") {
+      conditions.push(
+        eq(notifications.category, category as NotificationCategory),
+      );
+    }
+    if (status === "read") conditions.push(eq(notifications.isRead, true));
+    else if (status === "unread")
+      conditions.push(eq(notifications.isRead, false));
+    if (search) {
+      const searchTerm = `%${search}%`;
+      conditions.push(
+        sql`(${notifications.title} ILIKE ${searchTerm} OR ${notifications.body} ILIKE ${searchTerm})`,
+      );
+    }
+
+    const [result] = await db
+      .select({
+        total: sql<number>`count(*)::int`,
+        unread: sql<number>`count(*) filter (where ${notifications.isRead} = false)::int`,
+      })
+      .from(notifications)
+      .where(and(...conditions));
+
+    return {
+      success: true,
+      data: { total: result?.total ?? 0, unread: result?.unread ?? 0 },
+    };
+  } catch (err) {
+    console.error("[getNotificationsSummary]", err);
+    return {
+      success: false,
+      error: "Failed to fetch summary",
+      code: "DB_ERROR",
+    };
   }
 }
 
