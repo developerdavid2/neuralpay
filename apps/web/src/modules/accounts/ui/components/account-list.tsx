@@ -6,8 +6,8 @@ import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 
 import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
 import { useAccountsList } from "@/modules/accounts/hooks/queries/use-accounts";
-import { useConfirm } from "@/hooks/use-confirm";
-import { useDataTableNavigation } from "@/hooks/use-data-table-navigation";
+import { useConfirm } from "@/hooks/ui/use-confirm";
+import { useDataTableNavigation } from "@/hooks/routing/use-data-table-navigation";
 import { ACCOUNTS_LIMIT } from "@/modules/accounts/constants";
 import type { AccountStatus, AccountType, BankAccount } from "@neuralpay/types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useMediaQuery } from "@/hooks/ui/use-media-query";
 import { formatDateTime } from "@/lib/utils";
 import { Button } from "@neuralpay/ui/components/button";
 import {

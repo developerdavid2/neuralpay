@@ -1,5 +1,5 @@
 import { useTRPC } from "@/trpc/trpc-client";
-import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
+import { useInvalidateQueries } from "@/hooks/utils/use-invalidate-queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useToggleAccountStatus() {

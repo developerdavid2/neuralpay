@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useNotificationPreferences } from "@/modules/settings/notifications/hooks/queries/use-notification-preferences";
-import { useUpdateNotificationPreferences } from "@/modules/settings/notifications/hooks/queries/use-update-notification-preferences";
+import { useNotificationPreferences } from "@/modules/settings/pages/notifications/hooks/queries/use-notification-preferences";
+import { useUpdateNotificationPreferences } from "@/modules/settings/pages/notifications/hooks/queries/use-update-notification-preferences";
 import { useNotificationPermission } from "@/modules/notifications/hooks/mutations/use-notification-permission";
 import { PushNotificationsSection } from "./push-notifications-section";
 import { EmailNotificationsSection } from "./email-notifications-section";

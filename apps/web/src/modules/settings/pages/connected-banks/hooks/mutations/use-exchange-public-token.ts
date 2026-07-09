@@ -1,4 +1,4 @@
-import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
+import { useInvalidateQueries } from "@/hooks/utils/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";

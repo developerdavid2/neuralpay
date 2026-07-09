@@ -9,7 +9,7 @@ import { Drawer, DrawerContent } from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
-import { useConfirm } from "@/hooks/use-confirm";
+import { useConfirm } from "@/hooks/ui/use-confirm";
 import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
 import { useAccountDetail } from "../../hooks/queries/use-account-detail";
 import {

@@ -2,7 +2,7 @@ import { createDb } from "@neuralpay/db";
 import * as schema from "@neuralpay/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { emailOTP } from "better-auth/plugins";
+import { emailOTP, twoFactor } from "better-auth/plugins";
 import { sendEmail } from "./lib/email";
 import { otpTemplate, resetPasswordTemplate } from "./lib/email-templates";
 
@@ -55,6 +55,78 @@ export function createAuth(config: AuthConfig) {
           defaultValue: "free",
           input: false,
         },
+        nickname: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+          input: true,
+        },
+        gender: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+          input: true,
+        },
+        dateOfBirth: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+          input: true,
+        },
+        country: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+          input: true,
+        },
+        state: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+          input: true,
+        },
+        city: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+          input: true,
+        },
+        address: {
+          type: "string",
+          required: false,
+          defaultValue: null,
+          input: true,
+        },
+        language: {
+          type: "string",
+          required: false,
+          defaultValue: "en",
+          input: true,
+        },
+        timezone: {
+          type: "string",
+          required: false,
+          defaultValue: "UTC",
+          input: true,
+        },
+        currency: {
+          type: "string",
+          required: false,
+          defaultValue: "USD",
+          input: true,
+        },
+        dateFormat: {
+          type: "string",
+          required: false,
+          defaultValue: "MM_DD_YYYY",
+          input: true,
+        },
+        twoFactorEnabled: {
+          type: "boolean",
+          required: false,
+          defaultValue: false,
+          input: false,
+        },
       },
     },
 
@@ -85,6 +157,10 @@ export function createAuth(config: AuthConfig) {
             html: otpTemplate({ otp, type }),
           });
         },
+      }),
+      twoFactor({
+        issuer: "NeuralPay AI",
+        otpOptions: { digits: 6, period: 30 },
       }),
     ],
 

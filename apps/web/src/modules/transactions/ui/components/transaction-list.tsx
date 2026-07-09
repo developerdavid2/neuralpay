@@ -2,8 +2,8 @@
 
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { InfiniteScroll } from "@/components/infinite-scroll";
-import { useConfirm } from "@/hooks/use-confirm";
-import { useQueryParam } from "@/hooks/use-query-param";
+import { useConfirm } from "@/hooks/ui/use-confirm";
+import { useQueryParam } from "@/hooks/routing/use-query-param";
 import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
 import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
 import { useTransactionsList } from "@/modules/transactions/hooks/queries/use-transactions";

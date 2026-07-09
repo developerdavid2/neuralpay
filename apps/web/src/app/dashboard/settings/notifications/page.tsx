@@ -1,4 +1,4 @@
-import { NotificationsSettingsView } from "@/modules/settings/notifications/ui/views/notification-settings-view";
+import { NotificationsSettingsView } from "@/modules/settings/pages/notifications/ui/views/notification-settings-view";
 import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 
 const Page = async () => {

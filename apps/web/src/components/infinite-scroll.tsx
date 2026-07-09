@@ -1,4 +1,4 @@
-import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
+import { useIntersectionObserver } from "@/hooks/ui/use-intersection-observer";
 import { Button } from "@neuralpay/ui/components/button";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";

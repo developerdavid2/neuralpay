@@ -8,6 +8,10 @@ export function useInvalidateQueries() {
   const queryClient = useQueryClient();
 
   return {
+    //Profile
+    invalidateProfile: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
+    },
     // Accounts
     invalidateAccounts: () =>
       queryClient.invalidateQueries(trpc.payments.accounts.pathFilter()),

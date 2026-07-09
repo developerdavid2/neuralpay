@@ -3,7 +3,7 @@
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { useInsightMutations } from "@/modules/insights/hooks/mutations/use-insight-mutations";
 import { useInsightsList } from "@/modules/insights/hooks/queries/use-insights";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useMediaQuery } from "@/hooks/ui/use-media-query";
 import { INSIGHTS_LIMIT } from "@/modules/dashboard/constants";
 import {
   InsightCard,

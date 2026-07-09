@@ -1,6 +1,6 @@
 "use client";
 
-import { useConfirm } from "@/hooks/use-confirm";
+import { useConfirm } from "@/hooks/ui/use-confirm";
 import { formatAmount } from "@/lib/utils";
 import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
 import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";

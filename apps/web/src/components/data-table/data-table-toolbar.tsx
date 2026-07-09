@@ -17,7 +17,7 @@ import {
 } from "@neuralpay/ui/components/select";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Loader2, Settings2, Trash2 } from "lucide-react";
-import { useDataTableNavigation } from "@/hooks/use-data-table-navigation";
+import { useDataTableNavigation } from "@/hooks/routing/use-data-table-navigation";
 
 interface DataTableToolbarProps {
   columnVisibility: Record<string, boolean>;

@@ -14,7 +14,7 @@ export const settingsSections = [
     items: [
       {
         href: "/dashboard/settings",
-        label: "General",
+        label: "Profile",
         icon: User,
         exact: true,
         danger: false,
