@@ -1,15 +1,15 @@
 import { formatDateTimeSmart, formatRelative, formatTime } from "@/lib/utils";
-
 import type { AppNotification } from "@neuralpay/types";
 import { Badge } from "@neuralpay/ui/components/badge";
 import { Card } from "@neuralpay/ui/components/card";
 import { cn } from "@neuralpay/ui/lib/utils";
-import type { Route } from "next";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { categoryColors, categoryIcons, categoryLabels } from "../../constants";
 import { useMarkReadNotification } from "../../hooks/mutations/use-mark-read-notification";
 import { Input } from "@neuralpay/ui/components/input";
 import { buildNotificationUrl } from "../../lib/notification-urls";
+import { openNotificationTarget } from "../../lib/notification-actions";
 
 interface NotificationItemProps {
   notification: AppNotification;
@@ -35,16 +35,30 @@ export function NotificationItem({
   const colorClass = categoryColors[notification.category];
   const categoryLabel = categoryLabels[notification.category];
 
-  const destinationUrl: Route = buildNotificationUrl(
+  const destinationUrl = buildNotificationUrl(
     notification.type,
     notification.data as Record<string, unknown>,
   );
 
-  const handleBodyClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest("[data-checkbox]")) return;
     if (!notification.isRead) markRead.mutate({ id: notification.id });
+    if (variant === "compact") {
+      e.preventDefault();
+      router.replace(destinationUrl as Parameters<typeof router.replace>[0], {
+        scroll: true,
+      });
+      // Open the appropriate client-side UI immediately (drawer/modal)
+      // to ensure first-click responsiveness across different targets.
+      openNotificationTarget(
+        notification.type as any,
+        notification.data as Record<string, unknown>,
+      );
+      onClick?.();
+      return;
+    }
+
     onClick?.();
-    router.push(destinationUrl);
   };
 
   const createdAt = new Date(notification.createdAt);
@@ -68,92 +82,95 @@ export function NotificationItem({
       )}
 
       {/* Card */}
-      <Card
-        onClick={handleBodyClick}
-        className={cn(
-          "group relative flex-1 flex flex-row items-start gap-3 cursor-pointer transition-colors duration-150",
-          "border border-border/50 rounded-xl",
-          isCompact ? "px-4 py-3" : "px-5 py-4",
-          !notification.isRead
-            ? "bg-gray-400/5 shadow-sm"
-            : "bg-transparent shadow-none",
-          selected && "ring-1 ring-primary/30 bg-primary/4",
-          "hover:bg-accent dark:hover:bg-white/4",
-        )}
-      >
-        {/* Unread dot */}
-        {!notification.isRead && (
-          <span className="absolute left-2 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary" />
-        )}
-
-        {/* Icon */}
-        <div
+      <Link href={destinationUrl} className="contents" onClick={handleClick}>
+        <Card
           className={cn(
-            "shrink-0 flex items-center justify-center rounded-xl",
-            isCompact ? "size-9" : "size-10",
-            colorClass,
+            "group relative flex-1 flex flex-row items-start gap-3 cursor-pointer transition-colors duration-150",
+            "border border-border/50 rounded-xl",
+            isCompact ? "px-4 py-3" : "px-5 py-4",
+            !notification.isRead
+              ? "bg-gray-400/5 shadow-sm"
+              : "bg-transparent shadow-none",
+            selected && "ring-1 ring-primary/30 bg-primary/4",
+            "hover:bg-accent dark:hover:bg-white/4",
           )}
         >
-          <Icon className={cn("shrink-0", isCompact ? "size-4" : "size-4.5")} />
-        </div>
+          {/* Unread dot */}
+          {!notification.isRead && (
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-rose-600 animate-pulse" />
+          )}
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <p
-                className={cn(
-                  "text-sm leading-snug line-clamp-1",
-                  !notification.isRead
-                    ? "font-semibold text-foreground"
-                    : "font-medium text-muted-foreground",
-                )}
-              >
-                {notification.title}
-              </p>
-              <Badge
-                variant="secondary"
-                className={cn(
-                  "text-[10px] px-1.5 py-0 h-4 shrink-0 font-medium",
-                  colorClass,
-                )}
-              >
-                {categoryLabel}
-              </Badge>
-            </div>
-            <span
-              className={cn(
-                "shrink-0 tabular-nums whitespace-nowrap",
-                isCompact ? "text-[11px]" : "text-xs",
-                "text-muted-foreground",
-              )}
-              title={formatDateTimeSmart(createdAt)}
-            >
-              {isCompact ? formatRelative(createdAt) : formatTime(createdAt)}
-            </span>
-          </div>
-
-          <p
+          {/* Icon */}
+          <div
             className={cn(
-              "mt-0.5 line-clamp-2",
-              isCompact ? "text-[13px]" : "text-sm",
-              !notification.isRead
-                ? "text-foreground/70"
-                : "text-muted-foreground/70",
+              "shrink-0 flex items-center justify-center rounded-xl ml-2",
+              isCompact ? "size-9" : "size-10",
+              colorClass,
             )}
           >
-            {notification.body}
-          </p>
+            <Icon
+              className={cn("shrink-0", isCompact ? "size-4" : "size-4.5")}
+            />
+          </div>
 
-          {!isCompact && (
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-[11px] text-muted-foreground/60">
-                {formatDateTimeSmart(createdAt)}
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <p
+                  className={cn(
+                    "text-sm leading-snug line-clamp-1",
+                    !notification.isRead
+                      ? "font-semibold text-foreground"
+                      : "font-medium text-muted-foreground",
+                  )}
+                >
+                  {notification.title}
+                </p>
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "text-[10px] px-1.5 py-0 h-4 shrink-0 font-medium",
+                    colorClass,
+                  )}
+                >
+                  {categoryLabel}
+                </Badge>
+              </div>
+              <span
+                className={cn(
+                  "shrink-0 tabular-nums whitespace-nowrap",
+                  isCompact ? "text-[11px]" : "text-xs",
+                  "text-muted-foreground",
+                )}
+                title={formatDateTimeSmart(createdAt)}
+              >
+                {isCompact ? formatRelative(createdAt) : formatTime(createdAt)}
               </span>
             </div>
-          )}
-        </div>
-      </Card>
+
+            <p
+              className={cn(
+                "mt-0.5 line-clamp-2",
+                isCompact ? "text-[13px]" : "text-sm",
+                !notification.isRead
+                  ? "text-foreground/70"
+                  : "text-muted-foreground/70",
+              )}
+            >
+              {notification.body}
+            </p>
+
+            {!isCompact && (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[11px] text-muted-foreground/60">
+                  {formatDateTimeSmart(createdAt)}
+                </span>
+              </div>
+            )}
+          </div>
+        </Card>
+      </Link>
     </div>
   );
 }

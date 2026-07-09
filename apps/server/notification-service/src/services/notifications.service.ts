@@ -359,7 +359,7 @@ export async function getActiveDeviceTokens(userId: string) {
     );
 }
 
-// ── Deactivate Device Tokens ──────────────────────────────────────
+// ── Deactivate Device Tokens
 export async function deactivateDeviceTokens(tokens: string[]) {
   if (!tokens.length) return;
   await db

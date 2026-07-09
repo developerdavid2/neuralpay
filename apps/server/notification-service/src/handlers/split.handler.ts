@@ -30,7 +30,6 @@ export async function handleSplit(event: any) {
     t?.title ?? "",
     t?.body(payload) ?? "",
     {
-      actionUrl: `/dashboard/splits?id=${payload.splitId}`,
       relatedId: payload.splitId,
       relatedType: "split",
     },

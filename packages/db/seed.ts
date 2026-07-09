@@ -1647,7 +1647,6 @@ async function seed() {
         category,
         relatedType: category,
         relatedId: Math.random() > 0.5 ? `rel_${i}_${Date.now()}` : null,
-        actionUrl: Math.random() > 0.5 ? `/dashboard/${category}s` : null,
         readAt:
           Math.random() > 0.5 ? randomDateBetween(startDate, endDate) : null,
         dismissedAt:

@@ -15,7 +15,6 @@ export async function handleVault(event: any) {
       `🎯 ${payload.vaultName} hit ${payload.milestone}%`,
       `$${payload.current} of $${payload.target} saved`,
       {
-        actionUrl: `/dashboard/vaults?id=${payload.vaultId}`,
         relatedId: payload.vaultId,
         relatedType: "vault",
       },
@@ -37,7 +36,6 @@ export async function handleVault(event: any) {
     "New Vault Contribution",
     `${payload.contributorName} added $${payload.amount}`,
     {
-      actionUrl: `/dashboard/vaults?id=${payload.vaultId}`,
       relatedId: payload.vaultId,
       relatedType: "vault",
     },

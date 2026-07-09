@@ -42,7 +42,6 @@ export async function handleTransaction(event: TransactionEvent) {
       "🚨 Unusual Transaction Detected",
       `${p.merchant} — $${p.amount}`,
       {
-        actionUrl: `/dashboard/transactions?id=${p.transactionId}`,
         relatedId: p.transactionId,
         relatedType: "transaction",
       },
@@ -96,7 +95,6 @@ export async function handleTransaction(event: TransactionEvent) {
     "New Transaction",
     `${p.merchant} — $${p.amount}`,
     {
-      actionUrl: `/dashboard/transactions?id=${p.transactionId}`,
       relatedId: p.transactionId,
       relatedType: "transaction",
     },

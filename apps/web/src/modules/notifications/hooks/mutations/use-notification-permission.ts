@@ -31,18 +31,9 @@ export function useNotificationPermission() {
         new CustomEvent("push-notification", { detail: payload }),
       );
       const { title, body } = payload.notification ?? {};
-      const actionUrl = payload.data?.actionUrl as string | undefined;
       toast.info(title ?? "New notification", {
         description: body,
         duration: 8000,
-        action: actionUrl
-          ? {
-              label: "View",
-              onClick: () => {
-                window.location.href = actionUrl;
-              },
-            }
-          : undefined,
       });
     });
     return () => unsub();

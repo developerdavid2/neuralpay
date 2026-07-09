@@ -8,7 +8,6 @@ type RouteConfig = {
 };
 
 const eventRouteMap: Record<NotificationType, RouteConfig | null> = {
-  // ── Transactions
   transaction_created: {
     path: "/dashboard/transactions",
     idParamName: "focusTransactionId",
@@ -19,8 +18,6 @@ const eventRouteMap: Record<NotificationType, RouteConfig | null> = {
     idParamName: "focusTransactionId",
     defaultParams: { mode: "view", tab: "anomaly" },
   },
-
-  // ── AI
   ai_insight: {
     path: "/dashboard/insights",
     idParamName: "focusInsightId",
@@ -34,8 +31,6 @@ const eventRouteMap: Record<NotificationType, RouteConfig | null> = {
     path: "/dashboard/ai-coach",
     idParamName: "sessionId",
   },
-
-  // ── Splits
   split_invite: {
     path: "/dashboard/splits",
     idParamName: "focusSplitId",
@@ -56,8 +51,6 @@ const eventRouteMap: Record<NotificationType, RouteConfig | null> = {
     idParamName: "focusSplitId",
     defaultParams: { mode: "reminder" },
   },
-
-  // ── Vaults
   vault_milestone: {
     path: "/dashboard/vaults",
     idParamName: "focusVaultId",
@@ -78,8 +71,6 @@ const eventRouteMap: Record<NotificationType, RouteConfig | null> = {
     idParamName: "focusVaultId",
     defaultParams: { mode: "members" },
   },
-
-  // ── Accounts
   account_connected: {
     path: "/dashboard/accounts",
     idParamName: "focusAccountId",
@@ -95,15 +86,11 @@ const eventRouteMap: Record<NotificationType, RouteConfig | null> = {
     idParamName: "focusAccountId",
     defaultParams: { mode: "sync-error" },
   },
-
-  // ── Budgets
   budget_threshold: {
     path: "/dashboard/budgets",
     idParamName: "focusBudgetId",
     defaultParams: { mode: "threshold" },
   },
-
-  // ── Subscriptions
   subscription_renewed: {
     path: "/dashboard/settings/billing",
     idParamName: "focusSubscriptionId",
@@ -119,72 +106,76 @@ const eventRouteMap: Record<NotificationType, RouteConfig | null> = {
     idParamName: "focusSubscriptionId",
     defaultParams: { mode: "cancelled" },
   },
-
-  // ── Security
   security_alert: {
     path: "/dashboard/settings/security",
     idParamName: "focusAlertId",
   },
-
-  // ── System (no deep link — just go to dashboard)
   system_maintenance: null,
   system_welcome: null,
   system: null,
 };
 
-function extractRelatedId(
+export function extractRelatedId(
   type: NotificationType,
   data: Record<string, unknown>,
 ): string | undefined {
+  // Try payload-specific fields first, then fall back to the shared relatedId
   switch (type) {
-    // Transactions
     case "transaction_created":
     case "transaction_anomaly":
-      return data.transactionId as string;
-
-    // AI
+      return (
+        (data.transactionId as string) ||
+        (data.relatedId as string) ||
+        undefined
+      );
     case "ai_insight":
-      return data.insightId as string;
+      return (
+        (data.insightId as string) || (data.relatedId as string) || undefined
+      );
     case "ai_weekly_report":
-      return data.reportId as string;
+      return (
+        (data.reportId as string) || (data.relatedId as string) || undefined
+      );
     case "ai_coach_response":
-      return data.sessionId as string;
-
-    // Splits
+      return (
+        (data.sessionId as string) || (data.relatedId as string) || undefined
+      );
     case "split_invite":
     case "split_paid":
     case "split_settled":
     case "split_reminder":
-      return data.splitId as string;
-
-    // Vaults
+      return (
+        (data.splitId as string) || (data.relatedId as string) || undefined
+      );
     case "vault_milestone":
     case "vault_contribution":
     case "vault_invite":
     case "vault_invite_accepted":
-      return data.vaultId as string;
-
-    // Accounts
+      return (
+        (data.vaultId as string) || (data.relatedId as string) || undefined
+      );
     case "account_connected":
     case "account_disconnected":
     case "account_sync_failed":
-      return data.accountId as string;
-
-    // Budgets
+      return (
+        (data.accountId as string) || (data.relatedId as string) || undefined
+      );
     case "budget_threshold":
-      return data.budgetId as string;
-
-    // Subscriptions
+      return (
+        (data.budgetId as string) || (data.relatedId as string) || undefined
+      );
     case "subscription_renewed":
     case "subscription_expiring":
     case "subscription_cancelled":
-      return undefined;
-
-    // Security
+      return (
+        (data.subscriptionId as string) ||
+        (data.relatedId as string) ||
+        undefined
+      );
     case "security_alert":
-      return data.alertId as string;
-
-    // System
+      return (
+        (data.alertId as string) || (data.relatedId as string) || undefined
+      );
     case "system_maintenance":
     case "system_welcome":
     case "system":
@@ -198,20 +189,18 @@ export function buildNotificationUrl(
 ): Route {
   const config = eventRouteMap[type];
 
-  // System events with no deep link
-  if (!config) {
-    return "/dashboard" as Route;
-  }
+  if (!config) return "/dashboard" as Route;
 
   const relatedId = extractRelatedId(type, data);
 
-  if (relatedId) {
-    const params = new URLSearchParams({
-      ...config.defaultParams,
-      [config.idParamName]: relatedId,
-    });
-    return `${config.path}?${params.toString()}` as Route;
+  const params = new URLSearchParams();
+  if (config.defaultParams) {
+    Object.entries(config.defaultParams).forEach(([k, v]) => params.set(k, v));
   }
+  if (relatedId) params.set(config.idParamName, relatedId);
 
-  return config.path as Route;
+  const query = params.toString();
+  const url = query ? `${config.path}?${query}` : config.path;
+
+  return url as Route;
 }

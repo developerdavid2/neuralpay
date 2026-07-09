@@ -1,15 +1,23 @@
 import { useInvalidateQueries } from "@/hooks/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-export function useUpdateNotificationPreferences() {
+export function useUpdateNotificationPreferences(mutationKey?: string[]) {
   const trpc = useTRPC();
-  const { invalidateNotifications } = useInvalidateQueries();
+  const { invalidateNotifications, invalidateNotificationPreferences } =
+    useInvalidateQueries();
 
   return useMutation({
     ...trpc.notifications.appNotifications.updatePreferences.mutationOptions(),
+    mutationKey: mutationKey ?? ["updateNotificationPreferences"],
     onSuccess: () => {
       invalidateNotifications();
+      invalidateNotificationPreferences();
+      toast.success("Preference updated");
+    },
+    onError: () => {
+      toast.error("Failed to update preference");
     },
   });
 }

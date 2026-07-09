@@ -268,7 +268,6 @@ export interface AppNotification {
   title: string;
   body: string;
   data: {
-    actionUrl: string;
     relatedId?: string;
     relatedType?: string;
     [key: string]: unknown;
@@ -285,20 +284,21 @@ export interface AppNotification {
 
 // ── Notification Preferences
 export interface NotificationPreferences {
-  paymentAlerts: boolean;
-  budgetAlerts: boolean;
-  splitNotifs: boolean;
-  vaultUpdates: boolean;
-  weeklyReport: boolean;
-  anomalyAlerts: boolean;
-  emailEnabled: boolean;
-  pushEnabled: boolean;
+  transactionAlerts: boolean | null;
+  accountAlerts: boolean | null;
+  insightsAlerts: boolean | null;
+  coachAlerts: boolean | null;
+  budgetAlerts: boolean | null;
+  splitNotifs: boolean | null;
+  vaultUpdates: boolean | null;
+  weeklyReport: boolean | null;
+  emailEnabled: boolean | null;
+  pushEnabled: boolean | null;
 }
 
 // ── Notification Data (JSONB in DB)
 export const notificationDataSchema = z
   .object({
-    actionUrl: z.string().optional(),
     relatedId: z.string().optional(),
     relatedType: z
       .enum(["transaction", "split", "vault", "account", "insight"])

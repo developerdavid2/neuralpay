@@ -53,5 +53,10 @@ export function useInvalidateQueries() {
       queryClient.invalidateQueries(
         trpc.notifications.appNotifications.pathFilter(),
       ),
+
+    invalidateNotificationPreferences: () =>
+      queryClient.invalidateQueries(
+        trpc.notifications.appNotifications.getPreferences.pathFilter(),
+      ),
   };
 }

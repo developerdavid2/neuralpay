@@ -78,7 +78,6 @@ export const notifications = pgTable("notifications", {
   title: varchar("title", { length: 255 }).notNull(),
   body: text("body").notNull(),
   data: jsonb("data").$type<{
-    actionUrl?: string;
     relatedId?: string;
     relatedType?: "transaction" | "split" | "vault" | "account" | "insight";
     [key: string]: unknown;

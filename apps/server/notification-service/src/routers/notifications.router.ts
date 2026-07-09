@@ -19,6 +19,10 @@ import {
   markNotificationUnread,
   registerDevice,
 } from "../services/notifications.service";
+import {
+  getUserPreferences,
+  updateUserPreferences,
+} from "../services/preferences.service";
 
 export const appNotificationRouter = router({
   list: protectedProcedure
@@ -99,26 +103,17 @@ export const appNotificationRouter = router({
       return result.data;
     }),
 
-  // ── Get Preferences
   getPreferences: protectedProcedure.query(async ({ ctx }) => {
-    // TODO: implement DB fetch
-    return {
-      paymentAlerts: true,
-      budgetAlerts: true,
-      splitNotifs: true,
-      vaultUpdates: true,
-      weeklyReport: true,
-      anomalyAlerts: true,
-      emailEnabled: true,
-      pushEnabled: true,
-    };
+    const result = await getUserPreferences(ctx.session.user.id);
+    if (!result.success) throw new Error(result.error);
+    return result.data;
   }),
 
-  // ── Update Preferences
   updatePreferences: protectedProcedure
     .input(updatePreferencesSchema)
-    .mutation(async ({}) => {
-      // TODO: implement DB update
-      return { success: true };
+    .mutation(async ({ ctx, input }) => {
+      const result = await updateUserPreferences(ctx.session.user.id, input);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
     }),
 });

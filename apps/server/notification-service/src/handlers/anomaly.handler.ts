@@ -14,7 +14,6 @@ export async function handleAnomaly(event: any) {
     "Budget Alert",
     `You've used ${payload.percentage}% of your ${payload.category} budget ($${payload.spent} / $${payload.limit})`,
     {
-      actionUrl: "/dashboard/ai-insights",
       relatedId: payload.budgetId,
       relatedType: "insight",
     },

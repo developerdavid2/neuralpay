@@ -15,7 +15,6 @@ export async function handleAi(event: any) {
       "Your Weekly Report is Ready",
       payload.summary,
       {
-        actionUrl: "/dashboard/ai-insights?tab=weekly",
         relatedId: payload.reportId,
         relatedType: "insight",
       },
@@ -33,7 +32,6 @@ export async function handleAi(event: any) {
   const title =
     payload.severity === "high" ? "🚨 Spending Anomaly" : "New AI Insight";
   const n = await sendInApp(userId, "ai_insight", "ai", title, payload.title, {
-    actionUrl: `/dashboard/ai-insights?insight=${payload.insightId}`,
     relatedId: payload.insightId,
     relatedType: "insight",
   });
