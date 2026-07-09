@@ -14,7 +14,6 @@ export function useUpdateNotificationPreferences(mutationKey?: string[]) {
     onSuccess: () => {
       invalidateNotifications();
       invalidateNotificationPreferences();
-      toast.success("Preference updated");
     },
     onError: () => {
       toast.error("Failed to update preference");

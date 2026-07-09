@@ -18,6 +18,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
     limit: 10,
     category: "all",
     status: "all",
+    search: "",
   });
   const markAllRead = useMarkAllRead();
 

@@ -9,6 +9,8 @@ import { EmailNotificationsSection } from "./email-notifications-section";
 import { PermissionPrompt } from "./permission-prompt";
 import { AlertTypesSection } from "./alert-types-section";
 import type { AlertPreferenceKey } from "../../constants";
+import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
 
 export function NotificationSettingsContent() {
   const { data: preferences } = useNotificationPreferences();
@@ -114,6 +116,59 @@ export function NotificationSettingsContent() {
         onConfirm={handlePushEnable}
         onCancel={() => setShowPermissionPrompt(false)}
       />
+    </div>
+  );
+}
+export function NotificationSettingsSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Push notifications card skeleton */}
+      <Card className="bg-gray-400/5">
+        <CardHeader className="pb-0">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex flex-col gap-4 rounded-3xl border border-border bg-background/60 p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3.5 w-80" />
+              </div>
+              <Skeleton className="h-6 w-11 rounded-full" />
+            </div>
+            <div className="space-y-1">
+              <Skeleton className="h-3.5 w-40" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Alert preferences card skeleton */}
+      <Card className="bg-gray-400/5">
+        <CardHeader className="pb-0">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex flex-col gap-3 rounded-3xl border border-border bg-background/60 p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3.5 w-72" />
+              </div>
+              <Skeleton className="h-6 w-11 rounded-full" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }
