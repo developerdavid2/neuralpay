@@ -7,6 +7,8 @@ export * from "./pagination";
 export * from "./accounts";
 export * from "./plaid";
 export * from "./notifications";
+export * from "./location";
+export * from "./security";
 export {};
 
 export type ServiceResult<T> =

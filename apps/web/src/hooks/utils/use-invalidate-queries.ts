@@ -10,7 +10,7 @@ export function useInvalidateQueries() {
   return {
     //Profile
     invalidateProfile: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
+      queryClient.invalidateQueries(trpc.users.profile.pathFilter());
     },
     // Accounts
     invalidateAccounts: () =>
@@ -61,6 +61,15 @@ export function useInvalidateQueries() {
     invalidateNotificationPreferences: () =>
       queryClient.invalidateQueries(
         trpc.notifications.appNotifications.getPreferences.pathFilter(),
+      ),
+
+    invalidateActiveSessions: () =>
+      queryClient.invalidateQueries(
+        trpc.users.security.getSessions.pathFilter(),
+      ),
+    invalidateTwoFactorStatus: () =>
+      queryClient.invalidateQueries(
+        trpc.users.security.get2FAStatus.pathFilter(),
       ),
   };
 }

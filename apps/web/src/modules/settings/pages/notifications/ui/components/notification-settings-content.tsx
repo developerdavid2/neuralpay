@@ -123,7 +123,7 @@ export function NotificationSettingsSkeleton() {
   return (
     <div className="space-y-6">
       {/* Push notifications card skeleton */}
-      <Card className="bg-gray-400/5">
+      <Card className="bg-card dark:drop-shadow-md">
         <CardHeader className="pb-0">
           <div className="flex flex-col gap-2">
             <Skeleton className="h-5 w-40" />
@@ -131,7 +131,7 @@ export function NotificationSettingsSkeleton() {
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
-          <div className="flex flex-col gap-4 rounded-3xl border border-border bg-background/60 p-4">
+          <div className="flex flex-col gap-4 rounded-3xl border border-border bg-main-tint p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-2">
                 <Skeleton className="h-4 w-48" />
@@ -147,7 +147,7 @@ export function NotificationSettingsSkeleton() {
       </Card>
 
       {/* Alert preferences card skeleton */}
-      <Card className="bg-gray-400/5">
+      <Card className="bg-card dark:drop-shadow-md">
         <CardHeader className="pb-0">
           <div className="flex flex-col gap-2">
             <Skeleton className="h-5 w-36" />
@@ -158,7 +158,7 @@ export function NotificationSettingsSkeleton() {
           {Array.from({ length: 7 }).map((_, i) => (
             <div
               key={i}
-              className="flex flex-col gap-3 rounded-3xl border border-border bg-background/60 p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-3xl border border-border bg-main-tint p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="space-y-2">
                 <Skeleton className="h-4 w-32" />

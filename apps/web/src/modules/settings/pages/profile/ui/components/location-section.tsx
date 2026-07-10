@@ -1,77 +1,108 @@
 "use client";
 
+import { Controller, type UseFormReturn } from "react-hook-form";
 import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Input } from "@neuralpay/ui/components/input";
 import { Label } from "@neuralpay/ui/components/label";
 import { Textarea } from "@neuralpay/ui/components/textarea";
 import type { UpdateProfileInput } from "@neuralpay/types";
+import { CountrySelect } from "./country-select";
+import { StateSelect } from "./state-select";
+import { CitySelect } from "./city-select";
 
 interface LocationSectionProps {
-  country: string | null;
-  state: string | null;
-  city: string | null;
-  address: string | null;
-  onChange: (field: keyof UpdateProfileInput, value: unknown) => void;
+  form: UseFormReturn<UpdateProfileInput>;
+  country?: string;
+  state?: string;
 }
 
 export function LocationSection({
+  form,
   country,
   state,
-  city,
-  address,
-  onChange,
 }: LocationSectionProps) {
   return (
-    <Card className="bg-gray-400/5">
+    <Card className="bg-card shadow-none drop-shadow-sm">
       <CardHeader className="pb-0">
         <p className="text-base font-semibold">Location</p>
         <p className="text-sm text-muted-foreground">
-          Your address helps us personalize your experience.
+          Where you're based. Used for regional defaults and compliance.
         </p>
       </CardHeader>
       <CardContent className="space-y-4 pt-4">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="country">Country</Label>
-            <Input
-              id="country"
-              value={country ?? ""}
-              onChange={(e) => onChange("country", e.target.value || null)}
-              placeholder="United States"
+            <Label>Country</Label>
+            <Controller
+              name="country"
+              control={form.control}
+              render={({ field }) => (
+                <CountrySelect
+                  value={field.value ?? undefined}
+                  onChange={(countryName, _isoCode, currency) => {
+                    field.onChange(countryName);
+                    form.setValue("state", "", { shouldDirty: true });
+                    form.setValue("city", "", { shouldDirty: true });
+                    if (currency)
+                      form.setValue("currency", currency, {
+                        shouldDirty: true,
+                      });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="state">State / Region</Label>
-            <Input
-              id="state"
-              value={state ?? ""}
-              onChange={(e) => onChange("state", e.target.value || null)}
-              placeholder="California"
+            <Label>State / Province</Label>
+            <Controller
+              name="state"
+              control={form.control}
+              render={({ field }) => (
+                <StateSelect
+                  countryName={country || undefined}
+                  value={field.value ?? undefined}
+                  onChange={(stateName) => {
+                    field.onChange(stateName);
+                    form.setValue("city", "", { shouldDirty: true });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              value={city ?? ""}
-              onChange={(e) => onChange("city", e.target.value || null)}
-              placeholder="San Francisco"
+            <Label>City</Label>
+            <Controller
+              name="city"
+              control={form.control}
+              render={({ field }) => (
+                <CitySelect
+                  countryName={country || undefined}
+                  stateName={state || undefined}
+                  value={field.value ?? undefined}
+                  onChange={field.onChange}
+                />
+              )}
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="address">Full Address</Label>
-          <Textarea
-            id="address"
-            value={address ?? ""}
-            onChange={(e) => onChange("address", e.target.value || null)}
-            placeholder="123 Main St, Apt 4B"
-            rows={3}
-          />
-        </div>
+        <Controller
+          name="address"
+          control={form.control}
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label htmlFor="address">Full Address</Label>
+              <Textarea
+                id="address"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                placeholder="Street address, apartment, etc."
+                rows={3}
+              />
+            </div>
+          )}
+        />
       </CardContent>
     </Card>
   );

@@ -23,7 +23,7 @@ export function AvatarSection({
     <div className="flex items-center gap-6">
       <Avatar className="h-24 w-24">
         <AvatarImage src={image ?? undefined} alt={name} />
-        <AvatarFallback className="text-2xl">
+        <AvatarFallback className="text-2xl bg-primary/5">
           {name?.charAt(0).toUpperCase() ?? "U"}
         </AvatarFallback>
       </Avatar>

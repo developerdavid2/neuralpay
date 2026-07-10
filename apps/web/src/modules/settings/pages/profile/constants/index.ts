@@ -27,20 +27,3 @@ export const CURRENCIES = [
   { value: "BRL", label: "BRL (R$) — Brazilian Real" },
   { value: "MXN", label: "MXN ($) — Mexican Peso" },
 ];
-
-export const TIMEZONES = [
-  { value: "UTC", label: "UTC — Coordinated Universal Time" },
-  { value: "America/New_York", label: "Eastern Time (ET)" },
-  { value: "America/Chicago", label: "Central Time (CT)" },
-  { value: "America/Denver", label: "Mountain Time (MT)" },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { value: "Europe/London", label: "London (GMT/BST)" },
-  { value: "Europe/Paris", label: "Paris (CET/CEST)" },
-  { value: "Europe/Berlin", label: "Berlin (CET/CEST)" },
-  { value: "Asia/Tokyo", label: "Tokyo (JST)" },
-  { value: "Asia/Shanghai", label: "Shanghai (CST)" },
-  { value: "Asia/Dubai", label: "Dubai (GST)" },
-  { value: "Asia/Kolkata", label: "Kolkata (IST)" },
-  { value: "Australia/Sydney", label: "Sydney (AEST/AEDT)" },
-  { value: "Pacific/Auckland", label: "Auckland (NZST/NZDT)" },
-];

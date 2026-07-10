@@ -13,7 +13,6 @@ export const coachRouter = router({
   sessions: protectedProcedure
     .input(chatSessionsFilterSchema.optional())
     .query(async ({ ctx, input }) => {
-      console.log("[sessions] cursor received:", input?.cursor);
       const parsed = chatSessionsFilterSchema.parse(input ?? {});
       const result = await AICoachService.listSessions(
         ctx.session.user.id,

@@ -1,88 +1,107 @@
 "use client";
 
-import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useProfile } from "@/hooks/queries/use-profile";
-import type { UpdateProfileInput } from "@neuralpay/types";
+import type { UpdateProfileInput, UserRecord } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { toast } from "sonner";
-import { useUpdateProfile } from "../../hooks/queries/use-update-profile";
+import { useConfirm } from "@/hooks/ui/use-confirm";
+import { useUpdateProfile } from "../../hooks/mutations/use-update-profile";
 import { AvatarSection } from "./avatar-section";
 import { LanguageRegionSection } from "./language-region-section";
 import { LocationSection } from "./location-section";
 import { PersonalInfoSection } from "./personal-info-section";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
 
 export function ProfileSettingsContent() {
   const { data: profile } = useProfile();
-  const updateProfile = useUpdateProfile();
 
-  const [formData, setFormData] = useState<UpdateProfileInput>({});
-  const [hasChanges, setHasChanges] = useState(false);
+  return <ProfileSettingsForm profile={profile} />;
+}
 
-  const handleChange = (field: keyof UpdateProfileInput, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setHasChanges(true);
+function buildDefaults(profile: UserRecord): UpdateProfileInput {
+  return {
+    name: profile.name,
+    nickname: profile.nickname ?? undefined,
+    image: profile.image ?? undefined,
+    phone: profile.phone ?? undefined,
+    email: profile.email ?? undefined,
+    gender: profile.gender ?? undefined,
+    dateOfBirth: profile.dateOfBirth ?? undefined,
+    country: profile.country ?? undefined,
+    state: profile.state ?? undefined,
+    city: profile.city ?? undefined,
+    address: profile.address ?? undefined,
+    language: profile.language,
+    timezone: profile.timezone,
+    currency: profile.currency,
+    dateFormat: profile.dateFormat,
   };
+}
 
-  const handleSubmit = async () => {
-    if (!hasChanges) return;
+function ProfileSettingsForm({ profile }: { profile: UserRecord }) {
+  const updateProfile = useUpdateProfile();
+  const [ConfirmDialog, confirm] = useConfirm();
 
-    updateProfile.mutate(formData, {
+  const form = useForm<UpdateProfileInput>({
+    defaultValues: buildDefaults(profile),
+  });
+
+  const onSubmit = async (values: UpdateProfileInput) => {
+    const ok = await confirm({
+      title: "Save profile changes",
+      message:
+        "Are you sure you want to update your profile with these changes?",
+      confirmLabel: "Save",
+    });
+    if (!ok) return;
+
+    const { email, ...payload } = values;
+
+    updateProfile.mutate(payload, {
       onSuccess: () => {
         toast.success("Profile updated");
-        setFormData({});
-        setHasChanges(false);
+        form.reset(values);
       },
-      onError: () => {
-        toast.error("Failed to update profile");
-      },
+      onError: () => toast.error("Failed to update profile"),
     });
   };
 
   return (
-    <div className="space-y-6">
-      <AvatarSection
-        image={profile.image}
-        name={profile.name}
-        onImageChange={(url) => handleChange("image", url)}
-      />
+    <>
+      <ConfirmDialog />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Controller
+          name="image"
+          control={form.control}
+          render={({ field }) => (
+            <AvatarSection
+              image={field.value ?? ""}
+              name={profile.name}
+              onImageChange={field.onChange}
+            />
+          )}
+        />
 
-      <PersonalInfoSection
-        name={profile.name}
-        nickname={profile.nickname}
-        email={profile.email}
-        gender={profile.gender}
-        dateOfBirth={profile.dateOfBirth}
-        phone={profile.phone}
-        onChange={handleChange}
-      />
+        <PersonalInfoSection form={form} email={form.watch("email") ?? ""} />
+        <LocationSection
+          form={form}
+          country={form.watch("country") ?? ""}
+          state={form.watch("state") ?? ""}
+        />
+        <LanguageRegionSection form={form} />
 
-      <LocationSection
-        country={profile.country}
-        state={profile.state}
-        city={profile.city}
-        address={profile.address}
-        onChange={handleChange}
-      />
-
-      <LanguageRegionSection
-        language={profile.language}
-        timezone={profile.timezone}
-        currency={profile.currency}
-        dateFormat={profile.dateFormat}
-        onChange={handleChange}
-      />
-
-      <div className="flex justify-end">
-        <Button
-          onClick={handleSubmit}
-          disabled={!hasChanges || updateProfile.isPending}
-        >
-          Save Changes
-        </Button>
-      </div>
-    </div>
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            disabled={!form.formState.isDirty || updateProfile.isPending}
+          >
+            {updateProfile.isPending ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </form>
+    </>
   );
 }
 

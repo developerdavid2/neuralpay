@@ -21,7 +21,9 @@ import { cn } from "@neuralpay/ui/lib/utils";
 interface ComboboxOption {
   label: string;
   value: string;
-  disabled?: boolean; // ← add this
+  disabled?: boolean;
+  icon?: React.ReactNode;
+  triggerLabel?: React.ReactNode;
 }
 
 interface Props {
@@ -33,6 +35,7 @@ interface Props {
   disabled?: boolean;
   ariaInvalid?: boolean;
   className?: string;
+  contentClassName?: string;
 }
 
 export function SearchableCombobox({
@@ -44,9 +47,9 @@ export function SearchableCombobox({
   disabled,
   ariaInvalid,
   className,
+  contentClassName,
 }: Props) {
   const [open, setOpen] = useState(false);
-
   const selected = options.find((o) => o.value === value);
 
   return (
@@ -69,12 +72,23 @@ export function SearchableCombobox({
             className,
           )}
         >
-          {selected ? selected.label : placeholder}
+          <span className="flex items-center gap-2 truncate">
+            {selected?.icon}
+            <span className="truncate">
+              {selected
+                ? (selected.triggerLabel ?? selected.label)
+                : placeholder}
+            </span>
+          </span>
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) p-0"
+        className={cn(
+          // never narrower than the trigger, but free to grow with content
+          "min-w-(--radix-popover-trigger-width) w-max max-w-[min(24rem,90vw)] p-0",
+          contentClassName,
+        )}
         align="start"
         sideOffset={4}
       >
@@ -88,7 +102,7 @@ export function SearchableCombobox({
                   key={opt.value}
                   value={opt.label}
                   className={cn(
-                    "capitalize",
+                    "capitalize hover:bg-accent",
                     opt.disabled &&
                       "opacity-40 cursor-not-allowed pointer-events-none",
                   )}
@@ -101,11 +115,14 @@ export function SearchableCombobox({
                 >
                   <Check
                     className={cn(
-                      "mr-2 size-4",
+                      "mr-2 size-4 shrink-0",
                       value === opt.value ? "opacity-100" : "opacity-0",
                     )}
                   />
-                  {opt.label}
+                  <span className="flex items-center gap-2">
+                    {opt.icon}
+                    {opt.label}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

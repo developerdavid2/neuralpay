@@ -33,7 +33,7 @@ export function InstitutionCard({
   );
 
   return (
-    <Card className="bg-gray-400/5">
+    <Card className="bg-main-tint">
       <CardHeader
         className="pb-0 cursor-pointer"
         onClick={() => setExpanded((v) => !v)}

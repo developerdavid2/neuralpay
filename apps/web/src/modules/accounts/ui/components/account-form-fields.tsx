@@ -26,8 +26,6 @@ interface Props {
 export function AccountFormFields({ form, disabled }: Props) {
   const pending = disabled || form.formState.isSubmitting;
 
-  console.log(form);
-
   return (
     <FieldGroup className="gap-4">
       {/* Account Name */}

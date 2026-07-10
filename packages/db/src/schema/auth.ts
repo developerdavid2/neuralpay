@@ -49,7 +49,7 @@ export const user = pgTable("user", {
     .notNull(),
 });
 
-export const twoFactorAuth = pgTable("two_factor", {
+export const twoFactor = pgTable("two_factor", {
   id: text("id").primaryKey(),
   secret: text("secret").notNull(),
   backupCodes: text("backup_codes").notNull(),

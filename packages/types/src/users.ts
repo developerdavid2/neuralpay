@@ -41,6 +41,7 @@ export const updateProfileSchema = z.object({
   nickname: z.string().max(50).nullable().optional(),
   image: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
+  email: z.string().nonoptional(),
   gender: z.enum(GENDER_TYPES).nullable().optional(),
   dateOfBirth: z.string().nullable().optional(),
   country: z.string().max(100).nullable().optional(),

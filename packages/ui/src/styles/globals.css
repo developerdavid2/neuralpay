@@ -54,6 +54,7 @@
 
   /* Custom Color */
   --color-main: var(--main);
+  --color-main-tint: var(--main-tint);
 }
 
 :root {
@@ -92,6 +93,7 @@
 
   /* Custom colors */
   --main: oklch(60.6% 0.25 292.717);
+  --main-tint: oklch(0.811 0.111 293.571 / 8%);
 }
 
 .dark {
@@ -129,6 +131,7 @@
 
   /* Custom colors */
   --main: oklch(81.1% 0.111 293.571);
+  --main-tint: oklch(0.811 0.111 293.571 / 5%);
 }
 
 @layer base {

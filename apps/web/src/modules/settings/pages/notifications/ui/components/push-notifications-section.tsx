@@ -19,7 +19,7 @@ export function PushNotificationsSection({
   onToggle,
 }: PushNotificationsSectionProps) {
   return (
-    <Card className="bg-gray-400/5">
+    <Card className="bg-card dark:drop-shadow-md">
       <CardHeader className="pb-0">
         <div className="flex flex-col gap-2">
           <p className="text-base font-semibold">Push notifications</p>
@@ -29,7 +29,7 @@ export function PushNotificationsSection({
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-4">
+        <div className="flex flex-col gap-4 rounded-3xl border border-border bg-main-tint p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium">Browser push notifications</p>

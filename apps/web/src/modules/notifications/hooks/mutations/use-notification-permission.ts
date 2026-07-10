@@ -1,7 +1,12 @@
-import { messaging } from "@/lib/notification-config";
 import { useTRPC } from "@/trpc/trpc-client";
+import { getFirebaseMessaging } from "@/lib/notification-config";
 import { useMutation } from "@tanstack/react-query";
-import { getToken, onMessage, deleteToken } from "firebase/messaging";
+import {
+  getToken,
+  onMessage,
+  deleteToken,
+  type Messaging,
+} from "firebase/messaging";
 import { useEffect, useCallback, useState } from "react";
 import { toast } from "sonner";
 
@@ -11,17 +16,34 @@ export function useNotificationPermission() {
     useState<NotificationPermission>("default");
   const [isSupported, setIsSupported] = useState(true);
   const [isRequesting, setIsRequesting] = useState(false);
+  const [messaging, setMessaging] = useState<Messaging | null>(null);
 
   const registerDevice = useMutation(
     trpc.notifications.appNotifications.registerDevice.mutationOptions(),
   );
 
+  // Resolve the Messaging instance once, client-side only.
   useEffect(() => {
-    if (!("Notification" in window) || !messaging) {
+    let cancelled = false;
+
+    if (!("Notification" in window)) {
       setIsSupported(false);
       return;
     }
-    setPermission(Notification.permission);
+
+    getFirebaseMessaging().then((instance) => {
+      if (cancelled) return;
+      if (!instance) {
+        setIsSupported(false);
+        return;
+      }
+      setMessaging(instance);
+      setPermission(Notification.permission);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -37,11 +59,10 @@ export function useNotificationPermission() {
       });
     });
     return () => unsub();
-  }, []);
+  }, [messaging]);
 
-  // ✅ depend on mutateAsync, not the whole registerDevice object
   const requestPermission = useCallback(async () => {
-    if (!("Notification" in window)) return null;
+    if (!messaging) return null;
     setIsRequesting(true);
     try {
       const perm = await Notification.requestPermission();
@@ -71,13 +92,13 @@ export function useNotificationPermission() {
     } finally {
       setIsRequesting(false);
     }
-  }, [registerDevice.mutateAsync]); // ✅ stable reference
+  }, [messaging, registerDevice.mutateAsync]);
 
   const unregister = useCallback(async () => {
     if (!messaging) return;
     await deleteToken(messaging);
     setPermission("default");
-  }, []);
+  }, [messaging]);
 
   return {
     permission,
