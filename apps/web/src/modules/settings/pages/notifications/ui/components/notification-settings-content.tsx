@@ -134,7 +134,7 @@ export function NotificationSettingsSkeleton() {
           <div className="flex flex-col gap-4 rounded-3xl border border-border bg-main-tint p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-2">
-                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-5 w-48" />
                 <Skeleton className="h-3.5 w-80" />
               </div>
               <Skeleton className="h-6 w-11 rounded-full" />
