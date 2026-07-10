@@ -2,8 +2,8 @@
 
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { InfiniteScroll } from "@/components/infinite-scroll";
-import { useConfirm } from "@/hooks/use-confirm";
-import { useQueryParam } from "@/hooks/use-query-param";
+import { useConfirm } from "@/hooks/ui/use-confirm";
+import { useQueryParam } from "@/hooks/routing/use-query-param";
 import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
 import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
 import { useTransactionsList } from "@/modules/transactions/hooks/queries/use-transactions";
@@ -18,13 +18,13 @@ import type {
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Table } from "@neuralpay/ui/components/table";
 import { Package } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useTransactionsMonthlySummaries } from "../../hooks/queries/use-transactions-monthly-summaries";
 import { useTransactionDrawer } from "../../hooks/store/use-transaction-drawer";
+import { useTransactionPendingSelectors } from "../../hooks/store/use-transaction-pending";
 import { TransactionFormDrawer } from "./transaction-form-drawer";
 import { TransactionMonthSection } from "./transaction-month-section";
 import { TransactionViewDrawer } from "./transaction-view-drawer";
-import { useTransactionsMonthlySummaries } from "../../hooks/queries/use-transactions-monthly-summaries";
-import { useTransactionPendingSelectors } from "../../hooks/store/use-transaction-pending";
 
 interface Props {
   currentSearch: string;

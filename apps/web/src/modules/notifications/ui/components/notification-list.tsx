@@ -15,7 +15,6 @@ interface NotificationListProps {
   currentLimit: number;
   selectedIds: Set<string>;
   onSelect: (id: string, checked: boolean) => void;
-  onSelectAll?: (notificationIds: string[]) => void;
   onTotalCountChange?: (count: number) => void;
   onAllNotificationIdsChange?: (ids: string[]) => void;
 }
@@ -27,8 +26,6 @@ export function NotificationList({
   currentLimit,
   selectedIds,
   onSelect,
-  onSelectAll,
-  onTotalCountChange,
   onAllNotificationIdsChange,
 }: NotificationListProps) {
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
@@ -39,25 +36,27 @@ export function NotificationList({
       status: currentStatus,
     });
 
-  const notifications = useMemo(
-    () => data?.pages.flatMap((page) => page.items) ?? [],
-    [data],
-  );
+  const notifications = useMemo(() => {
+    const seen = new Set<string>();
+    return (data?.pages.flatMap((page) => page.items) ?? []).filter((n) => {
+      if (seen.has(n.id)) return false;
+      seen.add(n.id);
+      return true;
+    });
+  }, [data]);
 
-  const grouped = useMemo(() => {
-    return groupByDate(notifications, (notification: AppNotification) =>
-      getDateGroup(new Date(notification.createdAt)),
-    );
-  }, [notifications]);
+  const grouped = useMemo(
+    () =>
+      groupByDate(notifications, (n: AppNotification) =>
+        getDateGroup(new Date(n.createdAt)),
+      ),
+    [notifications],
+  );
 
   const allNotificationIds = useMemo(
     () => notifications.map((n) => n.id),
     [notifications],
   );
-
-  useEffect(() => {
-    onTotalCountChange?.(notifications.length);
-  }, [notifications.length, onTotalCountChange]);
 
   useEffect(() => {
     onAllNotificationIdsChange?.(allNotificationIds);
@@ -78,7 +77,7 @@ export function NotificationList({
   return (
     <div className="flex flex-col gap-0">
       {Object.entries(grouped).map(([group, items]) => (
-        <div key={group} className="border-b border-border/70 last:border-b-0">
+        <div key={group}>
           <div className="bg-muted/40 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             {formatGroupLabel(group as any)}
           </div>
@@ -102,6 +101,7 @@ export function NotificationList({
         isFetchingNextPage={isFetchingNextPage}
         fetchNextPage={fetchNextPage}
         isLoading={false}
+        isManual={true}
         hideEndMessage={false}
       />
     </div>
@@ -112,10 +112,7 @@ export function NotificationListSkeleton() {
   return (
     <div className="space-y-4 px-6 py-8">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div
-          key={index}
-          className="rounded-xl border border-border/70 bg-muted/30 p-4"
-        >
+        <div key={index} className="rounded-xl border border-border/70 p-4">
           <div className="h-3 w-22 rounded bg-muted" />
           <div className="mt-3 h-4 w-full rounded bg-muted/80" />
           <div className="mt-2 h-4 w-4/5 rounded bg-muted/70" />

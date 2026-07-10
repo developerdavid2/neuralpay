@@ -4,11 +4,13 @@ import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import {
   markReadSchema,
   notificationsFilterSchema,
+  notificationsSummarySchema,
   registerDeviceSchema,
   updatePreferencesSchema,
 } from "@neuralpay/types";
 import {
   getNotifications,
+  getNotificationsSummary,
   getUnreadCount,
   markAllRead,
   markManyRead,
@@ -17,10 +19,14 @@ import {
   markNotificationUnread,
   registerDevice,
 } from "../services/notifications.service";
+import {
+  getUserPreferences,
+  updateUserPreferences,
+} from "../services/preferences.service";
 
 export const appNotificationRouter = router({
   list: protectedProcedure
-    .input(notificationsFilterSchema.optional())
+    .input(notificationsFilterSchema.passthrough().optional())
     .query(async ({ ctx, input }) => {
       const parsed = notificationsFilterSchema.parse(input ?? {});
       const result = await getNotifications(ctx.session.user.id, parsed);
@@ -72,6 +78,17 @@ export const appNotificationRouter = router({
     if (!result.success) throw new Error(result.error);
     return result.data;
   }),
+  // notification-service router
+  summary: protectedProcedure
+    .input(
+      notificationsFilterSchema.omit({ cursor: true, limit: true }).optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const parsed = notificationsSummarySchema.parse(input ?? {});
+      const result = await getNotificationsSummary(ctx.session.user.id, parsed);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    }),
 
   registerDevice: protectedProcedure
     .input(registerDeviceSchema)
@@ -86,26 +103,17 @@ export const appNotificationRouter = router({
       return result.data;
     }),
 
-  // ── Get Preferences
   getPreferences: protectedProcedure.query(async ({ ctx }) => {
-    // TODO: implement DB fetch
-    return {
-      paymentAlerts: true,
-      budgetAlerts: true,
-      splitNotifs: true,
-      vaultUpdates: true,
-      weeklyReport: true,
-      anomalyAlerts: true,
-      emailEnabled: true,
-      pushEnabled: true,
-    };
+    const result = await getUserPreferences(ctx.session.user.id);
+    if (!result.success) throw new Error(result.error);
+    return result.data;
   }),
 
-  // ── Update Preferences
   updatePreferences: protectedProcedure
     .input(updatePreferencesSchema)
-    .mutation(async ({}) => {
-      // TODO: implement DB update
-      return { success: true };
+    .mutation(async ({ ctx, input }) => {
+      const result = await updateUserPreferences(ctx.session.user.id, input);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
     }),
 });

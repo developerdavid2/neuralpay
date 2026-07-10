@@ -14,7 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useDataTableNavigation } from "@/hooks/use-data-table-navigation";
+import { useDataTableNavigation } from "@/hooks/routing/use-data-table-navigation";
 import { cn } from "@neuralpay/ui/lib/utils";
 
 interface DataTablePaginationProps {

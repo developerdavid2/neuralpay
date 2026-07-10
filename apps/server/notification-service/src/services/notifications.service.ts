@@ -5,6 +5,7 @@ import type {
   CreateNotificationInput,
   NotificationCategory,
   NotificationsFilterInput,
+  NotificationsSummaryInput,
   PaginatedNotifications,
   ServiceResult,
 } from "@neuralpay/types";
@@ -54,27 +55,28 @@ export async function getNotifications(
       );
     }
 
-    // Cursor pagination
     if (cursor) {
-      const cursorDate = new Date(
+      const cursorSeq = parseInt(
         Buffer.from(cursor, "base64url").toString("utf-8"),
       );
-      conditions.push(sql`${notifications.createdAt} < ${cursorDate}`);
+      conditions.push(sql`${notifications.seq} < ${cursorSeq}`);
     }
 
     const rows = await db
       .select()
       .from(notifications)
       .where(and(...conditions))
-      .orderBy(desc(notifications.createdAt))
+      .orderBy(desc(notifications.seq))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
     const data = hasMore ? rows.slice(0, -1) : rows;
     const last = data[data.length - 1];
-    const nextCursor =
-      hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
 
+    const nextCursor =
+      hasMore && last
+        ? Buffer.from(String(last.seq)).toString("base64url")
+        : null;
     return {
       success: true,
       data: {
@@ -270,6 +272,51 @@ export async function getUnreadCount(userId: string): Promise<number> {
   }
 }
 
+export async function getNotificationsSummary(
+  userId: string,
+  input: NotificationsSummaryInput,
+): Promise<ServiceResult<{ total: number; unread: number }>> {
+  try {
+    const { search, category, status } = input;
+    const conditions = [eq(notifications.userId, userId)];
+
+    if (category && category !== "all") {
+      conditions.push(
+        eq(notifications.category, category as NotificationCategory),
+      );
+    }
+    if (status === "read") conditions.push(eq(notifications.isRead, true));
+    else if (status === "unread")
+      conditions.push(eq(notifications.isRead, false));
+    if (search) {
+      const searchTerm = `%${search}%`;
+      conditions.push(
+        sql`(${notifications.title} ILIKE ${searchTerm} OR ${notifications.body} ILIKE ${searchTerm})`,
+      );
+    }
+
+    const [result] = await db
+      .select({
+        total: sql<number>`count(*)::int`,
+        unread: sql<number>`count(*) filter (where ${notifications.isRead} = false)::int`,
+      })
+      .from(notifications)
+      .where(and(...conditions));
+
+    return {
+      success: true,
+      data: { total: result?.total ?? 0, unread: result?.unread ?? 0 },
+    };
+  } catch (err) {
+    console.error("[getNotificationsSummary]", err);
+    return {
+      success: false,
+      error: "Failed to fetch summary",
+      code: "DB_ERROR",
+    };
+  }
+}
+
 // ── Device Token Registration
 export async function registerDevice(
   userId: string,
@@ -312,7 +359,7 @@ export async function getActiveDeviceTokens(userId: string) {
     );
 }
 
-// ── Deactivate Device Tokens ──────────────────────────────────────
+// ── Deactivate Device Tokens
 export async function deactivateDeviceTokens(tokens: string[]) {
   if (!tokens.length) return;
   await db

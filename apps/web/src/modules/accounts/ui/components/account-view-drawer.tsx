@@ -1,4 +1,4 @@
-import { useConfirm } from "@/hooks/use-confirm";
+import { useConfirm } from "@/hooks/ui/use-confirm";
 import { formatAmount } from "@/lib/utils";
 import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
 import { Button } from "@neuralpay/ui/components/button";

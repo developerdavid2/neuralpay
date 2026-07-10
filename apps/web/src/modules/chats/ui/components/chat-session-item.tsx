@@ -5,7 +5,7 @@ import { useArchiveSession } from "@/modules/chats/hooks/mutations/use-archive-s
 import { useUnarchiveSession } from "@/modules/chats/hooks/mutations/use-unarchive-session";
 import { useDeleteSession } from "@/modules/chats/hooks/mutations/use-delete-session";
 import { useUpdateTitle } from "@/modules/chats/hooks/mutations/use-update-title";
-import { useConfirm } from "@/hooks/use-confirm";
+import { useConfirm } from "@/hooks/ui/use-confirm";
 import { ChatRenameDialog } from "./chat-rename-dialog";
 import type { ChatSession } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";

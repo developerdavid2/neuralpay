@@ -17,7 +17,6 @@ export async function handleAccount(event: any) {
       ? `${payload.bankName} is now linked`
       : `${payload.bankName} has been unlinked`,
     {
-      actionUrl: "/dashboard/accounts",
       relatedId: payload.accountId,
       relatedType: "account",
     },

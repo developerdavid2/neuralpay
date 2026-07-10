@@ -1,8 +1,7 @@
 "use client";
 
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import type { Route } from "next";
 
 const DEFAULTS = {
   search: "",

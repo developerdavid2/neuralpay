@@ -22,12 +22,7 @@ export async function NotificationsView({
         description="Stay on top of account activity, alerts, and smart insights"
       />
 
-      <NotificationsClientShell
-        initialSearch={search}
-        initialCategory={category}
-        initialStatus={status}
-        initialLimit={limit}
-      />
+      <NotificationsClientShell />
     </div>
   );
 }

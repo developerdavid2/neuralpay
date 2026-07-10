@@ -1,4 +1,26 @@
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  date,
+  index,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
+
+export const genderEnum = pgEnum("gender", [
+  "male",
+  "female",
+  "non_binary",
+  "prefer_not_to_say",
+]);
+
+export const dateFormatEnum = pgEnum("date_format", [
+  "MM_DD_YYYY",
+  "DD_MM_YYYY",
+  "YYYY_MM_DD",
+]);
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -8,11 +30,32 @@ export const user = pgTable("user", {
   image: text("image"),
   phone: text("phone"),
   planTier: text("plan_tier").default("free").notNull(),
+  nickname: varchar("nickname", { length: 50 }),
+  gender: genderEnum("gender"),
+  dateOfBirth: date("date_of_birth"),
+  country: varchar("country", { length: 100 }),
+  state: varchar("state", { length: 100 }),
+  city: varchar("city", { length: 100 }),
+  address: text("address"),
+  language: varchar("language", { length: 10 }).default("en"),
+  timezone: varchar("timezone", { length: 100 }).default("UTC"),
+  currency: varchar("currency", { length: 10 }).default("USD"),
+  dateFormat: dateFormatEnum("date_format").default("MM_DD_YYYY"),
+  twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
+});
+
+export const twoFactor = pgTable("two_factor", {
+  id: text("id").primaryKey(),
+  secret: text("secret").notNull(),
+  backupCodes: text("backup_codes").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
 });
 
 export const session = pgTable(

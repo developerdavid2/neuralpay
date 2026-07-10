@@ -1,6 +1,6 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import type { AccountsFilterInput } from "@neuralpay/types";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 export function useAccountsList(filters: AccountsFilterInput) {
   const trpc = useTRPC();

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronUp, CreditCard, Loader2, LogOut } from "lucide-react";
+import { ChevronUp, CreditCard, Loader2, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -31,9 +31,11 @@ import {
   useSidebar,
 } from "@neuralpay/ui/components/sidebar";
 import { cn } from "@neuralpay/ui/lib/utils";
+import { useProfile } from "@/hooks/queries/use-profile";
 
 export function DashboardUserButton() {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: profile } = useProfile();
+  const { name, email } = profile;
 
   const { state } = useSidebar();
   const router = useRouter();
@@ -42,10 +44,6 @@ export function DashboardUserButton() {
     "idle",
   );
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
-  if (isPending || !session?.user) return null;
-  const { name, email } = session.user;
-
   const initials =
     name
       ?.split(" ")
@@ -130,7 +128,14 @@ export function DashboardUserButton() {
               <DropdownMenuSeparator className="bg-secondary" />
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={() => router.push("/")}
+                onClick={() => router.push("/dashboard/settings")}
+              >
+                <Settings className="mr-2 size-4" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => router.push("/dashboard/settings/billing")}
               >
                 <CreditCard className="mr-2 size-4" />
                 Billing

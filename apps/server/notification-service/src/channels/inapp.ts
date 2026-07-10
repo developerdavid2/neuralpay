@@ -15,8 +15,6 @@ export async function sendInApp(
   body: string,
   data?: NotificationData,
 ) {
-  console.log("[sendInApp] START — userId:", userId, "type:", type);
-
   const input: CreateNotificationInput = {
     userId,
     type,

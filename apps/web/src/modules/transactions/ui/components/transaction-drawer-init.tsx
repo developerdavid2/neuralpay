@@ -1,6 +1,6 @@
 "use client";
 
-import { useDrawerInit } from "@/hooks/use-drawer-init";
+import { useDrawerInit } from "@/hooks/ui/use-drawer-init";
 import { useTransactionDetail } from "../../hooks/queries/use-transaction-detail";
 import { useTransactionDrawer } from "../../hooks/store/use-transaction-drawer";
 

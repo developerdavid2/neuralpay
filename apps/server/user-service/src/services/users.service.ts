@@ -1,12 +1,11 @@
 import { db } from "@neuralpay/db";
 import { user } from "@neuralpay/db/schema";
-import { eq } from "drizzle-orm";
-import {
-  updateUserSchema,
-  type ServiceResult,
-  type UpdateUserInput,
-  type UserRecord,
+import type {
+  ServiceResult,
+  UpdateProfileInput,
+  UserRecord,
 } from "@neuralpay/types";
+import { eq } from "drizzle-orm";
 
 export const UsersService = {
   async getById(id: string): Promise<ServiceResult<UserRecord>> {
@@ -20,7 +19,7 @@ export const UsersService = {
       if (!result[0]) {
         return { success: false, error: "User not found", code: "NOT_FOUND" };
       }
-      return { success: true, data: result[0] };
+      return { success: true, data: result[0] as UserRecord };
     } catch (err) {
       console.error("[UsersService.getById]", err);
       return {
@@ -31,16 +30,26 @@ export const UsersService = {
     }
   },
 
-  async getAllUsers(): Promise<ServiceResult<UserRecord[]>> {
+  async updateProfile(
+    id: string,
+    input: UpdateProfileInput,
+  ): Promise<ServiceResult<UserRecord>> {
     try {
-      const result = await db.select().from(user);
+      const result = await db
+        .update(user)
+        .set({ ...input, updatedAt: new Date() })
+        .where(eq(user.id, id))
+        .returning();
 
-      return { success: true, data: result };
+      if (!result[0]) {
+        return { success: false, error: "User not found", code: "NOT_FOUND" };
+      }
+      return { success: true, data: result[0] as UserRecord };
     } catch (err) {
-      console.error("[UsersService.getAllUsers]", err);
+      console.error("[UsersService.updateProfile]", err);
       return {
         success: false,
-        error: "Failed to fetch users",
+        error: "Failed to update profile",
         code: "DB_ERROR",
       };
     }
@@ -60,7 +69,7 @@ export const UsersService = {
       if (!result[0]) {
         return { success: false, error: "User not found", code: "NOT_FOUND" };
       }
-      return { success: true, data: result[0] };
+      return { success: true, data: result[0] as UserRecord };
     } catch (err) {
       console.error("[UsersService.updatePlanTier]", err);
       return {
@@ -71,6 +80,3 @@ export const UsersService = {
     }
   },
 } as const;
-
-export { updateUserSchema };
-export type { UpdateUserInput, UserRecord };

@@ -9,7 +9,7 @@ import { cn } from "@neuralpay/ui/lib/utils";
 
 import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
 
-import { useConfirm } from "@/hooks/use-confirm";
+import { useConfirm } from "@/hooks/ui/use-confirm";
 import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
 import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
 import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
