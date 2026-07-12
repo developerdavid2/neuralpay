@@ -17,13 +17,9 @@ const messaging = firebase.messaging();
 
 // public/firebase-messaging-sw.js
 messaging.onBackgroundMessage((payload) => {
-  console.log("[SW] Background message received:", payload);
-
   const title =
     payload.notification?.title || payload.data?.title || "New Notification";
   const body = payload.notification?.body || payload.data?.body || "";
-
-  console.log("[SW] Showing notification:", { title, body });
 
   self.registration.showNotification(title, {
     body,

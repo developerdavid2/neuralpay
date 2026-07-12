@@ -119,7 +119,6 @@ export interface AccountConnectedPayload {
   userId: string;
   accountId: string;
   bankName: string;
-  accountType: string;
 }
 
 export interface AccountDisconnectedPayload {

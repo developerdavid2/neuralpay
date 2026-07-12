@@ -1,4 +1,5 @@
 // handlers/transaction.handler.ts
+import { TRPCError } from "@trpc/server";
 import { sendInApp } from "../channels/inapp";
 import { sendPush } from "../channels/push";
 import { broadcastToUser } from "../channels/realtime";
@@ -15,41 +16,25 @@ type TransactionEvent = Extract<
 >;
 
 export async function handleTransaction(event: TransactionEvent) {
-  console.log("[handleTransaction] START — type:", event.type);
-
   const { payload } = event;
   const { userId } = payload;
 
-  console.log(
-    "[handleTransaction] userId:",
-    userId,
-    "payload:",
-    JSON.stringify(payload, null, 2),
-  );
-
   const prefs = await getUserPreferences(userId);
-  console.log("[handleTransaction] prefs:", JSON.stringify(prefs));
 
+  // transaction_anomaly
   if (event.type === "transaction_anomaly") {
     const p = payload as TransactionAnomalyPayload;
-
-    console.log("[handleTransaction] handling anomaly");
 
     const result = await sendInApp(
       userId,
       "transaction_anomaly",
       "transaction",
-      "🚨 Unusual Transaction Detected",
+      "Unusual Transaction Detected",
       `${p.merchant} — $${p.amount}`,
       {
         relatedId: p.transactionId,
         relatedType: "transaction",
       },
-    );
-
-    console.log(
-      "[handleTransaction] sendInApp result:",
-      JSON.stringify(result, null, 2),
     );
 
     if (!result.success) {
@@ -64,8 +49,16 @@ export async function handleTransaction(event: TransactionEvent) {
     const notification = result.data;
     console.log("[handleTransaction] notification created:", notification.id);
 
-    if (prefs.pushEnabled && prefs.anomalyAlerts) {
-      console.log("[handleTransaction] sending push...");
+    if (!prefs.success) {
+      console.error(
+        "[handleTransaction] sendPush FAILED:",
+        prefs.error,
+        prefs.code,
+      );
+      return;
+    }
+
+    if (prefs.data.pushEnabled && prefs.data.transactionAlerts) {
       await sendPush(
         userId,
         notification.title,
@@ -74,8 +67,7 @@ export async function handleTransaction(event: TransactionEvent) {
       );
     }
 
-    console.log("[handleTransaction] broadcasting to user:", userId);
-    await broadcastToUser(userId, {
+    broadcastToUser(userId, {
       type: "notification.new",
       notification,
     });
@@ -100,11 +92,6 @@ export async function handleTransaction(event: TransactionEvent) {
     },
   );
 
-  console.log(
-    "[handleTransaction] sendInApp result:",
-    JSON.stringify(result, null, 2),
-  );
-
   if (!result.success) {
     console.error(
       "[handleTransaction] sendInApp FAILED:",
@@ -115,12 +102,13 @@ export async function handleTransaction(event: TransactionEvent) {
   }
 
   const notification = result.data;
-  console.log("[handleTransaction] notification created:", notification.id);
+  if (!prefs.success) {
+    return new TRPCError({
+      code: "BAD_REQUEST",
+    });
+  }
 
-  console.log("[handleTransaction] prefs:", JSON.stringify(prefs));
-
-  if (prefs.pushEnabled && prefs.paymentAlerts) {
-    console.log("[handleTransaction] sending push...");
+  if (prefs.data.pushEnabled && prefs.data.transactionAlerts) {
     await sendPush(
       userId,
       notification.title,
@@ -129,8 +117,7 @@ export async function handleTransaction(event: TransactionEvent) {
     );
   }
 
-  console.log("[handleTransaction] broadcasting to user:", userId);
-  await broadcastToUser(userId, {
+  broadcastToUser(userId, {
     type: "notification.new",
     notification,
   });

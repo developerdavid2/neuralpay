@@ -72,19 +72,16 @@ const eventRouteMap: Record<NotificationType, RouteConfig | null> = {
     defaultParams: { mode: "members" },
   },
   account_connected: {
-    path: "/dashboard/accounts",
+    path: "/dashboard/settings/connected-banks",
     idParamName: "focusAccountId",
-    defaultParams: { mode: "connected" },
   },
   account_disconnected: {
-    path: "/dashboard/accounts",
+    path: "/dashboard/settings/connected-banks",
     idParamName: "focusAccountId",
-    defaultParams: { mode: "disconnected" },
   },
   account_sync_failed: {
-    path: "/dashboard/accounts",
+    path: "/dashboard/settings/connected-banks",
     idParamName: "focusAccountId",
-    defaultParams: { mode: "sync-error" },
   },
   budget_threshold: {
     path: "/dashboard/budgets",
@@ -119,7 +116,6 @@ export function extractRelatedId(
   type: NotificationType,
   data: Record<string, unknown>,
 ): string | undefined {
-  // Try payload-specific fields first, then fall back to the shared relatedId
   switch (type) {
     case "transaction_created":
     case "transaction_anomaly":
@@ -157,9 +153,7 @@ export function extractRelatedId(
     case "account_connected":
     case "account_disconnected":
     case "account_sync_failed":
-      return (
-        (data.accountId as string) || (data.relatedId as string) || undefined
-      );
+      return undefined;
     case "budget_threshold":
       return (
         (data.budgetId as string) || (data.relatedId as string) || undefined
