@@ -84,7 +84,8 @@ export type NotificationEvent =
   | { type: "subscription_expiring"; payload: SubscriptionExpiringPayload }
   | { type: "subscription_cancelled"; payload: SubscriptionCancelledPayload }
   | { type: "system_maintenance"; payload: SystemMaintenancePayload }
-  | { type: "system_welcome"; payload: SystemWelcomePayload };
+  | { type: "system_welcome"; payload: SystemWelcomePayload }
+  | { type: "security_alert"; payload: SecurityAlertPayload };
 
 // ── Payload Types
 export interface TransactionCreatedPayload {
@@ -249,6 +250,13 @@ export interface SystemMaintenancePayload {
 export interface SystemWelcomePayload {
   userId: string;
   userName: string;
+}
+
+export interface SecurityAlertPayload {
+  userId: string;
+  message: string;
+  ipAddress?: string;
+  device?: string;
 }
 
 // ── Notification Job (BullMQ queue payload)

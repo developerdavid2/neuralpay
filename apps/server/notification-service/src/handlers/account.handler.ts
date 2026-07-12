@@ -18,20 +18,10 @@ type AccountEvent = Extract<
 >;
 
 export async function handleAccount(event: AccountEvent) {
-  console.log("[handleAccount] START — type:", event.type);
-
   const { payload } = event;
   const { userId } = payload;
 
-  console.log(
-    "[handleAccount] userId:",
-    userId,
-    "payload:",
-    JSON.stringify(payload, null, 2),
-  );
-
   const prefs = await getUserPreferences(userId);
-  console.log("[handleAccount] prefs:", JSON.stringify(prefs));
 
   let title: string;
   let body: string;
@@ -76,11 +66,6 @@ export async function handleAccount(event: AccountEvent) {
     },
   );
 
-  console.log(
-    "[handleAccount] sendInApp result:",
-    JSON.stringify(result, null, 2),
-  );
-
   if (!result.success) {
     console.error(
       "[handleAccount] sendInApp FAILED:",
@@ -91,7 +76,6 @@ export async function handleAccount(event: AccountEvent) {
   }
 
   const notification = result.data;
-  console.log("[handleAccount] notification created:", notification.id);
 
   if (!prefs.success) {
     return new TRPCError({
@@ -100,7 +84,6 @@ export async function handleAccount(event: AccountEvent) {
   }
 
   if (prefs.data.pushEnabled && prefs.data.accountAlerts) {
-    console.log("[handleAccount] sending push...");
     await sendPush(
       userId,
       notification.title,
@@ -109,8 +92,7 @@ export async function handleAccount(event: AccountEvent) {
     );
   }
 
-  console.log("[handleAccount] broadcasting to user:", userId);
-  await broadcastToUser(userId, {
+  broadcastToUser(userId, {
     type: "notification.new",
     notification,
   });

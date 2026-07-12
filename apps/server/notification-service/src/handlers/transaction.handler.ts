@@ -1,5 +1,3 @@
-// handlers/transaction.handler.ts
-import { TRPCError } from "@trpc/server";
 import { sendInApp } from "../channels/inapp";
 import { sendPush } from "../channels/push";
 import { broadcastToUser } from "../channels/realtime";
@@ -21,73 +19,35 @@ export async function handleTransaction(event: TransactionEvent) {
 
   const prefs = await getUserPreferences(userId);
 
-  // transaction_anomaly
-  if (event.type === "transaction_anomaly") {
-    const p = payload as TransactionAnomalyPayload;
+  let title: string;
+  let body: string;
+  let notificationType: "transaction_created" | "transaction_anomaly";
 
-    const result = await sendInApp(
-      userId,
-      "transaction_anomaly",
-      "transaction",
-      "Unusual Transaction Detected",
-      `${p.merchant} — $${p.amount}`,
-      {
-        relatedId: p.transactionId,
-        relatedType: "transaction",
-      },
-    );
-
-    if (!result.success) {
-      console.error(
-        "[handleTransaction] sendInApp FAILED:",
-        result.error,
-        result.code,
-      );
-      return;
+  switch (event.type) {
+    case "transaction_created": {
+      const p = payload as TransactionCreatedPayload;
+      notificationType = "transaction_created";
+      title = "New Transaction";
+      body = `${p.merchant} — $${p.amount}`;
+      break;
     }
-
-    const notification = result.data;
-    console.log("[handleTransaction] notification created:", notification.id);
-
-    if (!prefs.success) {
-      console.error(
-        "[handleTransaction] sendPush FAILED:",
-        prefs.error,
-        prefs.code,
-      );
-      return;
+    case "transaction_anomaly": {
+      const p = payload as TransactionAnomalyPayload;
+      notificationType = "transaction_anomaly";
+      title = "Unusual Transaction Detected";
+      body = `${p.merchant} — $${p.amount}`;
+      break;
     }
-
-    if (prefs.data.pushEnabled && prefs.data.transactionAlerts) {
-      await sendPush(
-        userId,
-        notification.title,
-        notification.body,
-        notification.data,
-      );
-    }
-
-    broadcastToUser(userId, {
-      type: "notification.new",
-      notification,
-    });
-
-    return;
   }
-
-  // transaction_created
-  const p = payload as TransactionCreatedPayload;
-
-  console.log("[handleTransaction] handling transaction_created");
 
   const result = await sendInApp(
     userId,
-    "transaction_created",
+    notificationType,
     "transaction",
-    "New Transaction",
-    `${p.merchant} — $${p.amount}`,
+    title,
+    body,
     {
-      relatedId: p.transactionId,
+      relatedId: payload.transactionId,
       relatedType: "transaction",
     },
   );
@@ -102,10 +62,14 @@ export async function handleTransaction(event: TransactionEvent) {
   }
 
   const notification = result.data;
+
   if (!prefs.success) {
-    return new TRPCError({
-      code: "BAD_REQUEST",
-    });
+    console.error(
+      "[handleTransaction] getUserPreferences FAILED:",
+      prefs.error,
+      prefs.code,
+    );
+    return;
   }
 
   if (prefs.data.pushEnabled && prefs.data.transactionAlerts) {
@@ -117,7 +81,7 @@ export async function handleTransaction(event: TransactionEvent) {
     );
   }
 
-  broadcastToUser(userId, {
+  await broadcastToUser(userId, {
     type: "notification.new",
     notification,
   });

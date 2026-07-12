@@ -1,10 +1,14 @@
 // handlers/index.ts
 import type { NotificationEvent } from "@neuralpay/types";
 import { handleTransaction } from "./transaction.handler";
-import { handleAi } from "./insight.handler";
 import { handleSplit } from "./split.handler";
 import { handleVault } from "./vault.handler";
 import { handleAccount } from "./account.handler";
+import { handleAi } from "./ai.handler";
+import { handleBudget } from "./budget.handler";
+import { handleSubscription } from "./subscription.handler";
+import { handleSystem } from "./system.handler";
+import { handleSecurity } from "./security.handler";
 // import { handleBudget } from "./budget.handler";
 
 export async function handleEvent(event: NotificationEvent) {
@@ -14,7 +18,6 @@ export async function handleEvent(event: NotificationEvent) {
       return handleTransaction(event);
     case "ai_insight":
     case "ai_weekly_report":
-    case "ai_coach_response":
       return handleAi(event);
     case "split_invite":
     case "split_paid":
@@ -29,17 +32,17 @@ export async function handleEvent(event: NotificationEvent) {
     case "account_disconnected":
     case "account_sync_failed":
       return handleAccount(event);
-    // case "budget_threshold":
-    //   return handleBudget(event);
+    case "budget_threshold":
+      return handleBudget(event);
     case "subscription_expiring":
     case "subscription_renewed":
     case "subscription_cancelled":
-      // TODO: implement subscription handler
-      console.warn("Subscription events not yet implemented:", event.type);
-      return;
+      return handleSubscription(event);
     case "system_maintenance":
     case "system_welcome":
-      return;
+      return handleSystem(event);
+    case "security_alert":
+      return handleSecurity(event);
     default:
       // TypeScript exhaustiveness check
       console.warn("Unhandled event:", (event as any).type);
