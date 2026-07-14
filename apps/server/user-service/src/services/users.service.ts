@@ -39,8 +39,6 @@ export const UsersService = {
         .update(user)
         .set({
           ...input,
-          image: input.image ?? null,
-          imageKey: input.imageKey ?? null,
           updatedAt: new Date(),
         })
         .where(eq(user.id, id))

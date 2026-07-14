@@ -1,12 +1,12 @@
+import type {
+  NotificationEvent,
+  TransactionAnomalyPayload,
+  TransactionCreatedPayload,
+} from "@neuralpay/types";
 import { sendInApp } from "../channels/inapp";
 import { sendPush } from "../channels/push";
 import { broadcastToUser } from "../channels/realtime";
 import { getUserPreferences } from "../services/preferences.service";
-import type {
-  NotificationEvent,
-  TransactionCreatedPayload,
-  TransactionAnomalyPayload,
-} from "@neuralpay/types";
 
 type TransactionEvent = Extract<
   NotificationEvent,
@@ -69,10 +69,7 @@ export async function handleTransaction(event: TransactionEvent) {
       prefs.error,
       prefs.code,
     );
-    return;
-  }
-
-  if (prefs.data.pushEnabled && prefs.data.transactionAlerts) {
+  } else if (prefs.data.pushEnabled && prefs.data.transactionAlerts) {
     await sendPush(
       userId,
       notification.title,

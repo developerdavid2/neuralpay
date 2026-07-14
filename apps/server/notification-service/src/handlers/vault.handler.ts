@@ -64,10 +64,7 @@ export async function handleVault(event: VaultEvent) {
       prefs.error,
       prefs.code,
     );
-    return;
-  }
-
-  if (prefs.data.pushEnabled && prefs.data.vaultUpdates) {
+  } else if (prefs.data.pushEnabled && prefs.data.vaultUpdates) {
     await sendPush(
       userId,
       notification.title,

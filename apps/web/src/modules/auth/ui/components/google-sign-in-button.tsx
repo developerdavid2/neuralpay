@@ -6,6 +6,7 @@ import { Button } from "@neuralpay/ui/components/button";
 import { Loader } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 
 interface GoogleSignInButtonProps {
   variant?: "signin" | "signup";
@@ -27,7 +28,10 @@ export function GoogleSignInButton({
       },
       {
         onSuccess: () => {
-          setIsLoading(false);
+          setTimeout(() => {
+            setIsLoading(false);
+            console.log("Loading set to false");
+          }, 5000);
         },
 
         onError: ({ error }) => {
@@ -54,7 +58,7 @@ export function GoogleSignInButton({
 
       {isLoading ? "Signing in..." : label}
 
-      {isLoading && <Loader className="ml-2 size-4 " />}
+      {isLoading && <Spinner className="ml-2 size-4 " />}
     </Button>
   );
 }

@@ -1,27 +1,29 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { useState, useEffect, useRef } from "react";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 import {
-  OctagonAlertIcon,
   ArrowLeft,
-  RefreshCw,
   CheckCircle,
+  OctagonAlertIcon,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { useEffect, useRef, useState } from "react";
 
-import { Button } from "@neuralpay/ui/components/button";
 import { Alert, AlertTitle } from "@neuralpay/ui/components/alert";
+import { Button } from "@neuralpay/ui/components/button";
+import { Field, FieldGroup } from "@neuralpay/ui/components/field";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@neuralpay/ui/components/input-otp";
-import { Field, FieldGroup } from "@neuralpay/ui/components/field";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { toast } from "sonner";
+import { Show } from "@/components/show";
 
 type FormStatus =
   | { type: "idle" }
@@ -262,13 +264,12 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
 
               {pending && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground " />
+                  <Spinner className="size-3" />
                   Verifying…
                 </p>
               )}
             </div>
 
-            {/* ✅ Success Alert (same style as error) */}
             {status.type === "success" && (
               <Alert
                 variant="default"
@@ -302,30 +303,31 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
               onClick={() => handleVerify(otp)}
               className="w-full h-11 font-semibold text-sm"
             >
-              {pending ? (
+              <Show when={pending} fallback={"Verify code"}>
                 <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground " />
+                  <Spinner className="size-4 text-primary-foreground" />
                   Verifying…
                 </span>
-              ) : (
-                "Verify code"
-              )}
+              </Show>
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
               Didn't receive a code?{" "}
-              {cooldown > 0 ? (
+              <Show
+                when={cooldown > 0}
+                fallback={
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    className="font-semibold text-foreground hover:underline underline-offset-4 inline-flex items-center gap-1"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Resend
+                  </button>
+                }
+              >
                 <span className="font-medium">Resend in {cooldown}s</span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  className="font-semibold text-foreground hover:underline underline-offset-4 inline-flex items-center gap-1"
-                >
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  Resend
-                </button>
-              )}
+              </Show>
             </div>
           </FieldGroup>
         </div>

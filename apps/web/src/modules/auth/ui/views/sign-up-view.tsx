@@ -23,6 +23,7 @@ import { cn } from "@neuralpay/ui/lib/utils";
 import { toast } from "sonner";
 import { AppleSignInButton } from "../components/apple-sign-in-button";
 import { GoogleSignInButton } from "../components/google-sign-in-button";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 
 type FormStatus =
   | { type: "idle" }
@@ -143,7 +144,7 @@ const SignUpView = () => {
                       disabled={pending}
                       aria-invalid={fieldState.invalid}
                       autoComplete="name"
-                      className="bg-background"
+                      className="pr-11 bg-background h-10"
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -169,7 +170,7 @@ const SignUpView = () => {
                       disabled={pending}
                       aria-invalid={fieldState.invalid}
                       autoComplete="email"
-                      className="bg-background"
+                      className="pr-11 bg-background h-10"
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -302,7 +303,7 @@ const SignUpView = () => {
               >
                 {pending ? (
                   <span className="flex items-center gap-2">
-                    <span className="h-4 w-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground " />
+                    <Spinner className="size-5 text-violet-100 " />
                     Creating account...
                   </span>
                 ) : (

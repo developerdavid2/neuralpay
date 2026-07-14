@@ -2,6 +2,7 @@
 
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@neuralpay/ui/components/button";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { Loader } from "lucide-react";
 import { useState } from "react";
 import { FaApple } from "react-icons/fa";
@@ -53,7 +54,7 @@ export function AppleSignInButton({
 
       {isLoading ? "Signing in..." : label}
 
-      {isLoading && <Loader className="ml-2 size-4 " />}
+      {isLoading && <Spinner className="ml-2 size-4 " />}
     </Button>
   );
 }

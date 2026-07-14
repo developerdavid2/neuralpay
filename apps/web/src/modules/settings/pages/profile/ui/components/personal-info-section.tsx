@@ -15,6 +15,7 @@ import { DatePicker } from "@/components/date-picker";
 import { PhoneInput } from "./phone-input";
 import { GENDER_TYPES, type UpdateProfileInput } from "@neuralpay/types";
 import { Lock } from "lucide-react";
+import { subYears } from "date-fns";
 
 export function PersonalInfoSection({
   form,
@@ -23,6 +24,7 @@ export function PersonalInfoSection({
   form: UseFormReturn<UpdateProfileInput>;
   email: string;
 }) {
+  const maxDateOfBirth = subYears(new Date(), 18);
   return (
     <Card className="bg-card shadow-none drop-shadow-sm">
       <CardHeader className="pb-0">
@@ -108,6 +110,8 @@ export function PersonalInfoSection({
                 <DatePicker
                   value={field.value ? new Date(field.value) : undefined}
                   onChange={(date) => field.onChange(date?.toISOString())}
+                  fromDate={new Date(1906, 0, 1)}
+                  toDate={maxDateOfBirth}
                   className="rounded-xl bg-input/50 text-foreground hover:bg-main-tint"
                 />
               </Field>

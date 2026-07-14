@@ -8,8 +8,6 @@ import type {
   AiWeeklyReportPayload,
 } from "@neuralpay/types";
 
-// NOTE: `ai_coach_response` exists in NotificationEvent but isn't handled
-// here yet — add a case if/when you want coach replies to notify.
 type AiEvent = Extract<
   NotificationEvent,
   { type: "ai_insight" | "ai_weekly_report" }
@@ -62,21 +60,20 @@ export async function handleAi(event: AiEvent) {
       prefs.error,
       prefs.code,
     );
-    return;
-  }
+  } else {
+    const alertsEnabled =
+      event.type === "ai_weekly_report"
+        ? prefs.data.weeklyReport
+        : prefs.data.insightsAlerts;
 
-  const alertsEnabled =
-    event.type === "ai_weekly_report"
-      ? prefs.data.weeklyReport
-      : prefs.data.insightsAlerts;
-
-  if (prefs.data.pushEnabled && alertsEnabled) {
-    await sendPush(
-      userId,
-      notification.title,
-      notification.body,
-      notification.data,
-    );
+    if (prefs.data.pushEnabled && alertsEnabled) {
+      await sendPush(
+        userId,
+        notification.title,
+        notification.body,
+        notification.data,
+      );
+    }
   }
 
   await broadcastToUser(userId, { type: "notification.new", notification });

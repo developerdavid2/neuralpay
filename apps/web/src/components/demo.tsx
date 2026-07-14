@@ -39,6 +39,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@neuralpay/ui/components/dropdown-menu";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 
 export function Demo() {
   const [sliderValue, setSliderValue] = React.useState<number[]>([500]);
@@ -116,7 +117,7 @@ export function Demo() {
                   <MoreHorizontalIcon />
                 </Card>
                 <Card className="flex size-8 items-center justify-center p-0 shadow-none *:[svg]:size-4">
-                  <SpinnerIcon />
+                  <Spinner />
                 </Card>
                 <Card className="flex size-8 items-center justify-center p-0 shadow-none *:[svg]:size-4">
                   <PlusIcon />

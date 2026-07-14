@@ -71,10 +71,7 @@ export async function handleSplit(event: SplitEvent) {
       prefs.error,
       prefs.code,
     );
-    return;
-  }
-
-  if (prefs.data.pushEnabled && prefs.data.splitNotifs) {
+  } else if (prefs.data.pushEnabled && prefs.data.splitNotifs) {
     await sendPush(
       userId,
       notification.title,
