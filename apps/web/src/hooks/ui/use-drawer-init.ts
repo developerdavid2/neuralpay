@@ -58,5 +58,5 @@ export function useDrawerInit<TData, TState extends DrawerActions<TData>>(
     }
 
     appliedKey.current = nextKey;
-  }, [focusId, mode, data, isLoading, getState, getCurrentId]);
+  }, []);
 }

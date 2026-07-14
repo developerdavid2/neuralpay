@@ -37,7 +37,12 @@ export const UsersService = {
     try {
       const result = await db
         .update(user)
-        .set({ ...input, updatedAt: new Date() })
+        .set({
+          ...input,
+          image: input.image ?? null,
+          imageKey: input.imageKey ?? null,
+          updatedAt: new Date(),
+        })
         .where(eq(user.id, id))
         .returning();
 

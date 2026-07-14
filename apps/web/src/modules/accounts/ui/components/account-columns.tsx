@@ -8,16 +8,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@neuralpay/ui/components/dropdown-menu";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   ChevronsUpDown,
   Eye,
   Landmark,
-  Loader2,
   MoreHorizontal,
   Pencil,
   Trash2,
-  Unplug,
 } from "lucide-react";
 import { AccountStatusBadge, AccountTypeBadge } from "./account-badges";
 
@@ -216,7 +215,7 @@ export function accountColumns({
                 disabled={pending}
               >
                 {pending ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Spinner className="size-4" />
                 ) : (
                   <MoreHorizontal className="size-4" />
                 )}

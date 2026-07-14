@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { AccountFormFields } from "./account-form-fields";
 import type { FormValues } from "../../types";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 
 export function AccountForm({
   defaultValues,
@@ -57,7 +58,7 @@ export function AccountForm({
     >
       {isDeleting && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          <Spinner className="size-6 text-muted-foreground" />
         </div>
       )}
       <DrawerHeader className="px-6 py-4 border-b space-y-1 shrink-0">
@@ -88,7 +89,7 @@ export function AccountForm({
                 title="Delete account"
               >
                 {isDeleting ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Spinner className="size-4" />
                 ) : (
                   <Trash2 className="size-4" />
                 )}
@@ -124,7 +125,7 @@ export function AccountForm({
         >
           {isSaving ? (
             <>
-              <Loader2 className="size-4 animate-spin mr-2" />
+              <Spinner className="size-4 mr-2" />
               {isEdit ? "Saving..." : "Creating..."}
             </>
           ) : isEdit ? (

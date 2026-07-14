@@ -1,0 +1,24 @@
+{
+  "name": "@neuralpay/file-upload",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./cleanup": "./src/cleanup.ts",
+    "./express": "./src/adapters/express.ts",
+    "./fastify": "./src/adapters/fastify.ts"
+  },
+  "dependencies": {
+    "uploadthing": "catalog:",
+    "zod": "catalog:",
+    "fastify": "^5.8.5",
+    "express": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@types/express": "catalog:",
+    "typescript": "catalog:"
+  }
+}

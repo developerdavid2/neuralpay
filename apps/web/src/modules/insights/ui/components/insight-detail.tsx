@@ -18,7 +18,7 @@ import { Archive, Loader2, MessageCircle, RotateCcw, X } from "lucide-react";
 import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
 import { useInsightDetail } from "../../hooks/queries/use-insight-detail";
 import type { Insight } from "../../types";
-
+import { Spinner } from "@neuralpay/ui/components/spinner";
 interface InsightDetailsProps {
   insightId: string | null;
   open: boolean;
@@ -55,7 +55,7 @@ export function InsightDetails({
       <DrawerContent
         className={cn(
           "data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-24 data-[vaul-drawer-direction=bottom]:max-h-[85vh] data-[vaul-drawer-direction=bottom]:rounded-t-xl",
-          "data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:h-full data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:max-w-[420px]",
+          "data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:h-full data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:max-w-105",
           "flex flex-col",
         )}
       >
@@ -195,7 +195,7 @@ function InsightDetailsContent({
                 disabled={dismissing}
               >
                 {dismissing ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Spinner className="size-4 " />
                 ) : (
                   <Archive className="size-4" />
                 )}
@@ -210,7 +210,7 @@ function InsightDetailsContent({
               disabled={restoring}
             >
               {restoring ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Spinner className="size-4 " />
               ) : (
                 <RotateCcw className="size-4" />
               )}

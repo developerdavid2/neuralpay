@@ -1,6 +1,6 @@
 import { useIntersectionObserver } from "@/hooks/ui/use-intersection-observer";
 import { Button } from "@neuralpay/ui/components/button";
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { useEffect } from "react";
 
 interface InfiniteScrollProps {
@@ -49,7 +49,7 @@ export const InfiniteScroll = ({
         >
           {isFetchingNextPage ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Spinner className="h-4 w-4" />
               Loading more...
             </>
           ) : (

@@ -2,6 +2,7 @@
 
 import { useConfirm } from "@/hooks/ui/use-confirm";
 import { formatAmount } from "@/lib/utils";
+import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
 import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
 import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
 import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
@@ -17,6 +18,7 @@ import {
 import { ScrollArea } from "@neuralpay/ui/components/scroll-area";
 import { Separator } from "@neuralpay/ui/components/separator";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { format } from "date-fns";
 import {
@@ -27,7 +29,6 @@ import {
   Calendar,
   CreditCard,
   FileText,
-  Loader2,
   Pencil,
   Receipt,
   Sparkles,
@@ -35,15 +36,13 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { isSyncedSource } from "../../lib/utils";
 import {
   useTransactionDrawer,
   type TransactionDrawerMode,
 } from "../../hooks/store/use-transaction-drawer";
-import { SourceBadge, StatusBadge } from "./transaction-badges";
-import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
 import { useTransactionPendingSelectors } from "../../hooks/store/use-transaction-pending";
-
+import { isSyncedSource } from "../../lib/utils";
+import { SourceBadge, StatusBadge } from "./transaction-badges";
 function DetailField({
   label,
   value,
@@ -180,7 +179,7 @@ function TransactionViewInner({
       >
         {deleting && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            <Spinner className="size-6  text-muted-foreground" />
           </div>
         )}
         <DrawerHeader className="px-6 py-4 border-b space-y-4 shrink-0">
@@ -387,7 +386,7 @@ function TransactionViewInner({
               disabled={deleting}
             >
               {deleting ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Spinner className="size-4 " />
               ) : (
                 <Trash2 className="size-4" />
               )}

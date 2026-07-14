@@ -29,6 +29,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
 import type { Route } from "next";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 
 interface ChatSessionItemProps {
   session: ChatSession;
@@ -164,7 +165,7 @@ export function ChatSessionItem({
               disabled={isProcessing}
             >
               {isProcessing ? (
-                <Loader2 className="size-3 animate-spin" />
+                <Spinner className="size-3 " />
               ) : (
                 <MoreVertical className="size-3" />
               )}

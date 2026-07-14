@@ -166,7 +166,7 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
                 className="gap-2"
               >
                 {unarchiveSession.isPending ? (
-                  <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  <span className="size-4  rounded-full border-2 border-current border-t-transparent" />
                 ) : (
                   <ArchiveRestore className="size-4" />
                 )}

@@ -9,19 +9,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@neuralpay/ui/components/dropdown-menu";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import {
   ChevronsUpDown,
   Eye,
-  Loader2,
   MoreHorizontal,
   Pencil,
   Trash2,
 } from "lucide-react";
 import { isSyncedSource } from "../../lib/utils";
 import { SourceBadge, StatusBadge } from "./transaction-badges";
-
 interface ColumnProps {
   onView: (tx: Transaction) => void;
   onEdit: (tx: Transaction) => void;
@@ -212,7 +211,7 @@ export function transactionColumns({
                 disabled={pending}
               >
                 {pending ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Spinner className="size-4 " />
                 ) : (
                   <MoreHorizontal className="size-4" />
                 )}

@@ -1,18 +1,21 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
 import { useProfile } from "@/hooks/queries/use-profile";
+import { useConfirm } from "@/hooks/ui/use-confirm";
+import { useUploadThing } from "@/lib/uploadthing";
 import type { UpdateProfileInput, UserRecord } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
+import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useConfirm } from "@/hooks/ui/use-confirm";
 import { useUpdateProfile } from "../../hooks/mutations/use-update-profile";
 import { AvatarSection } from "./avatar-section";
 import { LanguageRegionSection } from "./language-region-section";
 import { LocationSection } from "./location-section";
 import { PersonalInfoSection } from "./personal-info-section";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 
 export function ProfileSettingsContent() {
   const { data: profile } = useProfile();
@@ -25,6 +28,7 @@ function buildDefaults(profile: UserRecord): UpdateProfileInput {
     name: profile.name,
     nickname: profile.nickname ?? undefined,
     image: profile.image ?? undefined,
+    imageKey: profile.imageKey ?? undefined,
     phone: profile.phone ?? undefined,
     email: profile.email ?? undefined,
     gender: profile.gender ?? undefined,
@@ -40,13 +44,30 @@ function buildDefaults(profile: UserRecord): UpdateProfileInput {
   };
 }
 
-function ProfileSettingsForm({ profile }: { profile: UserRecord }) {
+export function ProfileSettingsForm({ profile }: { profile: UserRecord }) {
   const updateProfile = useUpdateProfile();
   const [ConfirmDialog, confirm] = useConfirm();
+
+  // Avatar is staged locally and only actually uploaded/committed on Save.
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarRemoved, setAvatarRemoved] = useState(false);
+
+  const { startUpload, isUploading } = useUploadThing("avatarUploader", {
+    onUploadError: (error) => {
+      toast.error(`Upload failed: ${error.message}`);
+    },
+  });
 
   const form = useForm<UpdateProfileInput>({
     defaultValues: buildDefaults(profile),
   });
+
+  const displayedAvatar = avatarRemoved
+    ? null
+    : (avatarPreview ?? form.watch("image") ?? null);
+
+  const avatarIsDirty = !!pendingAvatarFile || avatarRemoved;
 
   const onSubmit = async (values: UpdateProfileInput) => {
     const ok = await confirm({
@@ -57,12 +78,31 @@ function ProfileSettingsForm({ profile }: { profile: UserRecord }) {
     });
     if (!ok) return;
 
-    const { email, ...payload } = values;
+    const finalValues: UpdateProfileInput = { ...values };
 
-    updateProfile.mutate(payload, {
+    if (pendingAvatarFile) {
+      const result = await startUpload([pendingAvatarFile]);
+      const uploaded = result?.[0];
+
+      if (!uploaded?.ufsUrl) {
+        toast.error("Avatar upload failed. Please try saving again.");
+        return; // bail before touching the DB
+      }
+
+      finalValues.image = uploaded.ufsUrl;
+      finalValues.imageKey = uploaded.key;
+    } else if (avatarRemoved) {
+      finalValues.image = null;
+      finalValues.imageKey = null;
+    }
+
+    updateProfile.mutate(finalValues, {
       onSuccess: () => {
         toast.success("Profile updated");
-        form.reset(values);
+        form.reset(finalValues);
+        setPendingAvatarFile(null);
+        setAvatarPreview(null);
+        setAvatarRemoved(false);
       },
       onError: () => toast.error("Failed to update profile"),
     });
@@ -72,16 +112,19 @@ function ProfileSettingsForm({ profile }: { profile: UserRecord }) {
     <>
       <ConfirmDialog />
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Controller
-          name="image"
-          control={form.control}
-          render={({ field }) => (
-            <AvatarSection
-              image={field.value ?? ""}
-              name={profile.name}
-              onImageChange={field.onChange}
-            />
-          )}
+        <AvatarSection
+          image={displayedAvatar}
+          name={profile.name}
+          onFileSelected={(file, previewUrl) => {
+            setPendingAvatarFile(file);
+            setAvatarPreview(previewUrl);
+            setAvatarRemoved(false);
+          }}
+          onRemove={() => {
+            setPendingAvatarFile(null);
+            setAvatarPreview(null);
+            setAvatarRemoved(true);
+          }}
         />
 
         <PersonalInfoSection form={form} email={form.watch("email") ?? ""} />
@@ -95,9 +138,20 @@ function ProfileSettingsForm({ profile }: { profile: UserRecord }) {
         <div className="flex justify-end">
           <Button
             type="submit"
-            disabled={!form.formState.isDirty || updateProfile.isPending}
+            disabled={
+              (!form.formState.isDirty && !avatarIsDirty) ||
+              updateProfile.isPending ||
+              isUploading
+            }
           >
-            {updateProfile.isPending ? "Saving..." : "Save Changes"}
+            {updateProfile.isPending || isUploading ? (
+              <>
+                <Spinner />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </div>
       </form>

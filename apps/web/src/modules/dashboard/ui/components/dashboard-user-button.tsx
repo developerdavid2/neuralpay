@@ -1,10 +1,12 @@
 "use client";
 
-import { ChevronUp, CreditCard, Loader2, LogOut, Settings } from "lucide-react";
+import { ChevronUp, CreditCard, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Show } from "@/components/show";
+import { useProfile } from "@/hooks/queries/use-profile";
 import { authClient } from "@/lib/auth-client";
 import {
   AlertDialog,
@@ -16,6 +18,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@neuralpay/ui/components/alert-dialog";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@neuralpay/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,12 +37,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@neuralpay/ui/components/sidebar";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { useProfile } from "@/hooks/queries/use-profile";
 
 export function DashboardUserButton() {
   const { data: profile } = useProfile();
-  const { name, email } = profile;
+  const { name, email, image } = profile;
 
   const { state } = useSidebar();
   const router = useRouter();
@@ -70,14 +77,24 @@ export function DashboardUserButton() {
     });
   };
 
-  const Avatar = (
-    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-chart-3">
-      {logoutState === "loading" ? (
-        <Loader2 className="h-4 w-4 animate-spin text-white" />
-      ) : (
-        <span className="text-xs font-semibold text-white">{initials}</span>
-      )}
-    </div>
+  const AvatarTrigger = (
+    <>
+      <Show
+        when={logoutState === "loading"}
+        fallback={
+          <Avatar className="size-8 rounded-full items-center justify-center shrink-0 flex">
+            <AvatarImage src={image ?? undefined} alt={name} />
+            <AvatarFallback className="text-md bg-primary text-white">
+              {name?.charAt(0).toUpperCase() ?? "U"}
+            </AvatarFallback>
+          </Avatar>
+        }
+      >
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-chart-3">
+          <Spinner className="h-4 w-4  text-white" />
+        </div>
+      </Show>
+    </>
   );
 
   return (
@@ -96,7 +113,7 @@ export function DashboardUserButton() {
                   state === "collapsed" && "justify-center px-0",
                 )}
               >
-                {Avatar}
+                {AvatarTrigger}
                 {state === "expanded" && (
                   <>
                     <div className="grid flex-1 text-left text-sm leading-tight">
@@ -177,7 +194,7 @@ export function DashboardUserButton() {
               variant="destructive"
             >
               {logoutState === "loading" ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Spinner className="mr-2 h-4 w-4 " />
               ) : null}
               Log out
             </AlertDialogAction>

@@ -12,16 +12,14 @@ import {
 import { ScrollArea } from "@neuralpay/ui/components/scroll-area";
 import { Separator } from "@neuralpay/ui/components/separator";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { format } from "date-fns";
 import {
   AlertTriangle,
   Building2,
-  Calendar,
   CreditCard,
   FileText,
   Landmark,
-  Loader2,
   Pencil,
   Trash2,
   Wallet,
@@ -30,8 +28,8 @@ import {
 import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
 import { useAccountDetail } from "../../hooks/queries/use-account-detail";
 import { useAccountDrawer } from "../../hooks/store/use-account-drawer";
-import { AccountStatusBadge, AccountTypeBadge } from "./account-badges";
 import { useAccountPendingSelectors } from "../../hooks/store/use-account-pending";
+import { AccountStatusBadge, AccountTypeBadge } from "./account-badges";
 
 function DetailField({
   label,
@@ -142,7 +140,7 @@ export function AccountViewDrawer() {
             >
               {deleting && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50">
-                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                  <Spinner className="size-6 text-muted-foreground" />
                 </div>
               )}
               <>
@@ -275,7 +273,7 @@ export function AccountViewDrawer() {
                       disabled={deleting}
                     >
                       {deleting ? (
-                        <Loader2 className="size-4 animate-spin" />
+                        <Spinner className="size-4 " />
                       ) : (
                         <Trash2 className="size-4" />
                       )}

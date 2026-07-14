@@ -1,6 +1,7 @@
 // components/data-table/data-table-toolbar.tsx
 "use client";
 
+import { useDataTableNavigation } from "@/hooks/routing/use-data-table-navigation";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   DropdownMenu,
@@ -15,9 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@neuralpay/ui/components/select";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { Loader2, Settings2, Trash2 } from "lucide-react";
-import { useDataTableNavigation } from "@/hooks/routing/use-data-table-navigation";
+import { Settings2, Trash2 } from "lucide-react";
 
 interface DataTableToolbarProps {
   columnVisibility: Record<string, boolean>;
@@ -61,7 +62,7 @@ export function DataTableToolbar({
             value={String(currentLimit)}
             onValueChange={(v) => setLimit(Number(v))}
           >
-            <SelectTrigger className="h-7 w-[90px] text-xs">
+            <SelectTrigger className="h-7 w-22.5 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -121,7 +122,7 @@ export function DataTableToolbar({
                 disabled={isBatchDeleting}
               >
                 {isBatchDeleting ? (
-                  <Loader2 className="size-3.5 mr-1 animate-spin" />
+                  <Spinner className="size-3.5 mr-1" />
                 ) : (
                   <Trash2 className="size-3.5 mr-1" />
                 )}

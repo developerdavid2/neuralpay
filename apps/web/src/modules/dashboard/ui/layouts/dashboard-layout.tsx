@@ -19,7 +19,7 @@ export const DashboardLayout = async ({
       <DashboardSidebar />
       <div className="flex flex-col flex-1 min-w-0">
         <DashboardNavbar />
-        <main className="flex flex-1 flex-col pt-14">{children}</main>
+        <main className="flex flex-1 flex-col">{children}</main>
       </div>
     </SidebarProvider>
   );

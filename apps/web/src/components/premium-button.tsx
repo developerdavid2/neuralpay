@@ -59,7 +59,7 @@ export function PremiumButton({
         <span className="relative z-10 flex items-center gap-3">
           {/* Spinner replaces icon when loading */}
           {isLoading ? (
-            <Loader className="size-5 text-violet-100 animate-spin" />
+            <Loader className="size-5 text-violet-100 " />
           ) : Icon ? (
             <Icon className="size-5 text-violet-100 transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-105" />
           ) : null}

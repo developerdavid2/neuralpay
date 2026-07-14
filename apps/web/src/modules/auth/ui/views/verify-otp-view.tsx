@@ -262,7 +262,7 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
 
               {pending && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                  <span className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground " />
                   Verifying…
                 </p>
               )}
@@ -304,7 +304,7 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
             >
               {pending ? (
                 <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
+                  <span className="h-4 w-4 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground " />
                   Verifying…
                 </span>
               ) : (
