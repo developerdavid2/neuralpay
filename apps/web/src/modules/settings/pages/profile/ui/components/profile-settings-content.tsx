@@ -96,7 +96,13 @@ export function ProfileSettingsForm({ profile }: { profile: UserRecord }) {
       finalValues.imageKey = null;
     }
 
-    updateProfile.mutate(finalValues, {
+    const payload = { ...finalValues };
+    if (!pendingAvatarFile && !avatarRemoved) {
+      delete payload.image;
+      delete payload.imageKey;
+    }
+
+    updateProfile.mutate(payload, {
       onSuccess: () => {
         toast.success("Profile updated");
         form.reset(finalValues);

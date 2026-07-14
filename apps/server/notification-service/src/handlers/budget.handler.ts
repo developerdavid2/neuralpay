@@ -27,8 +27,6 @@ export async function handleBudget(event: BudgetEvent) {
   }
   const body = `${payload.category}: $${payload.spent} of $${payload.limit} (${payload.percentage}%)`;
 
-  // relatedType omitted — "budget" isn't in notificationDataSchema's
-  // relatedType enum yet (transaction | split | vault | account | insight).
   const result = await sendInApp(
     userId,
     "budget_threshold",
@@ -55,10 +53,7 @@ export async function handleBudget(event: BudgetEvent) {
       prefs.error,
       prefs.code,
     );
-    return;
-  }
-
-  if (prefs.data.pushEnabled && prefs.data.budgetAlerts) {
+  } else if (prefs.data.pushEnabled && prefs.data.budgetAlerts) {
     await sendPush(
       userId,
       notification.title,

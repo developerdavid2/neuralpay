@@ -18,8 +18,8 @@ export async function clearExistingFile(opts: {
   const existingKey = await opts.getCurrentKey();
   if (!existingKey) return;
 
-  await deleteFileIfExists(existingKey);
   await opts.clearReference();
+  await deleteFileIfExists(existingKey);
 }
 
 export async function finalizeFile(opts: {

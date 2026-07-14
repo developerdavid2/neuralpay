@@ -3,13 +3,13 @@ import {
   publicProcedure,
   router,
 } from "@neuralpay/config/trpc";
-import { updateProfileSchema } from "@neuralpay/types";
-import { TRPCError } from "@trpc/server";
-import { UsersService } from "../services/users.service";
-import { clearExistingFile } from "@neuralpay/file-upload";
 import { db } from "@neuralpay/db";
 import { user } from "@neuralpay/db/schema";
+import { deleteFileIfExists } from "@neuralpay/file-upload";
+import { updateProfileSchema } from "@neuralpay/types";
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
+import { UsersService } from "../services/users.service";
 
 export const profileRouter = router({
   health: publicProcedure.query(() => ({ ok: true, service: "user-service" })),
@@ -29,19 +29,28 @@ export const profileRouter = router({
   update: protectedProcedure
     .input(updateProfileSchema)
     .use(async ({ ctx, input, next }) => {
+      let existingKey: string | undefined | null;
+
       if (input.imageKey !== undefined) {
-        await clearExistingFile({
-          getCurrentKey: async () => {
-            const [row] = await db
-              .select({ key: user.imageKey })
-              .from(user)
-              .where(eq(user.id, ctx.session.user.id));
-            return row?.key;
-          },
-          clearReference: async () => {},
-        });
+        const [row] = await db
+          .select({ key: user.imageKey })
+          .from(user)
+          .where(eq(user.id, ctx.session.user.id));
+        existingKey = row?.key;
       }
-      return next();
+
+      const result = await next();
+
+      if (
+        result.ok &&
+        existingKey &&
+        input.imageKey !== undefined &&
+        input.imageKey !== existingKey
+      ) {
+        await deleteFileIfExists(existingKey);
+      }
+
+      return result;
     })
     .mutation(async ({ ctx, input }) => {
       const result = await UsersService.updateProfile(

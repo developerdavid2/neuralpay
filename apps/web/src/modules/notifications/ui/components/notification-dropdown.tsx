@@ -1,5 +1,6 @@
 "use client";
 
+import { Show } from "@/components/show";
 import { formatGroupLabel, getDateGroup, groupByDate } from "@/lib/utils";
 import type { AppNotification } from "@neuralpay/types";
 import { cn } from "@neuralpay/ui/lib/utils";
@@ -78,23 +79,9 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
 
         {/* Notifications List */}
         <div className="max-h-110 overflow-y-auto scrollbar-thin">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-14">
-              <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary " />
-              <p className="text-sm text-muted-foreground mt-3">Loading...</p>
-            </div>
-          ) : !notifications.length ? (
-            <div className="flex flex-col items-center justify-center py-14 text-muted-foreground">
-              <div className="p-4 rounded-full bg-white/40 dark:bg-white/5 mb-4">
-                <Bell className="h-8 w-8 opacity-30" />
-              </div>
-              <p className="text-sm font-medium">No notifications yet</p>
-              <p className="text-xs mt-1 opacity-50">
-                We will notify you when something happens
-              </p>
-            </div>
-          ) : (
-            Object.entries(grouped).map(([group, items]) => (
+          <Show
+            when={!notifications.length}
+            fallback={Object.entries(grouped).map(([group, items]) => (
               <div key={group}>
                 <div className="px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 bg-white/30 dark:bg-white/3">
                   {formatGroupLabel(group as any)}
@@ -108,8 +95,18 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
                   />
                 ))}
               </div>
-            ))
-          )}
+            ))}
+          >
+            <div className="flex flex-col items-center justify-center py-14 text-muted-foreground">
+              <div className="p-4 rounded-full bg-white/40 dark:bg-white/5 mb-4">
+                <Bell className="h-8 w-8 opacity-30" />
+              </div>
+              <p className="text-sm font-medium">No notifications yet</p>
+              <p className="text-xs mt-1 opacity-50">
+                We will notify you when something happens
+              </p>
+            </div>
+          </Show>
         </div>
 
         {/* Footer */}
