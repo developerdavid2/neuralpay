@@ -29,7 +29,7 @@
     "better-auth": "catalog:",
     "cors": "^2.8.6",
     "drizzle-orm": "catalog:",
-    "express": "^5.2.1",
+    "express": "catalog:",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1",
     "zod": "catalog:"
@@ -37,7 +37,7 @@
   "devDependencies": {
     "@types/bun": "catalog:",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
+    "@types/express": "catalog:",
     "@types/morgan": "^1.9.10",
     "tsdown": "^0.21.9",
     "typescript": "catalog:",

@@ -1,5 +1,8 @@
 "use client";
 
+import { formatDateTime } from "@/lib/utils";
+import { Button } from "@neuralpay/ui/components/button";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
 import {
   Archive,
@@ -8,12 +11,9 @@ import {
   RotateCcw,
   Sparkles,
   X,
-  Loader2,
 } from "lucide-react";
 import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
 import type { Insight } from "../../types";
-import { Button } from "@neuralpay/ui/components/button";
-import { formatDateTime } from "@/lib/utils";
 
 export type InsightCardVariant = "compact" | "full";
 
@@ -76,7 +76,7 @@ export const InsightCard = ({
       {/* Pending spinner overlay */}
       {isPending && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
-          <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          <Spinner className="size-5  text-muted-foreground" />
         </div>
       )}
 
@@ -132,7 +132,7 @@ export const InsightCard = ({
               aria-label="Dismiss"
             >
               {dismissing ? (
-                <Loader2 className="size-3.5 animate-spin" />
+                <Spinner className="size-3.5 " />
               ) : (
                 <X className="size-3.5" />
               )}
@@ -153,7 +153,7 @@ export const InsightCard = ({
               aria-label="Restore"
             >
               {restoring ? (
-                <Loader2 className="size-3.5 animate-spin" />
+                <Spinner className="size-3.5 " />
               ) : (
                 <RotateCcw className="size-3.5" />
               )}
@@ -211,7 +211,7 @@ export const InsightCard = ({
                 disabled={dismissing}
               >
                 {dismissing ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Spinner className="size-3.5 " />
                 ) : (
                   <Archive className="size-3.5" />
                 )}
@@ -230,7 +230,7 @@ export const InsightCard = ({
               disabled={restoring}
             >
               {restoring ? (
-                <Loader2 className="size-3.5 animate-spin" />
+                <Spinner className="size-3.5 " />
               ) : (
                 <RotateCcw className="size-3.5" />
               )}

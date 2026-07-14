@@ -7,6 +7,7 @@ import {
   mountProxies,
   mountStreamingProxy,
   mountNotificationStreamProxy,
+  mountUploadThingProxy,
 } from "./proxy";
 
 const PORT = Number(gatewayEnv.PORT) || 4000;
@@ -16,17 +17,17 @@ const app = createExpressApp({
   port: PORT,
   allowedOrigins: [gatewayEnv.CORS_ORIGIN],
   beforeBodyParser: (app) => {
-    // Streaming routes that need auth BEFORE body parser
     app.use("/v1/ai/chat/stream", authMiddleware);
     mountStreamingProxy(app);
 
     app.use("/v1/notifications/stream", authMiddleware);
     mountNotificationStreamProxy(app);
+    mountUploadThingProxy(app);
   },
 });
 app.use(requestLogger);
 
-app.use(authMiddleware); // For non-streaming protected routes
+app.use(authMiddleware);
 mountProxies(app);
 app.use(errorHandler);
 

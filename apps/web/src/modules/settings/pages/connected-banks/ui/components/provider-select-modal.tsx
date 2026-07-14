@@ -150,7 +150,7 @@ export function ProviderSelectModal() {
           >
             {isInitializing ? (
               <>
-                <Loader className="h-4 w-4 animate-spin mr-2" />
+                <Loader className="h-4 w-4  mr-2" />
                 Initializing...
               </>
             ) : (

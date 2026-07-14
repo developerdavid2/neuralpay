@@ -6,6 +6,10 @@ import {
 import { updateProfileSchema } from "@neuralpay/types";
 import { TRPCError } from "@trpc/server";
 import { UsersService } from "../services/users.service";
+import { clearExistingFile } from "@neuralpay/file-upload";
+import { db } from "@neuralpay/db";
+import { user } from "@neuralpay/db/schema";
+import { eq } from "drizzle-orm";
 
 export const profileRouter = router({
   health: publicProcedure.query(() => ({ ok: true, service: "user-service" })),
@@ -24,6 +28,21 @@ export const profileRouter = router({
 
   update: protectedProcedure
     .input(updateProfileSchema)
+    .use(async ({ ctx, input, next }) => {
+      if (input.imageKey !== undefined) {
+        await clearExistingFile({
+          getCurrentKey: async () => {
+            const [row] = await db
+              .select({ key: user.imageKey })
+              .from(user)
+              .where(eq(user.id, ctx.session.user.id));
+            return row?.key;
+          },
+          clearReference: async () => {},
+        });
+      }
+      return next();
+    })
     .mutation(async ({ ctx, input }) => {
       const result = await UsersService.updateProfile(
         ctx.session.user.id,

@@ -9,13 +9,7 @@ import {
 
 import { createTRPCClient, httpLink } from "@trpc/client";
 
-import {
-  dehydrate,
-  HydrationBoundary,
-  type FetchQueryOptions,
-} from "@tanstack/react-query";
-
-import { headers } from "next/headers";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import superjson from "superjson";
 

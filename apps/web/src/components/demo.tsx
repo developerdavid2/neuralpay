@@ -116,7 +116,7 @@ export function Demo() {
                   <MoreHorizontalIcon />
                 </Card>
                 <Card className="flex size-8 items-center justify-center p-0 shadow-none *:[svg]:size-4">
-                  <Loader2Icon />
+                  <SpinnerIcon />
                 </Card>
                 <Card className="flex size-8 items-center justify-center p-0 shadow-none *:[svg]:size-4">
                   <PlusIcon />

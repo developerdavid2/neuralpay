@@ -100,7 +100,7 @@ export function PlaidInitializeButton() {
   // Loading state
   return (
     <Button disabled className="gap-2">
-      <Loader className="h-4 w-4 animate-spin" />
+      <Loader className="h-4 w-4 " />
       {isCreating
         ? "Initializing..."
         : isExchanging

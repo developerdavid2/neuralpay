@@ -3,7 +3,9 @@ import { useMutation } from "@tanstack/react-query";
 
 export function useRegisterDevice() {
   const trpc = useTRPC();
-  return useMutation(
-    trpc.notifications.appNotifications.registerDevice.mutationOptions(),
-  );
+  return useMutation({
+    ...trpc.notifications.appNotifications.registerDevice.mutationOptions(),
+    onSuccess: () => console.log("[push] token registered successfully"),
+    onError: (err) => console.error("[push] token registration failed:", err),
+  });
 }

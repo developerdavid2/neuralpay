@@ -7,7 +7,8 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from "@neuralpay/ui/components/ai-elements/prompt-input";
-import { Loader2, Send } from "lucide-react";
+import { Spinner } from "@neuralpay/ui/components/spinner";
+import { Send } from "lucide-react";
 import { useMemo } from "react";
 
 interface ChatInputProps {
@@ -40,7 +41,7 @@ export function ChatInput({
             value={input}
             onChange={onInputChange}
             placeholder="Ask about your finances..."
-            className="min-h-[70px] max-h-[200px]"
+            className="min-h-17.5 max-h-50"
           />
         </PromptInputBody>
 
@@ -59,7 +60,7 @@ export function ChatInput({
 
           <PromptInputSubmit disabled={isSubmitDisabled} status={status}>
             {isLoading ? (
-              <Loader2 className="size-4 animate-spin" />
+              <Spinner className="size-4 " />
             ) : (
               <Send className="size-4" />
             )}

@@ -187,6 +187,27 @@ export function mountNotificationStreamProxy(app: Express) {
   );
 }
 
+export function mountUploadThingProxy(app: Express) {
+  app.use(
+    "/v1/uploadthing",
+    createProxyMiddleware({
+      target: gatewayEnv.USER_SERVICE_URL,
+      changeOrigin: true,
+      pathRewrite: (path) => {
+        const [, query] = path.split("?");
+        return `/api/uploadthing${query ? `?${query}` : ""}`;
+      },
+      on: {
+        error: (err, _req, res) => {
+          logger.error(`[uploadthing proxy] error: ${err.message}`);
+          (res as Response)
+            .status(502)
+            .json({ success: false, message: "Upload service unavailable" });
+        },
+      },
+    }),
+  );
+}
 // And remove it from mountProxies
 export function mountProxies(app: Express) {
   // 1. Better Auth routes → user-service

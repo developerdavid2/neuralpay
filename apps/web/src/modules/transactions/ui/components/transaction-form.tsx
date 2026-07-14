@@ -12,11 +12,11 @@ import {
   SheetTitle,
 } from "@neuralpay/ui/components/sheet";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { Loader2, Trash2, X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import type { FormValues } from "../../types";
 import { TransactionFormFields } from "./transaction-form-fields";
-
+import { Spinner } from "@neuralpay/ui/components/spinner";
 export function TransactionForm({
   defaultValues,
   isEdit,
@@ -59,7 +59,7 @@ export function TransactionForm({
     >
       {isDeleting && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          <Spinner className="size-6  text-muted-foreground" />
         </div>
       )}
       {/* Header */}
@@ -91,7 +91,7 @@ export function TransactionForm({
                 title="Delete transaction"
               >
                 {isDeleting ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Spinner className="size-4 " />
                 ) : (
                   <Trash2 className="size-4" />
                 )}
@@ -129,7 +129,7 @@ export function TransactionForm({
         >
           {isSaving ? (
             <>
-              <Loader2 className="size-4 animate-spin mr-2" />
+              <Spinner className="size-4  mr-2" />
               {isEdit ? "Saving..." : "Creating..."}
             </>
           ) : isEdit ? (

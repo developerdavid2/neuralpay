@@ -80,7 +80,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
         <div className="max-h-110 overflow-y-auto scrollbar-thin">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-14">
-              <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+              <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary " />
               <p className="text-sm text-muted-foreground mt-3">Loading...</p>
             </div>
           ) : !notifications.length ? (

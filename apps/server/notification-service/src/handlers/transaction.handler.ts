@@ -1,4 +1,3 @@
-// handlers/transaction.handler.ts
 import { sendInApp } from "../channels/inapp";
 import { sendPush } from "../channels/push";
 import { broadcastToUser } from "../channels/realtime";
@@ -15,94 +14,42 @@ type TransactionEvent = Extract<
 >;
 
 export async function handleTransaction(event: TransactionEvent) {
-  console.log("[handleTransaction] START — type:", event.type);
-
   const { payload } = event;
   const { userId } = payload;
 
-  console.log(
-    "[handleTransaction] userId:",
-    userId,
-    "payload:",
-    JSON.stringify(payload, null, 2),
-  );
-
   const prefs = await getUserPreferences(userId);
-  console.log("[handleTransaction] prefs:", JSON.stringify(prefs));
 
-  if (event.type === "transaction_anomaly") {
-    const p = payload as TransactionAnomalyPayload;
+  let title: string;
+  let body: string;
+  let notificationType: "transaction_created" | "transaction_anomaly";
 
-    console.log("[handleTransaction] handling anomaly");
-
-    const result = await sendInApp(
-      userId,
-      "transaction_anomaly",
-      "transaction",
-      "🚨 Unusual Transaction Detected",
-      `${p.merchant} — $${p.amount}`,
-      {
-        relatedId: p.transactionId,
-        relatedType: "transaction",
-      },
-    );
-
-    console.log(
-      "[handleTransaction] sendInApp result:",
-      JSON.stringify(result, null, 2),
-    );
-
-    if (!result.success) {
-      console.error(
-        "[handleTransaction] sendInApp FAILED:",
-        result.error,
-        result.code,
-      );
-      return;
+  switch (event.type) {
+    case "transaction_created": {
+      const p = payload as TransactionCreatedPayload;
+      notificationType = "transaction_created";
+      title = "New Transaction";
+      body = `${p.merchant} — $${p.amount}`;
+      break;
     }
-
-    const notification = result.data;
-    console.log("[handleTransaction] notification created:", notification.id);
-
-    if (prefs.pushEnabled && prefs.anomalyAlerts) {
-      console.log("[handleTransaction] sending push...");
-      await sendPush(
-        userId,
-        notification.title,
-        notification.body,
-        notification.data,
-      );
+    case "transaction_anomaly": {
+      const p = payload as TransactionAnomalyPayload;
+      notificationType = "transaction_anomaly";
+      title = "Unusual Transaction Detected";
+      body = `${p.merchant} — $${p.amount}`;
+      break;
     }
-
-    console.log("[handleTransaction] broadcasting to user:", userId);
-    await broadcastToUser(userId, {
-      type: "notification.new",
-      notification,
-    });
-
-    return;
   }
-
-  // transaction_created
-  const p = payload as TransactionCreatedPayload;
-
-  console.log("[handleTransaction] handling transaction_created");
 
   const result = await sendInApp(
     userId,
-    "transaction_created",
+    notificationType,
     "transaction",
-    "New Transaction",
-    `${p.merchant} — $${p.amount}`,
+    title,
+    body,
     {
-      relatedId: p.transactionId,
+      relatedId: payload.transactionId,
       relatedType: "transaction",
     },
-  );
-
-  console.log(
-    "[handleTransaction] sendInApp result:",
-    JSON.stringify(result, null, 2),
   );
 
   if (!result.success) {
@@ -115,12 +62,17 @@ export async function handleTransaction(event: TransactionEvent) {
   }
 
   const notification = result.data;
-  console.log("[handleTransaction] notification created:", notification.id);
 
-  console.log("[handleTransaction] prefs:", JSON.stringify(prefs));
+  if (!prefs.success) {
+    console.error(
+      "[handleTransaction] getUserPreferences FAILED:",
+      prefs.error,
+      prefs.code,
+    );
+    return;
+  }
 
-  if (prefs.pushEnabled && prefs.paymentAlerts) {
-    console.log("[handleTransaction] sending push...");
+  if (prefs.data.pushEnabled && prefs.data.transactionAlerts) {
     await sendPush(
       userId,
       notification.title,
@@ -129,7 +81,6 @@ export async function handleTransaction(event: TransactionEvent) {
     );
   }
 
-  console.log("[handleTransaction] broadcasting to user:", userId);
   await broadcastToUser(userId, {
     type: "notification.new",
     notification,

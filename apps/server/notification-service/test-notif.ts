@@ -57,7 +57,6 @@ const events = [
         userId: USER_ID,
         accountId: "acc-001",
         bankName: "Chase Bank",
-        accountType: "checking",
       },
     },
   },

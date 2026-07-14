@@ -16,7 +16,7 @@ export function SyncButton({ bankId }: { bankId: string }) {
       className="gap-1.5"
     >
       <RefreshCw
-        className={`h-3.5 w-3.5 ${syncMutation.isPending ? "animate-spin" : ""}`}
+        className={`h-3.5 w-3.5 ${syncMutation.isPending ? "" : ""}`}
       />
       {syncMutation.isPending ? "Syncing..." : "Sync Now"}
     </Button>

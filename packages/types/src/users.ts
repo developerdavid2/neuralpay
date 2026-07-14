@@ -40,6 +40,7 @@ export const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   nickname: z.string().max(50).nullable().optional(),
   image: z.string().nullable().optional(),
+  imageKey: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
   email: z.string().nonoptional(),
   gender: z.enum(GENDER_TYPES).nullable().optional(),
@@ -86,6 +87,7 @@ export type UserRecord = {
   email: string;
   emailVerified: boolean;
   image: string | null;
+  imageKey: string | null;
   phone: string | null;
   planTier: string;
   nickname: string | null;

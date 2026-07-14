@@ -54,7 +54,7 @@ export function GoogleSignInButton({
 
       {isLoading ? "Signing in..." : label}
 
-      {isLoading && <Loader className="ml-2 size-4 animate-spin" />}
+      {isLoading && <Loader className="ml-2 size-4 " />}
     </Button>
   );
 }

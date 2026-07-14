@@ -1,14 +1,14 @@
-import { useTRPC } from "@/trpc/trpc-client";
 import { getFirebaseMessaging } from "@/lib/notification-config";
-import { useMutation } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/trpc-client";
 import {
+  deleteToken,
   getToken,
   onMessage,
-  deleteToken,
   type Messaging,
 } from "firebase/messaging";
-import { useEffect, useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useRegisterDevice } from "./use-register-device";
 
 export function useNotificationPermission() {
   const trpc = useTRPC();
@@ -18,9 +18,7 @@ export function useNotificationPermission() {
   const [isRequesting, setIsRequesting] = useState(false);
   const [messaging, setMessaging] = useState<Messaging | null>(null);
 
-  const registerDevice = useMutation(
-    trpc.notifications.appNotifications.registerDevice.mutationOptions(),
-  );
+  const registerDevice = useRegisterDevice();
 
   // Resolve the Messaging instance once, client-side only.
   useEffect(() => {

@@ -108,7 +108,7 @@ export function PersonalInfoSection({
                 <DatePicker
                   value={field.value ? new Date(field.value) : undefined}
                   onChange={(date) => field.onChange(date?.toISOString())}
-                  className="rounded-xl"
+                  className="rounded-xl bg-input/50 text-foreground hover:bg-main-tint"
                 />
               </Field>
             )}
