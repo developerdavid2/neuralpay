@@ -17,9 +17,9 @@ export const DashboardLayout = async ({
     <SidebarProvider defaultOpen={defaultOpen}>
       <NotificationStreamProvider />
       <DashboardSidebar />
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex w-full flex-1 flex-col">
         <DashboardNavbar />
-        <main className="flex flex-1 flex-col">{children}</main>
+        <main className="flex flex-1 flex-col pt-14">{children}</main>
       </div>
     </SidebarProvider>
   );

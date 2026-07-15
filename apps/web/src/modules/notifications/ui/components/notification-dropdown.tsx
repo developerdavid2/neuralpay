@@ -33,7 +33,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
   const hasUnread = notifications.some((n) => !n.isRead);
 
   return (
-    <div className="absolute right-0 top-full mt-2.5 w-105 z-50">
+    <div className="absolute right-0 top-full mt-2.5 w-105 z-200">
       {/* Glassmorphism container */}
       <div
         className={cn(

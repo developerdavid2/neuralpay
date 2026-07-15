@@ -4,21 +4,21 @@ import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 
-import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
-import { useAccountsList } from "@/modules/accounts/hooks/queries/use-accounts";
-import { useConfirm } from "@/hooks/ui/use-confirm";
 import { useDataTableNavigation } from "@/hooks/routing/use-data-table-navigation";
+import { useConfirm } from "@/hooks/ui/use-confirm";
 import { ACCOUNTS_LIMIT } from "@/modules/accounts/constants";
+import { useAccountsList } from "@/modules/accounts/hooks/queries/use-accounts";
+import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
 import type { AccountStatus, AccountType, BankAccount } from "@neuralpay/types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Package } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
+import { useAccountDrawer } from "../../hooks/store/use-account-drawer";
+import { useAccountPendingSelectors } from "../../hooks/store/use-account-pending";
 import { accountColumns } from "./account-columns";
 import { AccountFormDrawer } from "./account-form-drawer";
 import { AccountViewDrawer } from "./account-view-drawer";
-import { useAccountDrawer } from "../../hooks/store/use-account-drawer";
-import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
-import { useAccountPendingSelectors } from "../../hooks/store/use-account-pending";
 
 interface Props {
   currentSearch: string;
@@ -172,7 +172,7 @@ export function AccountsList({
         emptyState={emptyState}
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={setColumnVisibility}
-        headerClassName="sticky top-0 z-20 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary"
+        headerClassName="sticky top-0 z-0 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary"
         getRowClassName={(row: BankAccount) =>
           isRowPending(row.id) ? "pointer-events-none opacity-50" : ""
         }

@@ -113,7 +113,7 @@ export function AccountTypeCardsView() {
           isBalanceVisible={isBalanceVisible}
           onToggleVisibility={toggleVisibility}
         />
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 z-20">
+        <div className="absolute right-6 top-1/2 -translate-y-1/2">
           <NewAccountButton />
         </div>
       </div>

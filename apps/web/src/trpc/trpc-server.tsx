@@ -16,6 +16,7 @@ import superjson from "superjson";
 import type { AppRouter } from "@neuralpay/api-gateway/router";
 
 import { makeQueryClient } from "./query-client";
+import { webEnv } from "@neuralpay/env/web";
 
 export const getQueryClient = cache(makeQueryClient);
 
@@ -23,7 +24,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   client: createTRPCClient<AppRouter>({
     links: [
       httpLink({
-        url: `${process.env.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
+        url: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
         transformer: superjson,
 
         async headers() {

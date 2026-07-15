@@ -1,3 +1,4 @@
+import { webEnv } from "@neuralpay/env/web";
 import { headers } from "next/headers";
 
 interface Session {
@@ -20,7 +21,7 @@ export async function getServerSession(): Promise<Session | null> {
     const headersList = await headers();
 
     const response = await fetch(
-      `${process.env.BETTER_AUTH_URL}/v1/auth/get-session`,
+      `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/auth/get-session`,
       {
         headers: {
           Cookie: headersList.get("cookie") || "",

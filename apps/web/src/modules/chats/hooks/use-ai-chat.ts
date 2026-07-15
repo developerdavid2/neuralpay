@@ -1,4 +1,5 @@
 import { useChat } from "@ai-sdk/react";
+import { webEnv } from "@neuralpay/env/web";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useRef, useState } from "react";
 
@@ -16,7 +17,7 @@ export function useAIChat({
   const chat = useChat({
     id: sessionId,
     transport: new DefaultChatTransport({
-      api: "http://localhost:4000/v1/ai/chat/stream",
+      api: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/ai/chat/stream`,
       credentials: "include",
       body: { sessionId },
     }),
