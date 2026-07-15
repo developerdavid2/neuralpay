@@ -1,4 +1,4 @@
-import "@neuralpay/env/web";
+import { webEnv } from "@neuralpay/env/web";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/v1/:path*",
-        destination: `${process.env.SERVER_URL}/v1/:path*`,
+        destination: `${webEnv.SERVER_URL}/v1/:path*`,
       },
     ];
   },
