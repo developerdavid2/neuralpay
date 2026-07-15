@@ -13,7 +13,7 @@ const server = Fastify({ logger: true });
 
 await server.register(helmet);
 await server.register(cors, {
-  origin: [paymentServiceEnv.CORS_ORIGIN],
+  origin: [paymentServiceEnv.TRUSTED_ORIGINS],
   credentials: true,
 });
 await server.register(rateLimit, { max: 200, timeWindow: "1 minute" });

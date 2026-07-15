@@ -2,7 +2,7 @@ import { createAuth } from "@neuralpay/auth";
 import { userServiceEnv } from "@neuralpay/env/user-service";
 
 export const auth = createAuth({
-  corsOrigin: userServiceEnv.CORS_ORIGIN,
+  corsOrigin: userServiceEnv.TRUSTED_ORIGINS,
   secret: userServiceEnv.BETTER_AUTH_SECRET,
   baseURL: userServiceEnv.BETTER_AUTH_URL,
   google:

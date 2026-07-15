@@ -8,7 +8,7 @@ export const gatewayEnv = createEnv({
     ...baseServerEnv,
     ...redisEnv,
     PORT: z.coerce.number().default(4000),
-    CORS_ORIGIN: z.url(),
+    TRUSTED_ORIGINS: z.string().min(1),
     USER_SERVICE_URL: z.url(),
     PAYMENT_SERVICE_URL: z.url(),
     AI_SERVICE_URL: z.url(),

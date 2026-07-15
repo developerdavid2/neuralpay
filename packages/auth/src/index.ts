@@ -5,9 +5,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailOTP, twoFactor } from "better-auth/plugins";
 import { sendEmail } from "./lib/email";
 import { otpTemplate, resetPasswordTemplate } from "./lib/email-templates";
-
 export interface AuthConfig {
-  corsOrigin: string;
   secret: string;
   baseURL: string;
   polar?: {
@@ -20,12 +18,19 @@ export interface AuthConfig {
   };
 }
 
+const rawOrigins = process.env.TRUSTED_ORIGINS;
+const trustedOrigins = rawOrigins
+  ? rawOrigins.split(",").map((s) => s.trim())
+  : ["http://localhost:3001"];
+
+const isDev = process.env.NODE_ENV !== "production";
+
 export function createAuth(config: AuthConfig) {
   const db = createDb();
   return betterAuth({
     basePath: "/auth",
     database: drizzleAdapter(db, { provider: "pg", schema }),
-    trustedOrigins: [config.corsOrigin],
+    trustedOrigins: isDev ? ["*"] : trustedOrigins,
     secret: config.secret,
     baseURL: config.baseURL,
 
@@ -183,10 +188,7 @@ export function createAuth(config: AuthConfig) {
   });
 }
 
-// ── Default export for services that need it ──
-// This is for server-side use only (user-service, gateway)
 const configFromEnv: AuthConfig = {
-  corsOrigin: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
   secret: process.env.BETTER_AUTH_SECRET ?? "",
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:4001",
   polar: process.env.POLAR_ACCESS_TOKEN

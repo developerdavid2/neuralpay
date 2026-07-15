@@ -15,7 +15,7 @@ const proxyError = (err: Error, res: any, _next: any) => {
 const baseHeaders = (proxyReqOpts: any) => {
   proxyReqOpts.headers ??= {};
   proxyReqOpts.headers["Content-Type"] = "application/json";
-  proxyReqOpts.headers["Origin"] = gatewayEnv.CORS_ORIGIN;
+  proxyReqOpts.headers["Origin"] = gatewayEnv.TRUSTED_ORIGINS;
   proxyReqOpts.headers["x-internal-source"] = "api-gateway";
   return proxyReqOpts;
 };
@@ -24,7 +24,7 @@ const baseHeaders = (proxyReqOpts: any) => {
 const withUserId = (proxyReqOpts: any, srcReq: Request) => {
   proxyReqOpts.headers ??= {};
   proxyReqOpts.headers["Content-Type"] = "application/json";
-  proxyReqOpts.headers["Origin"] = gatewayEnv.CORS_ORIGIN;
+  proxyReqOpts.headers["Origin"] = gatewayEnv.TRUSTED_ORIGINS;
   proxyReqOpts.headers["x-internal-source"] = "api-gateway";
 
   // Prefer headers already attached by authMiddleware, then fall back to req.user.
