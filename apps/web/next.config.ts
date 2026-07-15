@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/v1/:path*",
-        destination: `${webEnv.SERVER_URL}/v1/:path*`,
+        destination: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/:path*`,
       },
     ];
   },
