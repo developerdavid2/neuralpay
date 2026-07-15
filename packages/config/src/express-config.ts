@@ -6,7 +6,16 @@ import morgan from "morgan";
 interface AppConfig {
   serviceName: string;
   port: number;
-  allowedOrigins?: string[];
+  allowedOrigins?: string[] | string;
+}
+
+function parseOrigins(origins?: string[] | string): string[] {
+  if (!origins) return ["http://localhost:3001"];
+  if (Array.isArray(origins)) {
+    // Flatten in case someone passes ["a,b"]
+    return origins.flatMap((o) => o.split(",").map((s) => s.trim()));
+  }
+  return origins.split(",").map((s) => s.trim());
 }
 
 export function createExpressApp(
@@ -19,10 +28,11 @@ export function createExpressApp(
   app.use(helmet());
   app.use(
     cors({
-      origin: config.allowedOrigins ?? ["http://localhost:3001"],
+      origin: parseOrigins(config.allowedOrigins),
       credentials: true,
     }),
   );
+
   config.beforeBodyParser?.(app);
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));

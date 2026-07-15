@@ -15,7 +15,7 @@ const PORT = Number(gatewayEnv.PORT) || 4000;
 const app = createExpressApp({
   serviceName: "api-gateway-service",
   port: PORT,
-  allowedOrigins: [gatewayEnv.TRUSTED_ORIGINS],
+  allowedOrigins: gatewayEnv.TRUSTED_ORIGINS,
   beforeBodyParser: (app) => {
     app.use("/v1/ai/chat/stream", authMiddleware);
     mountStreamingProxy(app);
