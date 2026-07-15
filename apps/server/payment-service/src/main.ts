@@ -1,21 +1,15 @@
-import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
-import { createContext } from "./trpc/context";
-import { paymentServiceEnv } from "@neuralpay/env/payment";
+import type { TRPCError } from "@trpc/server";
 import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import Fastify from "fastify";
 import { paymentsRouter } from "./routers";
-import type { TRPCError } from "@trpc/server";
+import { createContext } from "./trpc/context";
 
 const PORT = Number(process.env.PORT) || 4002;
 const server = Fastify({ logger: true });
 
 await server.register(helmet);
-await server.register(cors, {
-  origin: [paymentServiceEnv.TRUSTED_ORIGINS],
-  credentials: true,
-});
 await server.register(rateLimit, { max: 200, timeWindow: "1 minute" });
 
 server.get("/health", async () => ({

@@ -8,7 +8,6 @@ export const userServiceEnv = createEnv({
     ...authEnv,
     PORT: z.coerce.number().default(4001),
     UPLOADTHING_TOKEN: z.string().min(1),
-    TRUSTED_ORIGINS: z.url(),
     SMTP_HOST: z.string().min(1),
     SMTP_PORT: z.coerce.number().default(587),
     SMTP_USER: z.email(),
