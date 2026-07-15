@@ -27,6 +27,8 @@ const isDev = process.env.NODE_ENV !== "production";
 
 export function createAuth(config: AuthConfig) {
   const db = createDb();
+  const isHttps = config.baseURL.startsWith("https://");
+
   return betterAuth({
     basePath: "/auth",
     database: drizzleAdapter(db, { provider: "pg", schema }),
@@ -181,7 +183,7 @@ export function createAuth(config: AuthConfig) {
     advanced: {
       defaultCookieAttributes: {
         sameSite: "lax",
-        secure: true,
+        secure: isHttps,
         httpOnly: true,
       },
     },
