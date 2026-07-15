@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "PORT=4001 bun run --hot src/main.ts",
-    "build": "tsdown",
+    "build": "tsdown src/main.ts",
     "start": "bun run dist/main.mjs",
     "check-types": "tsc -b"
   },
