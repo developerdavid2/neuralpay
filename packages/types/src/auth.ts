@@ -49,8 +49,34 @@ export const verifyOtpSchema = z.object({
   otp: z.string().regex(/^\d{6}$/, "OTP must be 6 digits"),
 });
 
+export const sendOtpSchema = z.object({
+  email: z.email(),
+  type: z.enum(["sign-in", "email-verification", "forget-password"]),
+});
+
 export type SignInInput = z.input<typeof signInSchema>;
 export type SignUpInput = z.input<typeof signUpSchema>;
 export type ForgotPasswordInput = z.input<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.input<typeof resetPasswordSchema>;
 export type VerifyOtpInput = z.input<typeof verifyOtpSchema>;
+export type SendOtpInput = z.input<typeof sendOtpSchema>;
+
+export type SignUpResult = {
+  cookies: string[];
+};
+
+export type SignInResult = {
+  user: Record<string, unknown>;
+  session: Record<string, unknown>;
+  cookies: string[];
+};
+
+export type SignOutResult = {
+  cookies: string[];
+};
+
+export type VerifyOTPResult = {
+  user: Record<string, unknown>;
+  session: Record<string, unknown>;
+  cookies: string[];
+};

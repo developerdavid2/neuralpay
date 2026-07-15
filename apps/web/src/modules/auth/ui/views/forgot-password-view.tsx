@@ -22,6 +22,8 @@ import {
   FieldGroup,
 } from "@neuralpay/ui/components/field";
 import { toast } from "sonner";
+import { useSendOtp } from "../../hooks/mutations/use-send-otp";
+import type { Route } from "next";
 
 type FormStatus =
   | { type: "idle" }
@@ -32,6 +34,7 @@ type FormStatus =
 const ForgotPasswordView = () => {
   const [status, setStatus] = useState<FormStatus>({ type: "idle" });
   const router = useRouter();
+  const sendOtp = useSendOtp();
 
   const form = useForm<ForgotPasswordInput>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -44,22 +47,21 @@ const ForgotPasswordView = () => {
   const onSubmit = async (data: ForgotPasswordInput) => {
     setStatus({ type: "loading" });
 
-    await authClient.emailOtp.sendVerificationOtp(
+    sendOtp.mutate(
       { email: data.email, type: "forget-password" },
       {
         onSuccess: () => {
-          // Store email in sessionStorage so verify-otp page can use it
           sessionStorage.setItem("reset_email", data.email);
           setStatus({ type: "success", email: data.email });
           toast.success("Recovery code sent to your email", {
             position: "top-center",
           });
           setTimeout(
-            () => router.push("/auth/verify-otp?mode=reset" as never),
+            () => router.push("/auth/verify-otp?mode=reset" as Route),
             1500,
           );
         },
-        onError: ({ error }) => {
+        onError: (error) => {
           const errorMsg =
             error.message || "Failed to send recovery code. Please try again.";
           setStatus({ type: "error", message: errorMsg });

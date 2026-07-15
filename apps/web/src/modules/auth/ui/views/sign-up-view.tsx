@@ -1,6 +1,5 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpInput } from "@neuralpay/types";
 import { Eye, EyeOff, OctagonAlertIcon } from "lucide-react";
@@ -19,11 +18,13 @@ import {
   FieldSeparator,
 } from "@neuralpay/ui/components/field";
 import { Input } from "@neuralpay/ui/components/input";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
+import type { Route } from "next";
 import { toast } from "sonner";
+import { useSignUp } from "../../hooks/mutations/use-sign-out";
 import { AppleSignInButton } from "../components/apple-sign-in-button";
 import { GoogleSignInButton } from "../components/google-sign-in-button";
-import { Spinner } from "@neuralpay/ui/components/spinner";
 
 type FormStatus =
   | { type: "idle" }
@@ -38,6 +39,7 @@ const SignUpView = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const router = useRouter();
+  const signUp = useSignUp();
 
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
@@ -54,33 +56,23 @@ const SignUpView = () => {
 
   const onSignUp = async (data: SignUpInput) => {
     setStatus({ type: "loading" });
-    const { confirmPassword: _, ...payload } = data;
 
-    await authClient.signUp.email(
-      {
-        name: payload.name,
-        email: payload.email,
-        password: payload.password,
-        callbackURL: "/auth/verify-email",
+    signUp.mutate(data, {
+      onSuccess: () => {
+        setStatus({ type: "success" });
+        toast.success("Account created successfully", {
+          position: "top-center",
+        });
+        sessionStorage.setItem("verify_email", data.email);
+        router.push("/auth/verify-otp" as Route);
       },
-      {
-        onSuccess: () => {
-          setStatus({ type: "success" });
-          toast.success("Account created successfully", {
-            position: "top-center",
-          });
-          router.push(
-            `/auth/verify-otp?email=${encodeURIComponent(payload.email)}` as never,
-          );
-        },
-        onError: ({ error }) => {
-          const errorMsg =
-            error.message || "Failed to create account. Please try again.";
-          setStatus({ type: "error", message: errorMsg });
-          toast.error(errorMsg, { position: "top-center" });
-        },
+      onError: (error) => {
+        const errorMsg =
+          error.message || "Failed to create account. Please try again.";
+        setStatus({ type: "error", message: errorMsg });
+        toast.error(errorMsg, { position: "top-center" });
       },
-    );
+    });
   };
 
   return (

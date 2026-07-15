@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { AppleSignInButton } from "../components/apple-sign-in-button";
 import { GoogleSignInButton } from "../components/google-sign-in-button";
 import { Spinner } from "@neuralpay/ui/components/spinner";
+import { useSignIn } from "../../hooks/mutations/use-sign-in";
 
 type FormStatus =
   | { type: "idle" }
@@ -39,6 +40,7 @@ const SignInView = () => {
   const [status, setStatus] = useState<FormStatus>(idle);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const signIn = useSignIn();
 
   const form = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -50,11 +52,11 @@ const SignInView = () => {
   const onSignIn = async (data: SignInInput) => {
     setStatus({ type: "loading" });
 
-    await authClient.signIn.email(
+    signIn.mutate(
       {
         email: data.email,
         password: data.password,
-        callbackURL: "/dashboard",
+        rememberMe: data.rememberMe,
       },
       {
         onSuccess: () => {
@@ -62,8 +64,8 @@ const SignInView = () => {
           toast.success("Logged in Successfully", { position: "top-center" });
           router.push("/dashboard");
         },
-        onError: ({ error }) => {
-          if (error.code === "EMAIL_NOT_VERIFIED") {
+        onError: (error) => {
+          if (error.data?.code === "FORBIDDEN") {
             sessionStorage.setItem("verify_email", data.email);
             router.push("/auth/verify-otp" as never);
             return;
@@ -73,11 +75,6 @@ const SignInView = () => {
           setStatus({ type: "error", message: errorMsg });
           toast.error(errorMsg, { position: "top-center" });
         },
-        ...(data.rememberMe && {
-          fetchOptions: {
-            headers: { "x-remember-me": "true" },
-          },
-        }),
       },
     );
   };

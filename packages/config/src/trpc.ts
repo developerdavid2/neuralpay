@@ -11,6 +11,7 @@ export interface BaseContext {
     };
   } | null;
   _headers: Headers;
+  resHeaders?: { append: (key: string, value: string) => void };
 }
 
 const t = initTRPC.context<BaseContext>().create({
@@ -128,11 +129,12 @@ export interface FastifyContextOptions {
 export async function createFastifyContext(
   opts: FastifyContextOptions,
 ): Promise<BaseContext> {
+  const resHeaders = new Headers();
   const gatewaySession = sessionFromGatewayHeaders(opts.req.headers);
   const baseHeaders = headersFromNodeHeaders(opts.req.headers);
 
   if (gatewaySession) {
-    return { session: gatewaySession, _headers: baseHeaders };
+    return { session: gatewaySession, _headers: baseHeaders, resHeaders };
   }
 
   if (opts.auth) {
@@ -153,12 +155,13 @@ export async function createFastifyContext(
             }
           : null,
         _headers: headers,
+        resHeaders,
       };
     } catch (error) {
       console.error("Failed to get session from better-auth:", error);
-      return { session: null, _headers: headers };
+      return { session: null, _headers: headers, resHeaders };
     }
   }
 
-  return { session: null, _headers: baseHeaders };
+  return { session: null, _headers: baseHeaders, resHeaders };
 }

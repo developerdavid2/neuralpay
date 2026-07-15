@@ -1,6 +1,5 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import {
   ArrowLeft,
@@ -10,7 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Alert, AlertTitle } from "@neuralpay/ui/components/alert";
 import { Button } from "@neuralpay/ui/components/button";
@@ -24,6 +23,8 @@ import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { toast } from "sonner";
 import { Show } from "@/components/show";
+import { useSendOtp } from "../../hooks/mutations/use-send-otp";
+import { useVerifyEmail } from "../../hooks/mutations/use-verify-email";
 
 type FormStatus =
   | { type: "idle" }
@@ -33,99 +34,102 @@ type FormStatus =
 
 const RESEND_COOLDOWN = 60;
 
+function getStorageKey(isResetMode: boolean) {
+  return isResetMode ? "reset_email" : "verify_email";
+}
+
+function readEmailFromStorage(isResetMode: boolean): string | null {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem(getStorageKey(isResetMode));
+}
+
 interface VerifyOtpViewProps {
   mode?: string;
 }
 
 const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
-  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [status, setStatus] = useState<FormStatus>({ type: "idle" });
-  const [otp, setOtp] = useState("");
-  const [cooldown, setCooldown] = useState(0);
-  const [email, setEmail] = useState("");
-  const [ready, setReady] = useState(false);
   const router = useRouter();
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isResetMode = mode === "reset";
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Read email synchronously on mount — no effect needed
+  const [email, setEmail] = useState(
+    () => readEmailFromStorage(isResetMode) ?? "",
+  );
+  const [otp, setOtp] = useState("");
+  const [status, setStatus] = useState<FormStatus>({ type: "idle" });
+  const [cooldown, setCooldown] = useState(0);
+
+  const verifyEmailOtp = useVerifyEmail();
+  const sendOtp = useSendOtp();
+
   const pending = status.type === "loading";
 
-  useEffect(() => {
-    return () => {
-      if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
-    };
-  }, []);
-  useEffect(() => {
-    const storageKey = isResetMode ? "reset_email" : "verify_email";
-    const stored = sessionStorage.getItem(storageKey);
+  // Redirect if no email found — only on mount
+  const [ready, setReady] = useState(false);
+  const hasRedirected = useRef(false);
 
-    if (!stored) {
+  useEffect(() => {
+    if (hasRedirected.current) return;
+    if (!email) {
+      hasRedirected.current = true;
       router.replace(isResetMode ? "/auth/forgot-password" : "/auth/signin");
       return;
     }
-
-    setEmail(stored);
     setReady(true);
-  }, [isResetMode, router]);
+  }, [email, isResetMode, router]);
 
-  // Countdown timer
+  // Cleanup redirect timeout on unmount
   useEffect(() => {
-    if (cooldown <= 0) return;
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Countdown timer — single interval, no restart on cooldown change
+  useEffect(() => {
+    if (cooldown <= 0 || timerRef.current) return;
+
     timerRef.current = setInterval(() => {
       setCooldown((c) => {
         if (c <= 1) {
-          clearInterval(timerRef.current!);
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
           return 0;
         }
         return c - 1;
       });
     }, 1000);
-    return () => clearInterval(timerRef.current!);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [cooldown]);
 
-  // Auto-submit on 6 digits
-  useEffect(() => {
-    if (otp.length === 6 && status.type === "idle" && ready) {
-      void handleVerify(otp);
-    }
-  }, [otp, ready]);
+  const handleVerify = useCallback(
+    async (code: string) => {
+      if (!email || code.length !== 6 || pending) return;
+      setStatus({ type: "loading" });
 
-  const handleVerify = async (code: string) => {
-    if (!email || code.length !== 6 || pending) return;
-    setStatus({ type: "loading" });
-
-    try {
       if (isResetMode) {
-        await authClient.emailOtp.checkVerificationOtp?.(
-          { email, otp: code, type: "forget-password" },
-          {
-            onSuccess: () => {
-              sessionStorage.setItem("reset_otp", code);
-              sessionStorage.setItem("reset_email_verified", email);
-              setStatus({
-                type: "success",
-                message: "OTP verified! Redirecting...",
-              });
-              toast.success("OTP verified successfully", {
-                position: "top-center",
-              });
-              if (redirectTimeoutRef.current)
-                clearTimeout(redirectTimeoutRef.current);
-              redirectTimeoutRef.current = setTimeout(() => {
-                router.push("/auth/reset-password");
-              }, 1500);
-            },
-            onError: ({ error }) => {
-              const errorMsg =
-                error.message || "Invalid OTP. Please try again.";
-              setStatus({ type: "error", message: errorMsg });
-              toast.error(errorMsg, { position: "top-center" });
-              setOtp("");
-            },
-          },
+        sessionStorage.setItem("reset_otp", code);
+        sessionStorage.setItem("reset_email_verified", email);
+        setStatus({ type: "success", message: "OTP accepted! Redirecting..." });
+        redirectTimeoutRef.current = setTimeout(
+          () => router.push("/auth/reset-password"),
+          1500,
         );
       } else {
-        await authClient.emailOtp.verifyEmail(
+        verifyEmailOtp.mutate(
           { email, otp: code },
           {
             onSuccess: () => {
@@ -137,13 +141,12 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
               toast.success("Email verified successfully", {
                 position: "top-center",
               });
-              if (redirectTimeoutRef.current)
-                clearTimeout(redirectTimeoutRef.current);
-              redirectTimeoutRef.current = setTimeout(() => {
-                router.push("/onboarding");
-              }, 1500);
+              redirectTimeoutRef.current = setTimeout(
+                () => router.push("/onboarding"),
+                1500,
+              );
             },
-            onError: ({ error }) => {
+            onError: (error) => {
               const errorMsg =
                 error.message || "Invalid OTP. Please try again.";
               setStatus({ type: "error", message: errorMsg });
@@ -153,38 +156,40 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
           },
         );
       }
-    } catch (error) {
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : "Verification failed. Please try again.";
-      setStatus({
-        type: "error",
-        message: errorMsg,
-      });
-      toast.error(errorMsg, { position: "top-center" });
-      setOtp("");
-    }
-  };
+    },
+    [email, isResetMode, pending, router, verifyEmailOtp],
+  );
 
-  const handleResend = async () => {
+  const handleOtpChange = useCallback(
+    (value: string) => {
+      setOtp(value);
+      if (status.type === "error") setStatus({ type: "idle" });
+
+      // Auto-submit when 6 digits entered
+      if (value.length === 6 && status.type !== "loading" && ready) {
+        void handleVerify(value);
+      }
+    },
+    [handleVerify, ready, status.type],
+  );
+
+  const handleResend = useCallback(() => {
     if (!email || cooldown > 0) return;
     setCooldown(RESEND_COOLDOWN);
     setStatus({ type: "idle" });
     setOtp("");
 
-    await authClient.emailOtp.sendVerificationOtp(
+    sendOtp.mutate(
       {
         email,
         type: isResetMode ? "forget-password" : "email-verification",
       },
       {
-        onSuccess: () => {
+        onSuccess: () =>
           toast.success("Code sent! Check your email", {
             position: "top-center",
-          });
-        },
-        onError: ({ error }) => {
+          }),
+        onError: (error) => {
           const errorMsg =
             error.message || "Failed to resend code. Please try again.";
           setStatus({ type: "error", message: errorMsg });
@@ -193,7 +198,7 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
         },
       },
     );
-  };
+  }, [cooldown, email, isResetMode, sendOtp]);
 
   const maskedEmail = email
     ? email.replace(
@@ -237,10 +242,7 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
                   maxLength={6}
                   pattern={REGEXP_ONLY_DIGITS}
                   value={otp}
-                  onChange={(value) => {
-                    setOtp(value);
-                    if (status.type === "error") setStatus({ type: "idle" });
-                  }}
+                  onChange={handleOtpChange}
                   disabled={pending || status.type === "success"}
                   autoFocus
                 >
@@ -265,7 +267,7 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
               {pending && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <Spinner className="size-3" />
-                  Verifying…
+                  Verifying...
                 </p>
               )}
             </div>
@@ -285,7 +287,6 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
               </Alert>
             )}
 
-            {/* Error Alert */}
             {status.type === "error" && (
               <Alert variant="destructive" className="py-3">
                 <OctagonAlertIcon className="h-4 w-4" />
@@ -306,13 +307,13 @@ const VerifyOtpView = ({ mode }: VerifyOtpViewProps) => {
               <Show when={pending} fallback={"Verify code"}>
                 <span className="flex items-center gap-2">
                   <Spinner className="size-4 text-primary-foreground" />
-                  Verifying…
+                  Verifying...
                 </span>
               </Show>
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
-              Didn't receive a code?{" "}
+              Didn&apos;t receive a code?{" "}
               <Show
                 when={cooldown > 0}
                 fallback={

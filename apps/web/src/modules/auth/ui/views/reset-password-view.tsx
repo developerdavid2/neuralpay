@@ -20,6 +20,7 @@ import {
 } from "@neuralpay/ui/components/field";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { toast } from "sonner";
+import { useResetPassword } from "../../hooks/mutations/use-reset-password";
 
 type FormStatus =
   | { type: "idle" }
@@ -35,6 +36,7 @@ const ResetPasswordView = () => {
   const [otp, setOtp] = useState("");
   const [ready, setReady] = useState(false);
   const router = useRouter();
+  const resetPassword = useResetPassword();
 
   const form = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
@@ -67,32 +69,24 @@ const ResetPasswordView = () => {
   const onSubmit = async (data: ResetPasswordInput) => {
     setStatus({ type: "loading" });
 
-    await authClient.emailOtp.resetPassword(
-      {
-        email,
-        otp,
-        password: data.password,
+    resetPassword.mutate(data, {
+      onSuccess: () => {
+        sessionStorage.removeItem("reset_email");
+        sessionStorage.removeItem("reset_otp");
+        sessionStorage.removeItem("reset_email_verified");
+        setStatus({ type: "success" });
+        toast.success("Password reset successfully!", {
+          position: "top-center",
+        });
+        setTimeout(() => router.push("/auth/signin"), 2000);
       },
-      {
-        onSuccess: () => {
-          // Clean up sessionStorage
-          sessionStorage.removeItem("reset_email");
-          sessionStorage.removeItem("reset_otp");
-          sessionStorage.removeItem("reset_email_verified");
-          setStatus({ type: "success" });
-          toast.success("Password reset successfully!", {
-            position: "top-center",
-          });
-          setTimeout(() => router.push("/auth/signin"), 2000);
-        },
-        onError: ({ error }) => {
-          const errorMsg =
-            error.message || "Failed to reset password. Please try again.";
-          setStatus({ type: "error", message: errorMsg });
-          toast.error(errorMsg, { position: "top-center" });
-        },
+      onError: (error) => {
+        const errorMsg =
+          error.message || "Failed to reset password. Please try again.";
+        setStatus({ type: "error", message: errorMsg });
+        toast.error(errorMsg, { position: "top-center" });
       },
-    );
+    });
   };
 
   if (!ready) return null;
