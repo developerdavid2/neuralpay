@@ -8,11 +8,11 @@
     }
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown src/main.ts",
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/main.ts --outfile server",
     "dev": "PORT=4000 bun run --hot src/main.ts",
-    "start": "bun run dist/index.mjs"
+    "start": "bun run dist/main.mjs"
   },
   "dependencies": {
     "@neuralpay/auth": "workspace:*",
