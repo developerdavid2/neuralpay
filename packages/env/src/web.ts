@@ -6,9 +6,9 @@ export const webEnv = createEnv({
     BETTER_AUTH_SECRET: z.string().min(1).optional(),
   },
   client: {
-    NEXT_PUBLIC_APP_URL: z.string().url().optional(),
-    NEXT_PUBLIC_SERVER_URL: z.string().url().optional(),
-    NEXT_PUBLIC_AUTH_BASE_PATH: z.string().min(1).optional(),
+    NEXT_PUBLIC_APP_URL: z.url(),
+    NEXT_PUBLIC_SERVER_URL: z.url(),
+    NEXT_PUBLIC_AUTH_BASE_PATH: z.string().min(1),
   },
   runtimeEnv: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
