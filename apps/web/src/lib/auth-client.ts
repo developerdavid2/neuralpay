@@ -5,8 +5,11 @@ import type { auth } from "@neuralpay/auth";
 import { webEnv } from "@neuralpay/env/web";
 
 export const authClient = createAuthClient({
-  baseURL: webEnv.NEXT_PUBLIC_APP_URL,
+  baseURL: webEnv.NEXT_PUBLIC_SERVER_URL, // ✅ gateway, not frontend
   basePath: webEnv.NEXT_PUBLIC_AUTH_BASE_PATH,
+  fetchOptions: {
+    credentials: "include",
+  },
   plugins: [emailOTPClient(), inferAdditionalFields<typeof auth>()],
 });
 
