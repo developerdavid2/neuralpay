@@ -15,8 +15,13 @@ import { headers } from "next/headers";
 export const getQueryClient = cache(makeQueryClient);
 const getHeaders = cache(async () => {
   const h = await headers();
+  const appUrl = new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
+  );
   return {
     cookie: h.get("cookie") ?? "",
+    "x-forwarded-host": appUrl.host,
+    "x-forwarded-proto": appUrl.protocol.replace(":", ""),
   };
 });
 
@@ -24,15 +29,10 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   client: createTRPCClient<AppRouter>({
     links: [
       httpLink({
-        url: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
+        url: `${process.env.SERVER_URL}/v1/trpc`,
         transformer: superjson,
         async headers() {
           return getHeaders();
-        },
-        fetch(url, options) {
-          return fetch(url, {
-            ...options,
-          });
         },
       }),
     ],

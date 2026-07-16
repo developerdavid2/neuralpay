@@ -27,7 +27,7 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
       links: [
         httpBatchLink({
           transformer: superjson,
-          url: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
+          url: `/api/trpc`,
           fetch(url, options) {
             return fetch(url, { ...options, credentials: "include" });
           },
