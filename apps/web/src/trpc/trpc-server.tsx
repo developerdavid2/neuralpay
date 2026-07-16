@@ -9,30 +9,28 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import superjson from "superjson";
 import type { AppRouter } from "@neuralpay/api-gateway/router";
 import { makeQueryClient } from "./query-client";
-import { webEnv } from "@neuralpay/env/web";
 import { headers } from "next/headers";
 
 export const getQueryClient = cache(makeQueryClient);
-const getHeaders = cache(async () => {
-  const h = await headers();
-  const appUrl = new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
-  );
-  return {
-    cookie: h.get("cookie") ?? "",
-    "x-forwarded-host": appUrl.host,
-    "x-forwarded-proto": appUrl.protocol.replace(":", ""),
-  };
-});
 
 export const trpc = createTRPCOptionsProxy<AppRouter>({
   client: createTRPCClient<AppRouter>({
     links: [
       httpLink({
-        url: `${process.env.SERVER_URL}/v1/trpc`,
+        url: `${process.env.SERVER_URL || "http://localhost:3001"}/v1/trpc`,
         transformer: superjson,
         async headers() {
-          return getHeaders();
+          const h = await headers();
+          return {
+            cookie: h.get("cookie") ?? "",
+            "x-forwarded-host":
+              h.get("x-forwarded-host") ?? h.get("host") ?? "",
+            "x-forwarded-proto": h.get("x-forwarded-proto") ?? "https",
+            // Pass forward any proxy gateway auth credentials already processed
+            "x-user-id": h.get("x-user-id") ?? "",
+            "x-user-email": h.get("x-user-email") ?? "",
+            "x-user-name": h.get("x-user-name") ?? "",
+          };
         },
       }),
     ],
@@ -49,16 +47,17 @@ export function HydrateClient(props: { children: React.ReactNode }) {
   );
 }
 
-export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
+// Changed to return the prefetch Promise
+export async function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
   queryOptions: T,
 ) {
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(queryOptions);
+  await queryClient.prefetchQuery(queryOptions);
 }
 
-export function prefetchInfinite<T extends ReturnType<TRPCQueryOptions<any>>>(
-  queryOptions: T,
-) {
+export async function prefetchInfinite<
+  T extends ReturnType<TRPCQueryOptions<any>>,
+>(queryOptions: T) {
   const queryClient = getQueryClient();
-  void queryClient.prefetchInfiniteQuery(queryOptions as any);
+  await queryClient.prefetchInfiniteQuery(queryOptions as any);
 }

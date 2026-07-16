@@ -23,41 +23,31 @@ const baseHeaders = (proxyReqOpts: any) => {
 // Used for protected routes — injects verified user id so downstream
 const withUserId = (proxyReqOpts: any, srcReq: Request) => {
   proxyReqOpts.headers ??= {};
-  proxyReqOpts.headers["Content-Type"] = "application/json";
-  proxyReqOpts.headers["Origin"] = gatewayEnv.TRUSTED_ORIGINS;
+  proxyReqOpts.headers["content-type"] = "application/json";
+  proxyReqOpts.headers["origin"] = gatewayEnv.TRUSTED_ORIGINS;
   proxyReqOpts.headers["x-internal-source"] = "api-gateway";
 
-  // Prefer headers already attached by authMiddleware, then fall back to req.user.
-  const forwardedUserId = srcReq.headers["x-user-id"];
-  const forwardedUserEmail = srcReq.headers["x-user-email"];
-  const forwardedUserName = srcReq.headers["x-user-name"];
-  const forwardedPlanTier = srcReq.headers["x-user-plan-tier"];
+  // Enforce lowercase lookups for proxy mapping safety
+  const userId = srcReq.headers["x-user-id"] || (srcReq as any).user?.id;
+  const userEmail =
+    srcReq.headers["x-user-email"] || (srcReq as any).user?.email;
+  const userName = srcReq.headers["x-user-name"] || (srcReq as any).user?.name;
+  const planTier =
+    srcReq.headers["x-user-plan-tier"] || (srcReq as any).user?.planTier;
 
-  if (typeof forwardedUserId === "string" && forwardedUserId) {
-    proxyReqOpts.headers["x-user-id"] = forwardedUserId;
-  }
+  if (userId) proxyReqOpts.headers["x-user-id"] = String(userId);
+  if (userEmail) proxyReqOpts.headers["x-user-email"] = String(userEmail);
+  if (userName) proxyReqOpts.headers["x-user-name"] = String(userName);
+  if (planTier) proxyReqOpts.headers["x-user-plan-tier"] = String(planTier);
 
-  if (typeof forwardedUserEmail === "string" && forwardedUserEmail) {
-    proxyReqOpts.headers["x-user-email"] = forwardedUserEmail;
-  }
-
-  if (typeof forwardedUserName === "string" && forwardedUserName) {
-    proxyReqOpts.headers["x-user-name"] = forwardedUserName;
-  }
-
-  if (typeof forwardedPlanTier === "string" && forwardedPlanTier) {
-    proxyReqOpts.headers["x-user-plan-tier"] = forwardedPlanTier;
-  }
-
-  const user = (srcReq as any).user;
-  if (!proxyReqOpts.headers["x-user-id"] && user?.id) {
-    proxyReqOpts.headers["x-user-id"] = user.id;
-    proxyReqOpts.headers["x-user-email"] = user.email ?? "";
-    proxyReqOpts.headers["x-user-name"] = user.name ?? "";
-  }
-
-  // Forward the session cookie as fallback (belt and suspenders)
+  // Ensure cookies are correctly passed down so Better Auth fallback works
   proxyReqOpts.headers["cookie"] = srcReq.headers.cookie ?? "";
+
+  // Forward original host information so downstream Better Auth doesn't fail origin check
+  proxyReqOpts.headers["x-forwarded-host"] =
+    srcReq.headers["x-forwarded-host"] || srcReq.headers["host"] || "";
+  proxyReqOpts.headers["x-forwarded-proto"] =
+    srcReq.headers["x-forwarded-proto"] || "https";
 
   return proxyReqOpts;
 };

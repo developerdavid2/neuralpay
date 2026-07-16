@@ -94,10 +94,13 @@ export async function createExpressContext(
 
   if (opts.auth) {
     const { fromNodeHeaders } = await import("better-auth/node");
-    const headers = fromNodeHeaders(opts.req.headers);
+
+    // Explicitly reconstruct standard web headers from Node request headers
+    const webHeaders = fromNodeHeaders(opts.req.headers);
 
     try {
-      const session = await opts.auth.api.getSession({ headers });
+      // Pass the fully normalized headers containing valid cookies, forwarded-host, and proto
+      const session = await opts.auth.api.getSession({ headers: webHeaders });
       return {
         session: session
           ? {
@@ -109,11 +112,11 @@ export async function createExpressContext(
               },
             }
           : null,
-        _headers: headers,
+        _headers: webHeaders,
       };
     } catch (error) {
       console.error("Failed to get session from better-auth:", error);
-      return { session: null, _headers: headers };
+      return { session: null, _headers: webHeaders };
     }
   }
 
