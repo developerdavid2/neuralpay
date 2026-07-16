@@ -8,14 +8,14 @@
       "default": "./src/routers/index.ts"
     },
     ".": {
-      "default": "./src/index.ts"
+      "default": "./src/main.ts"
     }
   },
-  "main": "./src/index.ts",
+  "main": "./src/main.ts",
   "scripts": {
-    "dev": "PORT=4003 bun run --hot src/index.ts",
-    "build": "tsdown src/index.ts",
-    "start": "node dist/index.mjs",
+    "dev": "PORT=4003 bun run --hot src/main.ts",
+    "build": "tsdown src/main.ts",
+    "start": "node dist/main.mjs",
     "check-types": "tsc -b"
   },
   "dependencies": {
