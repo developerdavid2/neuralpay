@@ -1,29 +1,28 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { OctagonAlertIcon, ArrowLeft, Mail } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   forgotPasswordSchema,
   type ForgotPasswordInput,
 } from "@neuralpay/types";
+import { ArrowLeft, Mail, OctagonAlertIcon } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { Input } from "@neuralpay/ui/components/input";
 import { Alert, AlertTitle } from "@neuralpay/ui/components/alert";
+import { Button } from "@neuralpay/ui/components/button";
 import {
   Field,
-  FieldLabel,
   FieldError,
   FieldGroup,
+  FieldLabel,
 } from "@neuralpay/ui/components/field";
+import { Input } from "@neuralpay/ui/components/input";
+import type { Route } from "next";
 import { toast } from "sonner";
 import { useSendOtp } from "../../hooks/mutations/use-send-otp";
-import type { Route } from "next";
 
 type FormStatus =
   | { type: "idle" }

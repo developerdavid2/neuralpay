@@ -1,23 +1,22 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
-import { useState, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, OctagonAlertIcon, CheckCircle2 } from "lucide-react";
+import { resetPasswordSchema, type ResetPasswordInput } from "@neuralpay/types";
+import { CheckCircle2, Eye, EyeOff, OctagonAlertIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { resetPasswordSchema, type ResetPasswordInput } from "@neuralpay/types";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { Input } from "@neuralpay/ui/components/input";
 import { Alert, AlertTitle } from "@neuralpay/ui/components/alert";
+import { Button } from "@neuralpay/ui/components/button";
 import {
   Field,
-  FieldLabel,
   FieldError,
   FieldGroup,
+  FieldLabel,
 } from "@neuralpay/ui/components/field";
+import { Input } from "@neuralpay/ui/components/input";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { toast } from "sonner";
 import { useResetPassword } from "../../hooks/mutations/use-reset-password";
