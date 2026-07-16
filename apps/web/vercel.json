@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/auth/:path*",
+      "destination": "https://neuralpayai-staging-api-gateway.onrender.com/v1/auth/:path*"
+    }
+  ]
+}

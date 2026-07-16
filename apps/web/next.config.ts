@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/v1/:path*",
+        source: "api/auth/:path*",
         destination: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/:path*`,
       },
     ];

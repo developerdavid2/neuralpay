@@ -1,4 +1,4 @@
-import { webEnv } from "@neuralpay/env/web";
+import { auth } from "@neuralpay/auth";
 import { headers } from "next/headers";
 
 interface Session {
@@ -21,44 +21,20 @@ export async function getServerSession(): Promise<Session | null> {
     const headersList = await headers();
     const cookie = headersList.get("cookie");
 
-    // DEBUG: Log what we actually have
-    console.log(
-      "[getServerSession] Raw cookie header:",
-      cookie ? "present" : "missing",
-    );
-    console.log("[getServerSession] Cookie length:", cookie?.length ?? 0);
+    if (!cookie) return null;
 
-    if (!cookie) {
-      console.log("[getServerSession] No cookie in headers");
-      return null;
-    }
+    const h = new Headers();
+    h.set("cookie", cookie);
 
-    const response = await fetch(
-      `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/auth/get-session`,
-      {
-        headers: { cookie },
-        cache: "no-store",
-      },
-    );
-
-    console.log("[getServerSession] Auth response status:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.log("[getServerSession] Auth error body:", errorText);
-      return null;
-    }
-
-    const data = await response.json();
-    return data || null;
+    const session = await auth.api.getSession({ headers: h });
+    return session as Session | null;
   } catch (error) {
     console.error("[getServerSession] Error:", error);
     return null;
   }
 }
 
-// Helper to check if user is authenticated on the server
-export async function requireAuth(redirectTo: string = "/sign-in") {
+export async function requireAuth(redirectTo: string = "/auth/signin") {
   const session = await getServerSession();
   if (!session?.user) {
     throw new Error("Unauthorized");

@@ -1,4 +1,4 @@
-import { getServerSession } from "@/lib/auth-server";
+import { getServerSession, requireAuth } from "@/lib/auth-server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const AuthenticationLayout = async ({
   children,
 }: AuthenticationLayoutProps) => {
-  const session = await getServerSession();
+  const session = await requireAuth();
 
   // If user is already logged in and verified, they shouldn't be on ANY auth page
   if (session?.user?.emailVerified) {
