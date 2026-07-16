@@ -8,7 +8,7 @@
       "default": "./src/routers/index.ts"
     },
     ".": {
-      "default": "./src/main.ts"
+      "default": "./src/index.ts"
     }
   },
   "main": "./src/index.ts",
