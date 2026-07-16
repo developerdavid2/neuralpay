@@ -21,13 +21,11 @@ app.use(
   }),
 );
 
-// Must be after body-parser middleware
 app.post("/chat/stream", chatStreamHandler);
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
     console.log(`🚀 ai-service running on http://localhost:${PORT}`);
-    console.log(`   Chat stream at http://localhost:${PORT}/chat/stream`);
   });
 }
 

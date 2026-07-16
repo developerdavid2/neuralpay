@@ -2,14 +2,17 @@
   "version": 2,
   "builds": [
     {
-      "src": "apps/server/ai-service/src/main.ts",
-      "use": "@vercel/node"
+      "src": "api/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["src/**", "../../packages/**"]
+      }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "apps/server/ai-service/main.ts"
+      "dest": "/api/index.ts"
     }
   ]
 }
