@@ -61,3 +61,16 @@ export async function prefetchInfinite<
   const queryClient = getQueryClient();
   await queryClient.prefetchInfiniteQuery(queryOptions as any);
 }
+
+// Add this helper to suppress prefetch errors from crashing the SSR render
+export async function safePrefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
+  queryOptions: T,
+) {
+  try {
+    await prefetch(queryOptions);
+  } catch (error) {
+    console.warn(
+      `[safePrefetch] Ignored a prefetch failure. This is normal if the user is unauthorized and the layout is about to redirect them.`,
+    );
+  }
+}
