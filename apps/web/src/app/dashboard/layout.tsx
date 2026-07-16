@@ -3,7 +3,7 @@ import { DashboardLayout } from "@/modules/dashboard/ui/layouts/dashboard-layout
 
 export const dynamic = "force-dynamic";
 const Layout = async ({ children }: { children: React.ReactNode }) => {
-  // await requireAuth();
+  await requireAuth();
   return <DashboardLayout>{children}</DashboardLayout>;
 };
 
