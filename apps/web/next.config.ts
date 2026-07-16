@@ -1,4 +1,3 @@
-import { webEnv } from "@neuralpay/env/web";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -7,10 +6,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
 
   async rewrites() {
+    const serverUrl =
+      process.env.SERVER_URL ?? process.env.NEXT_PUBLIC_SERVER_URL;
     return [
       {
         source: "/api/auth/:path*",
-        destination: `${webEnv.SERVER_URL}/v1/auth/:path*`,
+        destination: `${serverUrl}/v1/auth/:path*`,
       },
     ];
   },

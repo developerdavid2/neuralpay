@@ -5,6 +5,13 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "env": [
+        "BETTER_AUTH_SECRET",
+        "SERVER_URL",
+        "NEXT_PUBLIC_APP_URL",
+        "NEXT_PUBLIC_SERVER_URL",
+        "NEXT_PUBLIC_AUTH_BASE_PATH"
+      ],
       "outputs": ["dist/**", ".next/**"]
     },
     "lint": {
