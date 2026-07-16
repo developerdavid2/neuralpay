@@ -1,8 +1,8 @@
 // lib/auth-server.ts
-import { webEnv } from "@neuralpay/env/web";
 import type { Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 export interface Session {
   user: {
@@ -20,29 +20,35 @@ export interface Session {
   };
 }
 
-export async function getServerSession(): Promise<Session | null> {
+export const getServerSession = cache(async (): Promise<Session | null> => {
   try {
     const headersList = await headers();
     const cookie = headersList.get("cookie");
     if (!cookie) return null;
 
+    const appUrl = new URL(
+      process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
+    );
+
     const response = await fetch(
-      `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/auth/get-session`,
+      `${process.env.SERVER_URL}/v1/auth/get-session`,
       {
-        headers: { cookie },
+        headers: {
+          cookie,
+          "x-forwarded-host": appUrl.host, // neuralpayai.vercel.app
+          "x-forwarded-proto": appUrl.protocol.replace(":", ""), // https
+        },
         cache: "no-store",
       },
     );
 
     if (!response.ok) return null;
-
-    const data = await response.json();
-    return data ?? null;
+    return (await response.json()) ?? null;
   } catch (error) {
     console.error("[getServerSession]", error);
     return null;
   }
-}
+});
 
 /**
  * Use in layouts — redirects to sign-in if not authenticated.

@@ -180,13 +180,9 @@ export function createAuth(config: AuthConfig) {
         }
       : undefined,
 
-    // advanced: {
-    //   defaultCookieAttributes: {
-    //     sameSite: "lax",
-    //     secure: isHttps,
-    //     httpOnly: true,
-    //   },
-    // },
+    advanced: {
+      trustedProxyHeaders: true,
+    },
   });
 }
 

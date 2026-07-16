@@ -1,9 +1,7 @@
 import { z } from "zod";
 
 export const baseServerEnv = {
-  NODE_ENV: z
-    .enum(["development", "production", "staging"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "production"]).default("development"),
 };
 
 export const authEnv = {

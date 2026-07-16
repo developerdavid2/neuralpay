@@ -211,12 +211,28 @@ export function mountUploadThingProxy(app: Express) {
 // And remove it from mountProxies
 export function mountProxies(app: Express) {
   // 1. Better Auth routes → user-service
+  // In mountProxies — auth proxy
   app.use(
     "/v1/auth",
     proxy(gatewayEnv.USER_SERVICE_URL, {
       proxyErrorHandler: proxyError,
       proxyReqPathResolver: (req) => `/api/auth${req.url}`,
-      proxyReqOptDecorator: baseHeaders,
+      proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+        proxyReqOpts.headers ??= {};
+        proxyReqOpts.headers["Content-Type"] = "application/json";
+        proxyReqOpts.headers["x-internal-source"] = "api-gateway";
+
+        // ✅ Forward original host so better-auth validates cookie correctly
+        proxyReqOpts.headers["x-forwarded-host"] =
+          srcReq.headers["x-forwarded-host"] ?? srcReq.headers["host"] ?? "";
+        proxyReqOpts.headers["x-forwarded-proto"] =
+          srcReq.headers["x-forwarded-proto"] ?? "https";
+
+        // ✅ Forward cookies untouched
+        proxyReqOpts.headers["cookie"] = srcReq.headers.cookie ?? "";
+
+        return proxyReqOpts;
+      },
       userResDecorator: (_proxyRes, proxyResData) => {
         logger.info("[proxy] response from user-service /auth");
         return proxyResData;
