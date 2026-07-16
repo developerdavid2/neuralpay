@@ -27,7 +27,7 @@ const isDev = process.env.NODE_ENV !== "production";
 
 export function createAuth(config: AuthConfig) {
   const db = createDb();
-  const isHttps = config.baseURL.startsWith("https://");
+  // const isHttps = config.baseURL.startsWith("https://");
 
   return betterAuth({
     basePath: "/api/auth",
@@ -180,13 +180,13 @@ export function createAuth(config: AuthConfig) {
         }
       : undefined,
 
-    advanced: {
-      defaultCookieAttributes: {
-        sameSite: "lax",
-        secure: isHttps,
-        httpOnly: true,
-      },
-    },
+    // advanced: {
+    //   defaultCookieAttributes: {
+    //     sameSite: "lax",
+    //     secure: isHttps,
+    //     httpOnly: true,
+    //   },
+    // },
   });
 }
 
