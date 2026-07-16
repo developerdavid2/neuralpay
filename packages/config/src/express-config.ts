@@ -30,6 +30,7 @@ export function createExpressApp(
     cors({
       origin: parseOrigins(config.allowedOrigins),
       credentials: true,
+      exposedHeaders: ["Set-Cookie"],
     }),
   );
 

@@ -121,6 +121,19 @@ function trpcNamespaceProxy(app: Express) {
         return `/trpc/${stripped}${query}`;
       },
       proxyReqOptDecorator: withUserId,
+      userResHeaderDecorator: (
+        headers,
+        _userReq,
+        _userRes,
+        _proxyReq,
+        proxyRes,
+      ) => {
+        const setCookie = proxyRes.headers["set-cookie"];
+        if (setCookie) {
+          headers["set-cookie"] = setCookie;
+        }
+        return headers;
+      },
       userResDecorator: (_proxyRes, proxyResData) => {
         logger.info(`[tRPC proxy] response from ${namespace}-service`);
         return proxyResData;
@@ -221,17 +234,26 @@ export function mountProxies(app: Express) {
         proxyReqOpts.headers ??= {};
         proxyReqOpts.headers["Content-Type"] = "application/json";
         proxyReqOpts.headers["x-internal-source"] = "api-gateway";
-
-        // ✅ Forward original host so better-auth validates cookie correctly
         proxyReqOpts.headers["x-forwarded-host"] =
           srcReq.headers["x-forwarded-host"] ?? srcReq.headers["host"] ?? "";
         proxyReqOpts.headers["x-forwarded-proto"] =
-          srcReq.headers["x-forwarded-proto"] ?? "https";
-
-        // ✅ Forward cookies untouched
+          (srcReq.headers["x-forwarded-proto"] as string) ?? "https";
         proxyReqOpts.headers["cookie"] = srcReq.headers.cookie ?? "";
-
         return proxyReqOpts;
+      },
+      // ✅ Forward Set-Cookie from user-service back to browser
+      userResHeaderDecorator: (
+        headers,
+        _userReq,
+        _userRes,
+        proxyReq,
+        proxyRes,
+      ) => {
+        const setCookie = proxyRes.headers["set-cookie"];
+        if (setCookie) {
+          headers["set-cookie"] = setCookie;
+        }
+        return headers;
       },
       userResDecorator: (_proxyRes, proxyResData) => {
         logger.info("[proxy] response from user-service /auth");
