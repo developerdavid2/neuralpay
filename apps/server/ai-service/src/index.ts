@@ -1,2 +1,3 @@
-// Entry point for ai-service
-export {};
+import app from "./main";
+
+export default app;
