@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "dist/main.mjs",
+      "src": "apps/server/ai-service/dist/main.mjs",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "source": "/(.*)",
-      "destination": "dist/main.mjs"
+      "src": "/(.*)",
+      "dest": "apps/server/ai-service/dist/main.mjs"
     }
   ],
   "headers": [
