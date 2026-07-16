@@ -20,7 +20,7 @@ export interface Session {
   };
 }
 
-export const getServerSession = cache(async (): Promise<Session | null> => {
+export const getServerSession = async (): Promise<Session | null> => {
   try {
     const headersList = await headers();
     const cookie = headersList.get("cookie");
@@ -48,7 +48,7 @@ export const getServerSession = cache(async (): Promise<Session | null> => {
     console.error("[getServerSession]", error);
     return null;
   }
-});
+};
 
 /**
  * Use in layouts — redirects to sign-in if not authenticated.
