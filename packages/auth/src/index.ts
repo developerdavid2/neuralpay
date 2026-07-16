@@ -5,6 +5,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailOTP, twoFactor } from "better-auth/plugins";
 import { sendEmail } from "./lib/email";
 import { otpTemplate, resetPasswordTemplate } from "./lib/email-templates";
+
 export interface AuthConfig {
   secret: string;
   baseURL: string;
@@ -27,7 +28,6 @@ const isDev = process.env.NODE_ENV !== "production";
 
 export function createAuth(config: AuthConfig) {
   const db = createDb();
-  // const isHttps = config.baseURL.startsWith("https://");
 
   return betterAuth({
     basePath: "/api/auth",
@@ -186,23 +186,4 @@ export function createAuth(config: AuthConfig) {
   });
 }
 
-const configFromEnv: AuthConfig = {
-  secret: process.env.BETTER_AUTH_SECRET ?? "",
-  baseURL: process.env.AUTH_PUBLIC_URL ?? "http://localhost:3001",
-  polar: process.env.POLAR_ACCESS_TOKEN
-    ? {
-        accessToken: process.env.POLAR_ACCESS_TOKEN,
-        successUrl: process.env.POLAR_SUCCESS_URL ?? "",
-      }
-    : undefined,
-  google:
-    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-      ? {
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        }
-      : undefined,
-};
-
-export const auth = createAuth(configFromEnv);
 export type Auth = ReturnType<typeof createAuth>;

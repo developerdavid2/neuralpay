@@ -1,8 +1,6 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import { fromNodeHeaders } from "better-auth/node";
 import { handleStreamChat } from "../services/streaming.service";
-import { auth } from "@neuralpay/auth";
 
 function getHeaderValue(headers: Request["headers"], key: string) {
   const value = headers[key];
@@ -11,7 +9,7 @@ function getHeaderValue(headers: Request["headers"], key: string) {
 }
 
 const streamRequestSchema = z.object({
-  sessionId: z.uuid(),
+  sessionId: z.string().uuid(),
   messages: z.array(
     z.object({
       role: z.enum(["user", "assistant"]),
@@ -30,36 +28,17 @@ export async function chatStreamHandler(
   req: Request,
   res: Response,
 ): Promise<void> {
-  // Always authenticate via session first - never trust client headers for auth
-  let userId: string | undefined;
-  let planTier: string = "free"; // safe default
+  const forwardedUserId = getHeaderValue(req.headers, "x-user-id");
+  const forwardedSource = getHeaderValue(req.headers, "x-internal-source");
+  const forwardedPlanTier = getHeaderValue(req.headers, "x-user-plan-tier");
 
-  try {
-    const forwardedUserId = getHeaderValue(req.headers, "x-user-id");
-    const forwardedSource = getHeaderValue(req.headers, "x-internal-source");
-    const forwardedPlanTier = getHeaderValue(req.headers, "x-user-plan-tier");
-
-    if (forwardedSource === "api-gateway" && forwardedUserId) {
-      userId = forwardedUserId;
-      planTier = forwardedPlanTier ?? "free";
-    } else {
-      const headers = fromNodeHeaders(req.headers);
-      const session = await auth.api.getSession({ headers });
-
-      if (!session?.user?.id) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      userId = session.user.id;
-      // Derive planTier from authenticated session (from @neuralpay/auth schema)
-      planTier = (session.user as any).planTier ?? "free";
-    }
-  } catch {
-    // Auth validation failed - return 401
+  if (forwardedSource !== "api-gateway" || !forwardedUserId) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
+
+  const userId = forwardedUserId;
+  const planTier = forwardedPlanTier ?? "free";
 
   const parseResult = streamRequestSchema.safeParse(req.body);
   if (!parseResult.success) {
@@ -72,7 +51,6 @@ export async function chatStreamHandler(
 
   const { sessionId, messages } = parseResult.data;
 
-  // Extract the last user message text from parts
   const lastUserMessage = [...messages]
     .reverse()
     .find((m) => m.role === "user");
