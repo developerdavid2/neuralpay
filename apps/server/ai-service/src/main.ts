@@ -31,5 +31,4 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-// Vercel serverless entry hook
 export default app;

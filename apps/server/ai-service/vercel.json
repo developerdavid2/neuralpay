@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "apps/server/ai-service/dist/main.mjs"
+      "dest": "apps/server/ai-service/main.ts"
     }
   ]
 }
