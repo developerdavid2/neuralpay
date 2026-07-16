@@ -215,7 +215,7 @@ export function mountProxies(app: Express) {
     "/v1/auth",
     proxy(gatewayEnv.USER_SERVICE_URL, {
       proxyErrorHandler: proxyError,
-      proxyReqPathResolver: (req) => `/auth${req.url}`,
+      proxyReqPathResolver: (req) => `/api/auth${req.url}`,
       proxyReqOptDecorator: baseHeaders,
       userResDecorator: (_proxyRes, proxyResData) => {
         logger.info("[proxy] response from user-service /auth");

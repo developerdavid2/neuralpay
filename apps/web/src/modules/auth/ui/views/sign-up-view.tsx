@@ -22,7 +22,7 @@ import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
 import type { Route } from "next";
 import { toast } from "sonner";
-import { useSignUp } from "../../hooks/mutations/use-sign-out";
+import { useSignUp } from "../../hooks/mutations/use-sign-up";
 import { AppleSignInButton } from "../components/apple-sign-in-button";
 import { GoogleSignInButton } from "../components/google-sign-in-button";
 

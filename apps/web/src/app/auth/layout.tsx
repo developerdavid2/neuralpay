@@ -1,4 +1,8 @@
-import { getServerSession, requireAuth } from "@/lib/auth-server";
+import {
+  getServerSession,
+  redirectIfAuthenticated,
+  requireAuth,
+} from "@/lib/auth-server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -10,24 +14,7 @@ export const dynamic = "force-dynamic";
 const AuthenticationLayout = async ({
   children,
 }: AuthenticationLayoutProps) => {
-  const session = await requireAuth();
-
-  // If user is already logged in and verified, they shouldn't be on ANY auth page
-  if (session?.user?.emailVerified) {
-    redirect("/dashboard");
-  }
-
-  // If user exists but email not verified, redirect to OTP
-  if (session?.user && !session.user.emailVerified) {
-    // Get the current pathname properly
-    const headersList = await headers();
-    const pathname = headersList.get("x-pathname") || "";
-
-    // Only allow access to verify-otp page
-    if (!pathname.includes("/verify-otp")) {
-      redirect("/auth/verify-otp");
-    }
-  }
+  await redirectIfAuthenticated("/dashboard");
 
   return (
     <div className="relative min-h-svh overflow-hidden text-foreground font-sans">

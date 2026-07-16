@@ -30,7 +30,7 @@ export function createAuth(config: AuthConfig) {
   const isHttps = config.baseURL.startsWith("https://");
 
   return betterAuth({
-    basePath: "/auth",
+    basePath: "/api/auth",
     database: drizzleAdapter(db, { provider: "pg", schema }),
     trustedOrigins: isDev ? ["*"] : trustedOrigins,
     secret: config.secret,
@@ -192,7 +192,7 @@ export function createAuth(config: AuthConfig) {
 
 const configFromEnv: AuthConfig = {
   secret: process.env.BETTER_AUTH_SECRET ?? "",
-  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:4001",
+  baseURL: process.env.AUTH_PUBLIC_URL ?? "http://localhost:3001",
   polar: process.env.POLAR_ACCESS_TOKEN
     ? {
         accessToken: process.env.POLAR_ACCESS_TOKEN,

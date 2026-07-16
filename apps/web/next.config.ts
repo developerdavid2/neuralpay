@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/auth/:path*",
-        destination: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/:path*`,
+        destination: `${webEnv.SERVER_URL}/v1/auth/:path*`,
       },
     ];
   },

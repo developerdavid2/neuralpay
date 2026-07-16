@@ -15,7 +15,7 @@ const app = createExpressApp({
   serviceName: "user-service",
   port: PORT,
   beforeBodyParser: (a) => {
-    a.use("/auth", toNodeHandler(auth));
+    a.use("/api/auth", toNodeHandler(auth));
     mountUploadThing(a, { router: userFileRouter });
   },
 });

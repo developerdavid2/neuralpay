@@ -1,13 +1,17 @@
-import { auth } from "@neuralpay/auth";
+// lib/auth-server.ts
+import { webEnv } from "@neuralpay/env/web";
+import type { Route } from "next";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-interface Session {
+export interface Session {
   user: {
     id: string;
     email: string;
     emailVerified: boolean;
     name: string;
-    image?: string;
+    image?: string | null;
+    planTier?: string;
   };
   session: {
     id: string;
@@ -20,24 +24,58 @@ export async function getServerSession(): Promise<Session | null> {
   try {
     const headersList = await headers();
     const cookie = headersList.get("cookie");
-
     if (!cookie) return null;
 
-    const h = new Headers();
-    h.set("cookie", cookie);
+    const response = await fetch(
+      `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/auth/get-session`,
+      {
+        headers: { cookie },
+        cache: "no-store",
+      },
+    );
 
-    const session = await auth.api.getSession({ headers: h });
-    return session as Session | null;
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return data ?? null;
   } catch (error) {
-    console.error("[getServerSession] Error:", error);
+    console.error("[getServerSession]", error);
     return null;
   }
 }
 
-export async function requireAuth(redirectTo: string = "/auth/signin") {
+/**
+ * Use in layouts — redirects to sign-in if not authenticated.
+ * Optionally redirects to verify-otp if email not verified.
+ */
+export async function requireAuth({
+  redirectTo = "/auth/signin",
+  requireEmailVerified = true,
+}: {
+  redirectTo?: string;
+  requireEmailVerified?: boolean;
+} = {}): Promise<Session> {
   const session = await getServerSession();
+
   if (!session?.user) {
-    throw new Error("Unauthorized");
+    redirect(redirectTo as Route);
   }
+
+  if (requireEmailVerified && !session.user.emailVerified) {
+    redirect("/auth/verify-otp");
+  }
+
   return session;
+}
+
+/**
+ * Use in auth pages (signin, signup) — redirects to dashboard if already logged in.
+ */
+export async function redirectIfAuthenticated(
+  to: string = "/dashboard",
+): Promise<void> {
+  const session = await getServerSession();
+  if (session?.user) {
+    redirect(to as Route);
+  }
 }

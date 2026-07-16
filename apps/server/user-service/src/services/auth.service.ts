@@ -201,4 +201,81 @@ export const AuthService = {
       };
     }
   },
+
+  async signInWithSocial(
+    provider: "google" | "apple" | string,
+    idToken: { token: string; accessToken?: string },
+  ): Promise<ServiceResult<SignInResult>> {
+    try {
+      const response = await auth.api.signInSocial({
+        body: { provider, idToken },
+        asResponse: true,
+      });
+      if (!response.ok) {
+        return {
+          success: false,
+          error: "Social sign in failed",
+          code: "UNAUTHORIZED",
+        };
+      }
+      const payload = parseAuthPayload(await response.json());
+      return {
+        success: true,
+        data: {
+          user: payload.user,
+          session: payload.session,
+          cookies: getCookies(response),
+        },
+      };
+    } catch (err) {
+      console.error("[AuthService.signInWithSocial]", err);
+      return {
+        success: false,
+        error: "Social sign in failed",
+        code: "UNAUTHORIZED",
+      };
+    }
+  },
+
+  async getSocialSignInUrl(
+    provider: "google" | "github" | string,
+    callbackURL: string,
+  ): Promise<ServiceResult<{ url: string }> & { cookies?: string[] }> {
+    try {
+      const response = await auth.api.signInSocial({
+        body: { provider, callbackURL },
+        asResponse: true,
+      });
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: "Failed to generate sign in URL",
+          code: "BAD_REQUEST",
+        };
+      }
+
+      const result = (await response.json()) as { url?: string };
+      if (!result.url) {
+        return {
+          success: false,
+          error: "Failed to generate sign in URL",
+          code: "BAD_REQUEST",
+        };
+      }
+
+      return {
+        success: true,
+        data: { url: result.url },
+        cookies: response.headers.getSetCookie(),
+      };
+    } catch (err) {
+      console.error("[AuthService.getSocialSignInUrl]", err);
+      return {
+        success: false,
+        error: "Failed to generate sign in URL",
+        code: "BAD_REQUEST",
+      };
+    }
+  },
 };

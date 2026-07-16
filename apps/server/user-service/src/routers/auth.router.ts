@@ -6,6 +6,8 @@ import {
   resetPasswordSchema,
   verifyOtpSchema,
   sendOtpSchema,
+  socialSignInSchema,
+  socialSignInUrlSchema,
 } from "@neuralpay/types";
 import { TRPCError } from "@trpc/server";
 import { AuthService } from "../services/auth.service";
@@ -101,6 +103,39 @@ export const authRouter = router({
       result.data.cookies.forEach((c) =>
         ctx.resHeaders!.append("Set-Cookie", c),
       );
+      return result.data;
+    }),
+  signInWithSocial: publicProcedure
+    .input(socialSignInSchema)
+    .mutation(async ({ input, ctx }) => {
+      const result = await AuthService.signInWithSocial(
+        input.provider,
+        input.idToken,
+      );
+      if (!result.success) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: result.error });
+      }
+      result.data.cookies.forEach((c) =>
+        ctx.resHeaders!.append("Set-Cookie", c),
+      );
+      return result.data;
+    }),
+
+  getSocialSignInUrl: publicProcedure
+    .input(socialSignInUrlSchema)
+    .query(async ({ input, ctx }) => {
+      const result = await AuthService.getSocialSignInUrl(
+        input.provider,
+        input.callbackURL,
+      );
+      if (!result.success) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: result.error });
+      }
+      if (result.cookies?.length) {
+        result.cookies.forEach((cookie) =>
+          ctx.resHeaders!.append("set-cookie", cookie),
+        );
+      }
       return result.data;
     }),
 });

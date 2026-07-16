@@ -7,7 +7,6 @@ import { toast } from "sonner";
 
 import { Show } from "@/components/show";
 import { useProfile } from "@/hooks/queries/use-profile";
-import { authClient } from "@/lib/auth-client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,8 +38,10 @@ import {
 } from "@neuralpay/ui/components/sidebar";
 import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
+import { useSignOut } from "@/modules/auth/hooks/mutations/use-sign-out";
 
 export function DashboardUserButton() {
+  const signOut = useSignOut();
   const { data: profile } = useProfile();
   const { name, email, image } = profile;
 
@@ -51,28 +52,19 @@ export function DashboardUserButton() {
     "idle",
   );
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  const initials =
-    name
-      ?.split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() ?? "?";
 
   const handleLogout = async () => {
     setLogoutState("loading");
     setShowLogoutDialog(false);
 
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          setLogoutState("idle");
-          router.push("/auth/signin");
-        },
-        onError: () => {
-          setLogoutState("error");
-          toast.error("Failed to sign out. Please try again.");
-        },
+    signOut.mutate(undefined, {
+      onSuccess: () => {
+        setLogoutState("idle");
+        router.push("/auth/signin");
+      },
+      onError: () => {
+        setLogoutState("error");
+        toast.error("Failed to sign out. Please try again.");
       },
     });
   };

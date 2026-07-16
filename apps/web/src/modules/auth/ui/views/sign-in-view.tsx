@@ -1,6 +1,5 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, type SignInInput } from "@neuralpay/types";
 import { Eye, EyeOff, OctagonAlertIcon } from "lucide-react";

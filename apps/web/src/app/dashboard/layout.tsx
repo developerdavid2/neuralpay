@@ -4,15 +4,7 @@ import { DashboardLayout } from "@/modules/dashboard/ui/layouts/dashboard-layout
 
 export const dynamic = "force-dynamic";
 const Layout = async ({ children }: { children: React.ReactNode }) => {
-  const session = await requireAuth();
-
-  if (!session?.user) {
-    redirect("/auth/signin");
-  }
-  if (!session.user.emailVerified) {
-    redirect("/auth/verify-otp");
-  }
-
+  await requireAuth();
   return <DashboardLayout>{children}</DashboardLayout>;
 };
 

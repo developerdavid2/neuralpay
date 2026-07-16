@@ -54,12 +54,26 @@ export const sendOtpSchema = z.object({
   type: z.enum(["sign-in", "email-verification", "forget-password"]),
 });
 
+export const socialSignInSchema = z.object({
+  provider: z.string(),
+  idToken: z.object({
+    token: z.string(),
+    accessToken: z.string().optional(),
+  }),
+});
+
+export const socialSignInUrlSchema = z.object({
+  provider: z.string(),
+  callbackURL: z.string().url(),
+});
+
 export type SignInInput = z.input<typeof signInSchema>;
 export type SignUpInput = z.input<typeof signUpSchema>;
 export type ForgotPasswordInput = z.input<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.input<typeof resetPasswordSchema>;
 export type VerifyOtpInput = z.input<typeof verifyOtpSchema>;
 export type SendOtpInput = z.input<typeof sendOtpSchema>;
+export type SocialSignInInput = z.input<typeof socialSignInSchema>;
 
 export type SignUpResult = {
   cookies: string[];

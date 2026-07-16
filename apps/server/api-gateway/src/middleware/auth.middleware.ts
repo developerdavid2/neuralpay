@@ -33,7 +33,7 @@ export async function authMiddleware(
     }
 
     const sessionRes = await fetch(
-      `${gatewayEnv.USER_SERVICE_URL}/auth/get-session`,
+      `${gatewayEnv.USER_SERVICE_URL}/api/auth/get-session`,
       { headers: { cookie } },
     );
 
