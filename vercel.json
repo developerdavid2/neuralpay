@@ -1,6 +1,5 @@
 {
   "version": 2,
   "buildCommand": "bun install && bun run build",
-  "installCommand": "bun install",
-  "framework": "other"
+  "installCommand": "bun install"
 }
