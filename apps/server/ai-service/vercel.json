@@ -3,9 +3,10 @@
   "builds": [
     {
       "src": "dist/handler.mjs",
-      "use": "@vercel/node@3.6.0",
+      "use": "@vercel/node",
       "config": {
-        "maxDuration": 60
+        "maxDuration": 60,
+        "includeFiles": ["dist/**"]
       }
     }
   ],

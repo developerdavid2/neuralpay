@@ -12,5 +12,3 @@ await esbuild.build({
   external: ["node:*", "pg-native"],
   logLevel: "info",
 });
-
-console.log("✓ Bundled to dist/handler.mjs");
