@@ -1,6 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "bun install && bun run build",
-  "installCommand": "bun install",
-  "framework": "other"
+  "builds": [
+    {
+      "src": "api/handler.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/handler.ts"
+    }
+  ]
 }
