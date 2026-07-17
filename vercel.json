@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "bun install && bun run build",
+  "outputDirectory": ".",
+  "framework": "other",
+  "installCommand": "bun install",
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

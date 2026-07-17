@@ -2,19 +2,21 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/main.ts",
-
+      "src": "package.json",
       "use": "@vercel/node",
       "config": {
         "maxDuration": 60,
-        "includeFiles": ["dist/**"]
+        "includeFiles": ["dist/**", ".env.production"]
       }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/src/main.ts"
+      "dest": "dist/main.mjs"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
