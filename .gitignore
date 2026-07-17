@@ -52,3 +52,9 @@ coverage
 .cache
 tmp
 temp
+
+.vercel
+
+#READ ME
+VERCEL_DEPLOYMENT_FIX.md
+DEPLOYMENT_STATUS.md

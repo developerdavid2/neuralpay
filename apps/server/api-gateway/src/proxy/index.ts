@@ -222,7 +222,7 @@ export function mountProxies(app: Express) {
         proxyReqOpts.headers["cookie"] = srcReq.headers.cookie ?? "";
         return proxyReqOpts;
       },
-      // ✅ Forward Set-Cookie from user-service back to browser
+
       userResHeaderDecorator: (
         headers,
         _userReq,
