@@ -14,7 +14,7 @@
   "main": "./src/main.ts",
   "scripts": {
     "dev": "PORT=4003 bun run --hot src/main.ts",
-    "build": "tsdown src/main.ts api/index.ts",
+    "build": "tsdown",
     "start": "node dist/main.mjs",
     "check-types": "tsc -b"
   },
