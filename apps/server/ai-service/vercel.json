@@ -1,17 +1,15 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "src/main.ts",
+      "use": "@vercel/node"
+    }
+  ],
   "routes": [
     {
-      "src": "/trpc(.*)",
-      "dest": "dist/main.mjs"
-    },
-    {
-      "src": "/chat/stream",
-      "dest": "dist/main.mjs"
-    },
-    {
       "src": "/(.*)",
-      "dest": "dist/main.mjs"
+      "dest": "src/main.ts"
     }
   ]
 }
