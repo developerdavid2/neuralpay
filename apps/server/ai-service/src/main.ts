@@ -23,6 +23,11 @@ app.use(
 
 app.post("/chat/stream", chatStreamHandler);
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", service: "ai-service", timestamp: new Date().toISOString() });
+});
+
 // Start server only in development
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
