@@ -1,11 +1,14 @@
 {
   "version": 2,
-  "functions": {
-    "api/index.ts": {
-      "memory": 1024,
-      "maxDuration": 60
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["dist/**", "node_modules/**"]
+      }
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
