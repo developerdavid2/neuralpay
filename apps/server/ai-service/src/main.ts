@@ -5,26 +5,46 @@ import { aiServiceEnv } from "@neuralpay/env/ai-service";
 import { createContext } from "./trpc/context";
 import { chatStreamHandler } from "./routers/chat-stream.router";
 
-const PORT = Number(aiServiceEnv.PORT) || 4003;
-const app = createExpressApp({ serviceName: "ai-service", port: PORT });
+console.log("[v0] ai-service starting, NODE_ENV:", process.env.NODE_ENV);
 
-app.use(
-  "/trpc",
-  trpcExpress.createExpressMiddleware({
-    router: aiRouter,
-    createContext,
-    onError({ path, error }) {
-      if (error.code === "INTERNAL_SERVER_ERROR") {
-        console.error(`[tRPC ai-service] error on /${path}:`, error.message);
-      }
-    },
-  }),
-);
+let app;
+try {
+  const PORT = Number(aiServiceEnv.PORT) || 4003;
+  app = createExpressApp({ serviceName: "ai-service", port: PORT });
+  console.log("[v0] Express app created successfully");
+} catch (error) {
+  console.error("[v0] Failed to create Express app:", error);
+  throw error;
+}
 
-app.post("/chat/stream", chatStreamHandler);
+try {
+  app.use(
+    "/trpc",
+    trpcExpress.createExpressMiddleware({
+      router: aiRouter,
+      createContext,
+      onError({ path, error }) {
+        if (error.code === "INTERNAL_SERVER_ERROR") {
+          console.error(`[tRPC ai-service] error on /${path}:`, error.message);
+        }
+      },
+    }),
+  );
+  console.log("[v0] tRPC middleware added");
+} catch (error) {
+  console.error("[v0] Failed to add tRPC middleware:", error);
+}
+
+try {
+  app.post("/chat/stream", chatStreamHandler);
+  console.log("[v0] Chat stream route added");
+} catch (error) {
+  console.error("[v0] Failed to add chat stream route:", error);
+}
 
 // Health check endpoint
 app.get("/health", (req, res) => {
+  console.log("[v0] Health check requested");
   res.json({ status: "ok", service: "ai-service", timestamp: new Date().toISOString() });
 });
 
