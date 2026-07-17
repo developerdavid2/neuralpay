@@ -6,5 +6,20 @@
   "installCommand": "bun install",
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "builds": [
+    {
+      "src": "apps/server/ai-service/src/main.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 60
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "apps/server/ai-service/src/main.ts"
+    }
+  ]
 }
