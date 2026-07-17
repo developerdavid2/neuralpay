@@ -45,6 +45,7 @@
         "@types/express": "catalog:",
         "@types/morgan": "^1.9.10",
         "@types/node": "^20.0.0",
+        "drizzle-orm": "catalog:",
         "esbuild": "^0.24.0",
         "typescript": "catalog:",
         "winston": "^3.19.0",

@@ -11,15 +11,6 @@ const proxyError = (err: Error, res: any, _next: any) => {
 };
 
 // ── Header decorators
-// Used for public routes (auth) — no user identity injected
-const baseHeaders = (proxyReqOpts: any) => {
-  proxyReqOpts.headers ??= {};
-  proxyReqOpts.headers["Content-Type"] = "application/json";
-  proxyReqOpts.headers["Origin"] = gatewayEnv.TRUSTED_ORIGINS;
-  proxyReqOpts.headers["x-internal-source"] = "api-gateway";
-  return proxyReqOpts;
-};
-
 // Used for protected routes — injects verified user id so downstream
 const withUserId = (proxyReqOpts: any, srcReq: Request) => {
   proxyReqOpts.headers ??= {};
@@ -236,7 +227,7 @@ export function mountProxies(app: Express) {
         headers,
         _userReq,
         _userRes,
-        proxyReq,
+        _proxyReq,
         proxyRes,
       ) => {
         const setCookie = proxyRes.headers["set-cookie"];

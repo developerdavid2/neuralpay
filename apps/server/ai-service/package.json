@@ -15,7 +15,8 @@
   "scripts": {
     "dev": "PORT=4003 bun run --hot src/main.ts",
     "build": "tsdown src/main.ts",
-    "start": "node dist/main.mjs"
+    "start": "node dist/main.mjs",
+    "check-types": "tsc -b"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.41",
@@ -40,6 +41,7 @@
     "@types/node": "^20.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "catalog:",
+    "drizzle-orm": "catalog:",
     "@types/morgan": "^1.9.10",
     "esbuild": "^0.24.0",
     "typescript": "catalog:",
