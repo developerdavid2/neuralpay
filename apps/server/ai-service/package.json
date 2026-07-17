@@ -8,13 +8,13 @@
       "default": "./src/routers/index.ts"
     },
     ".": {
-      "default": "./src/main.ts"
+      "default": "./src/app.ts"
     }
   },
-  "main": "./src/main.ts",
+  "main": "./src/app.ts",
   "scripts": {
-    "dev": "PORT=4003 bun run --hot src/main.ts",
-    "build": "bun build src/main.ts --outdir dist --target node --format esm --external:express --external:@trpc/server --external:ai --external:better-auth --external:cors && mv dist/main.js dist/main.mjs",
+    "dev": "PORT=4003 bun run --hot src/app.ts",
+    "build": "bun build src/app.ts --outdir dist --target node --format esm --external:express --external:@trpc/server --external:ai --external:better-auth --external:cors && mv dist/main.js dist/main.mjs",
     "start": "node dist/main.mjs",
     "check-types": "bun run tsc --noEmit"
   },
