@@ -2,5 +2,6 @@
   "version": 2,
   "buildCommand": "bun install && bun run build",
   "installCommand": "bun install",
-  "framework": "other"
+  "framework": "other",
+  "nodeVersion": "20.x"
 }
