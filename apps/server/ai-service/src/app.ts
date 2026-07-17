@@ -1,45 +1,28 @@
-import type { Express } from "express";
-import * as trpcExpress from "@trpc/server/adapters/express";
-import { createExpressApp } from "@neuralpay/config/express-config";
-import { aiRouter } from "./routers";
 import { aiServiceEnv } from "@neuralpay/env/ai-service";
+import express, { type Express } from "express";
+import * as trpcExpress from "@trpc/server/adapters/express";
+import { aiRouter } from "./routers";
 import { createContext } from "./trpc/context";
 import { chatStreamHandler } from "./routers/chat-stream.router";
 
-let app: Express;
+const app: Express = express();
 const PORT = Number(aiServiceEnv.PORT) || 4003;
-try {
-  app = createExpressApp({ serviceName: "ai-service", port: PORT });
-} catch (error) {
-  console.error("[v0] Failed to create Express app:", error);
-  throw error;
-}
+app.use(
+  "/trpc",
+  trpcExpress.createExpressMiddleware({
+    router: aiRouter,
+    createContext,
+  }),
+);
 
-try {
-  app.use(
-    "/trpc",
-    trpcExpress.createExpressMiddleware({
-      router: aiRouter,
-      createContext,
-      onError({ path, error }) {
-        if (error.code === "INTERNAL_SERVER_ERROR") {
-          console.error(`[tRPC ai-service] error on /${path}:`, error.message);
-        }
-      },
-    }),
-  );
-} catch (error) {
-  console.error("[v0] Failed to add tRPC middleware:", error);
-}
+app.post("/chat/stream", chatStreamHandler);
 
-try {
-  app.post("/chat/stream", chatStreamHandler);
-} catch (error) {
-  console.error("[v0] Failed to add chat stream route:", error);
-}
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", service: "ai-service" });
+});
 
 app.listen(PORT, () => {
   console.log(`ai-service listening on port ${PORT}`);
 });
-// Export for Vercel serverless functions
+
 export default app;
