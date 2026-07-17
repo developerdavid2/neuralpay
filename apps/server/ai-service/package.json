@@ -14,8 +14,8 @@
   "main": "./src/main.ts",
   "scripts": {
     "dev": "PORT=4003 bun run --hot src/main.ts",
-    "build": "tsdown",
-    "start": "node dist/main.mjs",
+    "build": "node build.mjs",
+    "start": "node dist/handler.mjs",
     "check-types": "tsc -b"
   },
   "dependencies": {
@@ -38,10 +38,11 @@
   },
   "devDependencies": {
     "@types/bun": "catalog:",
+    "@types/node": "^20.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "catalog:",
     "@types/morgan": "^1.9.10",
-    "tsdown": "^0.21.9",
+    "esbuild": "^0.24.0",
     "typescript": "catalog:",
     "winston": "^3.19.0"
   }
