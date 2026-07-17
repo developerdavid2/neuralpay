@@ -14,9 +14,8 @@
   "main": "./src/main.ts",
   "scripts": {
     "dev": "PORT=4003 bun run --hot src/main.ts",
-    "build": "node build.mjs",
-    "start": "node dist/handler.mjs",
-    "check-types": "tsc -b"
+    "build": "tsdown src/main.ts",
+    "start": "node dist/main.mjs"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.41",
