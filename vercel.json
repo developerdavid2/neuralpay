@@ -9,7 +9,7 @@
   },
   "builds": [
     {
-      "src": "apps/server/ai-service/api/handler.js",
+      "src": "apps/server/ai-service/dist/main.mjs",
       "use": "@vercel/node",
       "config": {
         "maxDuration": 60
@@ -19,7 +19,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "apps/server/ai-service/api/handler.js"
+      "dest": "apps/server/ai-service/dist/main.mjs"
     }
   ]
 }
