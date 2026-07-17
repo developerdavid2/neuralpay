@@ -23,10 +23,17 @@ app.use(
 
 app.post("/chat/stream", chatStreamHandler);
 
+// Start server only in development
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
     console.log(`ai-service running on http://localhost:${PORT}`);
   });
+} else {
+  // Ensure app listens in production for local testing
+  app.listen(PORT, () => {
+    console.log(`[Vercel] ai-service listening on port ${PORT}`);
+  });
 }
 
+// Export for Vercel serverless functions
 export default app;
