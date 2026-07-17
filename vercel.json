@@ -1,25 +1,6 @@
 {
   "version": 2,
   "buildCommand": "bun install && bun run build",
-  "outputDirectory": ".",
-  "framework": "other",
   "installCommand": "bun install",
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "builds": [
-    {
-      "src": "apps/server/ai-service/dist/main.mjs",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 60
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "apps/server/ai-service/dist/main.mjs"
-    }
-  ]
+  "framework": "other"
 }
