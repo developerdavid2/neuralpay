@@ -24,7 +24,7 @@
       "dependencies": {
         "@ai-sdk/groq": "^3.0.41",
         "@neuralpay/auth": "workspace:*",
-        "@neuralpay/config": "workspace:*",
+        "@neuralpay/db": "workspace:*",
         "@neuralpay/env": "workspace:*",
         "@neuralpay/types": "workspace:*",
         "@openrouter/ai-sdk-provider": "^2.9.1",
@@ -32,12 +32,14 @@
         "ai": "^6.0.203",
         "better-auth": "catalog:",
         "cors": "^2.8.6",
+        "drizzle-orm": "catalog:",
         "express": "catalog:",
         "helmet": "^8.1.0",
         "morgan": "^1.10.1",
         "zod": "catalog:",
       },
       "devDependencies": {
+        "@neuralpay/config": "workspace:*",
         "@types/bun": "catalog:",
         "@types/cors": "^2.8.19",
         "@types/express": "catalog:",
