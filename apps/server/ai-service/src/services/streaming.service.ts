@@ -335,23 +335,17 @@ export async function handleStreamChat(
       sessionId,
     });
     if (!sessionResult.success) {
-      return {
-        success: false,
-        error: sessionResult.error,
-        code: sessionResult.code,
-      };
+      // ✅ destructure AFTER the guard
+      const { error, code } = sessionResult;
+      return { success: false, error, code };
     }
 
-    // Use the resolved session ID from the result
     const resolvedSessionId = sessionResult.data.id;
 
     const quotaResult = await AICoachService.checkQuota(userId, planTier);
     if (!quotaResult.success) {
-      return {
-        success: false,
-        error: quotaResult.error,
-        code: "RATE_LIMITED",
-      };
+      const { error } = quotaResult;
+      return { success: false, error, code: "RATE_LIMITED" };
     }
 
     // 2. Save user message FIRST
@@ -362,14 +356,11 @@ export async function handleStreamChat(
       content,
     );
     if (!userMessageResult.success) {
-      return {
-        success: false,
-        error: userMessageResult.error,
-        code: "INTERNAL_SERVER_ERROR",
-      };
+      const { error } = userMessageResult;
+      return { success: false, error, code: "INTERNAL_SERVER_ERROR" };
     }
 
-    // 3. Fetch context (live data, not cached)
+    // 3. Fetch context
     const { data: contextData, snapshot } = await fetchContext(
       userId,
       sessionResult.data.contextType ?? "",
@@ -385,18 +376,16 @@ export async function handleStreamChat(
       sessionResult.data.contextType ?? "",
     );
 
-    // 6. AI SDK — streamText with anthropic provider
+    // 6. Stream
     const result = streamText({
       model: getModel(),
       system: systemPrompt,
       messages: [...history, { role: "user" as const, content }],
       onFinish: async ({ text, usage }) => {
-        // Save assistant message + token usage AFTER stream completes
         const metadata = JSON.stringify({
           contextSnapshot: snapshot,
           model: getModel(),
         });
-
         await AICoachService.saveMessage(
           resolvedSessionId,
           userId,
@@ -408,12 +397,8 @@ export async function handleStreamChat(
       },
     });
 
-    // 7. Pipe to Express response — useChat on the frontend expects this format
-    // 7. Pipe to Express response
     result.pipeUIMessageStreamToResponse(res, {
-      headers: {
-        "Content-Encoding": "none",
-      },
+      headers: { "Content-Encoding": "none" },
     });
 
     return { success: true };
