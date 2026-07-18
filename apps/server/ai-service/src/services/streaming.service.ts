@@ -335,17 +335,26 @@ export async function handleStreamChat(
       sessionId,
     });
     if (!sessionResult.success) {
-      // ✅ destructure AFTER the guard
-      const { error, code } = sessionResult;
-      return { success: false, error, code };
+      return {
+        success: false,
+        error: (
+          sessionResult as { success: false; error: string; code?: string }
+        ).error,
+        code: (
+          sessionResult as { success: false; error: string; code?: string }
+        ).code,
+      };
     }
 
     const resolvedSessionId = sessionResult.data.id;
 
     const quotaResult = await AICoachService.checkQuota(userId, planTier);
     if (!quotaResult.success) {
-      const { error } = quotaResult;
-      return { success: false, error, code: "RATE_LIMITED" };
+      return {
+        success: false,
+        error: (quotaResult as { success: false; error: string }).error,
+        code: "RATE_LIMITED" as const,
+      };
     }
 
     // 2. Save user message FIRST
@@ -356,8 +365,11 @@ export async function handleStreamChat(
       content,
     );
     if (!userMessageResult.success) {
-      const { error } = userMessageResult;
-      return { success: false, error, code: "INTERNAL_SERVER_ERROR" };
+      return {
+        success: false,
+        error: (userMessageResult as { success: false; error: string }).error,
+        code: "INTERNAL_SERVER_ERROR" as const,
+      };
     }
 
     // 3. Fetch context
