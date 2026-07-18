@@ -1,15 +1,15 @@
-import { defineConfig } from 'tsup'
+import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ['./src/main.ts'],
-  noExternal: ['@neuralpay'],
+  entry: ["./src/app.ts"],
+  noExternal: ["@neuralpay"],
   splitting: false,
   bundle: true,
-  outDir: './dist',
+  outDir: "./dist",
   clean: true,
-  format: 'esm',
-  env: { NODE_ENV: 'production' },
+  format: "esm",
+  env: { NODE_ENV: "production" },
   sourcemap: true,
   minify: true,
   shims: true,
-})
+});
