@@ -14,9 +14,9 @@
   "main": "./src/main.ts",
   "scripts": {
     "dev": "PORT=4003 bun run --hot src/main.ts",
-    "build": "bun build src/main.ts --outdir dist --target node --format esm --external:express --external:@trpc/server --external:ai --external:better-auth --external:cors && mv dist/main.js dist/main.mjs",
-    "start": "node dist/main.mjs",
-    "check-types": "bun run tsc --noEmit"
+    "build": "tsup",
+    "start": "node dist/main.js",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.41",
@@ -44,6 +44,7 @@
     "drizzle-orm": "catalog:",
     "@types/morgan": "^1.9.10",
     "esbuild": "^0.24.0",
+    "tsup": "^6.7.0",
     "typescript": "catalog:",
     "winston": "^3.19.0"
   }
