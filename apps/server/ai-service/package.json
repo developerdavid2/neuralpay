@@ -3,26 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": {
-    "./routers": {
-      "default": "./src/routers/index.ts"
-    },
-    ".": {
-      "default": "./src/app.ts"
-    }
-  },
-  "main": "./src/app.ts",
   "scripts": {
-    "dev": "PORT=4003 bun run --hot src/app.ts",
-    "build": "bun build src/app.ts",
-    "start": "node dist/app.mjs",
-    "check-types": "bun run tsc --noEmit"
+    "dev": "PORT=4003 bun run --hot src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "check-types": "tsc -b"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.41",
     "@neuralpay/auth": "workspace:*",
     "@neuralpay/config": "workspace:*",
-    "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
     "@openrouter/ai-sdk-provider": "^2.9.1",
@@ -30,7 +20,6 @@
     "ai": "^6.0.203",
     "better-auth": "catalog:",
     "cors": "^2.8.6",
-    "drizzle-orm": "catalog:",
     "express": "catalog:",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1",
@@ -38,12 +27,10 @@
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "@types/node": "^20.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "catalog:",
-    "drizzle-orm": "catalog:",
     "@types/morgan": "^1.9.10",
-    "esbuild": "^0.24.0",
+    "tsup": "catalog:",
     "typescript": "catalog:",
     "winston": "^3.19.0"
   }
