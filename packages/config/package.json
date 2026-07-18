@@ -2,6 +2,7 @@
   "name": "@neuralpay/config",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "exports": {
     "./trpc": "./src/trpc.ts",
     "./express-config": "./src/express-config.ts",

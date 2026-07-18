@@ -7,6 +7,8 @@ export const aiServiceEnv = createEnv({
     ...baseServerEnv,
     PORT: z.coerce.number().default(4003),
     GROQ_API_KEY: z.string().min(1),
+    AI_PROVIDER: z.string().default("groq"),
+    AI_MODEL: z.string().default("llama-3.3-70b-versatile"),
   },
   runtimeEnv: process.env,
 });

@@ -1,10 +1,10 @@
-import { db } from "@neuralpay/db";
 import {
   aiUsage,
   chatMessages,
   chatSessions,
+  db,
   type AIUsageRecord,
-} from "@neuralpay/db/schema";
+} from "@neuralpay/db";
 
 import type {
   ChatMessage,
