@@ -24,40 +24,31 @@ export const getServerSession = async (): Promise<Session | null> => {
   try {
     const headersList = await headers();
     const cookie = headersList.get("cookie");
-
-    console.log("[getServerSession] cookie present:", !!cookie);
-    console.log("[getServerSession] cookie value:", cookie?.substring(0, 100));
-    console.log("[getServerSession] SERVER_URL:", webEnv.SERVER_URL);
-
     if (!cookie) return null;
 
-    const appUrl = new URL(webEnv.NEXT_PUBLIC_APP_URL);
+    const serverUrl = process.env.SERVER_URL;
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ?? "https://neuralpayai.vercel.app";
 
-    const response = await fetch(`${webEnv.SERVER_URL}/v1/auth/get-session`, {
+    if (!serverUrl) {
+      console.error("[getServerSession] SERVER_URL is not set");
+      return null;
+    }
+
+    const url = new URL(appUrl);
+    const response = await fetch(`${serverUrl}/v1/auth/get-session`, {
       headers: {
         cookie,
-        "x-forwarded-host": appUrl.host,
-        "x-forwarded-proto": appUrl.protocol.replace(":", ""),
+        "x-forwarded-host": url.host,
+        "x-forwarded-proto": url.protocol.replace(":", ""),
       },
       cache: "no-store",
     });
 
-    console.log("[getServerSession] response status:", response.status);
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.log("[getServerSession] error body:", text);
-      return null;
-    }
-
-    const data = await response.json();
-    console.log(
-      "[getServerSession] session data:",
-      JSON.stringify(data).substring(0, 200),
-    );
-    return data ?? null;
+    if (!response.ok) return null;
+    return (await response.json()) ?? null;
   } catch (error) {
-    console.error("[getServerSession]", error);
+    console.error("[getServerSession] THREW:", error);
     return null;
   }
 };
