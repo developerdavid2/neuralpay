@@ -1,5 +1,4 @@
 // lib/auth-server.ts
-import { webEnv } from "@neuralpay/env/web";
 import type { Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";

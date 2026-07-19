@@ -18,15 +18,22 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   client: createTRPCClient<AppRouter>({
     links: [
       httpLink({
-        url: `${webEnv.SERVER_URL}/v1/trpc`,
+        url: `${process.env.SERVER_URL}/v1/trpc`,
         transformer: superjson,
         async headers() {
           const h = await headers();
-          const appUrl = new URL(webEnv.NEXT_PUBLIC_APP_URL);
+          const cookie = h.get("cookie") ?? "";
+          const appUrl = new URL(
+            process.env.NEXT_PUBLIC_APP_URL ?? "https://neuralpayai.vercel.app",
+          );
+
+          console.log("[trpc-server] cookie present:", !!cookie);
+          console.log("[trpc-server] cookie length:", cookie.length);
+
           return {
-            cookie: h.get("cookie") ?? "",
+            cookie,
             "x-forwarded-host": appUrl.host,
-            "x-forwarded-proto": appUrl.protocol.replace(":", ""),
+            "x-forwarded-proto": "https",
           };
         },
       }),
