@@ -1,4 +1,5 @@
 // lib/auth-server.ts
+import { webEnv } from "@neuralpay/env/web";
 import type { Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -27,20 +28,17 @@ export const getServerSession = async (): Promise<Session | null> => {
     if (!cookie) return null;
 
     const appUrl = new URL(
-      process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
+      webEnv.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
     );
 
-    const response = await fetch(
-      `${process.env.SERVER_URL}/v1/auth/get-session`,
-      {
-        headers: {
-          cookie,
-          "x-forwarded-host": appUrl.host, // neuralpayai.vercel.app
-          "x-forwarded-proto": appUrl.protocol.replace(":", ""), // https
-        },
-        cache: "no-store",
+    const response = await fetch(`${webEnv.SERVER_URL}/v1/auth/get-session`, {
+      headers: {
+        cookie,
+        "x-forwarded-host": appUrl.host, // neuralpayai.vercel.app
+        "x-forwarded-proto": appUrl.protocol.replace(":", ""), // https
       },
-    );
+      cache: "no-store",
+    });
 
     if (!response.ok) return null;
     return (await response.json()) ?? null;

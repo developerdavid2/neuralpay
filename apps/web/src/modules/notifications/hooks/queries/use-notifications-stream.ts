@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/trpc-client";
+import { webEnv } from "@neuralpay/env/web";
 
 export function useNotificationStream() {
   const queryClient = useQueryClient();
@@ -17,7 +18,7 @@ export function useNotificationStream() {
     function connect() {
       esRef.current?.close();
 
-      const url = `${process.env.NEXT_PUBLIC_SERVER_URL}/v1/notifications/stream`;
+      const url = `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/notifications/stream`;
       console.log("[SSE] connecting to", url);
 
       const es = new EventSource(url, { withCredentials: true });

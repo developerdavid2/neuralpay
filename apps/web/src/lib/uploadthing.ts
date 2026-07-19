@@ -1,7 +1,8 @@
 import { generateReactHelpers } from "@uploadthing/react";
 import type { UserUploadFileRouter } from "@neuralpay/api-gateway/router";
+import { webEnv } from "@neuralpay/env/web";
 
 export const { useUploadThing, uploadFiles } =
   generateReactHelpers<UserUploadFileRouter>({
-    url: `${process.env.NEXT_PUBLIC_SERVER_URL}/v1/uploadthing`,
+    url: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/uploadthing`,
   });

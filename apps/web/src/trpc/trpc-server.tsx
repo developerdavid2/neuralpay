@@ -10,6 +10,7 @@ import superjson from "superjson";
 import type { AppRouter } from "@neuralpay/api-gateway/router";
 import { makeQueryClient } from "./query-client";
 import { headers } from "next/headers";
+import { webEnv } from "@neuralpay/env/web";
 
 export const getQueryClient = cache(makeQueryClient);
 
@@ -17,7 +18,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   client: createTRPCClient<AppRouter>({
     links: [
       httpLink({
-        url: `${process.env.SERVER_URL || "http://localhost:3001"}/v1/trpc`,
+        url: `${webEnv.SERVER_URL || "http://localhost:3001"}/v1/trpc`,
         transformer: superjson,
         async headers() {
           const h = await headers();
