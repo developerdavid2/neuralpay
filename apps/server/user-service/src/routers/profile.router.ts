@@ -14,10 +14,8 @@ import { UsersService } from "../services/users.service";
 export const profileRouter = router({
   health: publicProcedure.query(() => ({ ok: true, service: "user-service" })),
 
-  me: publicProcedure.query(async ({ ctx }) => {
-    const result = await UsersService.getById(
-      "lMpHXrQwQhCSRHZ9cXQ3YCPFK5UTlM3K",
-    );
+  me: protectedProcedure.query(async ({ ctx }) => {
+    const result = await UsersService.getById(ctx.session.user.id);
     if (!result.success) {
       throw new TRPCError({
         code:
