@@ -8,43 +8,43 @@
       "default": "./src/routers/index.ts"
     },
     ".": {
-      "default": "./src/main.ts"
+      "default": "./src/app.ts"
     }
   },
   "scripts": {
-    "dev": "PORT=4001 bun run --hot src/main.ts",
-    "build": "tsdown src/main.ts",
-    "start": "bun run dist/main.mjs",
+    "dev": "PORT=4001 bun run --hot src/app.ts",
+    "build": "tsup",
+    "start": "node dist/app.js",
     "check-types": "tsc -b"
   },
   "dependencies": {
     "@neuralpay/auth": "workspace:*",
-    "@neuralpay/config": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
     "@neuralpay/file-upload": "workspace:*",
+    "@neuralpay/config": "workspace:*",
     "@trpc/server": "catalog:",
     "axios": "^1.18.1",
     "better-auth": "catalog:",
-    "cors": "^2.8.6",
     "country-state-city": "^3.2.1",
     "drizzle-orm": "catalog:",
     "express": "catalog:",
     "uploadthing": "catalog:",
     "@uploadthing/shared": "7.1.8",
-    "helmet": "^8.1.0",
-    "morgan": "^1.10.1",
+    "morgan": "catalog:",
+    "cors": "catalog:",
+    "helmet": "catalog:",
     "ua-parser-js": "^2.0.10",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "@types/cors": "^2.8.19",
     "@types/express": "catalog:",
-    "@types/morgan": "^1.9.10",
+    "@types/node": "catalog:",
+    "@types/morgan": "catalog:",
+    "@types/cors": "catalog:",
     "typescript": "catalog:",
-    "winston": "^3.19.0",
-    "tsdown": "^0.21.9"
+    "tsup": "catalog:"
   }
 }

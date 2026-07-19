@@ -8,7 +8,7 @@
       "default": "./src/routers/index.ts"
     },
     ".": {
-      "default": "./src/index.ts"
+      "default": "./src/app.ts"
     }
   },
   "main": "./src/app.ts",
@@ -24,6 +24,7 @@
     "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
+    "@neuralpay/config": "workspace:*",
     "@openrouter/ai-sdk-provider": "^2.9.1",
     "@trpc/server": "catalog:",
     "ai": "^6.0.203",
@@ -35,7 +36,6 @@
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
     "@types/node": "catalog:",
     "@types/morgan": "catalog:",
     "@types/cors": "catalog:",
