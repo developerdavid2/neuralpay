@@ -3,6 +3,10 @@
     {
       "source": "/api/auth/:path*",
       "destination": "https://neuralpay-api-gateway.vercel.app/v1/auth/:path*"
+    },
+    {
+      "source": "/api/trpc/:path*",
+      "destination": "https://neuralpay-api-gateway.vercel.app/v1/trpc/:path*"
     }
   ]
 }
