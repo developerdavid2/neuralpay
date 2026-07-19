@@ -13,24 +13,6 @@ function getCookies(response: Response): string[] {
   return response.headers.getSetCookie();
 }
 
-function parseAuthPayload(raw: unknown): {
-  user: Record<string, unknown>;
-  session: Record<string, unknown>;
-} {
-  if (
-    typeof raw === "object" &&
-    raw !== null &&
-    "user" in raw &&
-    "session" in raw
-  ) {
-    return raw as {
-      user: Record<string, unknown>;
-      session: Record<string, unknown>;
-    };
-  }
-  return { user: {}, session: {} };
-}
-
 export const AuthService = {
   async signUp(input: SignUpInput): Promise<ServiceResult<SignUpResult>> {
     try {
@@ -58,6 +40,7 @@ export const AuthService = {
         body: input,
         asResponse: true,
       });
+
       if (!response.ok) {
         return {
           success: false,
@@ -65,12 +48,14 @@ export const AuthService = {
           code: "UNAUTHORIZED",
         };
       }
-      const payload = parseAuthPayload(await response.json());
+
+      const raw = (await response.json()) as Record<string, unknown>;
+      const user = (raw.user ?? {}) as Record<string, unknown>;
+
       return {
         success: true,
         data: {
-          user: payload.user,
-          session: payload.session,
+          user,
           cookies: getCookies(response),
         },
       };
@@ -176,6 +161,7 @@ export const AuthService = {
         body: { email, otp },
         asResponse: true,
       });
+
       if (!response.ok) {
         return {
           success: false,
@@ -183,12 +169,14 @@ export const AuthService = {
           code: "BAD_REQUEST",
         };
       }
-      const payload = parseAuthPayload(await response.json());
+
+      const raw = (await response.json()) as Record<string, unknown>;
+      const user = (raw.user ?? {}) as Record<string, unknown>;
+
       return {
         success: true,
         data: {
-          user: payload.user,
-          session: payload.session,
+          user,
           cookies: getCookies(response),
         },
       };
@@ -211,6 +199,7 @@ export const AuthService = {
         body: { provider, idToken },
         asResponse: true,
       });
+
       if (!response.ok) {
         return {
           success: false,
@@ -218,12 +207,14 @@ export const AuthService = {
           code: "UNAUTHORIZED",
         };
       }
-      const payload = parseAuthPayload(await response.json());
+
+      const raw = (await response.json()) as Record<string, unknown>;
+      const user = (raw.user ?? {}) as Record<string, unknown>;
+
       return {
         success: true,
         data: {
-          user: payload.user,
-          session: payload.session,
+          user,
           cookies: getCookies(response),
         },
       };
@@ -267,7 +258,7 @@ export const AuthService = {
       return {
         success: true,
         data: { url: result.url },
-        cookies: response.headers.getSetCookie(),
+        cookies: getCookies(response),
       };
     } catch (err) {
       console.error("[AuthService.getSocialSignInUrl]", err);

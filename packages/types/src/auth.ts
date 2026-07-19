@@ -81,7 +81,6 @@ export type SignUpResult = {
 
 export type SignInResult = {
   user: Record<string, unknown>;
-  session: Record<string, unknown>;
   cookies: string[];
 };
 
@@ -91,6 +90,5 @@ export type SignOutResult = {
 
 export type VerifyOTPResult = {
   user: Record<string, unknown>;
-  session: Record<string, unknown>;
   cookies: string[];
 };
