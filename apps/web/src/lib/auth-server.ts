@@ -3,7 +3,6 @@ import { webEnv } from "@neuralpay/env/web";
 import type { Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { cache } from "react";
 
 export interface Session {
   user: {
@@ -25,23 +24,38 @@ export const getServerSession = async (): Promise<Session | null> => {
   try {
     const headersList = await headers();
     const cookie = headersList.get("cookie");
+
+    console.log("[getServerSession] cookie present:", !!cookie);
+    console.log("[getServerSession] cookie value:", cookie?.substring(0, 100));
+    console.log("[getServerSession] SERVER_URL:", webEnv.SERVER_URL);
+
     if (!cookie) return null;
 
-    const appUrl = new URL(
-      webEnv.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001",
-    );
+    const appUrl = new URL(webEnv.NEXT_PUBLIC_APP_URL);
 
     const response = await fetch(`${webEnv.SERVER_URL}/v1/auth/get-session`, {
       headers: {
         cookie,
-        "x-forwarded-host": appUrl.host, // neuralpayai.vercel.app
-        "x-forwarded-proto": appUrl.protocol.replace(":", ""), // https
+        "x-forwarded-host": appUrl.host,
+        "x-forwarded-proto": appUrl.protocol.replace(":", ""),
       },
       cache: "no-store",
     });
 
-    if (!response.ok) return null;
-    return (await response.json()) ?? null;
+    console.log("[getServerSession] response status:", response.status);
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.log("[getServerSession] error body:", text);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log(
+      "[getServerSession] session data:",
+      JSON.stringify(data).substring(0, 200),
+    );
+    return data ?? null;
   } catch (error) {
     console.error("[getServerSession]", error);
     return null;
