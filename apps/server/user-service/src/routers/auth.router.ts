@@ -13,6 +13,7 @@ import { TRPCError } from "@trpc/server";
 import { AuthService } from "../services/auth.service";
 
 export const authRouter = router({
+  health: publicProcedure.query(() => ({ ok: true, service: "user-service" })),
   signUp: publicProcedure
     .input(signUpSchema)
     .mutation(async ({ input, ctx }) => {
