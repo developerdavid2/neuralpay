@@ -37,4 +37,4 @@ app.listen(PORT, () => {
   console.log(`🚀 user-service running on http://localhost:${PORT}`);
 });
 
-export { app };
+export default app;
