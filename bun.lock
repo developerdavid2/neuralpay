@@ -82,6 +82,7 @@
         "@types/ioredis": "^5.0.0",
         "@types/morgan": "^1.9.10",
         "tsdown": "^0.21.9",
+        "tsup": "catalog:",
         "typescript": "catalog:",
       },
     },

@@ -1,18 +1,17 @@
 {
   "name": "@neuralpay/api-gateway",
   "type": "module",
-  "main": "src/main.ts",
+  "main": "src/app.ts",
   "exports": {
     "./router": {
       "default": "./src/router.ts"
     }
   },
   "scripts": {
-    "build": "tsdown src/main.ts",
+    "build": "tsup",
     "check-types": "tsc -b",
-    "compile": "bun build --compile --minify --sourcemap --bytecode ./src/main.ts --outfile server",
-    "dev": "PORT=4000 bun run --hot src/main.ts",
-    "start": "bun run dist/main.mjs"
+    "dev": "PORT=4000 bun run --hot src/app.ts",
+    "start": "node dist/app.js"
   },
   "dependencies": {
     "@neuralpay/auth": "workspace:*",
@@ -45,6 +44,7 @@
     "@types/ioredis": "^5.0.0",
     "@types/morgan": "^1.9.10",
     "tsdown": "^0.21.9",
+    "tsup": "catalog:",
     "typescript": "catalog:"
   }
 }

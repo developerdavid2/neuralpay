@@ -36,3 +36,5 @@ console.log("Routes:");
 app.listen(PORT, () => {
   console.log(`🚀 api-gateway-service running on http://localhost:${PORT}`);
 });
+
+export default app;
