@@ -27,22 +27,16 @@
     "@openrouter/ai-sdk-provider": "^2.9.1",
     "@trpc/server": "catalog:",
     "ai": "^6.0.203",
-    "better-auth": "catalog:",
-    "cors": "^2.8.6",
     "express": "catalog:",
-    "helmet": "^8.1.0",
-    "morgan": "^1.10.1",
     "zod": "catalog:",
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {
     "@neuralpay/config": "workspace:*",
+    "@types/node": "catalog:",
     "@types/bun": "catalog:",
-    "@types/cors": "^2.8.19",
     "@types/express": "catalog:",
-    "@types/morgan": "^1.9.10",
     "tsup": "catalog:",
-    "typescript": "catalog:",
-    "winston": "^3.19.0"
+    "typescript": "catalog:"
   }
 }

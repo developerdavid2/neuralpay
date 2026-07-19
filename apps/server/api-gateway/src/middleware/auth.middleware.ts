@@ -1,6 +1,6 @@
-import { getCachedSession, setCachedSession } from "@/lib/session-cache";
 import { gatewayEnv } from "@neuralpay/env/gateway";
 import type { NextFunction, Request, Response } from "express";
+import { getCachedSession, setCachedSession } from "../lib/session-cache";
 
 interface SessionResponse {
   user: {
