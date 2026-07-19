@@ -22,12 +22,11 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
         transformer: superjson,
         async headers() {
           const h = await headers();
+          const appUrl = new URL(webEnv.NEXT_PUBLIC_APP_URL);
           return {
             cookie: h.get("cookie") ?? "",
-            "x-forwarded-host":
-              h.get("x-forwarded-host") ?? h.get("host") ?? "",
-            "x-forwarded-proto": h.get("x-forwarded-proto") ?? "https",
-            // Pass forward any proxy gateway auth credentials already processed
+            "x-forwarded-host": appUrl.host,
+            "x-forwarded-proto": appUrl.protocol.replace(":", ""),
             "x-user-id": h.get("x-user-id") ?? "",
             "x-user-email": h.get("x-user-email") ?? "",
             "x-user-name": h.get("x-user-name") ?? "",
