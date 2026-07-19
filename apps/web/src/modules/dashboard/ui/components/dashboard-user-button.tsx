@@ -42,16 +42,18 @@ import { useSignOut } from "@/modules/auth/hooks/mutations/use-sign-out";
 
 export function DashboardUserButton() {
   const signOut = useSignOut();
-  const { data: profile } = useProfile();
-  const { name, email, image } = profile;
-
   const { state } = useSidebar();
   const router = useRouter();
-
   const [logoutState, setLogoutState] = useState<"idle" | "loading" | "error">(
     "idle",
   );
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const { profile, isLoading } = useProfile();
+
+  if (isLoading) {
+    return <p>Loading</p>;
+  }
+  const { name, email, image } = profile!;
 
   const handleLogout = async () => {
     setLogoutState("loading");

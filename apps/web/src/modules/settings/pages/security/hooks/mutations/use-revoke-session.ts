@@ -1,7 +1,7 @@
 "use client";
 import { useInvalidateQueries } from "@/hooks/utils/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 export function useRevokeSession() {
   const trpc = useTRPC();

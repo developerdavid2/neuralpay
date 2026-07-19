@@ -18,9 +18,12 @@ import { PersonalInfoSection } from "./personal-info-section";
 import { Spinner } from "@neuralpay/ui/components/spinner";
 
 export function ProfileSettingsContent() {
-  const { data: profile } = useProfile();
+  const { profile, isLoading } = useProfile();
+  if (isLoading) {
+    return <p>Loading</p>;
+  }
 
-  return <ProfileSettingsForm profile={profile} />;
+  return <ProfileSettingsForm profile={profile!} />;
 }
 
 function buildDefaults(profile: UserRecord): UpdateProfileInput {
