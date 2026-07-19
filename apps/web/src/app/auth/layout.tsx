@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 const AuthenticationLayout = async ({
   children,
 }: AuthenticationLayoutProps) => {
-  await redirectIfAuthenticated("/dashboard");
+  // await redirectIfAuthenticated("/dashboard");
 
   return (
     <div className="relative min-h-svh overflow-hidden text-foreground font-sans">
