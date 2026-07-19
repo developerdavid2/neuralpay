@@ -137,9 +137,9 @@
       },
       "devDependencies": {
         "@types/bun": "catalog:",
-        "tsdown": "^0.21.9",
+        "@types/node": "catalog:",
+        "tsup": "catalog:",
         "typescript": "catalog:",
-        "winston": "^3.19.0",
       },
     },
     "apps/server/user-service": {

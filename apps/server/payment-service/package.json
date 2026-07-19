@@ -8,13 +8,13 @@
       "default": "./src/routers/index.ts"
     },
     ".": {
-      "default": "./src/main.ts"
+      "default": "./src/app.ts"
     }
   },
   "scripts": {
-    "dev": "PORT=4002 bun run --hot src/main.ts",
-    "build": "tsdown src/main.ts",
-    "start": "bun run dist/main.mjs",
+    "dev": "PORT=4002 bun run --hot src/app.ts",
+    "build": "tsup",
+    "start": "node dist/app.js",
     "check-types": "tsc -b"
   },
   "dependencies": {
@@ -39,8 +39,8 @@
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "tsdown": "^0.21.9",
+    "@types/node": "catalog:",
     "typescript": "catalog:",
-    "winston": "^3.19.0"
+    "tsup": "catalog:"
   }
 }
