@@ -23,6 +23,9 @@
     "@neuralpay/notification-service": "workspace:*",
     "@trpc/server": "catalog:",
     "express": "catalog:",
+    "morgan": "catalog:",
+    "cors": "catalog:",
+    "helmet": "catalog:",
     "express-http-proxy": "^2.1.2",
     "express-rate-limit": "^8.4.1",
     "http-proxy-middleware": "^4.1.0",
@@ -31,6 +34,8 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "@types/morgan": "catalog:",
+    "@types/cors": "catalog:",
     "@types/bun": "catalog:",
     "@types/express": "catalog:",
     "@types/express-http-proxy": "^1.6.7",
