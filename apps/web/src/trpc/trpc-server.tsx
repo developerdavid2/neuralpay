@@ -27,9 +27,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
             cookie: h.get("cookie") ?? "",
             "x-forwarded-host": appUrl.host,
             "x-forwarded-proto": appUrl.protocol.replace(":", ""),
-            "x-user-id": h.get("x-user-id") ?? "",
-            "x-user-email": h.get("x-user-email") ?? "",
-            "x-user-name": h.get("x-user-name") ?? "",
           };
         },
       }),
@@ -37,7 +34,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   }),
   queryClient: getQueryClient,
 });
-
 export function HydrateClient(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
   return (
