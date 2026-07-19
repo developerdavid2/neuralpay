@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
         destination: `${serverUrl}/v1/auth/:path*`,
       },
       {
-        source: "/api/trpc/:path*", // ✅ new
+        source: "/api/trpc/:path*",
         destination: `${serverUrl}/v1/trpc/:path*`,
       },
     ];
