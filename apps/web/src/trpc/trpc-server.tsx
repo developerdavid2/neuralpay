@@ -18,7 +18,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   client: createTRPCClient<AppRouter>({
     links: [
       httpLink({
-        url: `${webEnv.SERVER_URL || "http://localhost:3001"}/v1/trpc`,
+        url: `${webEnv.SERVER_URL}/v1/trpc`,
         transformer: superjson,
         async headers() {
           const h = await headers();
