@@ -11,39 +11,39 @@
       "default": "./src/services/index.ts"
     },
     ".": {
-      "default": "./src/main.ts"
+      "default": "./src/app.ts"
     }
   },
   "scripts": {
-    "dev": "PORT=4004 bun run --hot src/main.ts",
-    "build": "tsdown src/main.ts",
-    "start": "bun run dist/main.mjs",
+    "dev": "PORT=4004 bun run --hot src/app.ts",
+    "build": "tsup",
+    "start": "node dist/app.js",
     "check-types": "tsc -b"
   },
   "dependencies": {
+    "@neuralpay/config": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/redis": "workspace:*",
     "@trpc/server": "catalog:",
     "bullmq": "^5.79.2",
-    "cors": "^2.8.6",
+    "cors": "catalog:",
     "express": "catalog:",
     "firebase-admin": "^14.1.0",
-    "helmet": "^8.1.0",
+    "helmet": "catalog:",
     "ioredis": "catalog:",
-    "morgan": "^1.10.1",
+    "morgan": "catalog:",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
     "@types/bun": "catalog:",
-    "@types/cors": "^2.8.19",
+    "@types/cors": "catalog:",
     "@types/express": "catalog:",
-    "@types/morgan": "^1.9.10",
-    "tsdown": "^0.21.9",
-    "typescript": "catalog:",
-    "winston": "^3.19.0"
+    "@types/morgan": "catalog:",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:"
   }
 }
