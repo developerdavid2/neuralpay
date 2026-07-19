@@ -8,7 +8,6 @@ import { createTRPCContext } from "@trpc/tanstack-react-query";
 import { useState } from "react";
 import superjson from "superjson";
 import { makeQueryClient } from "./query-client";
-import { webEnv } from "@neuralpay/env/web";
 
 export const { TRPCProvider, useTRPC } = createTRPCContext<AppRouter>();
 
@@ -28,7 +27,7 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
       links: [
         httpLink({
           transformer: superjson,
-          url: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
+          url: `/api/trpc`,
           fetch(url, options) {
             return fetch(url, { ...options, credentials: "include" });
           },
