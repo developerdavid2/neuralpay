@@ -28,12 +28,17 @@
     "@trpc/server": "catalog:",
     "ai": "^6.0.203",
     "express": "catalog:",
+    "morgan": "catalog:",
+    "cors": "catalog:",
+    "helmet": "catalog:",
     "zod": "catalog:",
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {
     "@neuralpay/config": "workspace:*",
     "@types/node": "catalog:",
+    "@types/morgan": "catalog:",
+    "@types/cors": "catalog:",
     "@types/bun": "catalog:",
     "@types/express": "catalog:",
     "tsup": "catalog:",
