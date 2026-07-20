@@ -1,18 +1,21 @@
-import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 import { baseServerEnv } from "./server";
 
-export const paymentServiceEnv = createEnv({
-  server: {
-    ...baseServerEnv,
-    PORT: z.coerce.number().default(4001),
-    // Plaid
-    PLAID_CLIENT_ID: z.string().min(1),
-    PLAID_SECRET: z.string().min(1),
-    PLAID_ENV: z.enum(["sandbox", "development", "production"]),
-    ENCRYPTION_KEY: z.string().min(1),
-    // Mono (for African banks)
-    MONO_SECRET_KEY: z.string().optional(),
-  },
-  runtimeEnv: process.env,
+const schema = z.object({
+  ...baseServerEnv,
+  PORT: z.coerce.number().default(4001),
+  PLAID_CLIENT_ID: z.string().min(1),
+  PLAID_SECRET: z.string().min(1),
+  PLAID_ENV: z.enum(["sandbox", "development", "production"]),
+  ENCRYPTION_KEY: z.string().min(1),
+  MONO_SECRET_KEY: z.string().optional(),
 });
+
+const parsed = schema.safeParse(process.env);
+
+if (!parsed.success) {
+  console.error("Invalid payment-service env:", parsed.error.flatten());
+  process.exit(1);
+}
+
+export const paymentServiceEnv = parsed.data;
