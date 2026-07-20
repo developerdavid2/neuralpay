@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "apps/server/payment-service/dist/serverless.js",
+      "src": "dist/serverless.js",
       "use": "@vercel/node"
     }
   ],
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "apps/server/payment-service/dist/serverless.js"
+      "destination": "dist/serverless.js"
     }
   ]
 }
