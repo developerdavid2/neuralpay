@@ -1,8 +1,8 @@
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 
-let redis: Redis | null = null;
+let redis: InstanceType<typeof Redis> | null = null;
 
-export function getRedisClient(url?: string): Redis {
+export function getRedisClient(url?: string): InstanceType<typeof Redis> {
   if (redis) return redis;
 
   const redisUrl: string =
