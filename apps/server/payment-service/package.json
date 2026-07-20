@@ -11,6 +11,7 @@
       "default": "./src/app.ts"
     }
   },
+  "main": "dist/serverless.js",
   "scripts": {
     "dev": "PORT=4002 bun run --hot src/app.ts",
     "build": "tsup",
