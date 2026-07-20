@@ -13,7 +13,7 @@
   },
   "main": "dist/serverless.js",
   "scripts": {
-    "dev": "PORT=4002 bun run --hot src/app.ts",
+    "dev": "PORT=4002 bun run --hot src/local.ts",
     "build": "tsup",
     "start": "node dist/serverless.js",
     "check-types": "tsc -b"
