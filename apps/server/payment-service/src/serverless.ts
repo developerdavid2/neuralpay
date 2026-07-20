@@ -6,20 +6,21 @@ import Fastify from "fastify";
 import { paymentsRouter } from "./routers/index.js";
 import { createContext } from "./trpc/context";
 
-const PORT = Number(process.env.PORT) || 4002;
 const server = Fastify({ logger: true });
 
+// Register plugins
 await server.register(helmet);
 await server.register(rateLimit, { max: 200, timeWindow: "1 minute" });
 
+// Health Check
 server.get("/health", async () => ({
   status: "ok",
   service: "payment-service",
-  port: PORT,
   timestamp: new Date().toISOString(),
   uptime: process.uptime(),
 }));
 
+// Register tRPC
 await server.register(fastifyTRPCPlugin, {
   prefix: "/trpc",
   trpcOptions: {
@@ -36,11 +37,15 @@ await server.register(fastifyTRPCPlugin, {
   },
 });
 
-try {
-  // Local development needs to listen to a raw port
-  await server.listen({ port: PORT, host: "0.0.0.0" });
-  server.log.info(`🚀 payment-service running on http://localhost:${PORT}`);
-} catch (err) {
-  server.log.error(err);
-  process.exit(1);
-}
+// The Vercel Request Bridge
+export default async (req: any, res: any) => {
+  try {
+    await server.ready();
+    // Manually emit the request straight into Fastify's underlying node engine
+    server.server.emit("request", req, res);
+  } catch (error) {
+    server.log.error(error);
+    res.statusCode = 500;
+    res.end(JSON.stringify({ error: "Internal Server Error" }));
+  }
+};
