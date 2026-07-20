@@ -3,7 +3,7 @@ import rateLimit from "@fastify/rate-limit";
 import type { TRPCError } from "@trpc/server";
 import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import Fastify from "fastify";
-import { paymentsRouter } from "./routers";
+import { paymentsRouter } from "./routers/index.js";
 import { createContext } from "./trpc/context";
 
 const PORT = Number(process.env.PORT) || 4002;
