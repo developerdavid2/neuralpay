@@ -39,7 +39,7 @@ export default function ViewportBlurProvider({
         <GradualBlurMemo
           target="parent"
           position="bottom"
-          height="10rem"
+          height="20rem"
           strength={1.5}
           divCount={6}
           curve="ease-out"

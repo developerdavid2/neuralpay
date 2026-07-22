@@ -10,6 +10,10 @@
 @theme inline {
   --font-sans: var(--font-nexa);
   --font-heading: var(--font-nexa);
+
+  --font-rostex: var(--font-rostex);
+  --font-rostex-outline: var(--font-rostex-outline);
+
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
   --color-background: var(--background);

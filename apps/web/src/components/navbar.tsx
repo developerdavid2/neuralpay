@@ -35,7 +35,7 @@ export default function Navbar() {
       <header
         className={`fixed top-0 left-0 right-0 z-[60] flex items-center justify-between px-6 py-5 md:px-12 transition-all duration-300 ${
           isScrolled && !isOpen
-            ? "bg-[#050508]/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
+            ? "bg-[#151515]/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
             : "bg-transparent border-b border-transparent"
         }`}
       >
@@ -73,7 +73,7 @@ export default function Navbar() {
       {/* Full-Screen Menu Viewport Overlay */}
       <div
         aria-hidden={!isOpen}
-        className={`fixed inset-0 z-[50] flex flex-col justify-between bg-[#050508]/90 p-8 md:p-16 backdrop-blur-3xl transition-all duration-500 ease-in-out ${
+        className={`fixed inset-0 z-[50] flex flex-col justify-between bg-[#151515]/90 p-8 md:p-16 backdrop-blur-3xl transition-all duration-500 ease-in-out ${
           isOpen
             ? "opacity-100 pointer-events-auto scale-100"
             : "opacity-0 pointer-events-none scale-98"

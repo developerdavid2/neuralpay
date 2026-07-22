@@ -1,41 +1,114 @@
+"use client";
+
+import React from "react";
+import { motion } from "motion/react";
 import HeroBackground from "../components/hero-background";
-import HeroGridMatrix from "../components/hero-grid-matrix";
+import HeroNeuralCard from "../components/hero-neural-card";
+import { PremiumButton } from "@/components/premium-button";
+
+// Framer Motion Stagger Variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: (i = 1) => ({
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.2 * i,
+    },
+  }),
+};
+
+const blurWordVariants = {
+  hidden: {
+    filter: "blur(12px)",
+    opacity: 0,
+    y: 12,
+  },
+  visible: {
+    filter: "blur(0px)",
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.25, 0.4, 0.25, 1] as const,
+    },
+  },
+};
 
 export default function HeroSectionView() {
-  return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-[#050508] pt-28">
-      <HeroBackground />
-      <HeroGridMatrix />
+  const paragraphText =
+    "NeuralPay connects to your bank accounts, explains your spending in plain English, and automates peer bill splits.";
 
-      <div className="relative z-10 mx-auto flex max-w-[2000px] flex-col items-center px-4 text-center">
-        <div className="relative w-full">
-          <h1 className="select-none font-display text-[clamp(4.5rem,15vw,18rem)] font-extrabold leading-none tracking-tighter text-white/90">
-            NEURAL
-            <br />
-            PAY
-          </h1>
+  return (
+    <section className="relative min-h-screen w-full overflow-hidden bg-[#151515]">
+      <HeroBackground />
+
+      <div className="relative z-10 mx-auto flex max-w-[2000px] flex-col items-center px-4">
+        {/* LEFT H1 TITLE (STAGGERED BLUR-IN) */}
+        <div className="absolute left-0 top-[30%] w-full pl-10">
+          <motion.h1
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            custom={1}
+            className="select-none font-normal text-[clamp(4.5rem,15vw,6rem)] leading-none text-gray-100/90"
+          >
+            {/* "NEURAL" Staggered Words */}
+            <div className="flex flex-wrap">
+              {"NEURAL".split("").map((letter, idx) => (
+                <motion.span
+                  key={idx}
+                  variants={blurWordVariants}
+                  className="inline-block font-rostex tracking-tighter"
+                >
+                  {letter}
+                </motion.span>
+              ))}
+            </div>
+
+            {/* "PAY" Outline Staggered Words */}
+            <div className="flex flex-wrap">
+              {"PAY".split("").map((letter, idx) => (
+                <motion.span
+                  key={idx}
+                  variants={blurWordVariants}
+                  className="font-rostex-outline inline-block tracking-tighter"
+                >
+                  {letter}
+                </motion.span>
+              ))}
+            </div>
+          </motion.h1>
         </div>
 
-        {/* Dashboard Mockup Device Frame */}
-        {/* <div className="absolute translate-y-1/2 -mt-10 md:-mt-20 z-20 w-full max-w-4xl px-4">
-          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-white/15 bg-black/60 p-2 shadow-[0_0_50px_rgba(196,181,253,0.15)] backdrop-blur-xl">
-            <div className="flex h-full w-full flex-col items-center justify-center rounded-xl border border-white/5 bg-[#0A0A0F] p-6 text-center">
-              <span className="mb-2 text-2xl">⚡</span>
-              <h3 className="font-display text-xl font-bold text-white">
-                Interactive Dashboard Frame
-              </h3>
-              <p className="mt-2 max-w-md text-sm text-white/50">
-                Plaid/Mono open banking feed & CoinGecko portfolio visualizer
-                preview.
-              </p>
-            </div>
-          </div>
-        </div> */}
+        {/* CENTER CARD CORE */}
+        <HeroNeuralCard />
 
-        <p className="mt-10 max-w-md self-end text-end font-body text-base md:text-lg leading-relaxed text-white/60">
-          NeuralPay connects to your bank accounts, explains your spending in
-          plain English, and automates peer bill splits.
-        </p>
+        {/* RIGHT PARAGRAPH (STAGGERED WORD BLUR-IN) */}
+        <div className="absolute right-0 top-[30%] w-full pr-10 mt-10 ml-auto max-w-md">
+          <motion.p
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            custom={2} // Delays slightly after the title starts
+            className="text-end font-light text-base md:text-lg leading-relaxed text-white/60 uppercase flex flex-wrap justify-end gap-x-[0.35em] gap-y-1"
+          >
+            {paragraphText.split(" ").map((word, idx) => (
+              <motion.span
+                key={idx}
+                variants={blurWordVariants}
+                className="inline-block"
+              >
+                {word}
+              </motion.span>
+            ))}
+          </motion.p>
+
+          {/* Optional Premium Button placement */}
+          {/* <div className="flex justify-end mt-6">
+            <PremiumButton>Sign up</PremiumButton>
+          </div> */}
+        </div>
       </div>
     </section>
   );

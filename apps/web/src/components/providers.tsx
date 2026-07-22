@@ -25,7 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     >
       <TRPCReactProvider>
         {children}
-        <ReactQueryDevtools />
+        {/* <ReactQueryDevtools /> */}
       </TRPCReactProvider>
       <Toaster richColors />
     </ThemeProvider>
