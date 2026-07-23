@@ -1,10 +1,9 @@
 "use client";
 
-import React from "react";
 import { motion } from "motion/react";
 import HeroBackground from "../components/hero-background";
+import { HeroMiniChart } from "../components/hero-mini-chart";
 import HeroNeuralCard from "../components/hero-neural-card";
-import { PremiumButton } from "@/components/premium-button";
 
 // Framer Motion Stagger Variants
 const containerVariants = {
@@ -85,13 +84,14 @@ export default function HeroSectionView() {
         <HeroNeuralCard />
 
         {/* RIGHT PARAGRAPH (STAGGERED WORD BLUR-IN) */}
-        <div className="absolute right-0 top-[30%] w-full pr-10 mt-10 ml-auto max-w-md">
+        <div className="absolute right-0 top-[30%] w-full pr-10 mt-10 ml-auto max-w-sm">
+          <HeroMiniChart />
           <motion.p
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            custom={2} // Delays slightly after the title starts
-            className="text-end font-light text-base md:text-lg leading-relaxed text-white/60 uppercase flex flex-wrap justify-end gap-x-[0.35em] gap-y-1"
+            custom={2}
+            className="text-end font-light text-sm text-white/60 flex flex-wrap justify-end gap-x-[0.35em] gap-y-1"
           >
             {paragraphText.split(" ").map((word, idx) => (
               <motion.span

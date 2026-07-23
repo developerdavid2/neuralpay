@@ -111,14 +111,6 @@ export default function HeroNeuralCard() {
           {/* 5. CENTER AI CORE (WEBGL SHADER ORB) */}
           <div className="relative z-20 my-auto flex flex-col items-center justify-center">
             <div className="relative h-40 w-40 flex items-center justify-center">
-              {/* WebGL Orb Component */}
-              {/* <Orb
-                hue={2}
-                hoverIntensity={0.5}
-                rotateOnHover={true}
-                backgroundColor="#0A0A0F"
-              /> */}
-
               <Strands
                 colors={["#f9f9f9", "#ffffff", "#0606d4"]}
                 count={3}
@@ -148,7 +140,7 @@ export default function HeroNeuralCard() {
           </div>
 
           {/* 6. BOTTOM ANIMATED NOTIFICATIONS STREAM */}
-          <div className="relative z-20 flex flex-col gap-2">
+          <div className="relative z-20 flex flex-col gap-2 -mt-10">
             <span className="text-[10px] font-mono tracking-widest uppercase text-white/40 px-1">
               Live Network Feed
             </span>

@@ -62,7 +62,7 @@ export default function HeroBackground() {
 
       {/* 5. Light Rays Effect */}
       {effectsEnabled && (
-        <div className="absolute inset-0 z-3 opacity-60">
+        <div className="absolute inset-0 z-10 opacity-60">
           <LightRays
             raysOrigin="top-center"
             raysColor="#C4B5FD"
