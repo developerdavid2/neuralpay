@@ -1,15 +1,17 @@
-import ViewportBlurProvider from "@/modules/landing/components/view-port-blur-provider";
 import HeroSectionView from "@/modules/landing/pages/home/hero-section/ui/views/hero-section-view";
-
+import { ManifestoSectionView } from "@/modules/landing/pages/home/manifesto-section/ui/views/manifesto-section-view";
 export default function Home() {
   return (
-    <div className="relative w-full bg-[#151515]">
+    <div className="relative w-full">
       <section data-blur-section id="hero">
         <HeroSectionView />
       </section>
 
-      {/* Static HTML Content — Zero JS shipped for this section container */}
-      <section className="relative z-10 min-h-screen w-full border-t border-white/5 bg-[#151515] p-12">
+      <section data-blur-section id="manifesto">
+        <ManifestoSectionView />
+      </section>
+
+      <section className="relative z-10 min-h-screen w-full border-t border-white/5 bg-landing-bg p-12">
         <div className="mx-auto max-w-7xl">
           <h2 className="font-display text-4xl font-extrabold uppercase tracking-tight text-white md:text-6xl">
             Social Settlements

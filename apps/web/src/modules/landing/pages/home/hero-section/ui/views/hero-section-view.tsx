@@ -1,11 +1,21 @@
 "use client";
 
+import {
+  ArrowBigDown,
+  ArrowRight,
+  ChevronDown,
+  ChevronDownIcon,
+  ShieldCheck,
+} from "lucide-react";
 import { motion } from "motion/react";
+
+import { PremiumButton } from "@/components/premium-button";
+import { SpinningText } from "@neuralpay/ui/components/magicui/spinning-text";
 import HeroBackground from "../components/hero-background";
 import { HeroMiniChart } from "../components/hero-mini-chart";
 import HeroNeuralCard from "../components/hero-neural-card";
+import { RotatingTextCircle } from "@/components/rotating-text-circle";
 
-// Framer Motion Stagger Variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: (i = 1) => ({
@@ -35,80 +45,112 @@ const blurWordVariants = {
 };
 
 export default function HeroSectionView() {
+  const subtitleText = "Understand your money with effortless clarity.";
   const paragraphText =
     "NeuralPay connects to your bank accounts, explains your spending in plain English, and automates peer bill splits.";
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-[#151515]">
+    <section className="relative min-h-screen w-full overflow-hidden bg-landing-bg text-white">
       <HeroBackground />
 
-      <div className="relative z-10 mx-auto flex max-w-[2000px] flex-col items-center px-4">
-        {/* LEFT H1 TITLE (STAGGERED BLUR-IN) */}
-        <div className="absolute left-0 top-[30%] w-full pl-10">
-          <motion.h1
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            custom={1}
-            className="select-none font-normal text-[clamp(4.5rem,15vw,6rem)] leading-none text-gray-100/90"
-          >
-            {/* "NEURAL" Staggered Words */}
-            <div className="flex flex-wrap">
-              {"NEURAL".split("").map((letter, idx) => (
+      <div className="relative z-10  max-w-7xl 3xl:max-w-450 4xl:max-w-500 mx-auto flex min-h-screen flex-col justify-between pt-12">
+        <div className="relative flex w-full flex-1 items-center justify-between">
+          {/* LEFT COLUMN */}
+          <div className="absolute left-0 top-[26%] z-20 h-full w-full max-w-2xl">
+            <motion.h1
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              custom={1}
+              className="select-none text-[clamp(2.5rem,15vw,6.5rem)] font-normal leading-none text-gray-100/70"
+            >
+              <div className="flex flex-wrap">
+                {"AGENT".split("").map((letter, idx) => (
+                  <motion.span
+                    key={idx}
+                    variants={blurWordVariants}
+                    className="inline-block font-rostex tracking-tighter"
+                  >
+                    {letter}
+                  </motion.span>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap">
+                {"FINANCE".split("").map((letter, idx) => (
+                  <motion.span
+                    key={idx}
+                    variants={blurWordVariants}
+                    className="inline-block font-rostex-outline tracking-tighter"
+                  >
+                    {letter}
+                  </motion.span>
+                ))}
+              </div>
+            </motion.h1>
+
+            <motion.p
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              custom={1.4}
+              className="mt-4 flex flex-wrap gap-x-[0.35em] font-mono font-light text-md uppercase tracking-wide text-violet-100"
+            >
+              {subtitleText.split(" ").map((word, idx) => (
                 <motion.span
                   key={idx}
                   variants={blurWordVariants}
-                  className="inline-block font-rostex tracking-tighter"
+                  className="inline-block"
                 >
-                  {letter}
+                  {word}
                 </motion.span>
               ))}
-            </div>
+            </motion.p>
+          </div>
 
-            {/* "PAY" Outline Staggered Words */}
-            <div className="flex flex-wrap">
-              {"PAY".split("").map((letter, idx) => (
+          <div className="absolute top-[70%] left-[0%] hidden md:block">
+            <RotatingTextCircle
+              text="NEURALPAY • SECURE INFRASTRUCTURE • "
+              icon={ShieldCheck}
+              iconSize={26}
+            />
+          </div>
+
+          {/* CENTER CARD */}
+          <div className="mx-auto flex items-center justify-center">
+            <HeroNeuralCard />
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div className="absolute right-0 top-[26%] z-20 ml-auto max-w-sm space-y-5">
+            <HeroMiniChart />
+
+            <motion.p
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              custom={2}
+              className="flex flex-wrap justify-end gap-x-[0.35em] gap-y-1 text-end text-sm font-light text-white/60"
+            >
+              {paragraphText.split(" ").map((word, idx) => (
                 <motion.span
                   key={idx}
                   variants={blurWordVariants}
-                  className="font-rostex-outline inline-block tracking-tighter"
+                  className="inline-block"
                 >
-                  {letter}
+                  {word}
                 </motion.span>
               ))}
+            </motion.p>
+            <div className="relative z-30 mb-4 flex justify-end">
+              <PremiumButton icon={ArrowRight} className="scale-105 py-6">
+                GET STARTED
+              </PremiumButton>
             </div>
-          </motion.h1>
+          </div>
         </div>
 
-        {/* CENTER CARD CORE */}
-        <HeroNeuralCard />
-
-        {/* RIGHT PARAGRAPH (STAGGERED WORD BLUR-IN) */}
-        <div className="absolute right-0 top-[30%] w-full pr-10 mt-10 ml-auto max-w-sm">
-          <HeroMiniChart />
-          <motion.p
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            custom={2}
-            className="text-end font-light text-sm text-white/60 flex flex-wrap justify-end gap-x-[0.35em] gap-y-1"
-          >
-            {paragraphText.split(" ").map((word, idx) => (
-              <motion.span
-                key={idx}
-                variants={blurWordVariants}
-                className="inline-block"
-              >
-                {word}
-              </motion.span>
-            ))}
-          </motion.p>
-
-          {/* Optional Premium Button placement */}
-          {/* <div className="flex justify-end mt-6">
-            <PremiumButton>Sign up</PremiumButton>
-          </div> */}
-        </div>
+        {/* BOTTOM ACTION */}
       </div>
     </section>
   );

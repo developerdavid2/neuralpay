@@ -28,7 +28,7 @@ export function PremiumButton({
       disabled={isDisabled}
       className={cn(
         "group relative overflow-hidden rounded-xl p-px",
-        "bg-[linear-gradient(180deg,rgba(141,68,245,1)_0%,rgba(81,30,154,1)_100%)]",
+        "bg-[linear-gradient(180deg,#7963b7_0%,#5b41a0_100%)]",
         "shadow-[0px_0px_8px_rgba(141,68,245,0.15),0px_0px_24px_rgba(81,30,154,0.25)]",
         "border border-white/10 dark:border-white/5",
         "transition-all duration-300 ease-out",
@@ -45,9 +45,9 @@ export function PremiumButton({
       <span className="pointer-events-none absolute bottom-0 left-4 z-20 h-px w-[35%] opacity-0 transition-all duration-500 group-hover:left-[60%] group-hover:opacity-70 bg-linear-to-r from-transparent via-violet-300 to-transparent" />
 
       {/* INNER SURFACE */}
-      <span className="relative flex min-h-15 w-full items-center justify-center overflow-hidden rounded-[15px] px-6 py-4 bg-[linear-gradient(180deg,rgba(141,68,245,1)_0%,rgba(81,30,154,1)_100%)]">
+      <span className="relative flex min-h-15 w-full items-center justify-center overflow-hidden rounded-[15px] px-6 py-4 bg-[linear-gradient(180deg,#7963b7_0%,#5b41a0_100%)]">
         {/* DARKER HOVER LAYER */}
-        <span className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[linear-gradient(180deg,rgba(20,10,40,0.08)_0%,rgba(10,5,25,0.35)_100%)]" />
+        <span className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[#32225a]" />
 
         {/* TOP BEVEL */}
         <span className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/25 to-transparent" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
 import MagicRings from "@neuralpay/ui/components/react-bits/magic-rings";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
@@ -35,24 +36,23 @@ export default function HeroBackground() {
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
-      {/* 1. Centered 5px Violet Line at Top */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 h-[5px] w-24 rounded-b-sm bg-violet-400 shadow-[0_0_15px_rgba(196,181,253,0.8)]" />
+      {/*Centered 5px Violet Line at Top */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 h-1.25 w-24 rounded-b-sm bg-violet-400 shadow-[0_0_15px_rgba(196,181,253,0.8)]" />
 
-      {/* 2. Base Gradient Background */}
+      {/*  Base Gradient Background  */}
       <div
         className="absolute inset-0 z-0"
         style={{
-          background:
-            "radial-gradient(120% 90% at 50% -10%, rgba(196,181,253,0.10) 0%, rgba(5,5,8,0) 55%), #151515",
+          background: `linear-gradient(180deg, rgba(196, 181, 253, 0.12) 0%, rgba(150, 190, 246, 0.03) 40%, ${LANDING_THEME.bg} 80%)`,
         }}
       />
 
-      {/* 3. Volumetric Light Ray Discs */}
+      {/* Volumetric Light Ray Discs */}
       <div className="absolute -top-32 left-1/2 -translate-x-1/2 size-125 rounded-full bg-violet-500/15 blur-[130px] pointer-events-none z-1" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[350px] w-[350px] md:h-[550px] md:w-[550px] rounded-full bg-indigo-500/10 blur-[150px] pointer-events-none z-1" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-87.5 w-87.5 md:h-137.5 md:w-137.5 rounded-full bg-indigo-500/10 blur-[150px] pointer-events-none z-1" />
 
-      {/* 4. 5 Thicker Architectural Vertical Columns Only (No Rows) */}
-      <div className="absolute inset-0 z-2 mx-auto grid w-full max-w-[1440px] grid-cols-5 px-4 pointer-events-none [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_60%,transparent_100%)]">
+      {/* Architectural Columns */}
+      <div className="absolute inset-0 z-2 mx-auto grid w-full max-w-360 grid-cols-5 px-4 pointer-events-none mask-[radial-gradient(ellipse_80%_80%_at_50%_50%,#000_60%,transparent_100%)]">
         <div className="h-full border-l border-r border-white/5" />
         <div className="h-full border-r border-white/5" />
         <div className="h-full border-r border-white/5" />
@@ -60,12 +60,11 @@ export default function HeroBackground() {
         <div className="h-full border-r border-white/5" />
       </div>
 
-      {/* 5. Light Rays Effect */}
       {effectsEnabled && (
         <div className="absolute inset-0 z-10 opacity-60">
           <LightRays
             raysOrigin="top-center"
-            raysColor="#C4B5FD"
+            raysColor={LANDING_THEME.violet400}
             raysSpeed={0.4}
             lightSpread={1.4}
             rayLength={1.0}
@@ -80,11 +79,10 @@ export default function HeroBackground() {
         </div>
       )}
 
-      {/* 6. Magic Rings Background Layer */}
       <div className="absolute w-full h-full z-4 flex items-center justify-center overflow-hidden">
         <MagicRings
-          color="#A684FF"
-          colorTwo="#DEDFE2"
+          color={LANDING_THEME.violet600}
+          colorTwo={LANDING_THEME.foreground}
           ringCount={8}
           speed={1}
           attenuation={10}

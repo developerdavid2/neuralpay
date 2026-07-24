@@ -5,13 +5,13 @@ import { useMemo } from "react";
 function RadarPulseGroup() {
   return (
     <>
-      <div className="h-[2.2vh] w-2 rounded-xs bg-[#C4B5FD]/10" />
-      <div className="h-[2.2vh] w-2 rounded-xs bg-[#C4B5FD]/20 shadow-[0_0_2px_#C4B5FD]" />
-      <div className="h-[2.2vh] w-2 rounded-xs bg-[#C4B5FD]/40 shadow-[0_0_6px_#C4B5FD]" />
-      <div className="h-[2.2vh] w-2 rounded-xs bg-[#C4B5FD] shadow-[0_0_18px_#C4B5FD,0_0_30px_#C4B5FD]" />
-      <div className="h-[2.2vh] w-2 rounded-xs bg-[#C4B5FD]/40 shadow-[0_0_6px_#C4B5FD]" />
-      <div className="h-[2.2vh] w-2 rounded-xs bg-[#C4B5FD]/20 shadow-[0_0_2px_#C4B5FD]" />
-      <div className="h-[2.2vh] w-2 rounded-xs bg-[#C4B5FD]/10 blur-[1.5px]" />
+      <div className="h-[2.2vh] w-2 rounded-xs bg-landing-violet-400/10" />
+      <div className="h-[2.2vh] w-2 rounded-xs bg-landing-violet-400/20 shadow-[0_0_2px_var(--color-landing-violet-400)]" />
+      <div className="h-[2.2vh] w-2 rounded-xs bg-landing-violet-400/40 shadow-[0_0_6px_var(--color-landing-violet-400)]" />
+      <div className="h-[2.2vh] w-2 rounded-xs bg-landing-violet-400 shadow-[0_0_18px_var(--color-landing-violet-400),0_0_30px_var(--color-landing-violet-400)]" />
+      <div className="h-[2.2vh] w-2 rounded-xs bg-landing-violet-400/40 shadow-[0_0_6px_var(--color-landing-violet-400)]" />
+      <div className="h-[2.2vh] w-2 rounded-xs bg-landing-violet-400/20 shadow-[0_0_2px_var(--color-landing-violet-400)]" />
+      <div className="h-[2.2vh] w-2 rounded-xs bg-landing-violet-400/10 blur-[1.5px]" />
     </>
   );
 }
@@ -23,7 +23,6 @@ export default function HeroGridMatrix() {
   const CONTAINER_HEIGHT_CELLS = PULSE_CELLS + GAP_CELLS + PULSE_CELLS;
   const TOTAL_STEPS = TOTAL_CELLS + CONTAINER_HEIGHT_CELLS;
 
-  // Position: fast, quantized. Fade: slow, smooth, on its own clock.
   const columns = useMemo(
     () => [
       {
@@ -72,7 +71,6 @@ export default function HeroGridMatrix() {
           }
         }
 
-        /* Smooth, non-quantized breathing — deliberately NOT steps() */
         @keyframes pulseBreathe {
           0% {
             opacity: 0;
@@ -95,7 +93,6 @@ export default function HeroGridMatrix() {
             <div key={cellIdx} />
           ))}
 
-          {/* Position container — hard quantized steps, fast pace */}
           <div
             className="absolute top-0 left-0 flex flex-col gap-[0.3rem] mix-blend-color-dodge"
             style={{
@@ -103,9 +100,6 @@ export default function HeroGridMatrix() {
               animationDelay: col.delay,
             }}
           >
-            {/* Each pulse group gets its own independent, smooth
-                opacity breathing loop — this is what fades it in
-                and out without touching the quantized movement */}
             <div
               className="flex flex-col gap-[0.3rem]"
               style={{

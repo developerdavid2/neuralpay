@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { Activity, BarChart2, PieChart } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -13,27 +14,9 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { Activity, BarChart2, PieChart } from "lucide-react";
+import { MOCK_PIE, MOCK_TIME_SERIES } from "../../constants";
 
 type ChartKind = "area" | "bar" | "pie";
-
-const MOCK_TIME_SERIES = [
-  { name: "Mon", val: 120 },
-  { name: "Tue", val: 240 },
-  { name: "Wed", val: 180 },
-  { name: "Thu", val: 320 },
-  { name: "Fri", val: 290 },
-  { name: "Sat", val: 410 },
-  { name: "Sun", val: 380 },
-];
-
-// Strictly Violet Monochromatic Brand Palette with Warm Orange Accent
-const MOCK_PIE = [
-  { name: "Food", val: 35, color: "#8b5cf6" }, // Violet
-  { name: "Bills", val: 25, color: "#6366f1" }, // Violet-Blue
-  { name: "Tech", val: 20, color: "#a78bfa" }, // Soft Violet
-  { name: "Travel", val: 20, color: "#f97316" }, // Brand Accent Orange
-];
 
 // Custom Floating Mini Tooltip
 function MiniCustomTooltip({
@@ -119,7 +102,7 @@ export function HeroMiniChart() {
         initial="initial"
         animate="animate"
         exit="exit"
-        className="relative w-[280px] ml-auto rounded-2xl  p-4 backdrop-blur-xl shadow-2xl overflow-hidden text-white select-none"
+        className="relative w-70 ml-auto rounded-2xl  p-4 backdrop-blur-xl shadow-2xl overflow-hidden text-white select-none"
       >
         {/* Top Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
