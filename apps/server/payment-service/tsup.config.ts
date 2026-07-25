@@ -1,13 +1,9 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/serverless.ts"],
+  entry: ["src/render.ts"],
   noExternal: [/@neuralpay/],
-  external: [
-    "ioredis",             
-    "bullmq",
-    "rate-limiter-flexible",
-  ],
+  external: ["ioredis", "bullmq", "rate-limiter-flexible"],
   splitting: false,
   bundle: true,
   outDir: "dist",
