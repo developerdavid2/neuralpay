@@ -43,15 +43,6 @@ const withUserId = (proxyReqOpts: any, srcReq: Request) => {
   return proxyReqOpts;
 };
 
-// ── tRPC namespace router
-// tRPC procedure names are dot-separated: "users.profile.me", "payments.transactions.list"
-// The first segment is the namespace — use it to route to the correct service.
-//
-// Batched requests: tRPC can send multiple procedures in one HTTP call
-// e.g. POST /v1/trpc/users.profile.me,payments.accounts.list
-// We don't split batches — each service receives the full batch path.
-// Cross-service batches are rare; if needed, add a batch-splitter middleware.
-
 function trpcNamespaceProxy(app: Express) {
   const NAMESPACE_MAP: Record<string, string> = {
     users: gatewayEnv.USER_SERVICE_URL,
@@ -61,11 +52,7 @@ function trpcNamespaceProxy(app: Express) {
   };
 
   app.use("/v1/trpc", (req: Request, res: Response, next: NextFunction) => {
-    // req.url here is e.g. "/users.profile.me" or "/users.profile.me,payments.accounts.list"
     const rawPath = req.url.split("?")[0]?.replace(/^\//, "") ?? "";
-
-    // For batched calls the path looks like "users.profile.me,payments.accounts.list"
-    // Take the first procedure to determine the namespace
     const firstProcedure = rawPath.split(",")[0] ?? "";
     const namespace = firstProcedure.split(".")[0] ?? "";
 
@@ -84,9 +71,6 @@ function trpcNamespaceProxy(app: Express) {
     proxy(targetURL, {
       proxyErrorHandler: proxyError,
       proxyReqPathResolver: (r) => {
-        // Strip the namespace prefix from every procedure in the path
-        // "users.profile.me"         → "profile.me"
-        // "users.profile.me,users.profile.list" → "profile.me,profile.list"
         const url = new URL(`http://x${r.url}`);
         const stripped = url.pathname
           .replace(/^\//, "") // remove leading slash
@@ -111,7 +95,13 @@ function trpcNamespaceProxy(app: Express) {
       ) => {
         const setCookie = proxyRes.headers["set-cookie"];
         if (setCookie) {
-          headers["set-cookie"] = setCookie;
+          const cookies = Array.isArray(setCookie) ? setCookie : [setCookie];
+          headers["set-cookie"] = cookies.map((cookie) =>
+            cookie
+              .replace(/;\s*Domain=[^;]*/gi, "")
+              .replace(/;\s*SameSite=Lax/gi, "; SameSite=None")
+              .concat("; Partitioned"),
+          );
         }
         return headers;
       },
@@ -123,7 +113,6 @@ function trpcNamespaceProxy(app: Express) {
   });
 }
 
-// ── Mount all proxies
 export function mountStreamingProxy(app: Express) {
   app.use(
     "/v1/ai/chat/stream",
@@ -202,9 +191,7 @@ export function mountUploadThingProxy(app: Express) {
     }),
   );
 }
-// And remove it from mountProxies
 export function mountProxies(app: Express) {
-  // 1. Better Auth routes → user-service
   // In mountProxies — auth proxy
   app.use(
     "/v1/auth",
@@ -232,7 +219,13 @@ export function mountProxies(app: Express) {
       ) => {
         const setCookie = proxyRes.headers["set-cookie"];
         if (setCookie) {
-          headers["set-cookie"] = setCookie;
+          const cookies = Array.isArray(setCookie) ? setCookie : [setCookie];
+          headers["set-cookie"] = cookies.map((cookie) =>
+            cookie
+              .replace(/;\s*Domain=[^;]*/gi, "")
+              .replace(/;\s*SameSite=Lax/gi, "; SameSite=None")
+              .concat("; Partitioned"),
+          );
         }
         return headers;
       },
@@ -243,6 +236,5 @@ export function mountProxies(app: Express) {
     }),
   );
 
-  // 2. tRPC routes → namespaced to correct service
   trpcNamespaceProxy(app);
 }
