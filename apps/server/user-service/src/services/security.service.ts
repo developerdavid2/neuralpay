@@ -78,9 +78,11 @@ export const SecurityService = {
     }
   },
 
-  async revokeOtherSessions(): Promise<ServiceResult<void>> {
+  async revokeOtherSessions(headers: Headers): Promise<ServiceResult<void>> {
     try {
-      await auth.api.revokeOtherSessions();
+      await auth.api.revokeOtherSessions({
+        headers,
+      });
       return { success: true, data: undefined };
     } catch (err) {
       console.error("[SecurityService.revokeOtherSessions]", err);

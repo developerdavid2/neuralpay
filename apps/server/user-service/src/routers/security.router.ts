@@ -39,8 +39,8 @@ export const securityRouter = router({
       SecurityService.revokeSession(input.sessionToken, ctx._headers),
     ),
 
-  revokeOtherSessions: protectedProcedure.mutation(() =>
-    SecurityService.revokeOtherSessions(),
+  revokeOtherSessions: protectedProcedure.mutation(({ ctx }) =>
+    SecurityService.revokeOtherSessions(ctx._headers),
   ),
 
   get2FAStatus: protectedProcedure.query(async ({ ctx }) => {

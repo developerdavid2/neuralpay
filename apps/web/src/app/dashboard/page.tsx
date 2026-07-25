@@ -1,20 +1,13 @@
-import { getServerSession } from "@/lib/auth-server";
 import {
   INSIGHTS_LIMIT,
   TRANSACTIONS_LIMIT,
 } from "@/modules/dashboard/constants";
 import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
 import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
-import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const session = await getServerSession();
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
   const now = new Date();
 
   prefetch(trpc.payments.accounts.aggregateByType.queryOptions());
