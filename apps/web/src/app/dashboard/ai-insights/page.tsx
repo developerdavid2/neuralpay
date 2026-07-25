@@ -40,14 +40,14 @@ export default async function Page({ searchParams }: PageProps) {
     search: params.search ?? "",
   };
 
-  void prefetchInfinite(
+  prefetchInfinite(
     trpc.ai.insights.list.infiniteQueryOptions(listFilters, {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     }),
   );
 
   if (params.focus) {
-    void prefetch(
+    prefetch(
       trpc.ai.insights.getInsightById.queryOptions({ id: params.focus }),
     );
   }

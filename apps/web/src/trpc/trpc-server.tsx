@@ -1,16 +1,18 @@
 import "server-only";
-import { cache } from "react";
+
+import type { AppRouter } from "@neuralpay/api-gateway/router";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { createTRPCClient, httpBatchLink, httpLink } from "@trpc/client";
 import {
   createTRPCOptionsProxy,
+  type TRPCInfiniteQueryOptions,
   type TRPCQueryOptions,
 } from "@trpc/tanstack-react-query";
-import { createTRPCClient, httpLink } from "@trpc/client";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import superjson from "superjson";
-import type { AppRouter } from "@neuralpay/api-gateway/router";
-import { makeQueryClient } from "./query-client";
 import { headers } from "next/headers";
-import { webEnv } from "@neuralpay/env/web";
+import { cache } from "react";
+import "server-only";
+import superjson from "superjson";
+import { makeQueryClient } from "./query-client";
 
 export const getQueryClient = cache(makeQueryClient);
 
@@ -26,10 +28,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
           const appUrl = new URL(
             process.env.NEXT_PUBLIC_APP_URL ?? "https://neuralpayai.vercel.app",
           );
-
-          console.log("[trpc-server] cookie present:", !!cookie);
-          console.log("[trpc-server] cookie length:", cookie.length);
-
           return {
             cookie,
             "x-forwarded-host": appUrl.host,
@@ -51,11 +49,15 @@ export function HydrateClient(props: { children: React.ReactNode }) {
 }
 
 // Changed to return the prefetch Promise
-export async function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
+export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
   queryOptions: T,
 ) {
   const queryClient = getQueryClient();
-  await queryClient.prefetchQuery(queryOptions);
+  if (queryOptions.queryKey[1]?.type === "infinite") {
+    void queryClient.prefetchInfiniteQuery(queryOptions as any);
+  } else {
+    void queryClient.prefetchQuery(queryOptions);
+  }
 }
 
 export async function prefetchInfinite<
@@ -63,17 +65,4 @@ export async function prefetchInfinite<
 >(queryOptions: T) {
   const queryClient = getQueryClient();
   await queryClient.prefetchInfiniteQuery(queryOptions as any);
-}
-
-// Add this helper to suppress prefetch errors from crashing the SSR render
-export async function safePrefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
-  queryOptions: T,
-) {
-  try {
-    await prefetch(queryOptions);
-  } catch (error) {
-    console.warn(
-      `[safePrefetch] Ignored a prefetch failure. This is normal if the user is unauthorized and the layout is about to redirect them.`,
-    );
-  }
 }

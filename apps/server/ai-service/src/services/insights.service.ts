@@ -106,7 +106,6 @@ export const AIInsightsService = {
     }
   },
 
-  //  * Get recent active insights (for dashboard)
   async getRecentInsights(
     userId: string,
     limit = 5,

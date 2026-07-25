@@ -73,8 +73,7 @@ export function AccountsList({
     ],
   );
 
-  const { bankAccounts, isLoading, totalCount, pageCount } =
-    useAccountsList(filters);
+  const { bankAccounts, totalCount, pageCount } = useAccountsList(filters);
 
   const deletableIds = useMemo(
     () =>
@@ -132,10 +131,6 @@ export function AccountsList({
       </p>
     </div>
   );
-
-  if (isLoading) {
-    return <AccountsListSkeleton />;
-  }
 
   return (
     <div className="flex flex-col h-full px-10">

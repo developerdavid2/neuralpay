@@ -53,7 +53,8 @@ export function DashboardUserButton() {
   if (isLoading) {
     return <p>Loading</p>;
   }
-  const { name, email, image } = profile!;
+
+  const { name, email, image } = profile ?? {};
 
   const handleLogout = async () => {
     setLogoutState("loading");

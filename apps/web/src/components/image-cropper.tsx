@@ -233,6 +233,7 @@ export function ImageCropper({
               step={0.01}
               value={[zoom]}
               onValueChange={handleZoomChange}
+              className="cursor-grab"
             />
           </div>
         </div>

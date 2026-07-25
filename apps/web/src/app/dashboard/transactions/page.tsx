@@ -54,8 +54,7 @@ export default async function Page({ searchParams }: PageProps) {
   const validatedStatuses = validateTransactionStatuses(params.statuses);
   const validatedCategories = validateTransactionCategories(params.categories);
 
-  const listFilters = {
-    limit,
+  const transactionFilters = {
     search: params.search?.trim() || undefined,
     type: validatedType,
     status: validatedStatuses,
@@ -68,17 +67,27 @@ export default async function Page({ searchParams }: PageProps) {
     minAmount: parseOptionalNumber(params.amountMin),
     maxAmount: parseOptionalNumber(params.amountMax),
   };
+  const listFilters = {
+    ...transactionFilters,
+    limit,
+  };
 
-  void prefetchInfinite(
+  prefetch(
     trpc.payments.transactions.list.infiniteQueryOptions(listFilters, {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     }),
   );
 
-  void prefetch(trpc.payments.accounts.listAll.queryOptions());
+  prefetch(
+    trpc.payments.transactions.monthlySummaries.queryOptions(
+      transactionFilters,
+    ),
+  );
+
+  prefetch(trpc.payments.accounts.listAll.queryOptions());
 
   if (params.focusTransactionId) {
-    void prefetch(
+    prefetch(
       trpc.payments.transactions.getById.queryOptions({
         transactionId: params.focusTransactionId,
       }),

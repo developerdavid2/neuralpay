@@ -3,7 +3,7 @@
 import type { AppRouter } from "@neuralpay/api-gateway/router";
 import { webEnv } from "@neuralpay/env/web";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { createTRPCClient, httpBatchLink, httpLink } from "@trpc/client";
 import { createTRPCContext } from "@trpc/tanstack-react-query";
 import { useState } from "react";
 import superjson from "superjson";
@@ -19,15 +19,28 @@ export function getQueryClient() {
   return browserQueryClient;
 }
 
-export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
+// function getUrl() {
+//   const base = (() => {
+//     if (typeof window !== "undefined") return "";
+//     if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+//     return webEnv.NEXT_PUBLIC_SERVER_URL! ?? "http://localhost:4000";
+//   })();
+//   return `${base}/v1/trpc`;
+// }
+
+export function TRPCReactProvider(
+  props: Readonly<{
+    children: React.ReactNode;
+  }>,
+) {
   const queryClient = getQueryClient();
 
   const [trpcClient] = useState(() =>
     createTRPCClient<AppRouter>({
       links: [
-        httpBatchLink({
+        httpLink({
           transformer: superjson,
-          url: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
+          url: webEnv.NEXT_PUBLIC_SERVER_URL + "/v1/trpc",
           fetch(url, options) {
             return fetch(url, { ...options, credentials: "include" });
           },
@@ -39,7 +52,7 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-        {children}
+        {props.children}
       </TRPCProvider>
     </QueryClientProvider>
   );

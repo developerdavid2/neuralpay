@@ -11,15 +11,11 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 export function RecentInsights() {
-  const { insights, isLoading } = useRecentInsights();
+  const { insights } = useRecentInsights();
   const { handleDismiss, handleOpen, handleChat, isDismissing } =
     useRecentInsightNavigation();
 
   const hasInsights = insights.length > 0;
-
-  if (isLoading) {
-    return <RecentInsightsSkeleton />;
-  }
 
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm overflow-hidden h-full">

@@ -57,6 +57,7 @@ const transactionFilterFields = {
 export const transactionsFilterSchema = z.object({
   limit: z.number().int().min(1).max(50).default(20),
   cursor: z.string().optional(),
+  direction: z.enum(["forward", "backward"]).optional(),
   ...transactionFilterFields,
 });
 

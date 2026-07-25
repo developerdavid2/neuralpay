@@ -44,12 +44,12 @@ const Page = async ({ searchParams }: PageProps) => {
     isManual: params.isManual === "true" ? true : undefined,
   };
 
-  void prefetch(trpc.payments.accounts.list.queryOptions(listFilters));
+  prefetch(trpc.payments.accounts.list.queryOptions(listFilters));
 
-  void prefetch(trpc.payments.accounts.aggregateByType.queryOptions());
+  prefetch(trpc.payments.accounts.aggregateByType.queryOptions());
 
   if (params.focusAccountId) {
-    void prefetch(
+    prefetch(
       trpc.payments.accounts.getById.queryOptions({
         accountId: params.focusAccountId,
       }),

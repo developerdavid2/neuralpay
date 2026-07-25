@@ -1,10 +1,11 @@
-// app/dashboard/page.tsx
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { TRANSACTIONS_LIMIT } from "@/modules/dashboard/constants";
-import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
-import { HydrateClient, safePrefetch, trpc } from "@/trpc/trpc-server";
 import { getServerSession } from "@/lib/auth-server";
+import {
+  INSIGHTS_LIMIT,
+  TRANSACTIONS_LIMIT,
+} from "@/modules/dashboard/constants";
+import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
+import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -16,35 +17,30 @@ export default async function Page() {
 
   const now = new Date();
 
-  void safePrefetch(trpc.payments.accounts.aggregateByType.queryOptions());
-  void safePrefetch(trpc.payments.accounts.list.queryOptions());
-  void safePrefetch(
-    trpc.payments.transactions.currentMonthSpending.queryOptions(),
-  );
-  void safePrefetch(
+  prefetch(trpc.payments.accounts.aggregateByType.queryOptions());
+  prefetch(trpc.payments.accounts.list.queryOptions());
+  prefetch(trpc.payments.transactions.currentMonthSpending.queryOptions());
+  prefetch(
     trpc.payments.transactions.recent.queryOptions({
       limit: TRANSACTIONS_LIMIT,
     }),
   );
-  void safePrefetch(
+  prefetch(
     trpc.payments.transactions.spendingOverview.queryOptions({
       period: "7d",
     }),
   );
-  void safePrefetch(
+  prefetch(
     trpc.payments.transactions.spendingOverview.queryOptions({
       period: "30d",
     }),
   );
-  void safePrefetch(
+  prefetch(
     trpc.payments.transactions.spendingOverview.queryOptions({
       period: "90d",
     }),
   );
-  void safePrefetch(
-    trpc.ai.insights.recent.queryOptions({ limit: TRANSACTIONS_LIMIT }),
-  );
-  void safePrefetch(
+  prefetch(
     trpc.payments.transactions.topCategories.queryOptions({
       month: now.getMonth() + 1,
       year: now.getFullYear(),
@@ -52,6 +48,7 @@ export default async function Page() {
     }),
   );
 
+  prefetch(trpc.ai.insights.recent.queryOptions({ limit: INSIGHTS_LIMIT }));
   return (
     <HydrateClient>
       <DashboardView />

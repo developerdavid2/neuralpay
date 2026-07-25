@@ -19,7 +19,7 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
 
-  void prefetchInfinite(
+  prefetchInfinite(
     trpc.ai.coach.sessions.infiniteQueryOptions(
       {
         search: params.search ?? undefined,
@@ -37,7 +37,7 @@ export default async function Page({ searchParams }: PageProps) {
     ),
   );
 
-  void prefetch(trpc.ai.coach.usage.queryOptions());
+  prefetch(trpc.ai.coach.usage.queryOptions());
 
   return (
     <HydrateClient>
