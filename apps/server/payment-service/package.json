@@ -15,7 +15,7 @@
   "scripts": {
     "dev": "PORT=4002 bun run --hot src/local.ts",
     "build": "tsup",
-    "start": "node dist/serverless.js",
+  "start": "node dist/render.js",
     "check-types": "tsc -b"
   },
   "dependencies": {
