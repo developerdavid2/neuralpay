@@ -22,6 +22,32 @@ const fontNexa = localFont({
   preload: true,
 });
 
+// Primary Rostex Font (Regular & Oblique)
+const fontRostex = localFont({
+  src: [
+    { path: "./fonts/Rostex-Regular.otf", weight: "400", style: "normal" },
+    { path: "./fonts/Rostex-Oblique.otf", weight: "400", style: "italic" },
+  ],
+  variable: "--font-rostex",
+  display: "swap",
+  preload: true,
+});
+
+// Separate Font Variable specifically for Outline variants
+const fontRostexOutline = localFont({
+  src: [
+    { path: "./fonts/Rostex-Outline.otf", weight: "400", style: "normal" },
+    {
+      path: "./fonts/Rostex-Oblique-Outline.otf",
+      weight: "400",
+      style: "italic",
+    },
+  ],
+  variable: "--font-rostex-outline",
+  display: "swap",
+  preload: true,
+});
+
 export const metadata: Metadata = {
   title: "neuralpay",
   description: "neuralpay",
@@ -32,7 +58,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${fontNexa.variable} antialiased`}>
+      <body
+        className={`${fontNexa.variable} ${fontRostex.variable} ${fontRostexOutline.variable} antialiased`}
+      >
         <Providers>
           <div className="grid grid-rows-[auto_1fr] h-svh">{children}</div>
         </Providers>

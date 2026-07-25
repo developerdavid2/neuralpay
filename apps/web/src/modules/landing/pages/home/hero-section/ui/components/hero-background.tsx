@@ -1,21 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
+import MagicRings from "@neuralpay/ui/components/react-bits/magic-rings";
 import dynamic from "next/dynamic";
-import GradualBlur from "@neuralpay/ui/components/react-bits/gradual-blur";
+import { useEffect, useState } from "react";
 
-// LightRays pulls in the `ogl` WebGL library. Code-splitting it out with
-// next/dynamic + ssr:false means that JS chunk is never fetched for
-// mobile users or anyone with reduced-motion — it only downloads when
-// <LightRays /> actually mounts below.
 const LightRays = dynamic(
   () => import("@neuralpay/ui/components/react-bits/light-rays"),
   { ssr: false },
 );
 
 export default function HeroBackground() {
-  // Effects are opt-in: disabled for reduced-motion users and on small
-  // screens, where a WebGL canvas is both unnecessary and a battery cost.
   const [effectsEnabled, setEffectsEnabled] = useState(true);
 
   useEffect(() => {
@@ -40,22 +35,36 @@ export default function HeroBackground() {
   }, []);
 
   return (
-    <div className="absolute inset-0 z-0">
-      {/* Base gradient — always present. This alone is a complete,
-          calm background; the rays on top are a bonus, not a dependency. */}
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+      {/*Centered 5px Violet Line at Top */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 h-1.25 w-24 rounded-b-sm bg-violet-400 shadow-[0_0_15px_rgba(196,181,253,0.8)]" />
+
+      {/*  Base Gradient Background  */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 z-0"
         style={{
-          background:
-            "radial-gradient(120% 90% at 50% -10%, rgba(196,181,253,0.10) 0%, rgba(5,5,8,0) 55%), #050508",
+          background: `linear-gradient(180deg, rgba(196, 181, 253, 0.12) 0%, rgba(150, 190, 246, 0.03) 40%, ${LANDING_THEME.bg} 80%)`,
         }}
       />
 
+      {/* Volumetric Light Ray Discs */}
+      <div className="absolute -top-32 left-1/2 -translate-x-1/2 size-125 rounded-full bg-violet-500/15 blur-[130px] pointer-events-none z-1" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-87.5 w-87.5 md:h-137.5 md:w-137.5 rounded-full bg-indigo-500/10 blur-[150px] pointer-events-none z-1" />
+
+      {/* Architectural Columns */}
+      <div className="absolute inset-0 z-2 mx-auto grid w-full max-w-360 grid-cols-5 px-4 pointer-events-none mask-[radial-gradient(ellipse_80%_80%_at_50%_50%,#000_60%,transparent_100%)]">
+        <div className="h-full border-l border-r border-white/5" />
+        <div className="h-full border-r border-white/5" />
+        <div className="h-full border-r border-white/5" />
+        <div className="h-full border-r border-white/5" />
+        <div className="h-full border-r border-white/5" />
+      </div>
+
       {effectsEnabled && (
-        <div className="absolute inset-0 opacity-60">
+        <div className="absolute inset-0 z-10 opacity-60">
           <LightRays
             raysOrigin="top-center"
-            raysColor="#C4B5FD"
+            raysColor={LANDING_THEME.violet400}
             raysSpeed={0.4}
             lightSpread={1.4}
             rayLength={1.0}
@@ -69,6 +78,32 @@ export default function HeroBackground() {
           />
         </div>
       )}
+
+      <div className="absolute w-full h-full z-4 flex items-center justify-center overflow-hidden">
+        <MagicRings
+          color={LANDING_THEME.violet600}
+          colorTwo={LANDING_THEME.foreground}
+          ringCount={8}
+          speed={1}
+          attenuation={10}
+          lineThickness={2}
+          baseRadius={0.35}
+          radiusStep={0.1}
+          scaleRate={0.1}
+          opacity={0.2}
+          blur={0}
+          noiseAmount={0.1}
+          rotation={0}
+          ringGap={1.5}
+          fadeIn={0.7}
+          fadeOut={0.5}
+          followMouse={false}
+          mouseInfluence={0.2}
+          hoverScale={1.2}
+          parallax={0.05}
+          clickBurst={false}
+        />
+      </div>
     </div>
   );
 }

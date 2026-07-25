@@ -36,6 +36,7 @@
     "firebase": "^12.15.0",
     "input-otp": "^1.4.2",
     "lucide-react": "catalog:",
+    "motion": "^12.42.2",
     "next": "^16.2.0",
     "next-themes": "catalog:",
     "qrcode.react": "^4.2.0",

@@ -10,6 +10,10 @@
 @theme inline {
   --font-sans: var(--font-nexa);
   --font-heading: var(--font-nexa);
+
+  --font-rostex: var(--font-rostex);
+  --font-rostex-outline: var(--font-rostex-outline);
+
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
   --color-background: var(--background);
@@ -55,6 +59,38 @@
   /* Custom Color */
   --color-main: var(--main);
   --color-main-tint: var(--main-tint);
+
+  /* -------------------------------------------------------------------------- */
+  /* LANDING PAGE UNIFIED COLOR PALETTE                                         */
+  /* Screen Breakpoints */
+  --breakpoint-3xl: 1920px;
+  --breakpoint-4xl: 2560px;
+  /* Surfaces & Backgrounds */
+  --color-landing-bg: #0e0c15;
+  --color-landing-card: #2c2242;
+  --color-landing-popover: #1d172e;
+
+  /* Typography */
+  --color-landing-foreground: #ffffff;
+  --color-landing-muted-foreground: #a1a1aa;
+
+  /* Borders & Dividers */
+  --color-landing-border: rgba(255, 255, 255, 0.1);
+  --color-landing-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-landing-border-glow: rgba(196, 181, 253, 0.3);
+
+  /* Brand Accents */
+  --color-landing-violet-400: #c4b5fd;
+  --color-landing-violet-500: #8b5cf6;
+  --color-landing-violet-600: #a684ff;
+  --color-landing-indigo: #6366f1;
+  --color-landing-indigo-300: #a78bfa;
+
+  /* Status Colors */
+  --color-landing-emerald: #10b981;
+  --color-landing-orange: #f97316;
+
+  --animate-spin-slow: spin 15s linear infinite;
 }
 
 :root {
