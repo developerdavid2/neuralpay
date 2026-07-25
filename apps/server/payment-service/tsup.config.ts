@@ -2,8 +2,12 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["src/serverless.ts"],
-  noExternal: [/@neuralpay\/(?!redis)/],
-  external: ["@neuralpay/redis", "ioredis", "bullmq", "rate-limiter-flexible"],
+  noExternal: [/@neuralpay/],
+  external: [
+    "ioredis",             
+    "bullmq",
+    "rate-limiter-flexible",
+  ],
   splitting: false,
   bundle: true,
   outDir: "dist",
@@ -12,4 +16,10 @@ export default defineConfig({
   sourcemap: false,
   format: ["esm"],
   target: "node20",
+  banner: {
+    js: `
+import { createRequire as _createRequire } from 'module';
+const require = _createRequire(import.meta.url);
+`,
+  },
 });
