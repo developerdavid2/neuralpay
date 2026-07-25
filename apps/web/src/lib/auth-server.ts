@@ -1,6 +1,6 @@
 // lib/auth-server.ts
 import type { Route } from "next";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export interface Session {
@@ -21,43 +21,44 @@ export interface Session {
 
 export const getServerSession = async (): Promise<Session | null> => {
   try {
-    const headersList = await headers();
-    const cookie = headersList.get("cookie");
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
 
-    console.log("[getServerSession] cookie:", cookie?.substring(0, 50));
+    if (allCookies.length === 0) {
+      console.log("[getServerSession] no cookies found");
+      return null;
+    }
 
-    if (!cookie) return null;
+    // Reconstruct cookie header string
+    const cookieHeader = allCookies
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
+
+    console.log(
+      "[getServerSession] cookies found:",
+      allCookies.map((c) => c.name),
+    );
 
     const appUrl = new URL(
       process.env.NEXT_PUBLIC_APP_URL ?? "https://neuralpayai.vercel.app",
     );
-    const serverUrl = process.env.SERVER_URL;
 
-    console.log(
-      "[getServerSession] fetching from:",
-      `${serverUrl}/v1/auth/get-session`,
+    const response = await fetch(
+      `${process.env.SERVER_URL}/v1/auth/get-session`,
+      {
+        headers: {
+          cookie: cookieHeader,
+          "x-forwarded-host": appUrl.host,
+          "x-forwarded-proto": "https",
+        },
+        cache: "no-store",
+      },
     );
 
-    const response = await fetch(`${serverUrl}/v1/auth/get-session`, {
-      headers: {
-        cookie,
-        "x-forwarded-host": appUrl.host,
-        "x-forwarded-proto": "https",
-      },
-      cache: "no-store",
-    });
-
     console.log("[getServerSession] status:", response.status);
+    if (!response.ok) return null;
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.log("[getServerSession] error:", text);
-      return null;
-    }
-
-    const data = await response.json();
-    console.log("[getServerSession] user:", (data as any)?.user?.id);
-    return data ?? null;
+    return (await response.json()) ?? null;
   } catch (error) {
     console.error("[getServerSession] threw:", error);
     return null;
