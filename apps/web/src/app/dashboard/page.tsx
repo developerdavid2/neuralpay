@@ -9,7 +9,6 @@ import { getServerSession } from "@/lib/auth-server";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  // ✅ Check session first — if null, redirect
   const session = await getServerSession();
   if (!session) {
     redirect("/auth/signin");

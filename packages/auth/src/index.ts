@@ -182,6 +182,12 @@ export function createAuth(config: AuthConfig) {
 
     advanced: {
       trustedProxyHeaders: true,
+      defaultCookieAttributes: {
+        secure: true,
+        httpOnly: true,
+        sameSite: "none",
+        partitioned: true,
+      },
     },
   });
 }
