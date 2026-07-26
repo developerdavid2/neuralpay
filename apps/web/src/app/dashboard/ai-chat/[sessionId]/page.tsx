@@ -20,10 +20,8 @@ export default async function Page({ params, searchParams }: PageProps) {
   const { sessionId } = await params;
   const { initialMessage } = await searchParams;
 
-  void prefetch(
-    trpc.ai.coach.sessionById.queryOptions({ sessionId, limit: 50 }),
-  );
-  void prefetchInfinite(
+  prefetch(trpc.ai.coach.sessionById.queryOptions({ sessionId, limit: 50 }));
+  prefetch(
     trpc.ai.coach.getMessages.infiniteQueryOptions(
       { sessionId, limit: CHAT_SESSION_MESSAGES },
       { getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined },

@@ -19,7 +19,7 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
 
-  prefetchInfinite(
+  prefetch(
     trpc.ai.coach.sessions.infiniteQueryOptions(
       {
         search: params.search ?? undefined,

@@ -37,7 +37,7 @@ const Page = async ({ searchParams }: PageProps) => {
 
   const limit = Math.min(parsePositiveInt(params.limit, 20), 50);
 
-  prefetchInfinite(
+  prefetch(
     trpc.notifications.appNotifications.list.infiniteQueryOptions(
       {
         limit,

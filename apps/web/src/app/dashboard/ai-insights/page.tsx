@@ -40,7 +40,7 @@ export default async function Page({ searchParams }: PageProps) {
     search: params.search ?? "",
   };
 
-  prefetchInfinite(
+  prefetch(
     trpc.ai.insights.list.infiniteQueryOptions(listFilters, {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     }),
