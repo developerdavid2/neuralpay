@@ -32,12 +32,6 @@ export async function authMiddleware(
       return next();
     }
 
-    console.log(
-      "[authMiddleware] fetching session from:",
-      `${gatewayEnv.USER_SERVICE_URL}/api/auth/get-session`,
-    );
-    console.log("[authMiddleware] cookie present:", !!cookie);
-
     const sessionRes = await fetch(
       `${gatewayEnv.USER_SERVICE_URL}/api/auth/get-session`,
       {
@@ -51,16 +45,11 @@ export async function authMiddleware(
       },
     );
 
-    console.log("[authMiddleware] session response status:", sessionRes.status);
-
     if (!sessionRes.ok) {
-      const text = await sessionRes.text();
-      console.log("[authMiddleware] session error:", text);
       return next();
     }
 
     const session = (await sessionRes.json()) as SessionResponse | null;
-    console.log("[authMiddleware] session user:", session?.user?.id ?? "null");
 
     if (session?.user) {
       attachUserHeaders(req, session);
