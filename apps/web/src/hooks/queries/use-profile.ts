@@ -11,6 +11,9 @@ export function useProfile() {
     isError,
   } = useQuery({
     ...trpc.users.profile.me.queryOptions(),
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   return {

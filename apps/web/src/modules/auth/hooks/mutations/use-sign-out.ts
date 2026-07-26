@@ -1,7 +1,19 @@
+"use client";
+
 import { useTRPC } from "@/trpc/trpc-client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 export function useSignOut() {
   const trpc = useTRPC();
-  return useMutation(trpc.users.auth.signOut.mutationOptions());
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    ...trpc.users.auth.signOut.mutationOptions(),
+    onSuccess: () => {
+      queryClient.clear();
+      router.replace("/auth/signin");
+    },
+  });
 }
