@@ -1,3 +1,4 @@
+// client.ts
 import { Redis } from "ioredis";
 
 let redis: InstanceType<typeof Redis> | null = null;
@@ -11,10 +12,10 @@ export function getRedisClient(url?: string): InstanceType<typeof Redis> {
   redis = new Redis(redisUrl, {
     maxRetriesPerRequest: null,
     lazyConnect: true,
-    enableReadyCheck: true,
+    enableReadyCheck: false,
     retryStrategy: (times) => {
-      const delay = Math.min(times * 50, 2000);
-      return delay;
+      if (times > 3) return null;
+      return Math.min(times * 200, 2000);
     },
   });
 
@@ -27,8 +28,12 @@ export function getRedisClient(url?: string): InstanceType<typeof Redis> {
 
 export async function closeRedis(): Promise<void> {
   if (redis) {
-    await redis.quit();
-    redis = null;
+    try {
+      await redis.quit();
+    } catch {
+    } finally {
+      redis = null;
+    }
   }
 }
 

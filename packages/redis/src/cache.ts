@@ -1,3 +1,4 @@
+// cache.ts
 import { getRedisClient } from "./client";
 
 export interface CacheOptions {
@@ -6,11 +7,14 @@ export interface CacheOptions {
 }
 
 export class Cache {
-  private redis = getRedisClient();
   private defaultPrefix: string;
 
   constructor(prefix = "neuralpay") {
     this.defaultPrefix = prefix;
+  }
+
+  private get redis() {
+    return getRedisClient();
   }
 
   private buildKey(key: string, prefix?: string): string {
@@ -18,13 +22,17 @@ export class Cache {
   }
 
   async get<T>(key: string, prefix?: string): Promise<T | null> {
-    const fullKey = this.buildKey(key, prefix);
-    const hit = await this.redis.get(fullKey);
-    if (!hit) return null;
     try {
-      return JSON.parse(hit) as T;
+      const fullKey = this.buildKey(key, prefix);
+      const hit = await this.redis.get(fullKey);
+      if (!hit) return null;
+      try {
+        return JSON.parse(hit) as T;
+      } catch {
+        return hit as unknown as T;
+      }
     } catch {
-      return hit as unknown as T;
+      return null;
     }
   }
 
@@ -34,23 +42,29 @@ export class Cache {
     ttlSeconds: number,
     prefix?: string,
   ): Promise<void> {
-    const fullKey = this.buildKey(key, prefix);
-    const serialized =
-      typeof value === "string" ? value : JSON.stringify(value);
-    await this.redis.setex(fullKey, ttlSeconds, serialized);
+    try {
+      const fullKey = this.buildKey(key, prefix);
+      const serialized =
+        typeof value === "string" ? value : JSON.stringify(value);
+      await this.redis.setex(fullKey, ttlSeconds, serialized);
+    } catch {}
   }
 
   async del(key: string, prefix?: string): Promise<void> {
-    const fullKey = this.buildKey(key, prefix);
-    await this.redis.del(fullKey);
+    try {
+      const fullKey = this.buildKey(key, prefix);
+      await this.redis.del(fullKey);
+    } catch {}
   }
 
   async delPattern(pattern: string, prefix?: string): Promise<void> {
-    const fullPattern = this.buildKey(pattern, prefix);
-    const keys = await this.redis.keys(fullPattern);
-    if (keys.length > 0) {
-      await this.redis.del(...keys);
-    }
+    try {
+      const fullPattern = this.buildKey(pattern, prefix);
+      const keys = await this.redis.keys(fullPattern);
+      if (keys.length > 0) {
+        await this.redis.del(...keys);
+      }
+    } catch {}
   }
 
   async getOrSet<T>(
@@ -59,12 +73,16 @@ export class Cache {
     ttlSeconds: number,
     prefix?: string,
   ): Promise<T> {
-    const cached = await this.get<T>(key, prefix);
-    if (cached !== null) return cached;
+    try {
+      const cached = await this.get<T>(key, prefix);
+      if (cached !== null) return cached;
 
-    const data = await fn();
-    await this.set(key, data, ttlSeconds, prefix);
-    return data;
+      const data = await fn();
+      await this.set(key, data, ttlSeconds, prefix);
+      return data;
+    } catch {
+      return fn();
+    }
   }
 
   async invalidateUserCache(userId: string): Promise<void> {
@@ -73,10 +91,8 @@ export class Cache {
   }
 }
 
-// Singleton instance
 export const cache = new Cache();
 
-// Convenience function for one-off caching
 export async function cached<T>(
   key: string,
   ttlSeconds: number,
