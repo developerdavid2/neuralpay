@@ -34,13 +34,18 @@ export function TRPCReactProvider(
   }>,
 ) {
   const queryClient = getQueryClient();
+  const isProd =
+    webEnv.NEXT_PUBLIC_APP_URL.includes("vercel.app") ||
+    !webEnv.NEXT_PUBLIC_APP_URL.includes("localhost");
 
   const [trpcClient] = useState(() =>
     createTRPCClient<AppRouter>({
       links: [
         httpLink({
           transformer: superjson,
-          url: "/api/trpc",
+          url: isProd
+            ? `/api/trpc`
+            : `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/trpc`,
           fetch(url, options) {
             return fetch(url, { ...options, credentials: "include" });
           },
