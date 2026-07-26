@@ -8,16 +8,20 @@ export function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60 * 1000,
-        gcTime: 5 * 60 * 1000,
-        retry: false,
+        staleTime: 1000 * 60,
+        retry: 1,
         refetchOnWindowFocus: false,
       },
       dehydrate: {
         serializeData: superjson.serialize,
-        shouldDehydrateQuery: (query) =>
-          defaultShouldDehydrateQuery(query) ||
-          query.state.status === "pending",
+        shouldDehydrateQuery: (query) => {
+          if (query.state.status === "error") return false;
+          return (
+            defaultShouldDehydrateQuery(query) ||
+            query.state.status === "pending"
+          );
+        },
+        shouldDehydrateMutation: () => false,
       },
       hydrate: {
         deserializeData: superjson.deserialize,
