@@ -1,5 +1,5 @@
-import { HydrateClient, prefetchInfinite, trpc } from "@/trpc/trpc-server";
 import { NotificationsView } from "@/modules/notifications/ui/views/notifications-view";
+import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 import { NOTIFICATION_CATEGORY } from "@neuralpay/types";
 
 export const dynamic = "force-dynamic";
