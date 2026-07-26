@@ -9,6 +9,7 @@ const schema = z.object({
   PLAID_ENV: z.enum(["sandbox", "development", "production"]),
   ENCRYPTION_KEY: z.string().min(1),
   MONO_SECRET_KEY: z.string().optional(),
+  REDIS_URL: z.string().default("redis://localhost:6379"),
 });
 
 const parsed = schema.safeParse(process.env);
