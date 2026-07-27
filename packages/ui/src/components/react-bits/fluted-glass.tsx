@@ -36,14 +36,11 @@ export const FlutedGlass = ({
       className={`relative w-full overflow-hidden ${className}`}
       {...props}
     >
-      {/* ========================================================================= */}
-      {/* FLUTED GLASS SLATS (Refracts whatever WebGL/Canvas is directly underneath) */}
-      {/* ========================================================================= */}
       <div className="absolute inset-0 z-0 flex w-full h-full pointer-events-none">
         {Array.from({ length: numOfPanes }).map((_, i) => (
           <div
             key={`fluted-pane-${i}`}
-            className="relative h-[120%] -top-[10%] flex-1 border-l border-black/5"
+            className="relative h-[120%] top-[-10%] flex-1"
             style={{
               backdropFilter: `blur(${blurAmount})`,
               WebkitBackdropFilter: `blur(${blurAmount})`,
@@ -54,14 +51,13 @@ export const FlutedGlass = ({
             }}
           >
             {/* Specular Edge Highlights & Depth Shadows */}
-            {/* <div className="absolute inset-y-0 left-0 w-px bg-white/10" /> */}
-            <div className="absolute inset-y-0 right-0 w-px bg-black/50" />
-            <div className="absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-gray-600/4 to-transparent pointer-events-none" />
+            <div className="absolute inset-y-0 left-0 w-px bg-white/10" />
+            {/* <div className="absolute inset-y-0 right-0 w-px bg-background" /> */}
           </div>
         ))}
       </div>
 
-      <div className="relative z-10 w-full">{children}</div>
+      <div className="relative z-10 w-full h-full!">{children}</div>
     </div>
   );
 };

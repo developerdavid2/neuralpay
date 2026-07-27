@@ -1,6 +1,6 @@
 export const LANDING_THEME = {
   // Surfaces & Backgrounds
-  bg: "#0E0C15",
+  bg: "#3E3650",
   card: "#2c2242", // Elevate/Glassmorphic cards
   popover: "#1d172e", // Dropdowns / Modals
 

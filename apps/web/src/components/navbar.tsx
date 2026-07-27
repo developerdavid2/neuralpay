@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { NeuralPayLogo } from "./logo";
+import { ModeToggle } from "./mode-toggle";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,10 +35,10 @@ export default function Navbar() {
     <>
       {/* Header Bar */}
       <header
-        className={`fixed top-0 left-0 right-0 z-60  py-5 
+        className={`fixed top-0 left-0 right-0 z-60  
      transition-all duration-300 ${
        isScrolled && !isOpen
-         ? "bg-landing-bg/60 backdrop-blur-xl border-b border-white/10 shadow-lg"
+         ? "bg-background/20 backdrop-blur-xl border-b border-white/10 shadow-sm"
          : "bg-transparent border-b border-transparent"
      }`}
       >
@@ -45,30 +46,33 @@ export default function Navbar() {
           <NeuralPayLogo size={62} showText={false} />
 
           {/* Menu Toggle Button (Stays above the full-screen overlay) */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle Menu"
-            className="relative z-[70] flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs uppercase tracking-widest text-white backdrop-blur-md transition hover:bg-white/20 border border-white/10"
-          >
-            <span>{isOpen ? "Close" : "Menu"}</span>
-            <div className="flex flex-col gap-1 w-4">
-              <span
-                className={`h-0.5 w-full bg-white transition-transform duration-300 ${
-                  isOpen ? "rotate-45 translate-y-1.5" : ""
-                }`}
-              />
-              <span
-                className={`h-0.5 w-full bg-white transition-opacity duration-300 ${
-                  isOpen ? "opacity-0" : ""
-                }`}
-              />
-              <span
-                className={`h-0.5 w-full bg-white transition-transform duration-300 ${
-                  isOpen ? "-rotate-45 -translate-y-1.5" : ""
-                }`}
-              />
-            </div>
-          </button>
+          <div className="flex items-center justify-center">
+            <ModeToggle />
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle Menu"
+              className="relative z-[70] flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs uppercase tracking-widest text-white backdrop-blur-md transition hover:bg-white/20 border border-white/10"
+            >
+              <span>{isOpen ? "Close" : "Menu"}</span>
+              <div className="flex flex-col gap-1 w-4">
+                <span
+                  className={`h-0.5 w-full bg-white transition-transform duration-300 ${
+                    isOpen ? "rotate-45 translate-y-1.5" : ""
+                  }`}
+                />
+                <span
+                  className={`h-0.5 w-full bg-white transition-opacity duration-300 ${
+                    isOpen ? "opacity-0" : ""
+                  }`}
+                />
+                <span
+                  className={`h-0.5 w-full bg-white transition-transform duration-300 ${
+                    isOpen ? "-rotate-45 -translate-y-1.5" : ""
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
         </div>
       </header>
 
