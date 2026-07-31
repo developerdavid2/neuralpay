@@ -13,8 +13,8 @@ export const MOCK_TIME_SERIES = [
 export const MOCK_PIE = [
   { name: "Food", val: 35, color: LANDING_THEME.violet500 },
   { name: "Bills", val: 25, color: LANDING_THEME.indigo },
-  { name: "Tech", val: 20, color: "#a78bfa" },
-  { name: "Travel", val: 20, color: "#f0b100" },
+  { name: "Tech", val: 20, color: LANDING_THEME.bg },
+  { name: "Travel", val: 20, color: "#ceb861" },
 ];
 
 export const TRANSACTIONS = [
@@ -44,5 +44,39 @@ export const TRANSACTIONS = [
     amount: "+$420.00",
     icon: "💳",
     bg: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  },
+];
+
+export const AGENT_SCENARIOS = [
+  {
+    prompt: "How much did I spend dining out this week?",
+    response:
+      "You spent $184.50 across 4 places. That's 12% lower than last week!",
+    tags: [
+      { label: "Uber Eats", amount: "-$42.10", color: "text-white" },
+      { label: "Starbucks", amount: "-$14.20", color: "text-chart-3" },
+    ],
+  },
+  {
+    prompt: "Split last night's $120 dinner bill with Alex & Sarah.",
+    response:
+      "Requested $40.00 each via Neural Pay split. Links sent automatically.",
+    tags: [
+      { label: "Alex (Pending)", amount: "+$40.00", color: "text-white" },
+      {
+        label: "Sarah (Cleared)",
+        amount: "+$40.00",
+        color: "text-emerald-400",
+      },
+    ],
+  },
+  {
+    prompt: "Explain the $420 transaction from Stripe Connect.",
+    response:
+      "Software payout from Vault #09. Automatically allocated 20% to taxes.",
+    tags: [
+      { label: "Liquid Core", amount: "+$336.00", color: "text-white" },
+      { label: "Tax Vault", amount: "-$84.00", color: "text-emerald-400" },
+    ],
   },
 ];

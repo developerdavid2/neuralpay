@@ -102,48 +102,42 @@ export function HeroMiniChart() {
         initial="initial"
         animate="animate"
         exit="exit"
-        className="relative w-70 ml-auto rounded-2xl  p-4 backdrop-blur-xl shadow-2xl overflow-hidden text-white select-none"
+        className="relative w-70 ml-auto rounded-2xl p-4 backdrop-blur-xl shadow-md overflow-hidden select-none"
       >
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
+        <div className="flex items-center justify-between border-b border-border/10 pb-2.5 mb-3">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-main-tint opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-main"></span>
             </span>
-            <span className="text-xs font-mono font-medium tracking-wide text-white/70 uppercase">
+            <span className="text-xs font-mono font-medium tracking-wide uppercase">
               Live Analytics
             </span>
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="flex items-center gap-1 rounded-lg bg-black/40 p-1 border border-white/5">
+          <div className="flex items-center gap-1 rounded-lg bg-secondary p-1 border border-white/5">
             <button
               onClick={() => setActiveType("area")}
               className={`rounded p-1 transition-colors ${
-                activeType === "area"
-                  ? "bg-violet-500/20 text-violet-400"
-                  : "text-white/40 hover:text-white"
+                activeType === "area" && "bg-main-tint text-main"
               }`}
             >
               <Activity className="size-3" />
             </button>
             <button
               onClick={() => setActiveType("bar")}
-              className={`rounded p-1 transition-colors ${
-                activeType === "bar"
-                  ? "bg-violet-500/20 text-violet-400"
-                  : "text-white/40 hover:text-white"
+              className={`rounded p-1 transition-colors  ${
+                activeType === "area" && "bg-main-tint text-main"
               }`}
             >
               <BarChart2 className="size-3" />
             </button>
             <button
               onClick={() => setActiveType("pie")}
-              className={`rounded p-1 transition-colors ${
-                activeType === "pie"
-                  ? "bg-violet-500/20 text-violet-400"
-                  : "text-white/40 hover:text-white"
+              className={`rounded p-1 transition-colors  ${
+                activeType === "area" && "bg-main-tint text-main"
               }`}
             >
               <PieChart className="size-3" />
@@ -216,7 +210,7 @@ export function HeroMiniChart() {
                   <Bar
                     dataKey="val"
                     name="Volume"
-                    fill="#6366f1"
+                    fill="#464555"
                     radius={[4, 4, 0, 0]}
                     maxBarSize={18}
                   />
@@ -257,7 +251,7 @@ export function HeroMiniChart() {
         </div>
 
         {/* Mini Bottom Metrics Footer */}
-        <div className="mt-2 flex items-center justify-between border-t border-white/5 pt-2 text-[10px] text-white/50 font-mono">
+        <div className="mt-2 flex items-center justify-between border-t border-white/5 pt-2 text-[10px] text-muted-foreground font-mono">
           <span>Volume Peak: $1,940</span>
           <span className="text-violet-400 font-semibold">+18.4%</span>
         </div>
