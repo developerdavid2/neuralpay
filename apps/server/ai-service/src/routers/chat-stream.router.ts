@@ -8,21 +8,23 @@ function getHeaderValue(headers: Request["headers"], key: string) {
   return value ?? undefined;
 }
 
-const streamRequestSchema = z.object({
-  sessionId: z.string().uuid(),
-  messages: z.array(
-    z.object({
-      role: z.enum(["user", "assistant"]),
-      parts: z.array(
+const streamRequestSchema = z
+  .object({
+    sessionId: z.string().uuid(),
+    id: z.string().optional(),
+    trigger: z.string().optional(),
+    messages: z
+      .array(
         z.object({
-          type: z.string(),
-          text: z.string().optional(),
+          role: z.string().optional(),
+          parts: z.array(z.object({}).passthrough()).optional().default([]),
+          id: z.string().optional(),
         }),
-      ),
-      id: z.string(),
-    }),
-  ),
-});
+      )
+      .optional()
+      .default([]),
+  })
+  .passthrough();
 
 export async function chatStreamHandler(
   req: Request,
@@ -54,10 +56,11 @@ export async function chatStreamHandler(
   const lastUserMessage = [...messages]
     .reverse()
     .find((m) => m.role === "user");
+
   const content =
     lastUserMessage?.parts
-      .filter((p) => p.type === "text")
-      .map((p) => p.text ?? "")
+      ?.filter((part) => typeof part?.type === "string" && part.type === "text")
+      .map((part) => (typeof part?.text === "string" ? part.text : ""))
       .join("") ?? "";
 
   if (!content) {

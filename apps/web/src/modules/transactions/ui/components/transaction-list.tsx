@@ -230,7 +230,7 @@ export function TransactionsList({
       />
 
       <div className="px-6 pb-6 overflow-y-auto flex-1 min-h-0 scrollbar-hide">
-        <Table noWrapper>
+        <div className="space-y-0">
           {sortedMonths.map((monthKey) => {
             const summary = summaryMap.get(monthKey);
             return (
@@ -250,7 +250,7 @@ export function TransactionsList({
               />
             );
           })}
-        </Table>
+        </div>
         <InfiniteScroll
           hasNextPage={hasNextPage ?? false}
           isFetchingNextPage={isFetchingNextPage}

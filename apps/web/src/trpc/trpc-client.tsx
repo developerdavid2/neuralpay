@@ -3,7 +3,12 @@
 import type { AppRouter } from "@neuralpay/api-gateway/router";
 import { webEnv } from "@neuralpay/env/web";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import { createTRPCClient, httpLink } from "@trpc/client";
+import {
+  createTRPCClient,
+  httpLink,
+  httpSubscriptionLink,
+  splitLink,
+} from "@trpc/client";
 import { createTRPCContext } from "@trpc/tanstack-react-query";
 import { useState } from "react";
 import superjson from "superjson";
@@ -38,12 +43,22 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   const [trpcClient] = useState(() =>
     createTRPCClient<AppRouter>({
       links: [
-        httpLink({
-          transformer: superjson,
-          url: getTRPCUrl(),
-          fetch(url, options) {
-            return fetch(url, { ...options, credentials: "include" });
-          },
+        splitLink({
+          condition: (op) => op.type === "subscription",
+          true: httpSubscriptionLink({
+            url: getTRPCUrl(),
+            transformer: superjson,
+            eventSourceOptions: {
+              withCredentials: true,
+            },
+          }),
+          false: httpLink({
+            transformer: superjson,
+            url: getTRPCUrl(),
+            fetch(url, options) {
+              return fetch(url, { ...options, credentials: "include" });
+            },
+          }),
         }),
       ],
     }),

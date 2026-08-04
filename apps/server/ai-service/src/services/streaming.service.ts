@@ -249,7 +249,7 @@ async function fetchSplitContext(
   return { split };
 }
 
-async function fetchContext(
+export async function fetchContext(
   userId: string,
   contextType: string,
   contextId: string | null,
@@ -297,7 +297,7 @@ async function fetchContext(
 }
 
 // ── Message History Fetcher ──
-async function fetchMessageHistory(
+export async function fetchMessageHistory(
   sessionId: string,
   userId: string,
 ): Promise<Array<{ role: "user" | "assistant"; content: string }>> {

@@ -7,6 +7,7 @@ import {
   notificationsSummarySchema,
   registerDeviceSchema,
   updatePreferencesSchema,
+  type AppNotification,
 } from "@neuralpay/types";
 import {
   getNotifications,
@@ -23,6 +24,16 @@ import {
   getUserPreferences,
   updateUserPreferences,
 } from "../services/preferences.service";
+import { tracked } from "@trpc/server";
+import { subscribeToUser } from "@neuralpay/redis";
+import { zAsyncIterable } from "../lib/zAsyncIterable";
+
+interface NotificationBroadcastPayload {
+  type: "notification.new";
+  notification: AppNotification;
+}
+
+const notificationBroadcastSchema = z.custom<NotificationBroadcastPayload>();
 
 export const appNotificationRouter = router({
   list: protectedProcedure
@@ -32,6 +43,21 @@ export const appNotificationRouter = router({
       const result = await getNotifications(ctx.session.user.id, parsed);
       if (!result.success) throw new Error(result.error);
       return result.data;
+    }),
+
+  onNew: protectedProcedure
+    .output(
+      zAsyncIterable({
+        yield: notificationBroadcastSchema,
+        tracked: true,
+      }),
+    )
+    .subscription(async function* (opts) {
+      const userId = opts.ctx.session.user.id;
+      for await (const payload of subscribeToUser(userId, opts.signal!)) {
+        const typed = payload as NotificationBroadcastPayload;
+        yield tracked(typed.notification.id, typed);
+      }
     }),
 
   unreadCount: protectedProcedure.query(async ({ ctx }) => {
@@ -78,7 +104,7 @@ export const appNotificationRouter = router({
     if (!result.success) throw new Error(result.error);
     return result.data;
   }),
-  // notification-service router
+
   summary: protectedProcedure
     .input(
       notificationsFilterSchema.omit({ cursor: true, limit: true }).optional(),

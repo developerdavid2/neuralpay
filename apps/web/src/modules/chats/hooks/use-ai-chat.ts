@@ -1,7 +1,37 @@
 import { useChat } from "@ai-sdk/react";
-import { webEnv } from "@neuralpay/env/web";
 import { DefaultChatTransport } from "ai";
+import { webEnv } from "@neuralpay/env/web";
 import { useEffect, useRef, useState } from "react";
+
+type ChatMessagePart = {
+  type: "text";
+  text: string;
+};
+
+type ChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  parts: ChatMessagePart[];
+};
+
+function normalizeChatMessages(
+  messages: Array<{
+    id: string;
+    role: string;
+    parts?: Array<{ type?: string; text?: string }>;
+  }>,
+): ChatMessage[] {
+  return messages.map((message) => ({
+    id: message.id,
+    role: message.role === "assistant" ? "assistant" : "user",
+    parts: (message.parts ?? [])
+      .filter((part) => part.type === "text")
+      .map((part) => ({
+        type: "text",
+        text: part.text ?? "",
+      })),
+  }));
+}
 
 export function useAIChat({
   sessionId,
@@ -27,18 +57,23 @@ export function useAIChat({
     if (prevSessionId.current !== sessionId) {
       prevSessionId.current = sessionId;
       hasSentInitial.current = false;
-      if (chat.messages.length > 0) {
-        chat.setMessages([]);
-      }
+      chat.setMessages([]);
+      setInput("");
     }
-  }, [sessionId]);
+  }, [chat, sessionId]);
 
   useEffect(() => {
     if (initialMessage && !hasSentInitial.current) {
       hasSentInitial.current = true;
       chat.sendMessage({ text: initialMessage });
     }
-  }, [initialMessage]);
+  }, [chat, initialMessage]);
+
+  const sendMessage = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    chat.sendMessage({ text: trimmed });
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -46,16 +81,16 @@ export function useAIChat({
 
   const handleSubmit = () => {
     if (!input.trim()) return;
-    chat.sendMessage({ text: input });
+    sendMessage(input);
     setInput("");
   };
 
   return {
-    messages: chat.messages,
+    messages: normalizeChatMessages(chat.messages),
     input,
     handleInputChange,
     handleSubmit,
-    isLoading: chat.status === "submitted" || chat.status === "streaming",
+    isLoading: chat.status === "streaming" || chat.status === "submitted",
     error: chat.error,
     setMessages: chat.setMessages,
     status: chat.status,

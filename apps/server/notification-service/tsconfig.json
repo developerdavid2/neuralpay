@@ -1,10 +1,14 @@
 {
   "extends": "@neuralpay/config/tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
     "outDir": "dist",
     "rootDir": "src",
     "types": ["node"]
+    // composite removed — this is a deployed service, not a
+    // library other workspace packages import types from.
+    // TrackedEnvelope/TrackedData from @trpc/server can't be
+    // printed to a .d.ts (known trpc limitation, GH #5484),
+    // and declaration emit isn't needed here anyway.
   },
   "include": ["src/**/*.ts"]
 }

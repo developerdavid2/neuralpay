@@ -1,106 +1,36 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useSubscription } from "@trpc/tanstack-react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/trpc-client";
-import { webEnv } from "@neuralpay/env/web";
+import { useEffect } from "react";
 
 export function useNotificationStream() {
-  const queryClient = useQueryClient();
   const trpc = useTRPC();
-  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const esRef = useRef<EventSource | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    let retryCount = 0;
-    const MAX_RETRIES = 5;
-
-    function connect() {
-      esRef.current?.close();
-
-      const isLocal = window.location.hostname === "localhost";
-      const url = isLocal
-        ? `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/notifications/stream`
-        : `/api/stream/notifications`;
-      console.log("[SSE] connecting to", url);
-
-      const es = new EventSource(url, { withCredentials: true });
-      esRef.current = es;
-
-      es.onopen = () => {
-        console.log("[SSE] ✅ connected");
-        retryCount = 0;
-
-        // Catch any notifications that arrived during the connection window
-        queryClient.invalidateQueries(
-          trpc.notifications.appNotifications.unreadCount.pathFilter(),
+  const subscription = useSubscription(
+    trpc.notifications.appNotifications.onNew.subscriptionOptions(undefined, {
+      onData: (envelope) => {
+        const notification = envelope.data.notification;
+        window.dispatchEvent(
+          new CustomEvent("inapp-notification", { detail: notification }),
         );
         queryClient.invalidateQueries(
           trpc.notifications.appNotifications.list.pathFilter(),
         );
-      };
-
-      es.onmessage = (e) => {
-        if (!e.data || e.data.startsWith(":")) {
-          console.log("[SSE] 💓 heartbeat");
-          return;
-        }
-
-        try {
-          const msg = JSON.parse(e.data);
-          console.log("[SSE] 📨 message received:", msg);
-
-          if (msg.type === "notification.new") {
-            console.log(
-              "[SSE] 🔔 new notification, updating cache + dispatching event",
-            );
-
-            // 1. Instant UI feedback via custom event (optimistic bell bump)
-            window.dispatchEvent(
-              new CustomEvent("inapp-notification", {
-                detail: msg.notification,
-              }),
-            );
-
-            // 2. Background cache sync
-            queryClient.invalidateQueries(
-              trpc.notifications.appNotifications.list.pathFilter(),
-            );
-            queryClient.invalidateQueries(
-              trpc.notifications.appNotifications.unreadCount.pathFilter(),
-            );
-          }
-        } catch (err) {
-          console.error("[SSE] ❌ failed to parse message:", e.data, err);
-        }
-      };
-
-      es.onerror = (err) => {
-        console.warn("[SSE] ⚠️ connection error, closing:", err);
-        es.close();
-        esRef.current = null;
-
-        if (retryCount >= MAX_RETRIES) {
-          console.warn("[SSE] 🛑 max retries reached, giving up");
-          return;
-        }
-
-        const delay = Math.min(1000 * 2 ** retryCount, 30_000);
-        retryCount++;
-        console.log(
-          `[SSE] 🔄 reconnecting in ${delay}ms (attempt ${retryCount}/${MAX_RETRIES})`,
+        queryClient.invalidateQueries(
+          trpc.notifications.appNotifications.unreadCount.pathFilter(),
         );
-        reconnectTimer.current = setTimeout(connect, delay);
-      };
-    }
+      },
+      onError: (err) => console.error("[notification subscription]", err),
+      onStarted: () => console.log("[notification subscription] started"),
+    }),
+  );
 
-    connect();
+  useEffect(() => {
+    console.log("[notification subscription] status:", subscription.status);
+  }, [subscription.status]);
 
-    return () => {
-      console.log("[SSE] 🔌 cleanup — closing connection");
-      esRef.current?.close();
-      esRef.current = null;
-      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
-    };
-  }, [queryClient, trpc]);
+  return subscription;
 }

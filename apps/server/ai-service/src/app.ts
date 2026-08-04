@@ -1,12 +1,14 @@
-import * as trpcExpress from "@trpc/server/adapters/express";
 import { createExpressApp } from "@neuralpay/config/express-config";
-import { aiRouter } from "./routers";
 import { aiServiceEnv } from "@neuralpay/env/ai-service";
-import { createContext } from "./trpc/context";
+import * as trpcExpress from "@trpc/server/adapters/express";
 import { chatStreamHandler } from "./routers/chat-stream.router";
+import { aiRouter } from "./routers";
+import { createContext } from "./trpc/context";
 
 const PORT = Number(aiServiceEnv.PORT) || 4003;
 const app = createExpressApp({ serviceName: "ai-service", port: PORT });
+
+app.post("/chat/stream", chatStreamHandler);
 
 app.use(
   "/trpc",
@@ -20,8 +22,5 @@ app.use(
     },
   }),
 );
-
-// Must be after body-parser middleware
-app.post("/chat/stream", chatStreamHandler);
 
 export default app;

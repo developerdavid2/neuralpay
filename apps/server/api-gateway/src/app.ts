@@ -4,9 +4,8 @@ import { authMiddleware } from "./middleware/auth.middleware";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";
 import {
+  mountAiSdkChatStreamProxy,
   mountProxies,
-  mountStreamingProxy,
-  mountNotificationStreamProxy,
   mountUploadThingProxy,
 } from "./proxy";
 
@@ -18,10 +17,7 @@ const app = createExpressApp({
   allowedOrigins: gatewayEnv.TRUSTED_ORIGINS,
   beforeBodyParser: (app) => {
     app.use("/v1/ai/chat/stream", authMiddleware);
-    mountStreamingProxy(app);
-
-    app.use("/v1/notifications/stream", authMiddleware);
-    mountNotificationStreamProxy(app);
+    mountAiSdkChatStreamProxy(app);
     mountUploadThingProxy(app);
   },
 });
@@ -30,8 +26,6 @@ app.use(requestLogger);
 app.use(authMiddleware);
 mountProxies(app);
 app.use(errorHandler);
-
-console.log("Routes:");
 
 app.listen(PORT, () => {
   console.log(`🚀 api-gateway-service running on http://localhost:${PORT}`);

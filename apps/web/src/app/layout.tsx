@@ -59,6 +59,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${fontNexa.variable} ${fontRostex.variable} ${fontRostexOutline.variable} antialiased`}
       >
         <Providers>

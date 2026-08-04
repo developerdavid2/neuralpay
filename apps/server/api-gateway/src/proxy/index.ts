@@ -55,6 +55,15 @@ function trpcNamespaceProxy(app: Express) {
     const rawPath = req.url.split("?")[0]?.replace(/^\//, "") ?? "";
     const firstProcedure = rawPath.split(",")[0] ?? "";
     const namespace = firstProcedure.split(".")[0] ?? "";
+    const isNotificationSubscription =
+      namespace === "notifications" &&
+      firstProcedure === "notifications.appNotifications.onNew";
+    const isAiChatSubscription =
+      namespace === "ai" && firstProcedure === "ai.coach.streamChat";
+
+    if (isNotificationSubscription || isAiChatSubscription) {
+      return next();
+    }
 
     const targetURL = NAMESPACE_MAP[namespace];
 
@@ -113,18 +122,22 @@ function trpcNamespaceProxy(app: Express) {
   });
 }
 
-export function mountStreamingProxy(app: Express) {
+export function mountAiSdkChatStreamProxy(app: Express) {
   app.use(
     "/v1/ai/chat/stream",
     createProxyMiddleware({
       target: gatewayEnv.AI_SERVICE_URL,
       changeOrigin: true,
-      pathRewrite: (_path) => "/chat/stream",
+      pathRewrite: (path) => {
+        const queryIndex = path.indexOf("?");
+        const query = queryIndex >= 0 ? path.slice(queryIndex) : "";
+        return `/chat/stream${query}`;
+      },
+      selfHandleResponse: false,
       on: {
         proxyReq: (proxyReq, req) => {
           proxyReq.setHeader("x-internal-source", "api-gateway");
           proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
-
           const userId = (req as any).headers["x-user-id"];
           const userEmail = (req as any).headers["x-user-email"];
           const userName = (req as any).headers["x-user-name"];
@@ -133,10 +146,10 @@ export function mountStreamingProxy(app: Express) {
           if (userName) proxyReq.setHeader("x-user-name", userName);
         },
         error: (err, _req, res) => {
-          logger.error(`[stream proxy] error: ${err.message}`);
+          logger.error(`[ai-sdk-chat proxy] error: ${err.message}`);
           (res as Response)
             .status(502)
-            .json({ success: false, message: "AI service unavailable" });
+            .json({ error: "AI SDK stream service unavailable" });
         },
       },
     }),
@@ -145,19 +158,26 @@ export function mountStreamingProxy(app: Express) {
 
 export function mountNotificationStreamProxy(app: Express) {
   app.use(
-    "/v1/notifications/stream",
+    "/v1/trpc/notifications.appNotifications.onNew",
     createProxyMiddleware({
       target: gatewayEnv.NOTIFICATION_SERVICE_URL,
       changeOrigin: true,
-      pathRewrite: () => "/stream",
+      pathRewrite: (path) => {
+        const queryIndex = path.indexOf("?");
+        const query = queryIndex >= 0 ? path.slice(queryIndex) : "";
+        return `/trpc/appNotifications.onNew${query}`;
+      },
+      selfHandleResponse: false,
       on: {
         proxyReq: (proxyReq, req) => {
           proxyReq.setHeader("x-internal-source", "api-gateway");
           proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
           const userId = (req as any).headers["x-user-id"];
           const userEmail = (req as any).headers["x-user-email"];
+          const userName = (req as any).headers["x-user-name"];
           if (userId) proxyReq.setHeader("x-user-id", userId);
           if (userEmail) proxyReq.setHeader("x-user-email", userEmail);
+          if (userName) proxyReq.setHeader("x-user-name", userName);
         },
         error: (err, _req, res) => {
           logger.error(`[notifications proxy] error: ${err.message}`);
@@ -192,6 +212,8 @@ export function mountUploadThingProxy(app: Express) {
   );
 }
 export function mountProxies(app: Express) {
+  mountNotificationStreamProxy(app);
+
   // In mountProxies — auth proxy
   app.use(
     "/v1/auth",
