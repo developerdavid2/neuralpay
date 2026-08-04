@@ -44,10 +44,15 @@ export function useAIChat({
   const hasSentInitial = useRef(false);
   const prevSessionId = useRef(sessionId);
 
+  const isLocal = window.location.hostname === "localhost";
+  const url = isLocal
+    ? `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/ai/chat/stream`
+    : `/api/stream/chat`;
+
   const chat = useChat({
     id: sessionId,
     transport: new DefaultChatTransport({
-      api: `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/ai/chat/stream`,
+      api: url,
       credentials: "include",
       body: { sessionId },
     }),
