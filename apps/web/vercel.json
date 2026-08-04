@@ -7,6 +7,14 @@
     {
       "source": "/api/trpc/:path*",
       "destination": "https://neuralpay-api-gateway.vercel.app/v1/trpc/:path*"
+    },
+    {
+      "source": "/api/stream/chat",
+      "destination": "https://neuralpay-api-gateway.vercel.app/v1/ai/chat/stream"
+    },
+    {
+      "source": "/api/stream/notifications",
+      "destination": "https://neuralpay-api-gateway.vercel.app/v1/notifications/stream"
     }
   ]
 }
