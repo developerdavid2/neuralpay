@@ -18,7 +18,10 @@ export function useNotificationStream() {
     function connect() {
       esRef.current?.close();
 
-      const url = `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/notifications/stream`;
+      const isLocal = window.location.hostname === "localhost";
+      const url = isLocal
+        ? `${webEnv.NEXT_PUBLIC_SERVER_URL}/v1/notifications/stream`
+        : `/api/stream/notifications`;
       console.log("[SSE] connecting to", url);
 
       const es = new EventSource(url, { withCredentials: true });

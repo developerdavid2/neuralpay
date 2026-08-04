@@ -7,7 +7,12 @@ export function useSseStream() {
 
   const connect = useCallback(() => {
     if (esRef.current) return;
-    const es = new EventSource(`${process.env.NEXT_PUBLIC_API_URL}/stream`, {
+
+    const isLocal = window.location.hostname === "localhost";
+    const url = isLocal
+      ? `${process.env.NEXT_PUBLIC_API_URL}/stream`
+      : `/api/stream/notifications`;
+    const es = new EventSource(url, {
       withCredentials: true,
     });
 
