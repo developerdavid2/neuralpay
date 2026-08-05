@@ -16,6 +16,19 @@ export interface BaseContext {
 
 const t = initTRPC.context<BaseContext>().create({
   transformer: superjson,
+  // Keep SSE subscriptions alive through Render's edge + gateway proxy.
+  // Without frequent pings the connection looks idle and gets reset (ECONNRESET),
+  // causing the client to reconnect in a tight loop and miss notifications.
+  sse: {
+    maxDurationMs: 5 * 60 * 1000, // recycle the stream every 5 min
+    ping: {
+      enabled: true,
+      intervalMs: 3000, // ping every 3s — well under any proxy idle timeout
+    },
+    client: {
+      reconnectAfterInactivityMs: 5000, // reconnect if no ping seen for 5s
+    },
+  },
 });
 
 export const router = t.router;

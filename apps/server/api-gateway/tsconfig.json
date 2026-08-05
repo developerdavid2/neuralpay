@@ -1,7 +1,10 @@
 {
   "extends": "@neuralpay/config/tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
+    // No `composite`/declaration emit: nothing consumes this project's .d.ts
+    // (consumers import ./src/router.ts directly via package exports), and
+    // declaration emit is what triggers TS2883 on tRPC tracked() subscriptions.
+    "declaration": false,
     "outDir": "dist",
     "rootDir": "src",
     "types": ["node"]

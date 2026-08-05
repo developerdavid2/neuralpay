@@ -12,9 +12,12 @@ const app = createExpressApp({
 });
 
 // Ensure SSE subscription responses are never buffered by Render's edge proxy
-app.use("/trpc/appNotifications.onNew", (_req, res, next) => {
+app.use("/trpc/appNotifications.onNew", (req, res, next) => {
   res.setHeader("x-accel-buffering", "no");
   res.setHeader("Cache-Control", "no-cache, no-transform");
+  // Swallow client-side resets so ECONNRESET doesn't spam logs / risk crashes
+  req.socket.on("error", () => {});
+  res.on("error", () => {});
   next();
 });
 

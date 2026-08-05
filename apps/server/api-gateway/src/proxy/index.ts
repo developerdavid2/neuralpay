@@ -191,13 +191,23 @@ export function mountNotificationStreamProxy(app: Express) {
           if (userId) proxyReq.setHeader("x-user-id", userId);
           if (userEmail) proxyReq.setHeader("x-user-email", userEmail);
           if (userName) proxyReq.setHeader("x-user-name", userName);
+          // A client that navigates away resets the SSE socket — swallow it
+          proxyReq.on("error", () => {});
         },
-        proxyRes: (proxyRes, _req, res) => {
+        proxyRes: (proxyRes, req, res) => {
           // Force streaming response
           proxyRes.headers["x-accel-buffering"] = "no";
           (res as Response).setHeader("x-accel-buffering", "no");
+          // Guard both ends so an SSE disconnect can't throw ECONNRESET
+          (req as any).socket?.on("error", () => {});
+          proxyRes.on("error", () => {});
         },
         error: (err, _req, res) => {
+          // ECONNRESET here is a normal SSE client disconnect, not a failure
+          if ((err as NodeJS.ErrnoException).code === "ECONNRESET") {
+            logger.debug?.(`[notifications proxy] client disconnected`);
+            return;
+          }
           logger.error(`[notifications proxy] error: ${err.message}`);
           const response = res as Response;
           if (response.headersSent) {
