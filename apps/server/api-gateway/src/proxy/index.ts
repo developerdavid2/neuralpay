@@ -172,6 +172,7 @@ export function mountNotificationStreamProxy(app: Express) {
     createProxyMiddleware({
       target: gatewayEnv.NOTIFICATION_SERVICE_URL,
       changeOrigin: true,
+      ws: true,
       pathRewrite: (path) => {
         const queryIndex = path.indexOf("?");
         const query = queryIndex >= 0 ? path.slice(queryIndex) : "";
@@ -182,12 +183,19 @@ export function mountNotificationStreamProxy(app: Express) {
         proxyReq: (proxyReq, req) => {
           proxyReq.setHeader("x-internal-source", "api-gateway");
           proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
+          // Disable buffering on the upstream request
+          proxyReq.setHeader("x-accel-buffering", "no");
           const userId = (req as any).headers["x-user-id"];
           const userEmail = (req as any).headers["x-user-email"];
           const userName = (req as any).headers["x-user-name"];
           if (userId) proxyReq.setHeader("x-user-id", userId);
           if (userEmail) proxyReq.setHeader("x-user-email", userEmail);
           if (userName) proxyReq.setHeader("x-user-name", userName);
+        },
+        proxyRes: (proxyRes, _req, res) => {
+          // Force streaming response
+          proxyRes.headers["x-accel-buffering"] = "no";
+          (res as Response).setHeader("x-accel-buffering", "no");
         },
         error: (err, _req, res) => {
           logger.error(`[notifications proxy] error: ${err.message}`);

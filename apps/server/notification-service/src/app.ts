@@ -11,6 +11,13 @@ const app = createExpressApp({
   port: PORT,
 });
 
+// Ensure SSE subscription responses are never buffered by Render's edge proxy
+app.use("/trpc/appNotifications.onNew", (_req, res, next) => {
+  res.setHeader("x-accel-buffering", "no");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  next();
+});
+
 app.use(
   "/trpc",
   createExpressMiddleware({ router: notificationsRouter, createContext }),

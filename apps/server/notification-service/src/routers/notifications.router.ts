@@ -28,7 +28,7 @@ import { tracked } from "@trpc/server";
 import { subscribeToUser } from "@neuralpay/redis";
 import { zAsyncIterable } from "../lib/zAsyncIterable";
 
-interface NotificationBroadcastPayload {
+export interface NotificationBroadcastPayload {
   type: "notification.new";
   notification: AppNotification;
 }

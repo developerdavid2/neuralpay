@@ -152,23 +152,21 @@ export const PlaidService = {
         throw new Error("Failed to save connected bank");
       }
 
-      try {
-        await emitNotification({
-          event: {
-            type: "account_connected",
-            payload: {
-              userId,
-              accountId: connectedBank.id,
-              bankName: institutionName ?? "Unknown Bank",
-            },
+      emitNotification({
+        event: {
+          type: "account_connected",
+          payload: {
+            userId,
+            accountId: connectedBank.id,
+            bankName: institutionName ?? "Unknown Bank",
           },
-        });
-      } catch (notifErr) {
+        },
+      }).catch((notifErr) => {
         console.error(
           "[plaid] Failed to emit account_connected notification:",
           notifErr,
         );
-      }
+      });
 
       // Step 3: Start background sync (don't await - fire and forget)
       await this.syncTransactions(
@@ -228,23 +226,21 @@ export const PlaidService = {
       .delete(connectedPlaidBanks)
       .where(eq(connectedPlaidBanks.id, bankId));
 
-    try {
-      await emitNotification({
-        event: {
-          type: "account_disconnected",
-          payload: {
-            userId,
-            accountId: bankId,
-            bankName: bank.institutionName ?? "Unknown Bank",
-          },
+    emitNotification({
+      event: {
+        type: "account_disconnected",
+        payload: {
+          userId,
+          accountId: bankId,
+          bankName: bank.institutionName ?? "Unknown Bank",
         },
-      });
-    } catch (notifErr) {
+      },
+    }).catch((notifErr) => {
       console.error(
         "[plaid] Failed to emit account_disconnected notification:",
         notifErr,
       );
-    }
+    });
 
     await invalidatePlaidAccountCache(userId);
 
@@ -475,24 +471,22 @@ export const PlaidService = {
     } catch (error) {
       console.error("[plaid] syncTransactions error:", error);
 
-      try {
-        await emitNotification({
-          event: {
-            type: "account_sync_failed",
-            payload: {
-              userId,
-              accountId: itemId,
-              bankName: institutionName ?? "Unknown Bank",
-              error: error instanceof Error ? error.message : "Unknown error",
-            },
+      emitNotification({
+        event: {
+          type: "account_sync_failed",
+          payload: {
+            userId,
+            accountId: itemId,
+            bankName: institutionName ?? "Unknown Bank",
+            error: error instanceof Error ? error.message : "Unknown error",
           },
-        });
-      } catch (notifErr) {
+        },
+      }).catch((notifErr) => {
         console.error(
           "[plaid] Failed to emit account_sync_failed notification:",
           notifErr,
         );
-      }
+      });
 
       throw error;
     }

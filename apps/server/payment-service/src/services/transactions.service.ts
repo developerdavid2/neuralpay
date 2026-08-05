@@ -296,28 +296,25 @@ export const TransactionsService = {
       }
       await invalidateAggregateCache(userId);
 
-      // Fire notification — non-blocking, don't let it fail the request
-      try {
-        await emitNotification({
-          event: {
-            type: "transaction_created",
-            payload: {
-              userId: created.userId,
-              transactionId: created.id,
-              amount: Number(created.amount),
-              currency: "USD",
-              merchant: created.merchant ?? "Unknown",
-              category: created.category ?? "Others",
-            },
+      // Fire notification — truly non-blocking, no await
+      emitNotification({
+        event: {
+          type: "transaction_created",
+          payload: {
+            userId: created.userId,
+            transactionId: created.id,
+            amount: Number(created.amount),
+            currency: "USD",
+            merchant: created.merchant ?? "Unknown",
+            category: created.category ?? "Others",
           },
-        });
-      } catch (notifErr) {
+        },
+      }).catch((notifErr) => {
         console.error(
-          "[TransactionsService.create] Notification failed:",
+          "[TransactionsService.create] Notification enqueue failed:",
           notifErr,
         );
-        // Don't return error — transaction is already created
-      }
+      });
 
       return this.getById(created!.id, userId);
     } catch (err) {
