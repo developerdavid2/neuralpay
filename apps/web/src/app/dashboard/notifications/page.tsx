@@ -53,12 +53,7 @@ const Page = async ({ searchParams }: PageProps) => {
 
   return (
     <HydrateClient>
-      <NotificationsView
-        search={params.search ?? ""}
-        category={normalizedCategory}
-        status={status}
-        limit={limit}
-      />
+      <NotificationsView />
     </HydrateClient>
   );
 };
