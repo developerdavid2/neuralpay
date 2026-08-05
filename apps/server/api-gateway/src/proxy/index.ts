@@ -7,6 +7,10 @@ import { logger } from "../utils/logger";
 // ── Error handler
 const proxyError = (err: Error, res: any, _next: any) => {
   logger.error(`Proxy error: ${err.message}`);
+  if (res.headersSent) {
+    res.end();
+    return;
+  }
   res.status(502).json({ success: false, message: "Service unavailable" });
 };
 
@@ -79,14 +83,15 @@ function trpcNamespaceProxy(app: Express) {
 
     proxy(targetURL, {
       proxyErrorHandler: proxyError,
+      timeout: 35000,
       proxyReqPathResolver: (r) => {
         const url = new URL(`http://x${r.url}`);
         const stripped = url.pathname
-          .replace(/^\//, "") // remove leading slash
+          .replace(/^\//, "")
           .split(",")
           .map((proc) =>
             proc.startsWith(`${namespace}.`)
-              ? proc.slice(namespace.length + 1) // strip "users."
+              ? proc.slice(namespace.length + 1)
               : proc,
           )
           .join(",");
@@ -147,6 +152,11 @@ export function mountAiSdkChatStreamProxy(app: Express) {
         },
         error: (err, _req, res) => {
           logger.error(`[ai-sdk-chat proxy] error: ${err.message}`);
+          const response = res as Response;
+          if (response.headersSent) {
+            response.end();
+            return;
+          }
           (res as Response)
             .status(502)
             .json({ error: "AI SDK stream service unavailable" });
@@ -181,6 +191,11 @@ export function mountNotificationStreamProxy(app: Express) {
         },
         error: (err, _req, res) => {
           logger.error(`[notifications proxy] error: ${err.message}`);
+          const response = res as Response;
+          if (response.headersSent) {
+            response.end();
+            return;
+          }
           (res as Response)
             .status(502)
             .json({ error: "Notification service unavailable" });
@@ -203,6 +218,11 @@ export function mountUploadThingProxy(app: Express) {
       on: {
         error: (err, _req, res) => {
           logger.error(`[uploadthing proxy] error: ${err.message}`);
+          const response = res as Response;
+          if (response.headersSent) {
+            response.end();
+            return;
+          }
           (res as Response)
             .status(502)
             .json({ success: false, message: "Upload service unavailable" });

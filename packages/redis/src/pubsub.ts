@@ -21,6 +21,7 @@ export async function* subscribeToUser(
       maxRetriesPerRequest: null,
       lazyConnect: true,
       enableReadyCheck: false,
+      keepAlive: 10_000,
     },
   );
 

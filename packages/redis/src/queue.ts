@@ -6,10 +6,17 @@ let notificationQueue: Queue | null = null;
 function getConnection() {
   const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
   const url = new URL(redisUrl);
+
   return {
     host: url.hostname,
     port: Number(url.port) || 6379,
-    maxRetriesPerRequest: null,
+    username: url.username || undefined,
+    password: url.password || undefined,
+    tls: url.protocol === "rediss:" ? {} : undefined,
+    maxRetriesPerRequest: 3,
+    connectTimeout: 5000,
+    commandTimeout: 5000,
+    keepAlive: 10_000,
   };
 }
 
@@ -24,6 +31,10 @@ function getNotificationQueue(): Queue {
       removeOnComplete: 100,
       removeOnFail: 50,
     },
+  });
+
+  notificationQueue.on("error", (err) => {
+    console.error("[queue] connection error:", err.message);
   });
 
   return notificationQueue;
