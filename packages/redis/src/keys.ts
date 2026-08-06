@@ -23,6 +23,10 @@ export const cacheKeys = {
     },
   },
 
+  budgets: {
+    summary: (userId: string) => `budgets:summary:${userId}`,
+  },
+
   plaid: {
     connectedBank: (userId: string) => `plaid:connected:${userId}`,
     accounts: (userId: string) => `plaid:accounts:${userId}`,

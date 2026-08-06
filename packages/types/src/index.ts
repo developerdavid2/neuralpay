@@ -1,6 +1,7 @@
 export * from "./auth";
 export * from "./users";
 export * from "./transactions";
+export * from "./budgets";
 export * from "./insights";
 export * from "./chats";
 export * from "./pagination";

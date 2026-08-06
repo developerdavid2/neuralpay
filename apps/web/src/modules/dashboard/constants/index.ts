@@ -43,6 +43,7 @@ export const navGroups = [
         icon: ArrowLeftRight,
       },
       { title: "Accounts", url: "/dashboard/accounts", icon: Landmark },
+      { title: "Budgets", url: "/dashboard/budgets", icon: PiggyBank },
     ],
   },
   {
