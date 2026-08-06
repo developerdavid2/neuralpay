@@ -1,6 +1,11 @@
 import { emitNotification } from "@neuralpay/redis";
 import { db } from "@neuralpay/db";
-import { bankAccounts, budgets, transactions } from "@neuralpay/db/schema";
+import {
+  bankAccounts,
+  budgetCategories,
+  budgets,
+  transactions,
+} from "@neuralpay/db/schema";
 import {
   type BatchDeleteInput,
   type CreateTransactionInput,
@@ -557,14 +562,19 @@ export const TransactionsService = {
                 ? monthYearConditions[0]
                 : or(...monthYearConditions);
 
+            // Join budgets with budgetCategories to get category-level limits
             budgetResult = await db
               .select({
-                category: budgets.category,
+                category: budgetCategories.category,
                 month: budgets.month,
                 year: budgets.year,
-                limitAmount: sql<string>`${budgets.limitAmount}::numeric::text`,
+                limitAmount: sql<string>`${budgetCategories.limitAmount}::numeric::text`,
               })
               .from(budgets)
+              .innerJoin(
+                budgetCategories,
+                eq(budgetCategories.budgetId, budgets.id),
+              )
               .where(and(eq(budgets.userId, userId), whereCondition));
           }
 

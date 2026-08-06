@@ -15,12 +15,12 @@ import {
   vaultInvitations,
 } from "./vaults";
 
-import { insights} from "./insights";
+import { insights } from "./insights";
 import { chatSessions, chatMessages } from "./chats";
 
 import { notifications, deviceTokens } from "./notifications";
 import { bankAccounts } from "./accounts";
-import { budgets } from "./budgets";
+import { budgetAccounts, budgetCategories, budgets } from "./budgets";
 
 // ========== Auth Relations ==========
 export const userRelations = relations(user, ({ many }) => ({
@@ -126,10 +126,33 @@ export const transactionTagMappingRelations = relations(
   }),
 );
 
-export const budgetRelations = relations(budgets, ({ one }) => ({
+export const budgetRelations = relations(budgets, ({ one, many }) => ({
   user: one(user, {
     fields: [budgets.userId],
     references: [user.id],
+  }),
+  categories: many(budgetCategories),
+  accounts: many(budgetAccounts),
+}));
+
+export const budgetCategoryRelations = relations(
+  budgetCategories,
+  ({ one }) => ({
+    budget: one(budgets, {
+      fields: [budgetCategories.budgetId],
+      references: [budgets.id],
+    }),
+  }),
+);
+
+export const budgetAccountRelations = relations(budgetAccounts, ({ one }) => ({
+  budget: one(budgets, {
+    fields: [budgetAccounts.budgetId],
+    references: [budgets.id],
+  }),
+  bankAccount: one(bankAccounts, {
+    fields: [budgetAccounts.bankAccountId],
+    references: [bankAccounts.id],
   }),
 }));
 

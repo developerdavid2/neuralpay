@@ -1,14 +1,16 @@
 import { z } from "zod";
 import { TRANSACTION_CATEGORY, type TransactionCategory } from "./transactions";
+import type { PaginatedResult } from "./pagination";
 
-// Reuse the shared category vocabulary so budgets align 1:1 with transactions.
 export const BUDGET_CATEGORY = TRANSACTION_CATEGORY;
 export type BudgetCategory = TransactionCategory;
+
+export const BUDGET_HEALTH = ["on_track", "warning", "over"] as const;
+export type BudgetHealth = (typeof BUDGET_HEALTH)[number];
 
 export const BUDGET_PERIODS = ["weekly", "monthly", "custom"] as const;
 export type BudgetPeriod = (typeof BUDGET_PERIODS)[number];
 
-// Tailwind-friendly hex swatches offered in the create/edit modal.
 export const BUDGET_COLORS = [
   "#6366f1",
   "#8b5cf6",
@@ -22,36 +24,41 @@ export const BUDGET_COLORS = [
   "#64748b",
 ] as const;
 
+export const budgetCategorySchema = z.object({
+  category: z.enum(BUDGET_CATEGORY),
+  limitAmount: z.number().positive(),
+});
+
+export type BudgetCategoryAllocation = z.infer<typeof budgetCategorySchema>;
+
 export const createBudgetSchema = z
   .object({
-    name: z
-      .string({ error: "Budget name is required" })
-      .min(2, { error: "Budget name must be at least 2 characters" })
-      .max(120, { error: "Budget name is too long" }),
-    description: z.string().max(500, { error: "Description is too long" }).optional(),
-    category: z.enum(BUDGET_CATEGORY, {
-      error: (issue) =>
-        issue.code === "invalid_value"
-          ? "Please select a valid category"
-          : "Category is required",
-    }),
-    limitAmount: z
-      .number({ error: "Limit must be a valid number" })
-      .positive({ error: "Limit must be greater than 0" }),
-    color: z.string().max(20).optional(),
+    name: z.string().min(2).max(120),
+    description: z.string().max(500).optional(),
+    color: z.enum(BUDGET_COLORS).default("#6366f1"),
     period: z.enum(BUDGET_PERIODS).default("monthly"),
-    startDate: z.string().datetime({ error: "Invalid start date" }),
-    endDate: z.string().datetime({ error: "Invalid end date" }),
-    alertThreshold: z
-      .number()
-      .int()
-      .min(1, { error: "Threshold must be between 1 and 100" })
-      .max(100, { error: "Threshold must be between 1 and 100" })
-      .default(80),
+    startDate: z.iso.datetime(),
+    endDate: z.iso.datetime(),
+    alertThreshold: z.number().int().min(1).max(100).default(80),
+    categories: z.array(budgetCategorySchema).min(1).max(10),
+    limitAmount: z.number().positive(),
     accountIds: z.array(z.uuid()).max(50).default([]),
   })
-  .refine((v) => new Date(v.endDate) >= new Date(v.startDate), {
-    error: "End date must be on or after the start date",
+  .refine(
+    (data) => {
+      const categoryTotal = data.categories.reduce(
+        (sum, c) => sum + c.limitAmount,
+        0,
+      );
+      return Math.abs(categoryTotal - data.limitAmount) < 0.01;
+    },
+    {
+      message: "Category allocations must sum to the total budget limit",
+      path: ["categories"],
+    },
+  )
+  .refine((data) => new Date(data.endDate) >= new Date(data.startDate), {
+    message: "End date must be on or after start date",
     path: ["endDate"],
   });
 
@@ -60,36 +67,66 @@ export const updateBudgetSchema = z
     id: z.uuid(),
     name: z.string().min(2).max(120).optional(),
     description: z.string().max(500).optional().nullable(),
-    category: z.enum(BUDGET_CATEGORY).optional(),
-    limitAmount: z.number().positive().optional(),
-    color: z.string().max(20).optional().nullable(),
+    color: z.enum(BUDGET_COLORS).optional().nullable(),
     period: z.enum(BUDGET_PERIODS).optional(),
-    startDate: z.string().datetime().optional(),
-    endDate: z.string().datetime().optional(),
+    startDate: z.iso.datetime().optional(),
+    endDate: z.iso.datetime().optional(),
     alertThreshold: z.number().int().min(1).max(100).optional(),
     isActive: z.boolean().optional(),
-    accountIds: z.array(z.uuid()).max(50).optional(),
+    categories: z.array(budgetCategorySchema).optional(),
+    limitAmount: z.number().positive().optional(),
+    accountIds: z.array(z.uuid()).optional(),
   })
   .refine(
-    (v) =>
-      !v.startDate ||
-      !v.endDate ||
-      new Date(v.endDate) >= new Date(v.startDate),
-    { error: "End date must be on or after the start date", path: ["endDate"] },
+    (data) => {
+      if (!data.categories || data.limitAmount === undefined) return true;
+      const categoryTotal = data.categories.reduce(
+        (sum, c) => sum + c.limitAmount,
+        0,
+      );
+      return Math.abs(categoryTotal - data.limitAmount) < 0.01;
+    },
+    {
+      message: "Category allocations must sum to the total budget limit",
+      path: ["categories"],
+    },
+  )
+  .refine(
+    (data) =>
+      !data.startDate ||
+      !data.endDate ||
+      new Date(data.endDate) >= new Date(data.startDate),
+    { message: "End date must be on or after start date", path: ["endDate"] },
   );
 
-export const budgetsFilterSchema = z.object({
+// Filter & Sort schemas
+export const budgetStatusSchema = z.enum(BUDGET_HEALTH).optional();
+
+export const budgetsListInputSchema = z.object({
+  // Filter fields flattened to top level
   search: z.string().min(1).max(100).optional(),
-  category: z
-    .union([z.enum(BUDGET_CATEGORY), z.array(z.enum(BUDGET_CATEGORY))])
-    .optional(),
+  status: z.union([budgetStatusSchema, z.array(budgetStatusSchema)]).optional(),
   isActive: z.boolean().optional(),
-  // Overlap window — return budgets whose range intersects [from, to]
-  from: z.string().datetime().optional(),
-  to: z.string().datetime().optional(),
+  period: z.enum(BUDGET_PERIODS).optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional(),
+  month: z.number().int().min(1).max(12).optional(),
+  year: z.number().int().min(2000).max(2100).optional(),
+  // Sort
+  sortField: z.enum(["date", "spent", "limitAmount", "name"]).optional(),
+  sortDir: z.enum(["asc", "desc"]).optional(),
+  // Pagination — top level, not nested
+  cursor: z.string().optional(),
+  limit: z.number().int().min(1).max(50).default(20),
 });
 
-export type BudgetsFilterInput = z.infer<typeof budgetsFilterSchema>;
+export const budgetSortSchema = z.object({
+  field: z.enum(["date", "spent", "limitAmount", "name"]).default("date"),
+  direction: z.enum(["asc", "desc"]).default("desc"),
+});
+
+export type BudgetsListInput = z.infer<typeof budgetsListInputSchema>;
+export type BudgetSortInput = z.infer<typeof budgetSortSchema>;
 export type CreateBudgetInput = z.input<typeof createBudgetSchema>;
 export type UpdateBudgetInput = z.input<typeof updateBudgetSchema>;
 
@@ -97,43 +134,68 @@ export type BudgetAccountRef = {
   bankAccountId: string;
   name: string | null;
   bankName: string | null;
+  isActive: boolean;
 };
 
-// Row + derived spend metrics returned to the client.
-export type Budget = {
-  id: string;
-  userId: string;
-  name: string | null;
-  description: string | null;
+export type BudgetCategoryDetail = {
   category: BudgetCategory;
-  color: string | null;
   limitAmount: string;
-  month: number;
-  year: number;
-  alertThreshold: number | null;
-  startDate: Date | null;
-  endDate: Date | null;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  accounts: BudgetAccountRef[];
-  // ── Derived (computed server-side, not stored)
   spent: number;
   remaining: number;
   percentUsed: number;
+  transactionCount: number;
+};
+
+export type Budget = {
+  id: string;
+  userId: string;
+  name: string;
+  description: string | null;
+  color: string | null;
+  limitAmount: string;
+  period: BudgetPeriod;
+  startDate: Date;
+  endDate: Date;
+  alertThreshold: number;
+  isActive: boolean;
+  month: number;
+  year: number;
+  createdAt: Date;
+  updatedAt: Date;
+  categories: BudgetCategoryDetail[];
+  accounts: BudgetAccountRef[];
+  totalSpent: number;
+  totalRemaining: number;
+  totalPercentUsed: number;
   status: BudgetHealth;
   daysRemaining: number;
   transactionCount: number;
 };
 
-export const BUDGET_HEALTH = ["on_track", "warning", "over"] as const;
-export type BudgetHealth = (typeof BUDGET_HEALTH)[number];
-
-export type BudgetSummary = {
+export type BudgetMonthlyStats = {
+  currentMonth: string;
   totalBudgeted: number;
   totalSpent: number;
-  totalRemaining: number;
-  activeCount: number;
-  overCount: number;
-  warningCount: number;
+  savingsRate: number;
+  needsAttention: {
+    count: number;
+    onTrackCount: number;
+    overBudgetCount: number;
+  };
 };
+
+export type BudgetSummary = BudgetMonthlyStats;
+
+export type BudgetCalendarDay = {
+  date: string;
+  budgets: Array<{
+    id: string;
+    name: string;
+    color: string | null;
+    status: BudgetHealth;
+    spent: number;
+    limitAmount: string;
+  }>;
+};
+
+export type PaginatedBudgets = PaginatedResult<Budget>;

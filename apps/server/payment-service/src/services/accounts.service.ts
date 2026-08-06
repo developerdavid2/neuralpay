@@ -98,7 +98,12 @@ export const AccountsService = {
 
       return {
         success: true,
-        data: { items: rows as BankAccount[], totalCount, pageCount },
+        data: {
+          items: rows as BankAccount[],
+          totalCount,
+          pageCount,
+          nextCursor: null,
+        },
       };
     } catch (err) {
       console.error("[AccountsService.listByUser]", err);

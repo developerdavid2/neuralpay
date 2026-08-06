@@ -1,10 +1,8 @@
-"use client";
-
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
+import type { BudgetHealth } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import { Input } from "@neuralpay/ui/components/input";
-import { cn } from "@neuralpay/ui/lib/utils";
 import { format } from "date-fns";
 import {
   CalendarDays,
@@ -13,30 +11,66 @@ import {
   LayoutList,
   Search,
 } from "lucide-react";
-import { useState } from "react";
-import type { BudgetsFilterInput } from "@neuralpay/types";
-import {
-  BudgetSummaryCards,
-  BudgetSummaryCardsSkeleton,
-} from "../components/budget-summary-cards";
+import Link from "next/link";
 import {
   BudgetCalendar,
   BudgetCalendarSkeleton,
 } from "../components/budget-calendar";
-import { BudgetList, BudgetListSkeleton } from "../components/budget-list";
 import { BudgetFormDrawer } from "../components/budget-form-drawer";
+import { BudgetList, BudgetListSkeleton } from "../components/budget-list";
+import {
+  BudgetSummaryCards,
+  BudgetSummaryCardsSkeleton,
+} from "../components/budget-summary-cards";
 import { BudgetViewDrawer } from "../components/budget-view-drawer";
 import { NewBudgetButton } from "../components/new-budget-button";
-import { nextPeriodAnchor } from "../../constants";
-import type { BudgetViewMode } from "../../constants";
 
-export function BudgetsView() {
-  const [viewMode, setViewMode] = useState<BudgetViewMode>("calendar");
-  const [anchor, setAnchor] = useState<Date>(() => new Date());
-  const [search, setSearch] = useState("");
+interface BudgetsViewProps {
+  viewMode: "calendar" | "list";
+  month: number;
+  year: number;
+  search: string;
+  statuses: BudgetHealth[];
+  isActive: boolean;
+  sortField: string;
+  sortDir: "asc" | "desc";
+  limit: number;
+  focusBudgetId?: string;
+  focusMode?: string;
+}
 
-  const listFilters: BudgetsFilterInput = {
+function buildHref(params: Record<string, string | undefined>) {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined) searchParams.set(k, v);
+  });
+  const qs = searchParams.toString();
+  return qs ? `?${qs}` : "";
+}
+
+export function BudgetsView({
+  viewMode,
+  month,
+  year,
+  search,
+  statuses,
+  isActive,
+  sortField,
+  sortDir,
+  limit,
+  focusBudgetId,
+  focusMode,
+}: BudgetsViewProps) {
+  const anchor = new Date(year, month - 1);
+  const prevMonth = month === 1 ? 12 : month - 1;
+  const prevYear = month === 1 ? year - 1 : year;
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
+
+  const listFilters = {
     search: search.trim() || undefined,
+    status: statuses.length > 0 ? statuses : undefined,
+    isActive,
   };
 
   return (
@@ -51,7 +85,7 @@ export function BudgetsView() {
         fallback={<BudgetSummaryCardsSkeleton />}
         errorMessage="Could not load budget summary"
       >
-        <BudgetSummaryCards />
+        <BudgetSummaryCards month={month} year={year} />
       </SectionBoundary>
 
       <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-muted bg-card shadow">
@@ -59,61 +93,109 @@ export function BudgetsView() {
         <div className="flex shrink-0 flex-col gap-3 border-b border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <div className="flex rounded-lg border border-border p-0.5">
-              <Button
-                variant={viewMode === "calendar" ? "secondary" : "ghost"}
-                size="sm"
-                className="gap-1.5"
-                onClick={() => setViewMode("calendar")}
+              <Link
+                href={buildHref({
+                  view: viewMode === "calendar" ? undefined : "calendar",
+                  month: String(month),
+                  year: String(year),
+                  search: search || undefined,
+                })}
               >
-                <CalendarDays className="size-4" />
-                Calendar
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "secondary" : "ghost"}
-                size="sm"
-                className="gap-1.5"
-                onClick={() => setViewMode("list")}
+                <Button
+                  variant={viewMode === "calendar" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="gap-1.5"
+                  asChild
+                >
+                  <span>
+                    <CalendarDays className="size-4" />
+                    Calendar
+                  </span>
+                </Button>
+              </Link>
+              <Link
+                href={buildHref({
+                  view: viewMode === "list" ? undefined : "list",
+                  month: String(month),
+                  year: String(year),
+                  search: search || undefined,
+                })}
               >
-                <LayoutList className="size-4" />
-                List
-              </Button>
+                <Button
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="gap-1.5"
+                  asChild
+                >
+                  <span>
+                    <LayoutList className="size-4" />
+                    List
+                  </span>
+                </Button>
+              </Link>
             </div>
 
             {viewMode === "calendar" && (
               <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  onClick={() => setAnchor((a) => nextPeriodAnchor("monthly", a, -1))}
+                <Link
+                  href={buildHref({
+                    month: String(prevMonth),
+                    year: String(prevYear),
+                    view: "calendar",
+                  })}
                 >
-                  <ChevronLeft className="size-4" />
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    asChild
+                  >
+                    <ChevronLeft className="size-4" />
+                  </Button>
+                </Link>
                 <span className="min-w-32 text-center text-sm font-medium">
                   {format(anchor, "MMMM yyyy")}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8"
-                  onClick={() => setAnchor((a) => nextPeriodAnchor("monthly", a, 1))}
+                <Link
+                  href={buildHref({
+                    month: String(nextMonth),
+                    year: String(nextYear),
+                    view: "calendar",
+                  })}
                 >
-                  <ChevronRight className="size-4" />
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    asChild
+                  >
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
 
           {viewMode === "list" && (
-            <div className="relative w-full sm:w-64">
+            <form
+              action={(formData) => {
+                const newSearch = formData.get("search") as string;
+                // Use window.location for client-side navigation
+                const url = new URL(window.location.href);
+                if (newSearch) url.searchParams.set("search", newSearch);
+                else url.searchParams.delete("search");
+                window.location.href = url.toString();
+              }}
+              className="relative w-full sm:w-64"
+            >
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                name="search"
+                defaultValue={search}
                 placeholder="Search budgets..."
                 className="pl-9"
               />
-            </div>
+            </form>
           )}
         </div>
 
@@ -121,11 +203,11 @@ export function BudgetsView() {
         <div className="flex-1 overflow-y-auto scrollbar-thin">
           {viewMode === "calendar" ? (
             <SectionBoundary
-              key={format(anchor, "yyyy-MM")}
+              key={`${year}-${month}`}
               fallback={<BudgetCalendarSkeleton />}
               errorMessage="Could not load calendar"
             >
-              <BudgetCalendar anchor={anchor} />
+              <BudgetCalendar month={month} year={year} />
             </SectionBoundary>
           ) : (
             <SectionBoundary
@@ -133,7 +215,11 @@ export function BudgetsView() {
               fallback={<BudgetListSkeleton />}
               errorMessage="Could not load budgets"
             >
-              <BudgetList filters={listFilters} />
+              <BudgetList
+                filters={listFilters}
+                sort={{ field: sortField, direction: sortDir }}
+                limit={limit}
+              />
             </SectionBoundary>
           )}
         </div>

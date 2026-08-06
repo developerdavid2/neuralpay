@@ -6,12 +6,7 @@ import {
 } from "@/modules/insights/lib/validate-insights-enums";
 import { AIInsightsView } from "@/modules/insights/ui/views/ai-insights-view";
 
-import {
-  HydrateClient,
-  prefetch,
-  prefetchInfinite,
-  trpc,
-} from "@/trpc/trpc-server";
+import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 
 interface PageProps {
   searchParams: Promise<{

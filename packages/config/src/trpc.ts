@@ -16,17 +16,14 @@ export interface BaseContext {
 
 const t = initTRPC.context<BaseContext>().create({
   transformer: superjson,
-  // Keep SSE subscriptions alive through Render's edge + gateway proxy.
-  // Without frequent pings the connection looks idle and gets reset (ECONNRESET),
-  // causing the client to reconnect in a tight loop and miss notifications.
   sse: {
-    maxDurationMs: 5 * 60 * 1000, // recycle the stream every 5 min
+    maxDurationMs: 5 * 60 * 1000,
     ping: {
       enabled: true,
-      intervalMs: 3000, // ping every 3s — well under any proxy idle timeout
+      intervalMs: 3000,
     },
     client: {
-      reconnectAfterInactivityMs: 5000, // reconnect if no ping seen for 5s
+      reconnectAfterInactivityMs: 5000,
     },
   },
 });
@@ -180,4 +177,42 @@ export async function createFastifyContext(
   }
 
   return { session: null, _headers: baseHeaders, resHeaders };
+}
+
+type TRPCErrorCode = TRPCError["code"];
+type ServiceErrorCode =
+  | "DB_ERROR"
+  | "NOT_FOUND"
+  | "BAD_REQUEST"
+  | "FORBIDDEN"
+  | "INTERNAL_SERVER_ERROR"
+  | "RATE_LIMITED"
+  | "AI_ERROR"
+  | "VALIDATION_ERROR"
+  | "PARSE_ERROR"
+  | "UNAUTHORIZED"
+  | "CONFLICT";
+
+export function toTrpcCode(code?: ServiceErrorCode): TRPCErrorCode {
+  switch (code) {
+    case "NOT_FOUND":
+      return "NOT_FOUND";
+    case "FORBIDDEN":
+      return "FORBIDDEN";
+    case "UNAUTHORIZED":
+      return "UNAUTHORIZED";
+    case "BAD_REQUEST":
+    case "VALIDATION_ERROR":
+    case "PARSE_ERROR":
+      return "BAD_REQUEST";
+    case "CONFLICT":
+      return "CONFLICT";
+    case "RATE_LIMITED":
+      return "TOO_MANY_REQUESTS";
+    case "DB_ERROR":
+    case "AI_ERROR":
+    case "INTERNAL_SERVER_ERROR":
+    default:
+      return "INTERNAL_SERVER_ERROR";
+  }
 }

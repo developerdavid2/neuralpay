@@ -1,15 +1,14 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { Plus } from "lucide-react";
+import { PremiumButton } from "@/components/premium-button";
+import { PlusIcon } from "lucide-react";
 import { useBudgetDrawer } from "../../hooks/store/use-budget-drawer";
 
 export function NewBudgetButton() {
   const { onOpenAdd } = useBudgetDrawer();
   return (
-    <Button onClick={onOpenAdd} className="gap-2">
-      <Plus className="size-4" />
+    <PremiumButton icon={PlusIcon} className="w-fit" onClick={onOpenAdd}>
       New Budget
-    </Button>
+    </PremiumButton>
   );
 }

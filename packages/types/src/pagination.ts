@@ -11,7 +11,7 @@ export const createPaginatedSchema = <T extends z.ZodTypeAny>(
 
 export type PaginatedResult<T> = {
   items: T[];
-  nextCursor?: string | null;
+  nextCursor: string | null;
   totalCount?: number;
   pageCount?: number;
 };

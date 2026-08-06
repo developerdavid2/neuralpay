@@ -1,32 +1,18 @@
-import { protectedProcedure, router } from "@neuralpay/config/trpc";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { BudgetsService } from "../services/budgets.service";
+import { protectedProcedure, router, toTrpcCode } from "@neuralpay/config/trpc";
 import {
-  budgetsFilterSchema,
+  budgetsListInputSchema,
   createBudgetSchema,
   updateBudgetSchema,
 } from "@neuralpay/types";
-
-function toTrpcCode(code?: string) {
-  switch (code) {
-    case "NOT_FOUND":
-      return "NOT_FOUND" as const;
-    case "FORBIDDEN":
-      return "FORBIDDEN" as const;
-    case "BAD_REQUEST":
-    case "VALIDATION_ERROR":
-      return "BAD_REQUEST" as const;
-    default:
-      return "INTERNAL_SERVER_ERROR" as const;
-  }
-}
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { BudgetsService } from "../services/budgets.service";
 
 export const budgetsRouter = router({
   list: protectedProcedure
-    .input(budgetsFilterSchema.optional())
+    .input(budgetsListInputSchema.optional())
     .query(async ({ ctx, input }) => {
-      const parsed = budgetsFilterSchema.parse(input ?? {});
+      const parsed = budgetsListInputSchema.parse(input ?? {});
       const result = await BudgetsService.listByUser(
         ctx.session.user.id,
         parsed,
@@ -39,20 +25,57 @@ export const budgetsRouter = router({
       return result.data;
     }),
 
-  summary: protectedProcedure.query(async ({ ctx }) => {
-    const result = await BudgetsService.getSummary(ctx.session.user.id);
-    if (!result.success)
-      throw new TRPCError({
-        code: toTrpcCode(result.code),
-        message: result.error,
-      });
-    return result.data;
-  }),
+  monthlyStats: protectedProcedure
+    .input(
+      z
+        .object({
+          month: z.number().int().min(1).max(12).optional(),
+          year: z.number().int().min(2000).max(2100).optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const result = await BudgetsService.getMonthlyStats(
+        ctx.session.user.id,
+        input?.month,
+        input?.year,
+      );
+      if (!result.success)
+        throw new TRPCError({
+          code: toTrpcCode(result.code),
+          message: result.error,
+        });
+      return result.data;
+    }),
+
+  calendar: protectedProcedure
+    .input(
+      z.object({
+        month: z.number().int().min(1).max(12),
+        year: z.number().int().min(2000).max(2100),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const result = await BudgetsService.getCalendarData(
+        ctx.session.user.id,
+        input.month,
+        input.year,
+      );
+      if (!result.success)
+        throw new TRPCError({
+          code: toTrpcCode(result.code),
+          message: result.error,
+        });
+      return result.data;
+    }),
 
   getById: protectedProcedure
-    .input(z.object({ id: z.uuid() }))
+    .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const result = await BudgetsService.getById(input.id, ctx.session.user.id);
+      const result = await BudgetsService.getById(
+        input.id,
+        ctx.session.user.id,
+      );
       if (!result.success)
         throw new TRPCError({
           code: toTrpcCode(result.code),
@@ -86,7 +109,7 @@ export const budgetsRouter = router({
     }),
 
   delete: protectedProcedure
-    .input(z.object({ id: z.uuid() }))
+    .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       const result = await BudgetsService.delete(input.id, ctx.session.user.id);
       if (!result.success)

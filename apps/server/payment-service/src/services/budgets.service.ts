@@ -3,25 +3,41 @@ import { db } from "@neuralpay/db";
 import {
   bankAccounts,
   budgetAccounts,
+  budgetCategories,
   budgets,
   transactions,
 } from "@neuralpay/db/schema";
 import {
   type Budget,
   type BudgetAccountRef,
+  type BudgetCalendarDay,
+  type BudgetCategoryDetail,
   type BudgetHealth,
-  type BudgetsFilterInput,
-  type BudgetSummary,
+  type BudgetMonthlyStats,
+  type BudgetsListInput,
+  type BudgetSortInput,
   type CreateBudgetInput,
+  type PaginatedBudgets,
   type ServiceResult,
   type UpdateBudgetInput,
 } from "@neuralpay/types";
-import { and, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
-import { differenceInCalendarDays } from "date-fns";
-
-async function invalidateBudgetCache(userId: string) {
-  await cache.del(cacheKeys.budgets.summary(userId)).catch(() => {});
-}
+import {
+  and,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  lte,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
+import {
+  differenceInCalendarDays,
+  format,
+  startOfMonth,
+  endOfMonth,
+} from "date-fns";
 
 function healthFor(percentUsed: number, threshold: number): BudgetHealth {
   if (percentUsed >= 100) return "over";
@@ -29,53 +45,80 @@ function healthFor(percentUsed: number, threshold: number): BudgetHealth {
   return "on_track";
 }
 
-// Sum matching debit transactions for a set of budgets in one query,
-// keyed by budgetId. Account scoping is applied per budget afterwards.
-async function computeSpendForBudgets(
+function invalidateBudgetCache(userId: string) {
+  return Promise.all([
+    cache.del(cacheKeys.budgets.summary(userId)),
+    cache.delPattern(`budgets:stats:${userId}*`),
+  ]);
+}
+
+async function loadCategories(
+  budgetIds: string[],
   userId: string,
-  rows: Array<{
-    id: string;
-    category: Budget["category"];
-    startDate: Date | null;
-    endDate: Date | null;
-    accountIds: string[];
-  }>,
-): Promise<Map<string, { spent: number; count: number }>> {
-  const result = new Map<string, { spent: number; count: number }>();
-  if (rows.length === 0) return result;
+  monthStart: Date,
+  monthEnd: Date,
+): Promise<Map<string, BudgetCategoryDetail[]>> {
+  const map = new Map<string, BudgetCategoryDetail[]>();
+  if (budgetIds.length === 0) return map;
 
-  await Promise.all(
-    rows.map(async (b) => {
-      const conditions: SQL[] = [
-        eq(transactions.userId, userId),
-        eq(transactions.type, "debit"),
-        eq(transactions.category, b.category),
-      ];
-      if (b.startDate) conditions.push(gte(transactions.date, b.startDate));
-      if (b.endDate) conditions.push(lte(transactions.date, b.endDate));
-      if (b.accountIds.length > 0) {
-        conditions.push(inArray(transactions.bankAccountId, b.accountIds));
-      }
+  const rows = await db
+    .select()
+    .from(budgetCategories)
+    .where(inArray(budgetCategories.budgetId, budgetIds));
 
-      const [row] = await db
+  // Compute spend per category per budget
+  const spendByCategory = await Promise.all(
+    rows.map(async (row) => {
+      const [result] = await db
         .select({
           total: sql<string>`coalesce(sum(${transactions.amount}::numeric), 0)::text`,
           count: sql<number>`count(*)::int`,
         })
         .from(transactions)
-        .where(and(...conditions));
-
-      result.set(b.id, {
-        spent: parseFloat(row?.total ?? "0"),
-        count: row?.count ?? 0,
-      });
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            eq(transactions.type, "debit"),
+            eq(transactions.category, row.category),
+            gte(transactions.date, monthStart),
+            lte(transactions.date, monthEnd),
+          ),
+        );
+      return {
+        budgetId: row.budgetId,
+        category: row.category,
+        limitAmount: row.limitAmount,
+        spent: parseFloat(result?.total ?? "0"),
+        count: result?.count ?? 0,
+      };
     }),
   );
 
-  return result;
+  for (const row of rows) {
+    const spend = spendByCategory.find(
+      (s) => s.budgetId === row.budgetId && s.category === row.category,
+    );
+    const limit = parseFloat(row.limitAmount);
+    const spent = spend?.spent ?? 0;
+    const detail: BudgetCategoryDetail = {
+      category: row.category,
+      limitAmount: row.limitAmount,
+      spent,
+      remaining: limit - spent,
+      percentUsed: limit > 0 ? Math.round((spent / limit) * 100) : 0,
+      transactionCount: spend?.count ?? 0,
+    };
+
+    const list = map.get(row.budgetId) ?? [];
+    list.push(detail);
+    map.set(row.budgetId, list);
+  }
+
+  return map;
 }
-// Load account refs for a set of budgets, grouped by budgetId.
-async function loadAccountRefs(
+
+// Load account refs
+async function loadAccounts(
   budgetIds: string[],
 ): Promise<Map<string, BudgetAccountRef[]>> {
   const map = new Map<string, BudgetAccountRef[]>();
@@ -87,12 +130,10 @@ async function loadAccountRefs(
       bankAccountId: budgetAccounts.bankAccountId,
       name: bankAccounts.name,
       bankName: bankAccounts.bankName,
+      status: bankAccounts.status,
     })
     .from(budgetAccounts)
-    .innerJoin(
-      bankAccounts,
-      eq(bankAccounts.id, budgetAccounts.bankAccountId),
-    )
+    .innerJoin(bankAccounts, eq(bankAccounts.id, budgetAccounts.bankAccountId))
     .where(inArray(budgetAccounts.budgetId, budgetIds));
 
   for (const r of rows) {
@@ -101,111 +142,192 @@ async function loadAccountRefs(
       bankAccountId: r.bankAccountId,
       name: r.name,
       bankName: r.bankName,
+      isActive: r.status === "active",
     });
     map.set(r.budgetId, list);
   }
   return map;
 }
 
-// Enrich raw budget rows with account refs + derived spend metrics.
+// Enrich raw budget rows
 async function enrich(
   userId: string,
   rows: Array<typeof budgets.$inferSelect>,
+  month: number,
+  year: number,
+  sort?: BudgetSortInput,
 ): Promise<Budget[]> {
   if (rows.length === 0) return [];
 
-  const accountsMap = await loadAccountRefs(rows.map((r) => r.id));
+  const ids = rows.map((r) => r.id);
 
-  const spendInput = rows.map((r) => ({
-    id: r.id,
-    category: r.category,
-    startDate: r.startDate,
-    endDate: r.endDate,
-    accountIds: (accountsMap.get(r.id) ?? []).map((a) => a.bankAccountId),
-  }));
-  const spendMap = await computeSpendForBudgets(userId, spendInput);
-
+  // Determine month scope for spend computation
   const now = new Date();
+  const monthStart = startOfMonth(new Date(year, month - 1));
+  const monthEnd = endOfMonth(new Date(year, month - 1));
 
-  return rows.map((r) => {
-    const limit = parseFloat(r.limitAmount ?? "0");
-    const spend = spendMap.get(r.id) ?? { spent: 0, count: 0 };
-    const percentUsed =
-      limit > 0 ? Math.round((spend.spent / limit) * 100) : 0;
-    const threshold = r.alertThreshold ?? 80;
-    const daysRemaining = r.endDate
-      ? Math.max(0, differenceInCalendarDays(r.endDate, now))
-      : 0;
+  const [categoriesMap, accountsMap] = await Promise.all([
+    loadCategories(ids, userId, monthStart, monthEnd),
+    loadAccounts(ids),
+  ]);
+
+  const enriched = rows.map((r) => {
+    const cats = categoriesMap.get(r.id) ?? [];
+    const totalLimit = parseFloat(r.limitAmount);
+    const totalSpent = cats.reduce((sum, c) => sum + c.spent, 0);
+    const totalRemaining = totalLimit - totalSpent;
+    const totalPercentUsed =
+      totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
+    const threshold = r.alertThreshold;
+    const daysRemaining = differenceInCalendarDays(new Date(r.endDate), now);
 
     return {
       id: r.id,
       userId: r.userId,
-      name: r.name,
+      name: r.name!,
       description: r.description,
-      category: r.category,
       color: r.color,
       limitAmount: r.limitAmount,
-      month: r.month,
-      year: r.year,
-      alertThreshold: r.alertThreshold,
+      period: r.period as Budget["period"],
       startDate: r.startDate,
       endDate: r.endDate,
+      alertThreshold: r.alertThreshold,
       isActive: r.isActive,
+      month: r.month,
+      year: r.year,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
+      categories: cats,
       accounts: accountsMap.get(r.id) ?? [],
-      spent: spend.spent,
-      remaining: limit - spend.spent,
-      percentUsed,
-      status: healthFor(percentUsed, threshold),
-      daysRemaining,
-      transactionCount: spend.count,
-    } satisfies Budget;
+      totalSpent,
+      totalRemaining,
+      totalPercentUsed,
+      status: healthFor(totalPercentUsed, threshold),
+      daysRemaining: Math.max(0, daysRemaining),
+      transactionCount: cats.reduce((sum, c) => sum + c.transactionCount, 0),
+    };
   });
+
+  // Apply sorting
+  if (sort) {
+    const dir = sort.direction === "asc" ? 1 : -1;
+    enriched.sort((a, b) => {
+      switch (sort.field) {
+        case "spent":
+          return (a.totalSpent - b.totalSpent) * dir;
+        case "limitAmount":
+          return (parseFloat(a.limitAmount) - parseFloat(b.limitAmount)) * dir;
+        case "name":
+          return a.name.localeCompare(b.name) * dir;
+        case "date":
+        default:
+          return (
+            (new Date(b.startDate).getTime() -
+              new Date(a.startDate).getTime()) *
+            dir
+          );
+      }
+    });
+  }
+
+  return enriched;
 }
+
 export const BudgetsService = {
   async listByUser(
     userId: string,
-    input: BudgetsFilterInput,
-  ): Promise<ServiceResult<Budget[]>> {
+    input: BudgetsListInput,
+  ): Promise<ServiceResult<PaginatedBudgets>> {
+    const now = new Date();
     try {
-      const { search, category, isActive, from, to } = input;
-      const conditions: SQL[] = [eq(budgets.userId, userId)];
+      const {
+        search,
+        status,
+        isActive,
+        period,
+        startDate,
+        endDate,
+        month,
+        year,
+        cursor,
+        limit,
+        sortField,
+        sortDir,
+      } = input;
 
-      if (typeof isActive === "boolean") {
+      const sort: BudgetSortInput = {
+        field: sortField ?? "date",
+        direction: sortDir ?? "desc",
+      };
+      const conditions: SQL[] = [eq(budgets.userId, userId)];
+      const targetMonth = month ?? now.getMonth() + 1;
+      const targetYear = year ?? now.getFullYear();
+
+      if (isActive !== undefined) {
         conditions.push(eq(budgets.isActive, isActive));
       }
-      if (category) {
-        const cats = Array.isArray(category) ? category : [category];
-        if (cats.length > 0) {
-          conditions.push(inArray(budgets.category, cats));
-        }
-      }
       if (search) {
-        conditions.push(sql`${budgets.name} ilike ${`%${search}%`}`);
+        const s = `%${search}%`;
+        const searchCond = ilike(budgets.name, s);
+        if (searchCond) conditions.push(searchCond);
       }
-      // Range overlap: budget.start <= to AND budget.end >= from
-      if (to) conditions.push(lte(budgets.startDate, new Date(to)));
-      if (from) conditions.push(gte(budgets.endDate, new Date(from)));
+      if (startDate) conditions.push(gte(budgets.endDate, new Date(startDate)));
+      if (endDate) conditions.push(lte(budgets.startDate, new Date(endDate)));
 
-      const rows = await db
+      let query = db
         .select()
         .from(budgets)
         .where(and(...conditions))
-        .orderBy(sql`${budgets.startDate} desc nulls last`, budgets.createdAt);
+        .orderBy(sql`${budgets.createdAt} desc`)
+        .limit(limit + 1);
 
-      const data = await enrich(userId, rows);
-      return { success: true, data };
+      if (cursor) {
+        const cursorId = Buffer.from(cursor, "base64url").toString("utf-8");
+
+        const [cursorRow] = await db
+          .select({ id: budgets.id, createdAt: budgets.createdAt })
+          .from(budgets)
+          .where(and(eq(budgets.id, cursorId), eq(budgets.userId, userId)))
+          .limit(1);
+
+        if (cursorRow) {
+          const cursorRowCondition = or(
+            sql`${budgets.createdAt} < ${cursorRow.createdAt}`,
+            and(
+              eq(budgets.createdAt, cursorRow.createdAt),
+              sql`${budgets.id} < ${cursorRow.id}`,
+            ),
+          );
+          if (cursorRowCondition) conditions.push(cursorRowCondition);
+        }
+      }
+
+      const rows = await query;
+      let enriched = await enrich(userId, rows, targetMonth, targetYear, sort);
+
+      if (status) {
+        const statuses = Array.isArray(status) ? status : [status];
+        enriched = enriched.filter((b) => statuses.includes(b.status));
+      }
+
+      const hasMore = enriched.length > limit;
+      const items = hasMore ? enriched.slice(0, -1) : enriched;
+      const last = items[items.length - 1];
+      const nextCursor =
+        hasMore && last ? Buffer.from(last.id).toString("base64url") : null;
+
+      return { success: true, data: { items, nextCursor } };
     } catch (err) {
       console.error("[BudgetsService.listByUser]", err);
-      return { success: false, error: "Failed to fetch budgets", code: "DB_ERROR" };
+      return {
+        success: false,
+        error: "Failed to fetch budgets",
+        code: "DB_ERROR",
+      };
     }
   },
 
-  async getById(
-    id: string,
-    userId: string,
-  ): Promise<ServiceResult<Budget>> {
+  async getById(id: string, userId: string): Promise<ServiceResult<Budget>> {
     try {
       const [row] = await db
         .select()
@@ -217,55 +339,153 @@ export const BudgetsService = {
         return { success: false, error: "Budget not found", code: "NOT_FOUND" };
       }
 
-      const [enriched] = await enrich(userId, [row]);
+      const [enriched] = await enrich(userId, [row], row.month, row.year);
       return { success: true, data: enriched! };
     } catch (err) {
       console.error("[BudgetsService.getById]", err);
-      return { success: false, error: "Failed to fetch budget", code: "DB_ERROR" };
+      return {
+        success: false,
+        error: "Failed to fetch budget",
+        code: "DB_ERROR",
+      };
     }
   },
 
-  async getSummary(
+  async getMonthlyStats(
     userId: string,
-  ): Promise<ServiceResult<BudgetSummary>> {
+    month?: number,
+    year?: number,
+  ): Promise<ServiceResult<BudgetMonthlyStats>> {
     try {
+      const now = new Date();
+      const targetMonth = month ?? now.getMonth() + 1;
+      const targetYear = year ?? now.getFullYear();
+      const monthStart = startOfMonth(new Date(targetYear, targetMonth - 1));
+      const monthEnd = endOfMonth(new Date(targetYear, targetMonth - 1));
+
       const data = await cache.getOrSet(
-        cacheKeys.budgets.summary(userId),
+        cacheKeys.budgets.stats(userId, targetYear, targetMonth),
         async () => {
           const rows = await db
             .select()
             .from(budgets)
-            .where(and(eq(budgets.userId, userId), eq(budgets.isActive, true)));
-          const enriched = await enrich(userId, rows);
+            .where(
+              and(
+                eq(budgets.userId, userId),
+                eq(budgets.isActive, true),
+                gte(budgets.startDate, monthStart),
+                lte(budgets.endDate, monthEnd),
+              ),
+            );
 
-          return enriched.reduce<BudgetSummary>(
-            (acc, b) => {
-              acc.totalBudgeted += parseFloat(b.limitAmount ?? "0");
-              acc.totalSpent += b.spent;
-              acc.totalRemaining += b.remaining;
-              acc.activeCount += 1;
-              if (b.status === "over") acc.overCount += 1;
-              else if (b.status === "warning") acc.warningCount += 1;
-              return acc;
-            },
-            {
-              totalBudgeted: 0,
-              totalSpent: 0,
-              totalRemaining: 0,
-              activeCount: 0,
-              overCount: 0,
-              warningCount: 0,
-            },
+          const enriched = await enrich(userId, rows, targetMonth, targetYear);
+
+          const totalBudgeted = enriched.reduce(
+            (sum, b) => sum + parseFloat(b.limitAmount),
+            0,
           );
+          const totalSpent = enriched.reduce((sum, b) => sum + b.totalSpent, 0);
+          const savingsRate =
+            totalBudgeted > 0
+              ? Math.round(((totalBudgeted - totalSpent) / totalBudgeted) * 100)
+              : 0;
+
+          const onTrackCount = enriched.filter(
+            (b) => b.status === "on_track",
+          ).length;
+          const overCount = enriched.filter((b) => b.status === "over").length;
+          const warningCount = enriched.filter(
+            (b) => b.status === "warning",
+          ).length;
+
+          return {
+            currentMonth: format(monthStart, "MMMM yyyy"),
+            totalBudgeted,
+            totalSpent,
+            savingsRate,
+            needsAttention: {
+              count: warningCount + overCount,
+              onTrackCount,
+              overBudgetCount: overCount,
+            },
+          } satisfies BudgetMonthlyStats;
         },
-        120,
+        300, // 5 min cache
       );
+
       return { success: true, data };
     } catch (err) {
-      console.error("[BudgetsService.getSummary]", err);
-      return { success: false, error: "Failed to fetch summary", code: "DB_ERROR" };
+      console.error("[BudgetsService.getMonthlyStats]", err);
+      return {
+        success: false,
+        error: "Failed to fetch stats",
+        code: "DB_ERROR",
+      };
     }
   },
+
+  async getCalendarData(
+    userId: string,
+    month: number,
+    year: number,
+  ): Promise<ServiceResult<BudgetCalendarDay[]>> {
+    try {
+      const monthStart = startOfMonth(new Date(year, month - 1));
+      const monthEnd = endOfMonth(new Date(year, month - 1));
+
+      const rows = await db
+        .select()
+        .from(budgets)
+        .where(
+          and(
+            eq(budgets.userId, userId),
+            gte(budgets.startDate, monthStart),
+            lte(budgets.endDate, monthEnd),
+          ),
+        );
+
+      const enriched = await enrich(userId, rows, month, year);
+
+      // Group by day
+      const dayMap = new Map<string, BudgetCalendarDay["budgets"]>();
+
+      for (const budget of enriched) {
+        const dayKey = format(budget.startDate, "yyyy-MM-dd");
+        const list = dayMap.get(dayKey) ?? [];
+        list.push({
+          id: budget.id,
+          name: budget.name,
+          color: budget.color,
+          status: budget.status,
+          spent: budget.totalSpent,
+          limitAmount: budget.limitAmount,
+        });
+        dayMap.set(dayKey, list);
+      }
+
+      // Fill all days of month
+      const result: BudgetCalendarDay[] = [];
+      const daysInMonth = monthEnd.getDate();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month - 1, day);
+        const key = format(date, "yyyy-MM-dd");
+        result.push({
+          date: key,
+          budgets: dayMap.get(key) ?? [],
+        });
+      }
+
+      return { success: true, data: result };
+    } catch (err) {
+      console.error("[BudgetsService.getCalendarData]", err);
+      return {
+        success: false,
+        error: "Failed to fetch calendar",
+        code: "DB_ERROR",
+      };
+    }
+  },
+
   async create(
     userId: string,
     input: CreateBudgetInput,
@@ -273,6 +493,8 @@ export const BudgetsService = {
     try {
       const start = new Date(input.startDate);
       const end = new Date(input.endDate);
+      // Sanitize optional fields before persisting.
+      const accountIds = input.accountIds ?? [];
 
       const [created] = await db
         .insert(budgets)
@@ -280,25 +502,33 @@ export const BudgetsService = {
           userId,
           name: input.name,
           description: input.description ?? null,
-          category: input.category,
-          color: input.color ?? null,
+          color: input.color ?? "#6366f1",
           limitAmount: input.limitAmount.toString(),
-          // Derive legacy period columns from the start date so
-          // getSpendingOverview continues to see this budget.
+          period: input.period ?? "monthly",
+          startDate: start,
+          endDate: end,
           month: start.getMonth() + 1,
           year: start.getFullYear(),
           alertThreshold: input.alertThreshold ?? 80,
-          startDate: start,
-          endDate: end,
           isActive: true,
         })
         .returning();
 
       if (!created) throw new Error("Insert returned no row");
 
-      const accountIds = input.accountIds ?? [];
+      // Insert category allocations
+      if (input.categories.length > 0) {
+        await db.insert(budgetCategories).values(
+          input.categories.map((c) => ({
+            budgetId: created.id,
+            category: c.category,
+            limitAmount: c.limitAmount.toString(),
+          })),
+        );
+      }
+
+      // Link accounts
       if (accountIds.length > 0) {
-        // Only link accounts that belong to this user.
         const owned = await db
           .select({ id: bankAccounts.id })
           .from(bankAccounts)
@@ -309,18 +539,29 @@ export const BudgetsService = {
             ),
           );
         if (owned.length > 0) {
-          await db.insert(budgetAccounts).values(
-            owned.map((a) => ({ budgetId: created.id, bankAccountId: a.id })),
-          );
+          await db
+            .insert(budgetAccounts)
+            .values(
+              owned.map((a) => ({ budgetId: created.id, bankAccountId: a.id })),
+            );
         }
       }
 
       await invalidateBudgetCache(userId);
-      const [enriched] = await enrich(userId, [created]);
+      const [enriched] = await enrich(
+        userId,
+        [created],
+        created.month,
+        created.year,
+      );
       return { success: true, data: enriched! };
     } catch (err) {
       console.error("[BudgetsService.create]", err);
-      return { success: false, error: "Failed to create budget", code: "DB_ERROR" };
+      return {
+        success: false,
+        error: "Failed to create budget",
+        code: "DB_ERROR",
+      };
     }
   },
 
@@ -343,13 +584,14 @@ export const BudgetsService = {
       if (input.name !== undefined) updateData.name = input.name;
       if (input.description !== undefined)
         updateData.description = input.description;
-      if (input.category !== undefined) updateData.category = input.category;
       if (input.color !== undefined) updateData.color = input.color;
       if (input.limitAmount !== undefined)
         updateData.limitAmount = input.limitAmount.toString();
+      if (input.period !== undefined) updateData.period = input.period;
       if (input.alertThreshold !== undefined)
         updateData.alertThreshold = input.alertThreshold;
       if (input.isActive !== undefined) updateData.isActive = input.isActive;
+
       if (input.startDate !== undefined) {
         const start = new Date(input.startDate);
         updateData.startDate = start;
@@ -370,7 +612,23 @@ export const BudgetsService = {
         return { success: false, error: "Budget not found", code: "NOT_FOUND" };
       }
 
-      // Replace account links when accountIds is provided.
+      // Replace categories
+      if (input.categories !== undefined) {
+        await db
+          .delete(budgetCategories)
+          .where(eq(budgetCategories.budgetId, input.id));
+        if (input.categories.length > 0) {
+          await db.insert(budgetCategories).values(
+            input.categories.map((c) => ({
+              budgetId: input.id,
+              category: c.category,
+              limitAmount: c.limitAmount.toString(),
+            })),
+          );
+        }
+      }
+
+      // Replace accounts
       if (input.accountIds !== undefined) {
         await db
           .delete(budgetAccounts)
@@ -386,19 +644,30 @@ export const BudgetsService = {
               ),
             );
           if (owned.length > 0) {
-            await db.insert(budgetAccounts).values(
-              owned.map((a) => ({ budgetId: input.id, bankAccountId: a.id })),
-            );
+            await db
+              .insert(budgetAccounts)
+              .values(
+                owned.map((a) => ({ budgetId: input.id, bankAccountId: a.id })),
+              );
           }
         }
       }
 
       await invalidateBudgetCache(userId);
-      const [enriched] = await enrich(userId, [updated]);
+      const [enriched] = await enrich(
+        userId,
+        [updated],
+        updated.month,
+        updated.year,
+      );
       return { success: true, data: enriched! };
     } catch (err) {
       console.error("[BudgetsService.update]", err);
-      return { success: false, error: "Failed to update budget", code: "DB_ERROR" };
+      return {
+        success: false,
+        error: "Failed to update budget",
+        code: "DB_ERROR",
+      };
     }
   },
 
@@ -420,7 +689,11 @@ export const BudgetsService = {
       return { success: true, data: { id: deleted.id } };
     } catch (err) {
       console.error("[BudgetsService.delete]", err);
-      return { success: false, error: "Failed to delete budget", code: "DB_ERROR" };
+      return {
+        success: false,
+        error: "Failed to delete budget",
+        code: "DB_ERROR",
+      };
     }
   },
 } as const;

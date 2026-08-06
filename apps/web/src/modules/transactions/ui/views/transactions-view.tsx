@@ -6,13 +6,12 @@ import {
   validateTransactionTypes,
 } from "../../lib/validate-transaction-enums";
 import { NewTransactionButton } from "../components/new-transaction-button";
+import { TransactionDrawerInit } from "../components/transaction-drawer-init";
 import { TransactionFilters } from "../components/transaction-filters";
 import {
   TransactionsList,
   TransactionsListSkeleton,
 } from "../components/transaction-list";
-import { SearchableCombobox } from "@/components/searchable-combobox";
-import { TransactionDrawerInit } from "../components/transaction-drawer-init";
 
 interface TransactionsViewProps {
   search?: string;
