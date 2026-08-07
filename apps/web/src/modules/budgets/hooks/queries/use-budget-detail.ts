@@ -1,12 +1,19 @@
+import { skipToken, useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/trpc-client";
-import { useQuery } from "@tanstack/react-query";
 
-// Detail fetch for the edit drawer. Pass "" to disable.
-export function useBudgetDetail(id: string) {
-  const trpc = useTRPC();
-  const query = useQuery({
-    ...trpc.payments.budgets.getById.queryOptions({ id }),
-    enabled: !!id,
-  });
-  return { ...query, budget: query.data, isLoading: query.isPending && !!id };
+export function useBudgetDetail(id?: string) {
+	const trpc = useTRPC();
+	const {
+		data: budget,
+		isPending,
+		isError,
+	} = useQuery(
+		trpc.payments.budgets.getById.queryOptions(id ? { id } : skipToken),
+	);
+
+	return {
+		budget,
+		isLoading: isPending,
+		isError,
+	};
 }

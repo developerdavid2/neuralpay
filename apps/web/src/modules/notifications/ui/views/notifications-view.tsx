@@ -1,6 +1,5 @@
 import { DashboardHeader } from "@/components/dashboard-header";
 import { NotificationsClientShell } from "../components/notifications-client-shell";
-import type { NotificationCategory } from "@neuralpay/types";
 
 export async function NotificationsView() {
   return (

@@ -1,93 +1,86 @@
 import {
-  validateBudgetPeriod,
-  validateBudgetStatuses,
-  validateSortField,
+	validateBudgetPeriod,
+	validateBudgetStatuses,
+	validateSortField,
 } from "@/modules/budgets/lib/validate-budget-params";
+import type { BudgetQueryState } from "@/modules/budgets/types";
 import { BudgetsView } from "@/modules/budgets/ui/views/budgets-view";
 import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 
 interface PageProps {
-  searchParams: Promise<{
-    view?: string;
-    month?: string;
-    year?: string;
-    search?: string;
-    status?: string | string[];
-    isActive?: string;
-    period?: string;
-    sortField?: string;
-    sortDir?: string;
-    limit?: string;
-    focusBudgetId?: string;
-    mode?: string;
-  }>;
+	searchParams: Promise<{
+		view?: string;
+		month?: string;
+		year?: string;
+		search?: string;
+		status?: string | string[];
+		isActive?: string;
+		period?: string;
+		sortField?: string;
+		sortDir?: string;
+		limit?: string;
+		focusBudgetId?: string;
+		mode?: string;
+	}>;
 }
 
 const Page = async ({ searchParams }: PageProps) => {
-  const params = await searchParams;
-  const now = new Date();
+	const params = await searchParams;
+	const now = new Date();
 
-  const viewMode = params.view === "list" ? "list" : "calendar";
-  const month = Number(params.month) || now.getMonth() + 1;
-  const year = Number(params.year) || now.getFullYear();
-  const search = params.search?.trim() || "";
-  const statuses = validateBudgetStatuses(params.status);
-  const isActive = params.isActive === "false" ? false : true;
-  const period = validateBudgetPeriod(params.period);
-  const sortField: "date" | "spent" | "limitAmount" | "name" =
-    validateSortField(params.sortField) || "date";
-  const sortDir: "asc" | "desc" = params.sortDir === "asc" ? "asc" : "desc";
-  const limit = Math.min(Math.max(Number(params.limit) || 20, 1), 100);
+	const viewMode = params.view === "list" ? "list" : "calendar";
+	const month = Number(params.month) || now.getMonth() + 1;
+	const year = Number(params.year) || now.getFullYear();
 
-  const listInput = {
-    search: search || undefined,
-    status: statuses,
-    isActive,
-    period,
-    sortField,
-    sortDir,
-    limit,
-  };
+	const queryState: BudgetQueryState = {
+		search: params.search?.trim() ?? undefined,
+		statuses: validateBudgetStatuses(params.status) ?? [],
+		isActive: params.isActive !== "false",
+		period: validateBudgetPeriod(params.period),
+		sortField:
+			(validateSortField(params.sortField) as BudgetQueryState["sortField"]) ??
+			"date",
+		sortDir: params.sortDir === "asc" ? "asc" : "desc",
+		limit: Math.min(Math.max(Number(params.limit) || 10, 1), 100),
+	};
 
-  prefetch(
-    trpc.payments.budgets.list.infiniteQueryOptions(listInput, {
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    }),
-  );
+	const listInput = queryState;
 
-  prefetch(
-    trpc.payments.budgets.monthlyStats.queryOptions({
-      month,
-      year,
-    }),
-  );
+	prefetch(
+		trpc.payments.budgets.list.infiniteQueryOptions(listInput, {
+			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		}),
+	);
 
-  if (params.focusBudgetId) {
-    prefetch(
-      trpc.payments.budgets.getById.queryOptions({
-        id: params.focusBudgetId,
-      }),
-    );
-  }
+	prefetch(trpc.payments.budgets.calendar.queryOptions({ month, year }));
 
-  return (
-    <HydrateClient>
-      <BudgetsView
-        viewMode={viewMode}
-        month={month}
-        year={year}
-        search={search}
-        statuses={statuses ?? []}
-        isActive={isActive}
-        period={period}
-        sortField={sortField}
-        sortDir={sortDir}
-        limit={limit}
-        focusBudgetId={params.focusBudgetId}
-        focusMode={params.mode}
-      />
-    </HydrateClient>
-  );
+	prefetch(
+		trpc.payments.budgets.monthlyStats.queryOptions({
+			month,
+			year,
+		}),
+	);
+
+	if (params.focusBudgetId) {
+		prefetch(
+			trpc.payments.budgets.getById.queryOptions({
+				id: params.focusBudgetId,
+			}),
+		);
+	}
+
+	return (
+		<HydrateClient>
+			<BudgetsView
+				queryState={queryState}
+				month={month}
+				year={year}
+				viewMode={viewMode}
+				focusBudgetId={params.focusBudgetId}
+				focusMode={params.mode}
+			/>
+		</HydrateClient>
+	);
 };
 
 export default Page;

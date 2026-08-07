@@ -1,79 +1,54 @@
+// modules/budgets/ui/components/budget-card.tsx
 "use client";
 
-import { formatAmount } from "@/lib/utils";
-import { CATEGORY_ICONS, CATEGORY_LABELS } from "@/modules/dashboard/constants";
-import { Badge } from "@neuralpay/ui/components/badge";
+import { Checkbox } from "@neuralpay/ui/components/checkbox";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { Package } from "lucide-react";
 import type { Budget } from "@neuralpay/types";
-import { HEALTH_META } from "../../constants";
+import { formatAmount } from "@/lib/utils";
 
-export function BudgetCard({
-  budget,
-  onClick,
-}: {
+interface BudgetCardProps {
   budget: Budget;
-  onClick?: () => void;
-}) {
-  const Icon = CATEGORY_ICONS[budget.category] ?? Package;
-  const health = HEALTH_META[budget.status];
-  const pct = Math.min(budget.percentUsed, 100);
-  const accent = budget.color ?? "#6366f1";
+  selected: boolean;
+  onSelect: (id: string, checked: boolean) => void;
+}
 
+export function BudgetCard({ budget, selected, onSelect }: BudgetCardProps) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex w-full flex-col gap-3 rounded-2xl border border-muted bg-card p-4 text-left shadow-sm transition hover:border-foreground/20 hover:shadow-md"
+    <div
+      className={cn(
+        "flex items-center gap-4 rounded-xl border p-4 transition-colors",
+        selected ? "border-primary bg-primary/5" : "border-border bg-card",
+      )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div
-            className="flex size-9 shrink-0 items-center justify-center rounded-xl"
-            style={{ backgroundColor: `${accent}1a`, color: accent }}
-          >
-            <Icon className="size-4.5" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">
-              {budget.name ?? CATEGORY_LABELS[budget.category] ?? budget.category}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {CATEGORY_LABELS[budget.category] ?? budget.category}
-            </p>
-          </div>
-        </div>
-        <Badge variant="outline" className={cn("shrink-0", health.badge)}>
-          {health.label}
-        </Badge>
-      </div>
+      <Checkbox
+        checked={selected}
+        onCheckedChange={(checked) => onSelect(budget.id, checked as boolean)}
+      />
 
-      <div className="space-y-1.5">
-        <div className="flex items-baseline justify-between">
-          <span className="text-sm font-bold tabular-nums">
-            {formatAmount(budget.spent)}
-          </span>
-          <span className="text-xs text-muted-foreground tabular-nums">
-            of {formatAmount(Number(budget.limitAmount))}
+      <div className="flex-1">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium">{budget.name}</h3>
+          <span
+            className={cn(
+              "text-xs font-medium px-2 py-0.5 rounded-full",
+              budget.status === "on_track" && "bg-green-100 text-green-700",
+              budget.status === "warning" && "bg-amber-100 text-amber-700",
+              budget.status === "over" && "bg-red-100 text-red-700",
+            )}
+          >
+            {budget.status.replace("_", " ")}
           </span>
         </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className={cn("h-full rounded-full transition-all", health.bar)}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className={cn("font-medium", health.color)}>
-            {budget.percentUsed}% used
-          </span>
+
+        <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
           <span>
-            {budget.remaining >= 0
-              ? `${formatAmount(budget.remaining)} left`
-              : `${formatAmount(Math.abs(budget.remaining))} over`}
+            {formatAmount(budget.totalSpent)} /{" "}
+            {formatAmount(parseFloat(budget.limitAmount))}
           </span>
+          <span>{budget.percentUsed}%</span>
+          <span>{budget.daysRemaining} days left</span>
         </div>
       </div>
-    </button>
+    </div>
   );
 }

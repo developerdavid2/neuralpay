@@ -109,9 +109,24 @@ export const budgetsRouter = router({
     }),
 
   delete: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.uuid() }))
     .mutation(async ({ ctx, input }) => {
       const result = await BudgetsService.delete(input.id, ctx.session.user.id);
+      if (!result.success)
+        throw new TRPCError({
+          code: toTrpcCode(result.code),
+          message: result.error,
+        });
+      return result.data;
+    }),
+
+  deleteMany: protectedProcedure
+    .input(z.object({ ids: z.array(z.uuid()).min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const result = await BudgetsService.deleteMany(
+        input.ids,
+        ctx.session.user.id,
+      );
       if (!result.success)
         throw new TRPCError({
           code: toTrpcCode(result.code),

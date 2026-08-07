@@ -266,6 +266,10 @@ export const BudgetsService = {
       if (isActive !== undefined) {
         conditions.push(eq(budgets.isActive, isActive));
       }
+
+      if (period !== undefined) {
+        conditions.push(eq(budgets.period, period));
+      }
       if (search) {
         const s = `%${search}%`;
         const searchCond = ilike(budgets.name, s);
@@ -696,4 +700,40 @@ export const BudgetsService = {
       };
     }
   },
+
+  async deleteMany(
+  ids: string[],
+  userId: string,
+): Promise<ServiceResult<{ deleted: number; failed: string[] }>> {
+  try {
+    const failed: string[] = [];
+    let deleted = 0;
+
+    for (const id of ids) {
+      const result = await this.delete(id, userId);
+      if (result.success) {
+        deleted++;
+      } else {
+        failed.push(id);
+      }
+    }
+
+    if (failed.length > 0 && deleted === 0) {
+      return {
+        success: false,
+        error: `Failed to delete all ${ids.length} budgets`,
+        code: "DB_ERROR",
+      };
+    }
+
+    return { success: true, data: { deleted, failed } };
+  } catch (err) {
+    console.error("[BudgetsService.deleteMany]", err);
+    return {
+      success: false,
+      error: "Failed to delete budgets",
+      code: "DB_ERROR",
+    };
+  }
+}
 } as const;
