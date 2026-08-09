@@ -1,4 +1,3 @@
-import type { BudgetHealth } from "@neuralpay/types";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { SectionBoundary } from "@/components/section-boundary";
 import type { BudgetQueryState } from "../../types";
@@ -30,7 +29,7 @@ export function BudgetsView({
 	focusMode,
 }: BudgetsViewProps) {
 	return (
-		<div className="flex h-full w-full flex-col gap-6 p-10">
+		<div className="flex flex-col w-full gap-6 p-10 h-[125vh]">
 			<DashboardHeader
 				title="Budgets"
 				description="Set spending limits by category and track them across your accounts."
@@ -43,6 +42,7 @@ export function BudgetsView({
 			>
 				<BudgetMonthlyStatsCards month={month} year={year} />
 			</SectionBoundary>
+
 			<BudgetDrawerInit focusId={focusBudgetId} mode={focusMode} />
 
 			<SectionBoundary
@@ -56,7 +56,6 @@ export function BudgetsView({
 					viewMode={viewMode}
 				/>
 			</SectionBoundary>
-
 			<BudgetFormDrawer />
 			<BudgetViewDrawer />
 		</div>

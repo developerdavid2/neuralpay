@@ -1,7 +1,7 @@
 "use client";
 
-import { useTRPC } from "@/trpc/trpc-client";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/trpc-client";
 
 export function useBudgetMonthlyStats(month: number, year: number) {
   const trpc = useTRPC();

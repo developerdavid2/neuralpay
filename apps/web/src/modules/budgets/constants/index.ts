@@ -1,3 +1,4 @@
+import type { BudgetHealth, BudgetPeriod } from "@neuralpay/types";
 import {
   addMonths,
   addWeeks,
@@ -6,36 +7,48 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import type { BudgetHealth, BudgetPeriod } from "@neuralpay/types";
 
 export const BUDGET_VIEW_MODES = ["calendar", "list"] as const;
 export type BudgetViewMode = (typeof BUDGET_VIEW_MODES)[number];
 
+// ── Health Config ─
 export const HEALTH_META: Record<
   BudgetHealth,
-  { label: string; color: string; bar: string; badge: string }
+  {
+    label: string;
+    badge: string;
+    bar: string;
+    text: string;
+    dot: string;
+  }
 > = {
   on_track: {
     label: "On track",
-    color: "text-emerald-600",
+    badge:
+      "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     bar: "bg-emerald-500",
-    badge: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+    text: "text-emerald-600 dark:text-emerald-400",
+    dot: "bg-emerald-500",
   },
   warning: {
     label: "Nearing limit",
-    color: "text-amber-600",
+    badge:
+      "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
     bar: "bg-amber-500",
-    badge: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    text: "text-amber-600 dark:text-amber-400",
+    dot: "bg-amber-500",
   },
   over: {
     label: "Over budget",
-    color: "text-red-600",
+    badge: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
     bar: "bg-red-500",
-    badge: "bg-red-500/10 text-red-600 border-red-500/20",
+    text: "text-red-600 dark:text-red-400",
+    dot: "bg-red-500",
   },
 };
 
-// Given a period preset and an anchor date, return the [start, end] ISO range.
+// ── Period Helpers
+
 export function rangeForPeriod(
   period: BudgetPeriod,
   anchor: Date,
@@ -52,7 +65,6 @@ export function rangeForPeriod(
       endDate: endOfMonth(anchor).toISOString(),
     };
   }
-  // custom — default to a one-month window the user can adjust
   return {
     startDate: startOfMonth(anchor).toISOString(),
     endDate: endOfMonth(anchor).toISOString(),
@@ -64,7 +76,18 @@ export function nextPeriodAnchor(
   anchor: Date,
   dir: 1 | -1,
 ): Date {
-  return period === "weekly"
-    ? addWeeks(anchor, dir)
-    : addMonths(anchor, dir);
+  return period === "weekly" ? addWeeks(anchor, dir) : addMonths(anchor, dir);
 }
+
+export const PERIOD_OPTIONS: { value: BudgetPeriod; label: string }[] = [
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "custom", label: "Custom" },
+];
+
+export const SORT_OPTIONS = [
+  { value: "date", label: "Start date" },
+  { value: "spent", label: "Amount spent" },
+  { value: "limitAmount", label: "Budget limit" },
+  { value: "name", label: "Name" },
+];

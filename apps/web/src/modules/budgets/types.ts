@@ -22,7 +22,8 @@ export type BudgetFormValues = {
 export interface BudgetQueryState {
 	search?: string;
 	statuses: BudgetHealth[];
-	isActive: boolean;
+	// Tri-state: undefined = all budgets, true = active only, false = inactive only.
+	isActive?: boolean;
 	period?: BudgetPeriod;
 	sortField: BudgetSortField;
 	sortDir: BudgetSortDir;

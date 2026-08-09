@@ -1,11 +1,5 @@
 "use client";
 
-import { Bot } from "lucide-react";
-import { useSessionDetails } from "../../hooks/queries/use-session-details";
-import { useAIChat } from "../../hooks/use-ai-chat";
-import { ChatContextPill } from "./chat-context-pill";
-
-import { InfiniteScroll } from "@/components/infinite-scroll";
 import {
   Conversation,
   ConversationContent,
@@ -13,14 +7,18 @@ import {
 } from "@neuralpay/ui/components/ai-elements/conversation";
 import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
 import { Button } from "@neuralpay/ui/components/button";
-import { AlertCircle, ArchiveRestore } from "lucide-react";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { AlertCircle, ArchiveRestore, Bot } from "lucide-react";
 import { toast } from "sonner";
+import { InfiniteScroll } from "@/components/infinite-scroll";
+import { CHAT_SESSION_MESSAGES } from "../../constants";
 import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session";
 import { useMessages } from "../../hooks/queries/use-messages";
+import { useSessionDetails } from "../../hooks/queries/use-session-details";
+import { useAIChat } from "../../hooks/use-ai-chat";
+import { ChatContextPill } from "./chat-context-pill";
 import { ChatInput } from "./chat-input";
 import { ChatMessageItem } from "./chat-message-item";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { CHAT_SESSION_MESSAGES } from "../../constants";
 
 interface Props {
   sessionId: string;
@@ -28,19 +26,6 @@ interface Props {
 }
 
 export function ChatConversationArea({ sessionId, initialMessage }: Props) {
-  if (!sessionId || typeof sessionId !== "string" || sessionId.trim() === "") {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <AlertCircle className="size-5 text-destructive" />
-          <p className="text-sm text-muted-foreground">
-            Invalid session. Please refresh and try again.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const { sessionData } = useSessionDetails(sessionId);
   const archivedAt = sessionData?.session.archivedAt;
   const isArchived = archivedAt !== null && archivedAt !== undefined;
@@ -78,6 +63,18 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     );
   };
 
+  if (!sessionId || typeof sessionId !== "string" || sessionId.trim() === "") {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <AlertCircle className="size-5 text-destructive" />
+          <p className="text-sm text-muted-foreground">
+            Invalid session. Please refresh and try again.
+          </p>
+        </div>
+      </div>
+    );
+  }
   return (
     <>
       <header className="flex items-center justify-between border-b px-4 py-3">
