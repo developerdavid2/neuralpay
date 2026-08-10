@@ -1,9 +1,9 @@
 "use client";
 
 import { SearchableCombobox } from "@/components/searchable-combobox";
+import { useCities } from "../../hooks/queries/use-cities";
 import { useCountries } from "../../hooks/queries/use-countries";
 import { useStates } from "../../hooks/queries/use-states";
-import { useCities } from "../../hooks/queries/use-cities";
 
 interface CitySelectProps {
   countryName?: string;

@@ -1,6 +1,5 @@
 "use client";
 
-import { formatDateTime } from "@/lib/utils";
 import { Button } from "@neuralpay/ui/components/button";
 import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
@@ -12,6 +11,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import { formatDateTime } from "@/lib/utils";
 import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";
 import type { Insight } from "../../types";
 
@@ -50,9 +50,10 @@ export const InsightCard = ({
   const isPending = dismissing || restoring;
 
   return (
-    <div
+    <button
+      type="button"
       className={cn(
-        "group relative flex flex-col transition-colors cursor-pointer",
+        "group relative flex flex-col items-start text-left transition-colors cursor-pointer w-full",
         isFull ? "gap-3 px-6 py-5" : "gap-2 px-5 py-4",
         "hover:bg-accent",
         isUnread && "bg-accent/30",
@@ -60,7 +61,6 @@ export const InsightCard = ({
         isPending && "pointer-events-none opacity-50",
       )}
       onClick={() => !isPending && onOpen(insight.id)}
-      role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (!isPending && (e.key === "Enter" || e.key === " ")) {
@@ -112,6 +112,7 @@ export const InsightCard = ({
         {!isFull && !isDismissed && (
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onChat(insight.id);
@@ -123,6 +124,7 @@ export const InsightCard = ({
               <MessageCircle className="size-3.5" />
             </button>
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onDismiss(insight.id);
@@ -144,6 +146,7 @@ export const InsightCard = ({
         {!isFull && isDismissed && onRestore && (
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onRestore(insight.id);
@@ -244,6 +247,7 @@ export const InsightCard = ({
       {!isFull && !isDismissed && (
         <div className="flex items-center gap-2 mt-0.5 sm:hidden">
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onChat(insight.id);
@@ -257,7 +261,7 @@ export const InsightCard = ({
           </button>
         </div>
       )}
-    </div>
+    </button>
   );
 };
 

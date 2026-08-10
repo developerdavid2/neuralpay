@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import {
   Tabs,
   TabsContent,
@@ -13,20 +14,22 @@ import { SectionBoundary } from "@/components/section-boundary";
 import type { BudgetQueryState } from "../../types";
 import { BudgetCalendar, BudgetCalendarSkeleton } from "./budget-calendar";
 import { BudgetFilters } from "./budget-filters";
+import { BudgetFormDrawer } from "./budget-form-drawer";
 import { BudgetList, BudgetListSkeleton } from "./budget-list";
 import { BudgetToolbar } from "./budget-toolbar";
+import { BudgetViewDrawer } from "./budget-view-drawer";
 
 interface BudgetViewTabsProps {
   queryState: BudgetQueryState;
-  month: number;
-  year: number;
+  calMonth: number;
+  calYear: number;
   viewMode: "calendar" | "list";
 }
 
 export function BudgetViewTabs({
   queryState,
-  month,
-  year,
+  calMonth,
+  calYear,
   viewMode,
 }: BudgetViewTabsProps) {
   const router = useRouter();
@@ -59,66 +62,122 @@ export function BudgetViewTabs({
 
   const selectedArray = useMemo(() => Array.from(selectedIds), [selectedIds]);
 
+  // Remount the list boundary on any query change so Suspense re-shows the
+  // skeleton while the new page fetches. router.push updates inside a
+  // transition, which would otherwise keep the stale list and skip the
+  // fallback — a fresh key forces a remount that suspends immediately.
+  const listKey = useMemo(
+    () =>
+      [
+        queryState.search ?? "",
+        queryState.statuses.join(","),
+        queryState.isActive ?? "",
+        queryState.period ?? "",
+        queryState.month ?? "",
+        queryState.year ?? "",
+        queryState.sortField,
+        queryState.sortDir,
+        queryState.limit,
+      ].join("|"),
+    [queryState],
+  );
+
   return (
-    <Tabs
-      value={viewMode}
-      onValueChange={(v) =>
-        navigate({ view: v === "calendar" ? undefined : "list" })
-      }
-      className="rounded-2xl overflow-hidden border border-muted bg-card shadow"
-    >
+    <>
+      <Tabs
+        value={viewMode}
+        onValueChange={(v) =>
+          navigate({ view: v === "calendar" ? undefined : "list" })
+        }
+        className="rounded-2xl overflow-hidden border border-muted bg-card shadow"
+      >
+        <div className="shrink-0 border-b border-border px-6 py-4">
+          <div className="flex items-center justify-between">
+            <TabsList className="bg-accent">
+              <TabsTrigger value="calendar" className="gap-1.5">
+                <CalendarDays className="size-4" />
+                Calendar
+              </TabsTrigger>
+              <TabsTrigger value="list" className="gap-1.5">
+                <LayoutList className="size-4" />
+                List
+              </TabsTrigger>
+            </TabsList>
+            {viewMode === "list" && <BudgetFilters />}
+          </div>
+        </div>
+
+        <TabsContent value="calendar" className="mt-0 flex-1 min-h-0">
+          <SectionBoundary
+            key={`${calYear}-${calMonth}`}
+            fallback={<BudgetCalendarSkeleton />}
+            errorMessage="Could not load calendar"
+          >
+            <BudgetCalendar month={calMonth} year={calYear} />
+          </SectionBoundary>
+        </TabsContent>
+
+        <TabsContent value="list" className="mt-0 flex flex-col flex-1 min-h-0">
+          <div className="shrink-0 border-b border-border px-10 py-3">
+            <BudgetToolbar
+              selectedCount={selectedIds.size}
+              selectedIds={selectedArray}
+              totalCount={allBudgetIds.length}
+              allBudgetIds={allBudgetIds}
+              onClearSelection={() => setSelectedIds(new Set())}
+              onSelectAll={handleSelectAll}
+            />
+          </div>
+
+          <div className="overflow-hidden h-[105vh] flex-1 min-h-0 scrollbar-hide">
+            <SectionBoundary
+              key={listKey}
+              fallback={<BudgetListSkeleton />}
+              errorMessage="Could not load budgets"
+            >
+              <BudgetList
+                queryState={queryState}
+                selectedIds={selectedIds}
+                onSelect={handleSelect}
+                onAllBudgetIdsChange={setAllBudgetIds}
+              />
+            </SectionBoundary>
+          </div>
+        </TabsContent>
+      </Tabs>
+      <BudgetFormDrawer />
+      <BudgetViewDrawer />
+    </>
+  );
+}
+
+export function BudgetViewTabsSkeleton() {
+  return (
+    <div className="rounded-2xl overflow-hidden border border-muted bg-card shadow flex flex-col">
+      {/* Tab bar + filters */}
       <div className="shrink-0 border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
-          <TabsList className="bg-accent">
-            <TabsTrigger value="calendar" className="gap-1.5">
-              <CalendarDays className="size-4" />
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger value="list" className="gap-1.5">
-              <LayoutList className="size-4" />
-              List
-            </TabsTrigger>
-          </TabsList>
-          {viewMode === "list" && <BudgetFilters />}
+          <Skeleton className="h-9 w-48 rounded-lg" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-56 rounded-md" />
+            <Skeleton className="h-8 w-24 rounded-md" />
+            <Skeleton className="h-8 w-24 rounded-md" />
+          </div>
         </div>
       </div>
 
-      <TabsContent value="calendar" className="mt-0 flex-1 min-h-0">
-        <SectionBoundary
-          key={`${year}-${month}`}
-          fallback={<BudgetCalendarSkeleton />}
-          errorMessage="Could not load calendar"
-        >
-          <BudgetCalendar month={month} year={year} />
-        </SectionBoundary>
-      </TabsContent>
-
-      <TabsContent value="list" className="mt-0 flex flex-col flex-1 min-h-0">
-        <div className="shrink-0 border-b border-border px-10 py-3">
-          <BudgetToolbar
-            selectedCount={selectedIds.size}
-            selectedIds={selectedArray}
-            totalCount={allBudgetIds.length}
-            allBudgetIds={allBudgetIds}
-            onClearSelection={() => setSelectedIds(new Set())}
-            onSelectAll={handleSelectAll}
-          />
+      {/* Toolbar strip */}
+      <div className="shrink-0 border-b border-border px-10 py-3">
+        <div className="flex items-center gap-2.5">
+          <Skeleton className="size-4 rounded-sm" />
+          <Skeleton className="h-4 w-24" />
         </div>
+      </div>
 
-        <div className="overflow-hidden h-[105vh] flex-1 min-h-0 scrollbar-hide">
-          <SectionBoundary
-            fallback={<BudgetListSkeleton />}
-            errorMessage="Could not load budgets"
-          >
-            <BudgetList
-              queryState={queryState}
-              selectedIds={selectedIds}
-              onSelect={handleSelect}
-              onAllBudgetIdsChange={setAllBudgetIds}
-            />
-          </SectionBoundary>
-        </div>
-      </TabsContent>
-    </Tabs>
+      {/* List */}
+      <div className="flex-1 min-h-0">
+        <BudgetListSkeleton />
+      </div>
+    </div>
   );
 }

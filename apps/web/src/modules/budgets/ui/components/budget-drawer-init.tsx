@@ -5,21 +5,23 @@ import { useBudgetDetail } from "../../hooks/queries/use-budget-detail";
 import { useBudgetDrawer } from "../../hooks/store/use-budget-drawer";
 
 interface Props {
-	focusId?: string;
-	mode?: string;
+  focusId?: string;
+  mode?: string;
 }
 
 export function BudgetDrawerInit({ focusId, mode }: Props) {
-	const { budget, isLoading } = useBudgetDetail(focusId);
+  const isAddMode = mode === "add";
+  const shouldFetch = !!focusId && !isAddMode;
+  const { budget, isLoading } = useBudgetDetail(shouldFetch ? focusId : "");
 
-	useDrawerInit(
-		focusId,
-		mode,
-		budget ?? undefined,
-		isLoading,
-		useBudgetDrawer.getState,
-		(s) => s.budgetId,
-	);
+  useDrawerInit(
+    focusId,
+    mode,
+    budget ?? undefined,
+    shouldFetch && isLoading,
+    useBudgetDrawer.getState,
+    (s) => s.budgetId,
+  );
 
-	return null;
+  return null;
 }

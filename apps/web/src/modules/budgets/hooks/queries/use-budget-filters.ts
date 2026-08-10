@@ -10,6 +10,8 @@ const DEFAULTS = {
   status: "",
   isActive: "",
   period: "",
+  month: "",
+  year: "",
   sortField: "date",
   sortDir: "desc",
   limit: "20",
@@ -38,6 +40,12 @@ export function useBudgetFilters() {
   const currentIsActive =
     rawIsActive === "true" ? true : rawIsActive === "false" ? false : undefined;
   const currentPeriod = searchParams.get("period") || undefined;
+  const currentMonth = searchParams.get("month")
+    ? Number(searchParams.get("month"))
+    : undefined;
+  const currentYear = searchParams.get("year")
+    ? Number(searchParams.get("year"))
+    : undefined;
   const currentSortField = get("sortField") as BudgetQueryState["sortField"];
   const currentSortDir = get("sortDir") as BudgetQueryState["sortDir"];
   const currentLimit = Number(get("limit")) || 20;
@@ -49,6 +57,9 @@ export function useBudgetFilters() {
   ].filter(Boolean).length;
 
   const hasActiveFilters = activeFilterCount > 0;
+  const hasActiveSorters =
+    currentSortField !== DEFAULTS.sortField ||
+    currentSortDir !== DEFAULTS.sortDir;
 
   const commit = useCallback(
     (key: string, value: string) => {
@@ -78,6 +89,20 @@ export function useBudgetFilters() {
       else params.set("sortField", field);
       if (dir === DEFAULTS.sortDir) params.delete("sortDir");
       else params.set("sortDir", dir);
+      params.delete("page");
+      const query = params.toString();
+      router.push((query ? `${pathname}?${query}` : pathname) as Route);
+    },
+    [pathname, router, searchParams],
+  );
+
+  // The list owns its own month/year scope, written to plain month/year and
+  // preserving every other param so it never disturbs stats or calendar.
+  const updateMonthYear = useCallback(
+    (newMonth: number, newYear: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("month", String(newMonth));
+      params.set("year", String(newYear));
       params.delete("page");
       const query = params.toString();
       router.push((query ? `${pathname}?${query}` : pathname) as Route);
@@ -140,6 +165,11 @@ export function useBudgetFilters() {
     if (sortField) params.set("sortField", sortField);
     const sortDir = searchParams.get("sortDir");
     if (sortDir) params.set("sortDir", sortDir);
+    // Month/year is a toolbar picker, not a drawer filter — keep it like search/sort.
+    const month = searchParams.get("month");
+    if (month) params.set("month", month);
+    const year = searchParams.get("year");
+    if (year) params.set("year", year);
 
     const query = params.toString();
     router.push((query ? `${pathname}?${query}` : pathname) as Route);
@@ -154,6 +184,8 @@ export function useBudgetFilters() {
       statuses: currentStatuses as BudgetQueryState["statuses"],
       isActive: currentIsActive,
       period: currentPeriod as BudgetQueryState["period"],
+      month: currentMonth,
+      year: currentYear,
       sortField: currentSortField,
       sortDir: currentSortDir,
     }),
@@ -163,6 +195,8 @@ export function useBudgetFilters() {
       currentStatuses,
       currentIsActive,
       currentPeriod,
+      currentMonth,
+      currentYear,
       currentSortField,
       currentSortDir,
     ],
@@ -174,6 +208,8 @@ export function useBudgetFilters() {
     currentStatuses,
     currentIsActive,
     currentPeriod,
+    currentMonth,
+    currentYear,
     currentSortField,
     currentSortDir,
 
@@ -185,6 +221,7 @@ export function useBudgetFilters() {
 
     updateSearch,
     updateSort,
+    updateMonthYear,
 
     openDrawer,
     closeDrawer,
@@ -196,5 +233,6 @@ export function useBudgetFilters() {
 
     activeFilterCount,
     hasActiveFilters,
+    hasActiveSorters,
   };
 }

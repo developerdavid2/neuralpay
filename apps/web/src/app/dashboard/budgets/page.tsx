@@ -12,6 +12,10 @@ interface PageProps {
     view?: string;
     month?: string;
     year?: string;
+    statsMonth?: string;
+    statsYear?: string;
+    calMonth?: string;
+    calYear?: string;
     search?: string;
     status?: string | string[];
     isActive?: string;
@@ -27,10 +31,25 @@ interface PageProps {
 const Page = async ({ searchParams }: PageProps) => {
   const params = await searchParams;
   const now = new Date();
+  const nowMonth = now.getMonth() + 1;
+  const nowYear = now.getFullYear();
+
+  // Each surface owns an independent month/year scope so navigating one
+  // never disturbs the others: stats -> statsMonth/statsYear,
+  // calendar -> calMonth/calYear, list -> month/year.
+  const clampMonth = (raw?: string, fallback = nowMonth) =>
+    Math.min(Math.max(Number(raw) || fallback, 1), 12);
+  const clampYear = (raw?: string, fallback = nowYear) =>
+    Math.min(Math.max(Number(raw) || fallback, 2000), 2100);
 
   const viewMode = params.view === "list" ? "list" : "calendar";
-  const month = Number(params.month) || now.getMonth() + 1;
-  const year = Number(params.year) || now.getFullYear();
+
+  const statsMonth = clampMonth(params.statsMonth);
+  const statsYear = clampYear(params.statsYear);
+  const calMonth = clampMonth(params.calMonth);
+  const calYear = clampYear(params.calYear);
+  const listMonth = clampMonth(params.month);
+  const listYear = clampYear(params.year);
 
   const queryState: BudgetQueryState = {
     search: params.search?.trim() || undefined,
@@ -43,6 +62,8 @@ const Page = async ({ searchParams }: PageProps) => {
           ? false
           : undefined,
     period: validateBudgetPeriod(params.period),
+    month: listMonth,
+    year: listYear,
     sortField:
       (validateSortField(params.sortField) as BudgetQueryState["sortField"]) ??
       "date",
@@ -56,6 +77,8 @@ const Page = async ({ searchParams }: PageProps) => {
     status: queryState.statuses.length > 0 ? queryState.statuses : undefined,
     isActive: queryState.isActive,
     period: queryState.period,
+    month: queryState.month,
+    year: queryState.year,
     sortField: queryState.sortField,
     sortDir: queryState.sortDir,
   };
@@ -66,12 +89,17 @@ const Page = async ({ searchParams }: PageProps) => {
     }),
   );
 
-  prefetch(trpc.payments.budgets.calendar.queryOptions({ month, year }));
+  prefetch(
+    trpc.payments.budgets.calendar.queryOptions({
+      month: calMonth,
+      year: calYear,
+    }),
+  );
 
   prefetch(
     trpc.payments.budgets.monthlyStats.queryOptions({
-      month,
-      year,
+      month: statsMonth,
+      year: statsYear,
     }),
   );
 
@@ -87,8 +115,10 @@ const Page = async ({ searchParams }: PageProps) => {
     <HydrateClient>
       <BudgetsView
         queryState={queryState}
-        month={month}
-        year={year}
+        statsMonth={statsMonth}
+        statsYear={statsYear}
+        calMonth={calMonth}
+        calYear={calYear}
         viewMode={viewMode}
         focusBudgetId={params.focusBudgetId}
         focusMode={params.mode}

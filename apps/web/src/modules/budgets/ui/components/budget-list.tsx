@@ -28,7 +28,7 @@ export function BudgetList({
   onDeleteBudget,
   onAskCoach,
 }: BudgetListProps) {
-  const { limit, search, statuses, isActive, period, sortField, sortDir } =
+  const { limit, search, statuses, isActive, period, month, year, sortField, sortDir } =
     queryState;
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isLoading } =
     useBudgetsList({
@@ -37,6 +37,8 @@ export function BudgetList({
       status: statuses.length > 0 ? statuses : undefined,
       isActive,
       period,
+      month,
+      year,
       sortField,
       sortDir,
     });

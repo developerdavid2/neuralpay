@@ -1,39 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createBudgetSchema, updateBudgetFormSchema } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import {
-  DrawerClose,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@neuralpay/ui/components/drawer";
+  SheetClose,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@neuralpay/ui/components/sheet";
 import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Trash2, X } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { BUDGET_CATEGORY, BUDGET_PERIODS } from "@neuralpay/types";
+import { FormProvider, useForm } from "react-hook-form";
+import type { FormValues } from "../../types";
 import { BudgetFormFields } from "./budget-form-fields";
-import type { BudgetFormValues } from "../../types";
-
-// Client-side form schema — mirrors createBudgetSchema minus server defaults.
-const formSchema = z
-  .object({
-    name: z.string().min(2, "Name must be at least 2 characters").max(120),
-    description: z.string().max(500).optional(),
-    category: z.enum(BUDGET_CATEGORY),
-    limitAmount: z.number().positive("Limit must be greater than 0"),
-    color: z.string().max(20).optional(),
-    period: z.enum(BUDGET_PERIODS),
-    startDate: z.string().min(1, "Start date is required"),
-    endDate: z.string().min(1, "End date is required"),
-    alertThreshold: z.number().int().min(1).max(100),
-    accountIds: z.array(z.string()),
-  })
-  .refine((v) => new Date(v.endDate) >= new Date(v.startDate), {
-    message: "End date must be on or after the start date",
-    path: ["endDate"],
-  });
 
 export function BudgetForm({
   defaultValues,
@@ -43,18 +23,23 @@ export function BudgetForm({
   onSubmit,
   onDelete,
   onClose,
+  clearUrl,
 }: {
-  defaultValues: BudgetFormValues;
+  defaultValues: FormValues;
   isEdit: boolean;
   isSaving: boolean;
   isDeleting?: boolean;
-  onSubmit: (values: BudgetFormValues) => Promise<void>;
+  onSubmit: (values: FormValues) => Promise<void>;
   onDelete?: () => Promise<void>;
   onClose: () => void;
+  clearUrl: () => void;
 }) {
-  const form = useForm<BudgetFormValues>({
-    resolver: zodResolver(formSchema),
-    mode: "all",
+  const schema = isEdit ? updateBudgetFormSchema : createBudgetSchema;
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    mode: "onSubmit",
+    reValidateMode: "onChange",
     defaultValues,
   });
 
@@ -74,19 +59,19 @@ export function BudgetForm({
           <Spinner className="size-6 text-muted-foreground" />
         </div>
       )}
-      <DrawerHeader className="px-6 py-4 border-b space-y-1 shrink-0">
+      <SheetHeader className="px-6 py-4 border-b space-y-1 shrink-0">
         <div className="flex items-start justify-between">
           <div>
-            <DrawerTitle className="text-lg">
+            <SheetTitle className="text-lg">
               {isEdit ? "Edit Budget" : "New Budget"}
-            </DrawerTitle>
-            <DrawerDescription>
+            </SheetTitle>
+            <SheetDescription>
               {isEdit
                 ? "Update your budget details"
                 : "Set a spending limit for a category"}
-            </DrawerDescription>
+            </SheetDescription>
           </div>
-          <div className="flex items-center gap-1 -mr-2 -mt-2">
+          <div className="flex items-center gap-1 -mr-2">
             {isEdit && onDelete && (
               <Button
                 type="button"
@@ -104,31 +89,32 @@ export function BudgetForm({
                 )}
               </Button>
             )}
-            <DrawerClose asChild>
+            <SheetClose asChild>
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                onClick={onClose}
+                onClick={() => {
+                  clearUrl();
+                  onClose();
+                }}
                 disabled={formDisabled}
               >
                 <X className="size-4" />
               </Button>
-            </DrawerClose>
+            </SheetClose>
           </div>
         </div>
-      </DrawerHeader>
+      </SheetHeader>
 
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5 scrollbar-thin">
-        <BudgetFormFields form={form} disabled={formDisabled} />
+        <FormProvider {...form}>
+          <BudgetFormFields form={form} disabled={formDisabled} />
+        </FormProvider>
       </div>
 
-      <DrawerFooter className="px-6 py-4 border-t shrink-0">
-        <Button
-          type="submit"
-          disabled={formDisabled || !form.formState.isValid}
-          className="w-full"
-        >
+      <SheetFooter className="px-6 py-4 border-t shrink-0">
+        <Button type="submit" disabled={formDisabled} className="w-full">
           {isSaving ? (
             <>
               <Spinner className="size-4 mr-2" />
@@ -140,7 +126,7 @@ export function BudgetForm({
             "Create Budget"
           )}
         </Button>
-        <DrawerClose asChild>
+        <SheetClose asChild>
           <Button
             type="button"
             variant="outline"
@@ -149,8 +135,8 @@ export function BudgetForm({
           >
             Cancel
           </Button>
-        </DrawerClose>
-      </DrawerFooter>
+        </SheetClose>
+      </SheetFooter>
     </form>
   );
 }

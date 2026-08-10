@@ -41,7 +41,7 @@ export const HEALTH_META: Record<
   over: {
     label: "Over budget",
     badge: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
-    bar: "bg-red-500",
+    bar: "bg-red-400",
     text: "text-red-600 dark:text-red-400",
     dot: "bg-red-500",
   },

@@ -1,11 +1,5 @@
 "use client";
 
-import { useConfirm } from "@/hooks/ui/use-confirm";
-import { formatAmount } from "@/lib/utils";
-import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
-import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
-import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
-import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   Drawer,
@@ -36,13 +30,20 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useConfirm } from "@/hooks/ui/use-confirm";
+import { formatAmount } from "@/lib/utils";
+import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
+import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
+import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
+import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
 import {
-  useTransactionDrawer,
   type TransactionDrawerMode,
+  useTransactionDrawer,
 } from "../../hooks/store/use-transaction-drawer";
 import { useTransactionPendingSelectors } from "../../hooks/store/use-transaction-pending";
 import { isSyncedSource } from "../../lib/utils";
 import { SourceBadge, StatusBadge } from "./transaction-badges";
+
 function DetailField({
   label,
   value,
@@ -99,7 +100,7 @@ export function TransactionViewDrawer() {
           flex flex-col
         "
       >
-        <DrawerTitle />
+        <DrawerTitle className="sr-only">Transaction Details</DrawerTitle>
         <TransactionViewInner
           transactionId={transactionId}
           onClose={onClose}

@@ -1,3 +1,4 @@
+// modules/budgets/hooks/store/use-budget-drawer.ts
 "use client";
 import type { Budget } from "@neuralpay/types";
 import { create } from "zustand";
@@ -26,6 +27,5 @@ export const useBudgetDrawer = create<BudgetDrawerState>((set) => ({
     set({ mode: "edit", budgetId: id, budgetData: data ?? null, isOpen: true }),
   onOpenAdd: () =>
     set({ mode: "add", budgetId: null, budgetData: null, isOpen: true }),
-  onClose: () =>
-    set({ isOpen: false, budgetId: null, budgetData: null, mode: "view" }),
+  onClose: () => set({ isOpen: false, budgetId: null, budgetData: null }),
 }));

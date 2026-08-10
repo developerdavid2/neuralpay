@@ -1,9 +1,5 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { CalendarIcon, ChevronDown } from "lucide-react";
-import { format, startOfMonth } from "date-fns";
-
 import { Button } from "@neuralpay/ui/components/button";
 import {
   Popover,
@@ -11,6 +7,9 @@ import {
   PopoverTrigger,
 } from "@neuralpay/ui/components/popover";
 import { cn } from "@neuralpay/ui/lib/utils";
+import { format, startOfMonth } from "date-fns";
+import { CalendarIcon, ChevronDown } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 interface MonthYearPickerProps {
   value: Date;
@@ -104,6 +103,7 @@ export function MonthYearPicker({
         {/* Year navigator with dropdown */}
         <div className="flex items-center justify-between mb-3 px-1">
           <button
+            type="button"
             onClick={() => setViewYear((y) => y - 1)}
             className="p-1 rounded-md hover:bg-accent transition-colors disabled:opacity-30"
             disabled={!canGoPrevYear}
@@ -128,6 +128,7 @@ export function MonthYearPicker({
           </div>
 
           <button
+            type="button"
             onClick={() => setViewYear((y) => y + 1)}
             className="p-1 rounded-md hover:bg-accent transition-colors disabled:opacity-30"
             disabled={!canGoNextYear}
@@ -144,6 +145,7 @@ export function MonthYearPicker({
 
             return (
               <button
+                type="button"
                 key={month}
                 onClick={() => handleSelect(index)}
                 disabled={disabled}

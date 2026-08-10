@@ -13,7 +13,6 @@ import {
   TrendingDown,
   Wallet,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBudgetMonthlyStats } from "../../hooks/queries/use-budget-monthly-stats";
 
@@ -38,6 +37,15 @@ export function BudgetMonthlyStatsCards({
   const isCurrentMonth =
     month === now.getMonth() + 1 && year === now.getFullYear();
   const currentValue = new Date(year, month - 1, 1);
+
+  // Writes only the stats scope so navigating the summary never disturbs the
+  // calendar or list, and preserves every other param (filters, view, etc.).
+  const navigate = (newMonth: number, newYear: number) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("statsMonth", String(newMonth));
+    params.set("statsYear", String(newYear));
+    router.push(`?${params.toString()}`);
+  };
 
   const cards = [
     {
@@ -90,34 +98,32 @@ export function BudgetMonthlyStatsCards({
           )}
         </div>
         <div className="flex items-center gap-1">
-          <Link href={`?month=${prevMonth}&year=${prevYear}`}>
-            <Button variant="ghost" size="icon" className="size-8">
-              <ChevronLeft className="size-4" />
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={() => navigate(prevMonth, prevYear)}
+          >
+            <ChevronLeft className="size-4" />
+          </Button>
 
           <MonthYearPicker
             value={currentValue}
             onChange={(date) => {
-              const newMonth = date.getMonth() + 1;
-              const newYear = date.getFullYear();
-              router.push(`?month=${newMonth}&year=${newYear}`);
+              navigate(date.getMonth() + 1, date.getFullYear());
             }}
             maxYear={now.getFullYear()}
           />
 
-          <Link
-            href={isCurrentMonth ? "#" : `?month=${nextMonth}&year=${nextYear}`}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            disabled={isCurrentMonth}
+            onClick={() => navigate(nextMonth, nextYear)}
           >
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              disabled={isCurrentMonth}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-          </Link>
+            <ChevronRight className="size-4" />
+          </Button>
         </div>
       </div>
 

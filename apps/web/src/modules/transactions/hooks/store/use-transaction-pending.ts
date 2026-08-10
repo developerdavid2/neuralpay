@@ -18,15 +18,20 @@ export const useTransactionPendingStore = create<TransactionPendingState>(
     markDeleting: (ids) =>
       set((state) => {
         const pendingDeleteIds = new Set(state.pendingDeleteIds);
-        ids.forEach((id) => pendingDeleteIds.add(id));
+        for (const id of ids) {
+          pendingDeleteIds.add(id);
+        }
         return { pendingDeleteIds };
       }),
     unmarkDeleting: (ids) =>
       set((state) => {
         const pendingDeleteIds = new Set(state.pendingDeleteIds);
-        ids.forEach((id) => pendingDeleteIds.delete(id));
+        for (const id of ids) {
+          pendingDeleteIds.delete(id);
+        }
         return { pendingDeleteIds };
       }),
+
     setPendingUpdateId: (id) => set({ pendingUpdateId: id }),
     setPendingCreate: (value) => set({ pendingCreate: value }),
   }),

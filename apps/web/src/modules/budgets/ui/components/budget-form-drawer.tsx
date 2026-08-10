@@ -1,52 +1,56 @@
 "use client";
 
-import { Drawer, DrawerContent } from "@neuralpay/ui/components/drawer";
+import type { CreateBudgetInput, UpdateBudgetInput } from "@neuralpay/types";
+import { Button } from "@neuralpay/ui/components/button";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+} from "@neuralpay/ui/components/sheet";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { cn } from "@neuralpay/ui/lib/utils";
-import type {
-  CreateBudgetInput,
-  UpdateBudgetInput,
-} from "@neuralpay/types";
-import { useConfirm } from "@/hooks/ui/use-confirm";
 import { endOfMonth, startOfMonth } from "date-fns";
+import { X } from "lucide-react";
+import { useConfirm } from "@/hooks/ui/use-confirm";
+import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
 import { useBudgetMutations } from "../../hooks/mutations/use-budget-mutations";
 import { useBudgetDetail } from "../../hooks/queries/use-budget-detail";
 import {
-  useBudgetDrawer,
   type BudgetDrawerMode,
+  useBudgetDrawer,
 } from "../../hooks/store/use-budget-drawer";
-import type { BudgetFormValues } from "../../types";
+import { useBudgetPendingSelectors } from "../../hooks/store/use-budget-pending";
+import { useBudgetUrlSync } from "../../hooks/use-budget-url-sync";
+import type { FormValues } from "../../types";
 import { BudgetForm } from "./budget-form";
 
 export function BudgetFormDrawer() {
   const { isOpen, onClose, budgetId, mode } = useBudgetDrawer();
+  const { clearUrl } = useBudgetUrlSync();
+
   const isEdit = mode === "edit";
   const isAdd = mode === "add";
 
   if (!isOpen || (!isEdit && !isAdd)) return null;
 
   return (
-    <Drawer
-      direction="right"
+    <Sheet
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open) onClose();
+        if (!open) {
+          clearUrl();
+          onClose();
+        }
       }}
     >
-      <DrawerContent
-        className={cn(
-          "data-[vaul-drawer-direction=right]:inset-y-0",
-          "data-[vaul-drawer-direction=right]:right-0",
-          "data-[vaul-drawer-direction=right]:h-full",
-          "data-[vaul-drawer-direction=right]:w-full",
-          "data-[vaul-drawer-direction=right]:max-w-105",
-          "flex flex-col",
-          "focus-visible:outline-none focus-visible:ring-0",
-        )}
-      >
-        <BudgetFormInner budgetId={budgetId} mode={mode} onClose={onClose} />
-      </DrawerContent>
-    </Drawer>
+      <SheetContent className="data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:h-full data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:max-w-xl flex flex-col max-w-140!">
+        <BudgetFormInner
+          budgetId={budgetId}
+          mode={mode}
+          onClose={onClose}
+          clearUrl={clearUrl}
+        />
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -54,32 +58,60 @@ function BudgetFormInner({
   budgetId,
   mode,
   onClose,
+  clearUrl,
 }: {
   budgetId: string | null;
   mode: BudgetDrawerMode;
   onClose: () => void;
+  clearUrl: () => void;
 }) {
   const isEdit = mode === "edit";
-  const { budget, isLoading } = useBudgetDetail(
-    isEdit && budgetId ? budgetId : "",
-  );
-  const { handleCreate, handleUpdate, handleDelete, isCreating, isUpdating, isDeleting } =
-    useBudgetMutations();
+  const { budget } = useBudgetDetail(isEdit && budgetId ? budgetId : "");
+  const { isLoadingAccounts } = useAllAccounts();
+  const {
+    handleCreate,
+    handleUpdate,
+    handleDelete: runDelete,
+    isCreating,
+    isUpdating,
+  } = useBudgetMutations();
+  const { isDeleting } = useBudgetPendingSelectors();
   const [ConfirmDialog, confirm] = useConfirm();
+  const deleting = budgetId !== null ? isDeleting(budgetId) : false;
+  const isSaving = isCreating || isUpdating;
+  const isLoading = isLoadingAccounts || (isEdit && !budget);
 
-  if (isEdit && isLoading) return <FormDrawerSkeleton />;
-  if (isEdit && !budget) return <FormDrawerSkeleton />;
+  if (isLoading) {
+    return (
+      <>
+        <ConfirmDialog />
+        <FormDrawerSkeleton
+          onClose={() => {
+            clearUrl();
+            onClose();
+          }}
+        />
+      </>
+    );
+  }
 
   const now = new Date();
-  const defaultValues: BudgetFormValues =
+
+  const defaultValues: FormValues =
     isEdit && budget
       ? {
-          name: budget.name ?? "",
-          description: budget.description ?? undefined,
-          category: budget.category,
-          limitAmount: Number(budget.limitAmount ?? 0),
-          color: budget.color ?? undefined,
-          period: "custom",
+          name: budget.name,
+          description: budget.description,
+          categories: budget.categories.map((c) => ({
+            category: c.category,
+            limitAmount: Number(c.limitAmount),
+          })),
+          limitAmount: budget.categories.reduce(
+            (sum, c) => sum + Number(c.limitAmount),
+            0,
+          ),
+          color: budget.color ?? "#6366f1",
+          period: budget.period ?? "custom",
           startDate: (budget.startDate
             ? new Date(budget.startDate)
             : startOfMonth(now)
@@ -94,7 +126,7 @@ function BudgetFormInner({
       : {
           name: "",
           description: undefined,
-          category: "groceries",
+          categories: [{ category: "groceries", limitAmount: 0 }],
           limitAmount: 0,
           color: "#6366f1",
           period: "monthly",
@@ -104,34 +136,23 @@ function BudgetFormInner({
           accountIds: [],
         };
 
-  const onSubmit = async (values: BudgetFormValues) => {
+  const onSubmit = async (values: FormValues) => {
     if (isEdit && budgetId) {
       await handleUpdate({
         id: budgetId,
-        name: values.name,
-        description: values.description ?? null,
-        category: values.category,
-        limitAmount: values.limitAmount,
-        color: values.color ?? null,
-        startDate: values.startDate,
-        endDate: values.endDate,
-        alertThreshold: values.alertThreshold,
-        accountIds: values.accountIds,
+        ...values,
       } as UpdateBudgetInput);
     } else {
-      await handleCreate({
-        name: values.name,
-        description: values.description,
-        category: values.category,
-        limitAmount: values.limitAmount,
-        color: values.color,
-        period: values.period,
-        startDate: values.startDate,
-        endDate: values.endDate,
-        alertThreshold: values.alertThreshold,
-        accountIds: values.accountIds,
-      } as CreateBudgetInput);
+      const ok = await confirm({
+        title: "Create budget",
+        message:
+          "Are you sure you want to create this budget? It will be added to your records.",
+        confirmLabel: "Create",
+      });
+      if (!ok) return;
+      await handleCreate(values as CreateBudgetInput);
     }
+    clearUrl();
     onClose();
   };
 
@@ -145,7 +166,8 @@ function BudgetFormInner({
       confirmLabel: "Delete",
     });
     if (!ok) return;
-    await handleDelete(budgetId);
+    await runDelete(budgetId);
+    clearUrl();
     onClose();
   };
 
@@ -156,17 +178,18 @@ function BudgetFormInner({
         key={budget?.id ?? "add"}
         defaultValues={defaultValues}
         isEdit={isEdit}
-        isSaving={isCreating || isUpdating}
-        isDeleting={isDeleting}
+        isSaving={isSaving}
+        isDeleting={deleting}
         onSubmit={onSubmit}
         onDelete={isEdit ? onDelete : undefined}
         onClose={onClose}
+        clearUrl={clearUrl}
       />
     </>
   );
 }
 
-function FormDrawerSkeleton() {
+function FormDrawerSkeleton({ onClose }: { onClose: () => void }) {
   return (
     <>
       <div className="px-6 py-4 border-b space-y-3 shrink-0">
@@ -184,6 +207,18 @@ function FormDrawerSkeleton() {
       <div className="px-6 py-4 border-t space-y-3 shrink-0">
         <Skeleton className="h-10 w-full rounded-md" />
       </div>
+
+      <SheetClose asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-6 top-4 size-8 opacity-0"
+          onClick={onClose}
+          tabIndex={-1}
+        >
+          <X className="size-4" />
+        </Button>
+      </SheetClose>
     </>
   );
 }

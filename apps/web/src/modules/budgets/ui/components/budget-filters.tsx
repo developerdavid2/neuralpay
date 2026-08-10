@@ -26,6 +26,7 @@ import {
   Tag,
 } from "lucide-react";
 import { DebouncedSearchInput } from "@/components/debounced-search-input";
+import { MonthYearPicker } from "@/components/month-year-picker";
 import { HEALTH_META, PERIOD_OPTIONS, SORT_OPTIONS } from "../../constants";
 import { useBudgetFilters } from "../../hooks/queries/use-budget-filters";
 
@@ -34,12 +35,15 @@ export function BudgetFilters() {
     currentSearch,
     currentSortField,
     currentSortDir,
+    currentMonth,
+    currentYear,
     draftStatuses,
     draftIsActive,
     draftPeriod,
     moreFiltersOpen,
     updateSearch,
     updateSort,
+    updateMonthYear,
     openDrawer,
     closeDrawer,
     toggleDraftStatus,
@@ -49,10 +53,19 @@ export function BudgetFilters() {
     resetDrawer,
     activeFilterCount,
     hasActiveFilters,
+    hasActiveSorters,
   } = useBudgetFilters();
 
   const currentSortLabel =
     SORT_OPTIONS.find((s) => s.value === currentSortField)?.label ?? "Sort";
+
+  // The list picker defaults to the current month when the URL has no month/year.
+  const now = new Date();
+  const listAnchor = new Date(
+    currentYear ?? now.getFullYear(),
+    (currentMonth ?? now.getMonth() + 1) - 1,
+    1,
+  );
 
   return (
     <div className="flex items-center gap-2">
@@ -63,9 +76,21 @@ export function BudgetFilters() {
         className="w-56"
       />
 
+      <MonthYearPicker
+        value={listAnchor}
+        onChange={(date) =>
+          updateMonthYear(date.getMonth() + 1, date.getFullYear())
+        }
+        maxYear={new Date().getFullYear()}
+      />
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8 gap-1.5">
+          <Button
+            variant={hasActiveSorters ? "default" : "outline"}
+            size="sm"
+            className="h-8 gap-1.5"
+          >
             {currentSortDir === "asc" ? (
               <ArrowUpAZ className="size-3.5" />
             ) : (

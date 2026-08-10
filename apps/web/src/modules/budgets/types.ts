@@ -1,31 +1,24 @@
 import type {
-	BudgetHealth,
-	BudgetPeriod,
-	BudgetSortDir,
-	BudgetSortField,
-	CreateBudgetInput,
+  BudgetHealth,
+  BudgetPeriod,
+  BudgetSortDir,
+  BudgetSortField,
+  CreateBudgetInput,
+  UpdateBudgetFormInput,
 } from "@neuralpay/types";
 
-export type BudgetFormValues = {
-	name: string;
-	description?: string;
-	categories: CreateBudgetInput["categories"];
-	limitAmount: number;
-	color?: string;
-	period: "weekly" | "monthly" | "custom";
-	startDate: string;
-	endDate: string;
-	alertThreshold: number;
-	accountIds: string[];
-};
+export type CreateFormValues = CreateBudgetInput;
+export type UpdateFormValues = UpdateBudgetFormInput;
+export type FormValues = CreateFormValues | UpdateFormValues;
 
 export interface BudgetQueryState {
-	search?: string;
-	statuses: BudgetHealth[];
-	// Tri-state: undefined = all budgets, true = active only, false = inactive only.
-	isActive?: boolean;
-	period?: BudgetPeriod;
-	sortField: BudgetSortField;
-	sortDir: BudgetSortDir;
-	limit: number;
+  search?: string;
+  statuses: BudgetHealth[];
+  isActive?: boolean;
+  period?: BudgetPeriod;
+  month?: number;
+  year?: number;
+  sortField: BudgetSortField;
+  sortDir: BudgetSortDir;
+  limit: number;
 }

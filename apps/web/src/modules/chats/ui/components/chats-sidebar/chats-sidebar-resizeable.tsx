@@ -1,6 +1,5 @@
 "use client";
 
-import { useChatStore } from "@/modules/chats/store/use-chat-store";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -15,6 +14,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
 import type { ImperativePanelHandle } from "react-resizable-panels";
+import { useChatStore } from "@/modules/chats/store/use-chat-store";
 
 interface Props {
   children: React.ReactNode;
@@ -51,6 +51,7 @@ export function ChatsSidebarResizable({ children, sidebar }: Props) {
           <Tooltip>
             <TooltipTrigger asChild>
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggle();

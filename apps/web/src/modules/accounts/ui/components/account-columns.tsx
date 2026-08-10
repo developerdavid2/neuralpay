@@ -1,4 +1,3 @@
-import { formatAmount } from "@/lib/utils";
 import type { BankAccount } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import { Checkbox } from "@neuralpay/ui/components/checkbox";
@@ -18,6 +17,7 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import { formatAmount } from "@/lib/utils";
 import { AccountStatusBadge, AccountTypeBadge } from "./account-badges";
 
 interface ColumnProps {

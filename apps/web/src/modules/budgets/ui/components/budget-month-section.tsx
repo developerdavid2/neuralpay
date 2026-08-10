@@ -2,8 +2,8 @@
 
 import type { Budget } from "@neuralpay/types";
 import { Checkbox } from "@neuralpay/ui/components/checkbox";
-import { useCallback, useMemo, useState } from "react";
-import { MonthYearPicker } from "@/components/month-year-picker";
+import { format } from "date-fns";
+import { useCallback, useMemo } from "react";
 import { BudgetCard } from "./budget-card";
 
 interface Props {
@@ -23,8 +23,6 @@ export function BudgetMonthSection({
   onDeleteBudget,
   onAskCoach,
 }: Props) {
-  const [anchor, setAnchor] = useState(anchorDate);
-
   const groupIds = useMemo(() => budgets.map((b) => b.id), [budgets]);
   const selectedInGroup = groupIds.filter((id) => selectedIds.has(id));
   const allSelected =
@@ -59,11 +57,9 @@ export function BudgetMonthSection({
             />
           </div>
 
-          <MonthYearPicker
-            value={anchor}
-            onChange={setAnchor}
-            maxYear={new Date().getFullYear() + 5}
-          />
+          <span className="text-sm font-semibold text-foreground">
+            {format(anchorDate, "MMMM yyyy")}
+          </span>
 
           <span className="text-xs text-muted-foreground ml-auto tabular-nums">
             {budgets.length} budget{budgets.length === 1 ? "" : "s"}
