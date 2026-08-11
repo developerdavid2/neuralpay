@@ -13,14 +13,15 @@ import { useWatch } from "react-hook-form";
 
 type Props = {
   value: string;
-  onChange: (value: string | undefined) => void;
+  onChange?: (value: string | undefined) => void;
   disabled?: boolean;
   placeholder?: string;
   id?: string;
   type?: "debit" | "credit";
   control?: any;
   name?: string;
-  showTypeIndicator?: boolean; // ← new prop
+  showTypeIndicator?: boolean;
+  className?: string;
 };
 
 export const AmountInput = ({
@@ -33,6 +34,7 @@ export const AmountInput = ({
   control,
   name = "type",
   showTypeIndicator = true,
+  className,
 }: Props) => {
   const watchedType = useWatch({
     control,
@@ -80,8 +82,9 @@ export const AmountInput = ({
         id={id}
         prefix="$"
         className={cn(
-          "flex h-10 w-full rounded-xl border border-input bg-secondary px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-10 w-full rounded-xl border border-input bg-input/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           showTypeIndicator ? "pl-10" : "pl-3",
+          className,
         )}
         value={value}
         onValueChange={onChange}

@@ -1,21 +1,17 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+import { useInvalidateQueries } from "@/hooks/utils/use-invalidate-queries";
 import { useTRPC } from "@/trpc/trpc-client";
 
 export function useDeleteManyBudgets() {
-	const trpc = useTRPC();
-	const queryClient = useQueryClient();
+  const trpc = useTRPC();
+  const { invalidateBudgets } = useInvalidateQueries();
 
-	return useMutation({
-		...trpc.payments.budgets.deleteMany.mutationOptions(),
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: trpc.payments.budgets.list.queryKey(),
-			});
-			queryClient.invalidateQueries({
-				queryKey: trpc.payments.budgets.monthlyStats.queryKey(),
-			});
-		},
-	});
+  return useMutation({
+    ...trpc.payments.budgets.deleteMany.mutationOptions(),
+    onSuccess: async () => {
+      await invalidateBudgets();
+    },
+  });
 }

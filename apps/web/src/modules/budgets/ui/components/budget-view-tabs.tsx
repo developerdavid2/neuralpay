@@ -9,7 +9,7 @@ import {
 } from "@neuralpay/ui/components/tabs";
 import { CalendarDays, LayoutList } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { SectionBoundary } from "@/components/section-boundary";
 import type { BudgetQueryState } from "../../types";
 import { BudgetCalendar, BudgetCalendarSkeleton } from "./budget-calendar";
@@ -33,8 +33,8 @@ export function BudgetViewTabs({
   viewMode,
 }: BudgetViewTabsProps) {
   const router = useRouter();
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [allBudgetIds, setAllBudgetIds] = useState<string[]>([]);
+  const [, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState(viewMode);
 
   const navigate = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(window.location.search);
@@ -42,30 +42,17 @@ export function BudgetViewTabs({
       if (v === undefined) params.delete(k);
       else params.set(k, v);
     });
-    router.push(`?${params.toString()}`);
+
+    startTransition(() => {
+      router.push(`?${params.toString()}`, { scroll: false });
+    });
   };
 
-  const handleSelect = useCallback((id: string, checked: boolean) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-  }, []);
+  const handleTabChange = (v: string) => {
+    setActiveTab(v as "calendar" | "list");
+    navigate({ view: v === "calendar" ? undefined : "list" });
+  };
 
-  const handleSelectAll = useCallback((ids: string[]) => {
-    setSelectedIds((prev) =>
-      prev.size === ids.length && ids.length > 0 ? new Set() : new Set(ids),
-    );
-  }, []);
-
-  const selectedArray = useMemo(() => Array.from(selectedIds), [selectedIds]);
-
-  // Remount the list boundary on any query change so Suspense re-shows the
-  // skeleton while the new page fetches. router.push updates inside a
-  // transition, which would otherwise keep the stale list and skip the
-  // fallback — a fresh key forces a remount that suspends immediately.
   const listKey = useMemo(
     () =>
       [
@@ -85,10 +72,8 @@ export function BudgetViewTabs({
   return (
     <>
       <Tabs
-        value={viewMode}
-        onValueChange={(v) =>
-          navigate({ view: v === "calendar" ? undefined : "list" })
-        }
+        value={activeTab}
+        onValueChange={handleTabChange}
         className="rounded-2xl overflow-hidden border border-muted bg-card shadow"
       >
         <div className="shrink-0 border-b border-border px-6 py-4">
@@ -103,7 +88,7 @@ export function BudgetViewTabs({
                 List
               </TabsTrigger>
             </TabsList>
-            {viewMode === "list" && <BudgetFilters />}
+            {activeTab === "list" && <BudgetFilters />}
           </div>
         </div>
 
@@ -119,14 +104,7 @@ export function BudgetViewTabs({
 
         <TabsContent value="list" className="mt-0 flex flex-col flex-1 min-h-0">
           <div className="shrink-0 border-b border-border px-10 py-3">
-            <BudgetToolbar
-              selectedCount={selectedIds.size}
-              selectedIds={selectedArray}
-              totalCount={allBudgetIds.length}
-              allBudgetIds={allBudgetIds}
-              onClearSelection={() => setSelectedIds(new Set())}
-              onSelectAll={handleSelectAll}
-            />
+            <BudgetToolbar />
           </div>
 
           <div className="overflow-hidden h-[105vh] flex-1 min-h-0 scrollbar-hide">
@@ -135,12 +113,7 @@ export function BudgetViewTabs({
               fallback={<BudgetListSkeleton />}
               errorMessage="Could not load budgets"
             >
-              <BudgetList
-                queryState={queryState}
-                selectedIds={selectedIds}
-                onSelect={handleSelect}
-                onAllBudgetIdsChange={setAllBudgetIds}
-              />
+              <BudgetList queryState={queryState} />
             </SectionBoundary>
           </div>
         </TabsContent>

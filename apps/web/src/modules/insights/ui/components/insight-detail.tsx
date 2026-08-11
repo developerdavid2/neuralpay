@@ -13,7 +13,7 @@ import {
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { Archive, Loader2, MessageCircle, RotateCcw, X } from "lucide-react";
+import { Archive, MessageCircle, RotateCcw, X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/ui/use-media-query";
 import { formatDateTime } from "@/lib/utils";
 import { INSIGHTS_TYPE_LABELS, INSIGHTS_TYPE_STYLES } from "../../constants";

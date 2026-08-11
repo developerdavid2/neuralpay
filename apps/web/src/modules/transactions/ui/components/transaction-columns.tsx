@@ -1,5 +1,3 @@
-import { formatAmount } from "@/lib/utils";
-import { CATEGORY_ICONS, CATEGORY_LABELS } from "@/modules/dashboard/constants";
 import type { Transaction } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import { Checkbox } from "@neuralpay/ui/components/checkbox";
@@ -19,8 +17,11 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import { formatAmount } from "@/lib/utils";
+import { CATEGORY_ICONS, CATEGORY_LABELS } from "@/modules/dashboard/constants";
 import { isSyncedSource } from "../../lib/utils";
 import { SourceBadge, StatusBadge } from "./transaction-badges";
+
 interface ColumnProps {
   onView: (tx: Transaction) => void;
   onEdit: (tx: Transaction) => void;

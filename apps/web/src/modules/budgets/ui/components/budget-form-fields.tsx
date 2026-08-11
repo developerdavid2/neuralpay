@@ -52,7 +52,11 @@ export function BudgetFormFields({ form, disabled }: Props) {
   const startDateValue = useWatch({ control, name: "startDate" });
 
   const total = useMemo(
-    () => categories.reduce((sum, c) => sum + (Number(c.limitAmount) || 0), 0),
+    () =>
+      Math.round(
+        categories.reduce((sum, c) => sum + (Number(c.limitAmount) || 0), 0) *
+          100,
+      ) / 100,
     [categories],
   );
 
@@ -135,13 +139,13 @@ export function BudgetFormFields({ form, disabled }: Props) {
         )}
       />
 
-      {/* Total budget limit — read-only, derived from category rows below */}
       <Controller
         name="limitAmount"
         control={control}
         render={({ field, fieldState }) => (
           <Field>
             <FieldLabel>Total Budget Limit</FieldLabel>
+
             <Input
               type="text"
               readOnly

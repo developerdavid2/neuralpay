@@ -1,4 +1,3 @@
-import { emitNotification } from "@neuralpay/redis";
 import { db } from "@neuralpay/db";
 import {
   bankAccounts,
@@ -6,6 +5,7 @@ import {
   budgets,
   transactions,
 } from "@neuralpay/db/schema";
+import { cache, cacheKeys, emitNotification } from "@neuralpay/redis";
 import {
   type BatchDeleteInput,
   type CreateTransactionInput,
@@ -13,13 +13,13 @@ import {
   type PaginatedTransactions,
   type ServiceResult,
   type TopMonthlyCategories,
+  TRANSACTION_CATEGORY,
+  TRANSACTION_STATUS,
+  TRANSACTION_TYPE,
   type Transaction,
   type TransactionsFilterInput,
   type TxMonthlySummaryFilterInput,
   type UpdateTransactionInput,
-  TRANSACTION_CATEGORY,
-  TRANSACTION_STATUS,
-  TRANSACTION_TYPE,
 } from "@neuralpay/types";
 import {
   differenceInDays,
@@ -42,7 +42,6 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import { cache, cacheKeys } from "@neuralpay/redis";
 
 function transactionSelect() {
   return {
@@ -552,51 +551,43 @@ export const TransactionsService = {
             currentDate = startOfMonth(subMonths(currentDate, -1));
           }
 
-          let budgetResult: Array<any> = [];
-          if (monthYearPairs.length > 0) {
-            const monthYearConditions = monthYearPairs.map((p) =>
-              and(eq(budgets.month, p.month), eq(budgets.year, p.year)),
+          const budgetResult = await db
+            .select({
+              category: budgetCategories.category,
+              budgetStartDate: budgets.startDate,
+              budgetEndDate: budgets.endDate,
+              limitAmount: sql<string>`${budgetCategories.limitAmount}::numeric::text`,
+            })
+            .from(budgets)
+            .innerJoin(
+              budgetCategories,
+              eq(budgetCategories.budgetId, budgets.id),
+            )
+            .where(
+              and(
+                eq(budgets.userId, userId),
+                eq(budgets.isActive, true),
+                lte(budgets.startDate, endDate),
+                gte(budgets.endDate, startDate),
+              ),
             );
-            const whereCondition =
-              monthYearConditions.length === 1
-                ? monthYearConditions[0]
-                : or(...monthYearConditions);
-
-            // Join budgets with budgetCategories to get category-level limits
-            budgetResult = await db
-              .select({
-                category: budgetCategories.category,
-                month: budgets.month,
-                year: budgets.year,
-                limitAmount: sql<string>`${budgetCategories.limitAmount}::numeric::text`,
-              })
-              .from(budgets)
-              .innerJoin(
-                budgetCategories,
-                eq(budgetCategories.budgetId, budgets.id),
-              )
-              .where(and(eq(budgets.userId, userId), whereCondition));
-          }
 
           const categoryBudgetMap = new Map<string, number>();
 
           for (const b of budgetResult) {
-            const monthStart = new Date(b.year, b.month - 1, 1);
-            const monthEnd = endOfMonth(monthStart);
-
-            // Clamp to the selected range
+            const budgetStart = new Date(b.budgetStartDate);
+            const budgetEnd = new Date(b.budgetEndDate);
             const overlapStart =
-              monthStart < startDate ? startDate : monthStart;
-            const overlapEnd = monthEnd > endDate ? endDate : monthEnd;
-
+              budgetStart < startDate ? startDate : budgetStart;
+            const overlapEnd = budgetEnd > endDate ? endDate : budgetEnd;
             const overlapDays = differenceInDays(overlapEnd, overlapStart) + 1;
-            const totalDaysInMonth = differenceInDays(monthEnd, monthStart) + 1;
-
-            // Prorate: only count the fraction of the budget that overlaps the window
+            const totalBudgetDays =
+              differenceInDays(budgetEnd, budgetStart) + 1;
             const prorated =
-              (parseFloat(b.limitAmount ?? "0") * overlapDays) /
-              totalDaysInMonth;
-
+              totalBudgetDays > 0
+                ? (parseFloat(b.limitAmount ?? "0") * overlapDays) /
+                  totalBudgetDays
+                : 0;
             const current = categoryBudgetMap.get(b.category) || 0;
             categoryBudgetMap.set(b.category, current + prorated);
           }

@@ -3,7 +3,7 @@
 import type { Budget } from "@neuralpay/types";
 import { Checkbox } from "@neuralpay/ui/components/checkbox";
 import { format } from "date-fns";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { BudgetCard } from "./budget-card";
 
 interface Props {
@@ -11,8 +11,12 @@ interface Props {
   budgets: Budget[];
   selectedIds: Set<string>;
   onSelect: (id: string, checked: boolean) => void;
-  onDeleteBudget?: (id: string) => void;
+  onSelectGroup: (ids: string[], checked: boolean) => void;
+  onView: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
   onAskCoach?: (budget: Budget) => void;
+  isPending: (id: string) => boolean;
 }
 
 export function BudgetMonthSection({
@@ -20,8 +24,12 @@ export function BudgetMonthSection({
   budgets,
   selectedIds,
   onSelect,
-  onDeleteBudget,
+  onSelectGroup,
+  onView,
+  onEdit,
+  onDelete,
   onAskCoach,
+  isPending,
 }: Props) {
   const groupIds = useMemo(() => budgets.map((b) => b.id), [budgets]);
   const selectedInGroup = groupIds.filter((id) => selectedIds.has(id));
@@ -29,18 +37,12 @@ export function BudgetMonthSection({
     groupIds.length > 0 && selectedInGroup.length === groupIds.length;
   const someSelected = selectedInGroup.length > 0 && !allSelected;
 
-  const handleSelectAll = useCallback(
-    (checked: boolean) => {
-      for (const id of groupIds) {
-        onSelect(id, checked);
-      }
-    },
-    [groupIds, onSelect],
-  );
+  const handleSelectAll = (checked: boolean) =>
+    onSelectGroup(groupIds, checked);
 
   return (
     <div className="relative">
-      <div className="sticky top-0 z-20 bg-accent/50 border-y border-border px-4 py-3 backdrop-blur-md shadow-md">
+      <div className="sticky top-0 z-40 bg-accent/50 border-y border-border px-4 py-3 backdrop-blur-md shadow-md">
         <div className="flex items-center gap-3 px-6 py-2.5">
           <div className="shrink-0">
             <Checkbox
@@ -73,7 +75,6 @@ export function BudgetMonthSection({
         </div>
       </div>
 
-      {/* Budget cards for this month */}
       <div className="flex flex-col pb-2">
         {budgets.map((budget) => (
           <BudgetCard
@@ -81,8 +82,11 @@ export function BudgetMonthSection({
             budget={budget}
             selected={selectedIds.has(budget.id)}
             onSelect={onSelect}
-            onDelete={onDeleteBudget}
+            onView={onView}
+            onEdit={onEdit}
+            onDelete={onDelete}
             onAskCoach={onAskCoach}
+            isPending={isPending(budget.id)}
           />
         ))}
       </div>

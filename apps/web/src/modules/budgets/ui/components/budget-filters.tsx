@@ -59,7 +59,6 @@ export function BudgetFilters() {
   const currentSortLabel =
     SORT_OPTIONS.find((s) => s.value === currentSortField)?.label ?? "Sort";
 
-  // The list picker defaults to the current month when the URL has no month/year.
   const now = new Date();
   const listAnchor = new Date(
     currentYear ?? now.getFullYear(),

@@ -1,5 +1,5 @@
 //dashboard/constants/index.ts
-import { formatAmount } from "@/lib/utils";
+
 import {
   ArrowDownLeft,
   ArrowLeftRight,
@@ -29,6 +29,7 @@ import {
   Wallet,
   Zap,
 } from "lucide-react";
+import { formatAmount } from "@/lib/utils";
 import type { ChartType, Period } from "../types";
 
 // SIDEBAR NAVIGATIONS

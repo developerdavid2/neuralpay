@@ -3,6 +3,11 @@
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
+import {
+  validateBudgetPeriod,
+  validateBudgetStatuses,
+  validateSortField,
+} from "../../lib/validate-budget-params";
 import type { BudgetQueryState } from "../../types";
 
 const DEFAULTS = {
@@ -33,21 +38,29 @@ export function useBudgetFilters() {
     searchParams.get(key) ?? DEFAULTS[key];
 
   const currentSearch = get("search");
-  const currentStatuses = (searchParams.get("status") ?? "")
-    .split(",")
-    .filter(Boolean);
+  const currentStatuses =
+    validateBudgetStatuses(searchParams.get("status") ?? undefined) ?? [];
+
   const rawIsActive = searchParams.get("isActive");
   const currentIsActive =
     rawIsActive === "true" ? true : rawIsActive === "false" ? false : undefined;
-  const currentPeriod = searchParams.get("period") || undefined;
+  const currentPeriod = validateBudgetPeriod(
+    searchParams.get("period") ?? undefined,
+  );
   const currentMonth = searchParams.get("month")
     ? Number(searchParams.get("month"))
     : undefined;
   const currentYear = searchParams.get("year")
     ? Number(searchParams.get("year"))
     : undefined;
-  const currentSortField = get("sortField") as BudgetQueryState["sortField"];
-  const currentSortDir = get("sortDir") as BudgetQueryState["sortDir"];
+
+  const currentSortField = (validateSortField(get("sortField")) ??
+    DEFAULTS.sortField) as BudgetQueryState["sortField"];
+
+  const currentSortDir = (
+    get("sortDir") === "asc" ? "asc" : "desc"
+  ) as BudgetQueryState["sortDir"];
+
   const currentLimit = Number(get("limit")) || 20;
 
   const activeFilterCount = [
@@ -96,8 +109,6 @@ export function useBudgetFilters() {
     [pathname, router, searchParams],
   );
 
-  // The list owns its own month/year scope, written to plain month/year and
-  // preserving every other param so it never disturbs stats or calendar.
   const updateMonthYear = useCallback(
     (newMonth: number, newYear: number) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -128,6 +139,8 @@ export function useBudgetFilters() {
   }, []);
 
   const applyDrawerFilters = useCallback(() => {
+    setMoreFiltersOpen(false);
+
     const params = new URLSearchParams(searchParams.toString());
     params.delete("page");
 
@@ -143,7 +156,6 @@ export function useBudgetFilters() {
 
     const query = params.toString();
     router.push((query ? `${pathname}?${query}` : pathname) as Route);
-    setMoreFiltersOpen(false);
   }, [
     searchParams,
     pathname,
@@ -154,29 +166,20 @@ export function useBudgetFilters() {
   ]);
 
   const resetDrawer = useCallback(() => {
+    setMoreFiltersOpen(false);
     setDraftStatuses([]);
     setDraftIsActive(undefined);
     setDraftPeriod(undefined);
 
-    const params = new URLSearchParams();
-    const search = searchParams.get("search");
-    if (search) params.set("search", search);
-    const sortField = searchParams.get("sortField");
-    if (sortField) params.set("sortField", sortField);
-    const sortDir = searchParams.get("sortDir");
-    if (sortDir) params.set("sortDir", sortDir);
-    // Month/year is a toolbar picker, not a drawer filter — keep it like search/sort.
-    const month = searchParams.get("month");
-    if (month) params.set("month", month);
-    const year = searchParams.get("year");
-    if (year) params.set("year", year);
-
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("status");
+    params.delete("isActive");
+    params.delete("period");
+    params.delete("page");
     const query = params.toString();
     router.push((query ? `${pathname}?${query}` : pathname) as Route);
-    setMoreFiltersOpen(false);
   }, [pathname, router, searchParams]);
 
-  // Same-shape state your BudgetList/useBudgetsList already expects
   const queryState: BudgetQueryState = useMemo(
     () => ({
       limit: currentLimit,

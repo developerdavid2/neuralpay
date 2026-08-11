@@ -55,8 +55,6 @@ function invalidateBudgetCache(userId: string) {
 async function loadCategories(
   budgetIds: string[],
   userId: string,
-  monthStart: Date,
-  monthEnd: Date,
 ): Promise<Map<string, BudgetCategoryDetail[]>> {
   const map = new Map<string, BudgetCategoryDetail[]>();
   if (budgetIds.length === 0) return map;
@@ -66,40 +64,49 @@ async function loadCategories(
     .from(budgetCategories)
     .where(inArray(budgetCategories.budgetId, budgetIds));
 
-  // Compute spend per category per budget
-  const spendByCategory = await Promise.all(
-    rows.map(async (row) => {
-      const [result] = await db
-        .select({
-          total: sql<string>`coalesce(sum(${transactions.amount}::numeric), 0)::text`,
-          count: sql<number>`count(*)::int`,
-        })
-        .from(transactions)
-        .where(
-          and(
-            eq(transactions.userId, userId),
-            eq(transactions.type, "debit"),
-            eq(transactions.category, row.category),
-            gte(transactions.date, monthStart),
-            lte(transactions.date, monthEnd),
-          ),
-        );
-      return {
-        budgetId: row.budgetId,
-        category: row.category,
-        limitAmount: row.limitAmount,
-        spent: parseFloat(result?.total ?? "0"),
-        count: result?.count ?? 0,
-      };
-    }),
-  );
+  if (rows.length === 0) return map;
+  const spendRows = await db
+    .select({
+      budgetId: budgetCategories.budgetId,
+      category: budgetCategories.category,
+      total: sql<string>`coalesce(sum(${transactions.amount}::numeric), 0)::text`,
+      count: sql<number>`count(${transactions.id})::int`,
+    })
+    .from(budgetCategories)
+    .innerJoin(budgets, eq(budgets.id, budgetCategories.budgetId))
+    .leftJoin(
+      transactions,
+      and(
+        eq(transactions.userId, userId),
+        eq(transactions.type, "debit"),
+        eq(transactions.category, budgetCategories.category),
+        gte(transactions.date, budgets.startDate),
+        lte(transactions.date, budgets.endDate),
+        sql`(
+					not exists (
+						select 1 from ${budgetAccounts} ba where ba.budget_id = ${budgets.id}
+					)
+					or ${transactions.bankAccountId} in (
+						select ba.bank_account_id from ${budgetAccounts} ba where ba.budget_id = ${budgets.id}
+					)
+				)`,
+      ),
+    )
+    .where(inArray(budgetCategories.budgetId, budgetIds))
+    .groupBy(budgetCategories.budgetId, budgetCategories.category);
+
+  const spendMap = new Map<string, { total: number; count: number }>();
+  for (const r of spendRows) {
+    spendMap.set(`${r.budgetId}:${r.category}`, {
+      total: parseFloat(r.total ?? "0"),
+      count: r.count ?? 0,
+    });
+  }
 
   for (const row of rows) {
-    const spend = spendByCategory.find(
-      (s) => s.budgetId === row.budgetId && s.category === row.category,
-    );
+    const spend = spendMap.get(`${row.budgetId}:${row.category}`);
     const limit = parseFloat(row.limitAmount);
-    const spent = spend?.spent ?? 0;
+    const spent = spend?.total ?? 0;
     const detail: BudgetCategoryDetail = {
       category: row.category,
       limitAmount: row.limitAmount,
@@ -153,8 +160,8 @@ async function loadAccounts(
 async function enrich(
   userId: string,
   rows: Array<typeof budgets.$inferSelect>,
-  month: number,
-  year: number,
+  _month: number,
+  _year: number,
   sort?: BudgetSortInput,
 ): Promise<Budget[]> {
   if (rows.length === 0) return [];
@@ -163,11 +170,9 @@ async function enrich(
 
   // Determine month scope for spend computation
   const now = new Date();
-  const monthStart = startOfMonth(new Date(year, month - 1));
-  const monthEnd = endOfMonth(new Date(year, month - 1));
 
   const [categoriesMap, accountsMap] = await Promise.all([
-    loadCategories(ids, userId, monthStart, monthEnd),
+    loadCategories(ids, userId),
     loadAccounts(ids),
   ]);
 
@@ -288,6 +293,24 @@ export const BudgetsService = {
       }
 
       const isDbSort = sort.field !== "spent";
+
+      const spentExpr = sql<string>`(
+	select coalesce(sum(t.amount::numeric), 0)
+	from ${transactions} t
+	where t.user_id = ${userId}
+		and t.type = 'debit'
+		and t.date between ${budgets.startDate} and ${budgets.endDate}
+		and t.category in (
+			select bc.category from ${budgetCategories} bc where bc.budget_id = ${budgets.id}
+		)
+		and (
+			not exists (select 1 from ${budgetAccounts} ba where ba.budget_id = ${budgets.id})
+			or t.bank_account_id in (
+				select ba.bank_account_id from ${budgetAccounts} ba where ba.budget_id = ${budgets.id}
+			)
+		)
+)`;
+
       const orderCol =
         sort.field === "name"
           ? sql`${budgets.name}`
@@ -295,7 +318,9 @@ export const BudgetsService = {
             ? sql`${budgets.limitAmount}::numeric`
             : sort.field === "date"
               ? sql`${budgets.startDate}`
-              : sql`${budgets.createdAt}`;
+              : sort.field === "spent"
+                ? spentExpr
+                : sql`${budgets.createdAt}`;
       const orderDir = sort.direction === "asc" ? sql`asc` : sql`desc`;
 
       if (cursor) {
@@ -308,13 +333,13 @@ export const BudgetsService = {
             startDate: budgets.startDate,
             name: budgets.name,
             limitAmount: budgets.limitAmount,
+            spent: spentExpr,
           })
           .from(budgets)
           .where(and(eq(budgets.id, cursorId), eq(budgets.userId, userId)))
           .limit(1);
 
         if (cursorRow) {
-          // Cursor value for the same column used in ORDER BY.
           const boundVal =
             sort.field === "name"
               ? sql`${cursorRow.name}`
@@ -322,11 +347,10 @@ export const BudgetsService = {
                 ? sql`${cursorRow.limitAmount}::numeric`
                 : sort.field === "date"
                   ? sql`${cursorRow.startDate}`
-                  : sql`${cursorRow.createdAt}`;
+                  : sort.field === "spent"
+                    ? sql`${cursorRow.spent}::numeric`
+                    : sql`${cursorRow.createdAt}`;
 
-          // (orderCol, id) strictly past the cursor row in the sort
-          // direction, with id as the tiebreak so no row repeats or is
-          // skipped when the sort column has duplicates.
           const cursorRowCondition =
             sort.direction === "asc"
               ? or(
@@ -351,12 +375,9 @@ export const BudgetsService = {
         .select()
         .from(budgets)
         .where(and(...conditions))
-        // ORDER BY must match the keyset (orderCol, id) exactly.
         .orderBy(sql`${orderCol} ${orderDir}`, sql`${budgets.id} ${orderDir}`)
         .limit(limit + 1);
 
-      // Derive pagination from the DB order BEFORE enrichment so the cursor
-      // advances on the stable keyset regardless of the status filter.
       const hasMore = rows.length > limit;
       const pageRows = hasMore ? rows.slice(0, limit) : rows;
       const lastRow = pageRows[pageRows.length - 1];
@@ -365,15 +386,7 @@ export const BudgetsService = {
           ? Buffer.from(lastRow.id).toString("base64url")
           : null;
 
-      // DB-backed sorts are already ordered by the query; only re-sort in
-      // memory for the computed `spent` field, so the keyset order is kept.
-      let items = await enrich(
-        userId,
-        pageRows,
-        targetMonth,
-        targetYear,
-        isDbSort ? undefined : sort,
-      );
+      let items = await enrich(userId, pageRows, targetMonth, targetYear);
 
       if (status) {
         const statuses = Array.isArray(status) ? status : [status];
@@ -440,8 +453,8 @@ export const BudgetsService = {
               and(
                 eq(budgets.userId, userId),
                 eq(budgets.isActive, true),
-                gte(budgets.startDate, monthStart),
-                lte(budgets.endDate, monthEnd),
+                lte(budgets.startDate, monthEnd),
+                gte(budgets.endDate, monthStart),
               ),
             );
 
@@ -560,59 +573,60 @@ export const BudgetsService = {
     try {
       const start = new Date(input.startDate);
       const end = new Date(input.endDate);
-      // Sanitize optional fields before persisting.
       const accountIds = input.accountIds ?? [];
 
-      const [created] = await db
-        .insert(budgets)
-        .values({
-          userId,
-          name: input.name,
-          description: input.description ?? null,
-          color: input.color ?? "#6366f1",
-          limitAmount: input.limitAmount.toString(),
-          period: input.period ?? "monthly",
-          startDate: start,
-          endDate: end,
-          month: start.getMonth() + 1,
-          year: start.getFullYear(),
-          alertThreshold: input.alertThreshold ?? 80,
-          isActive: true,
-        })
-        .returning();
+      const created = await db.transaction(async (tx) => {
+        const [row] = await tx
+          .insert(budgets)
+          .values({
+            userId,
+            name: input.name,
+            description: input.description ?? null,
+            color: input.color ?? "#6366f1",
+            limitAmount: input.limitAmount.toString(),
+            period: input.period ?? "monthly",
+            startDate: start,
+            endDate: end,
+            month: start.getMonth() + 1,
+            year: start.getFullYear(),
+            alertThreshold: input.alertThreshold ?? 80,
+            isActive: true,
+          })
+          .returning();
 
-      if (!created) throw new Error("Insert returned no row");
+        if (!row) throw new Error("Insert returned no row");
 
-      // Insert category allocations
-      if (input.categories.length > 0) {
-        await db.insert(budgetCategories).values(
-          input.categories.map((c) => ({
-            budgetId: created.id,
-            category: c.category,
-            limitAmount: c.limitAmount.toString(),
-          })),
-        );
-      }
-
-      // Link accounts
-      if (accountIds.length > 0) {
-        const owned = await db
-          .select({ id: bankAccounts.id })
-          .from(bankAccounts)
-          .where(
-            and(
-              eq(bankAccounts.userId, userId),
-              inArray(bankAccounts.id, accountIds),
-            ),
+        if (input.categories.length > 0) {
+          await tx.insert(budgetCategories).values(
+            input.categories.map((c) => ({
+              budgetId: row.id,
+              category: c.category,
+              limitAmount: c.limitAmount.toString(),
+            })),
           );
-        if (owned.length > 0) {
-          await db
-            .insert(budgetAccounts)
-            .values(
-              owned.map((a) => ({ budgetId: created.id, bankAccountId: a.id })),
-            );
         }
-      }
+
+        if (accountIds.length > 0) {
+          const owned = await tx
+            .select({ id: bankAccounts.id })
+            .from(bankAccounts)
+            .where(
+              and(
+                eq(bankAccounts.userId, userId),
+                inArray(bankAccounts.id, accountIds),
+              ),
+            );
+          if (owned.length > 0) {
+            await tx
+              .insert(budgetAccounts)
+              .values(
+                owned.map((a) => ({ budgetId: row.id, bankAccountId: a.id })),
+              );
+          }
+        }
+
+        return row;
+      });
 
       await invalidateBudgetCache(userId);
       const [enriched] = await enrich(
@@ -650,78 +664,77 @@ export const BudgetsService = {
         return { success: false, error: "Budget not found", code: "NOT_FOUND" };
       }
 
-      const updateData: Record<string, unknown> = { updatedAt: new Date() };
-      if (input.name !== undefined) updateData.name = input.name;
-      if (input.description !== undefined)
-        updateData.description = input.description;
-      if (input.color !== undefined) updateData.color = input.color;
-      if (input.limitAmount !== undefined)
-        updateData.limitAmount = input.limitAmount.toString();
-      if (input.period !== undefined) updateData.period = input.period;
-      if (input.alertThreshold !== undefined)
-        updateData.alertThreshold = input.alertThreshold;
-      if (input.isActive !== undefined) updateData.isActive = input.isActive;
-
-      if (input.startDate !== undefined) {
-        const start = new Date(input.startDate);
-        updateData.startDate = start;
-        updateData.month = start.getMonth() + 1;
-        updateData.year = start.getFullYear();
-      }
-      if (input.endDate !== undefined) {
-        updateData.endDate = new Date(input.endDate);
-      }
-
-      const [updated] = await db
-        .update(budgets)
-        .set(updateData)
-        .where(and(eq(budgets.id, input.id), eq(budgets.userId, userId)))
-        .returning();
-
-      if (!updated) {
-        return { success: false, error: "Budget not found", code: "NOT_FOUND" };
-      }
-
-      // Replace categories
-      if (input.categories !== undefined) {
-        await db
-          .delete(budgetCategories)
-          .where(eq(budgetCategories.budgetId, input.id));
-        if (input.categories.length > 0) {
-          await db.insert(budgetCategories).values(
-            input.categories.map((c) => ({
-              budgetId: input.id,
-              category: c.category,
-              limitAmount: c.limitAmount.toString(),
-            })),
-          );
+      const updated = await db.transaction(async (tx) => {
+        const updateData: Record<string, unknown> = { updatedAt: new Date() };
+        if (input.name !== undefined) updateData.name = input.name;
+        if (input.description !== undefined)
+          updateData.description = input.description;
+        if (input.color !== undefined) updateData.color = input.color;
+        if (input.limitAmount !== undefined)
+          updateData.limitAmount = input.limitAmount.toString();
+        if (input.period !== undefined) updateData.period = input.period;
+        if (input.alertThreshold !== undefined)
+          updateData.alertThreshold = input.alertThreshold;
+        if (input.isActive !== undefined) updateData.isActive = input.isActive;
+        if (input.startDate !== undefined) {
+          const start = new Date(input.startDate);
+          updateData.startDate = start;
+          updateData.month = start.getMonth() + 1;
+          updateData.year = start.getFullYear();
         }
-      }
+        if (input.endDate !== undefined)
+          updateData.endDate = new Date(input.endDate);
 
-      // Replace accounts
-      if (input.accountIds !== undefined) {
-        await db
-          .delete(budgetAccounts)
-          .where(eq(budgetAccounts.budgetId, input.id));
-        if (input.accountIds.length > 0) {
-          const owned = await db
-            .select({ id: bankAccounts.id })
-            .from(bankAccounts)
-            .where(
-              and(
-                eq(bankAccounts.userId, userId),
-                inArray(bankAccounts.id, input.accountIds),
-              ),
+        const [row] = await tx
+          .update(budgets)
+          .set(updateData)
+          .where(and(eq(budgets.id, input.id), eq(budgets.userId, userId)))
+          .returning();
+
+        if (!row) throw new Error("Budget not found during update");
+
+        if (input.categories !== undefined) {
+          await tx
+            .delete(budgetCategories)
+            .where(eq(budgetCategories.budgetId, input.id));
+          if (input.categories.length > 0) {
+            await tx.insert(budgetCategories).values(
+              input.categories.map((c) => ({
+                budgetId: input.id,
+                category: c.category,
+                limitAmount: c.limitAmount.toString(),
+              })),
             );
-          if (owned.length > 0) {
-            await db
-              .insert(budgetAccounts)
-              .values(
-                owned.map((a) => ({ budgetId: input.id, bankAccountId: a.id })),
-              );
           }
         }
-      }
+
+        if (input.accountIds !== undefined) {
+          await tx
+            .delete(budgetAccounts)
+            .where(eq(budgetAccounts.budgetId, input.id));
+          if (input.accountIds.length > 0) {
+            const owned = await tx
+              .select({ id: bankAccounts.id })
+              .from(bankAccounts)
+              .where(
+                and(
+                  eq(bankAccounts.userId, userId),
+                  inArray(bankAccounts.id, input.accountIds),
+                ),
+              );
+            if (owned.length > 0) {
+              await tx.insert(budgetAccounts).values(
+                owned.map((a) => ({
+                  budgetId: input.id,
+                  bankAccountId: a.id,
+                })),
+              );
+            }
+          }
+        }
+
+        return row;
+      });
 
       await invalidateBudgetCache(userId);
       const [enriched] = await enrich(
