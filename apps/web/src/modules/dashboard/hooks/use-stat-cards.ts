@@ -1,10 +1,7 @@
 import { useAccountAggregates } from "@/modules/accounts/hooks/queries/use-account-aggregates";
-import { useTRPC } from "@/trpc/trpc-client";
 import { useCurrentMonthSpending } from "./queries/use-current-month-spending";
 
 export function useStatCards() {
-  const trpc = useTRPC();
-
   const { totalBalance, totalCount, aggregateMap } = useAccountAggregates();
   const { data: monthSpending } = useCurrentMonthSpending();
 

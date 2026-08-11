@@ -1,13 +1,12 @@
 "use client";
 
-import { Suspense, type ReactNode } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { Button } from "@neuralpay/ui/components/button";
+import { cn } from "@neuralpay/ui/lib/utils";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 
 import { AlertCircle, RefreshCw } from "lucide-react";
-
-import { Button } from "@neuralpay/ui/components/button";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { type ReactNode, Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 interface SectionErrorFallbackProps {
   error: unknown;

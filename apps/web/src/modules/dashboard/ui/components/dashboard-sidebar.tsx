@@ -13,13 +13,39 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@neuralpay/ui/components/sidebar";
-
-import { NeuralPayLogo } from "@/components/logo";
 import { cn } from "@neuralpay/ui/lib/utils";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
+import { NeuralPayLogo } from "@/components/logo";
 import { navGroups } from "../../constants";
 import { DashboardUserButton } from "./dashboard-user-button";
+
+function NavItemContent({
+  icon: Icon,
+  title,
+  active,
+}: {
+  icon: React.ElementType;
+  title: string;
+  active: boolean;
+}) {
+  const { pending } = useLinkStatus();
+
+  return (
+    <>
+      <Icon
+        className={cn(
+          "size-4 shrink-0 transition-opacity",
+          active ? "text-main" : "text-[#8B88A0]",
+          pending && "animate-pulse",
+        )}
+      />
+      <span className={cn("transition-opacity", pending && "opacity-60")}>
+        {title}
+      </span>
+    </>
+  );
+}
 
 export const DashboardSidebar = () => {
   const pathname = usePathname();
@@ -62,13 +88,11 @@ export const DashboardSidebar = () => {
                         )}
                       >
                         <Link href={item.url}>
-                          <item.icon
-                            className={cn(
-                              "size-4 shrink-0",
-                              active ? "text-main" : "text-[#8B88A0]",
-                            )}
+                          <NavItemContent
+                            icon={item.icon}
+                            title={item.title}
+                            active={active}
                           />
-                          <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

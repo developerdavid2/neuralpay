@@ -286,12 +286,12 @@ export const PlaidService = {
     institutionName: string | null,
   ) {
     try {
-      // ── 1. Fetch accounts
+      //  1. Fetch accounts
       const plaidAccounts = await plaidClient.accountsGet({
         access_token: accessToken,
       });
 
-      // ── 2. Upsert accounts
+      //  2. Upsert accounts
       const accountMap = new Map<string, string>();
 
       for (const acc of plaidAccounts.data.accounts) {
@@ -345,7 +345,7 @@ export const PlaidService = {
         }
       }
 
-      // ── 2. Load the stored cursor for THIS bank connection
+      //  2. Load the stored cursor for THIS bank connection
       const [bankRow] = await db
         .select({ transactionCursor: connectedPlaidBanks.transactionCursor })
         .from(connectedPlaidBanks)
@@ -370,7 +370,7 @@ export const PlaidService = {
       let hasMore = true;
       let nextCursor = cursor;
 
-      // ── 3. Sync transactions with pagination
+      //  3. Sync transactions with pagination
       while (hasMore) {
         const response = await plaidClient.transactionsSync({
           access_token: accessToken,
@@ -421,7 +421,7 @@ export const PlaidService = {
         await db.insert(transactions).values(txToInsert).onConflictDoNothing();
       }
 
-      // ── 5. Update modified transactions
+      //  5. Update modified transactions
       for (const tx of modified) {
         if (!accountMap.has(tx.account_id)) continue;
         const isDebit = tx.amount >= 0;
@@ -442,14 +442,14 @@ export const PlaidService = {
           .where(eq(transactions.plaidTxId, tx.transaction_id));
       }
 
-      // ── 6. Delete removed transactions
+      //  6. Delete removed transactions
       if (removedIds.length > 0) {
         await db
           .delete(transactions)
           .where(inArray(transactions.plaidTxId, removedIds));
       }
 
-      // ── 7. Persist the cursor so next sync only fetches NEW changes
+      //  7. Persist the cursor so next sync only fetches NEW changes
       if (nextCursor) {
         await db
           .update(connectedPlaidBanks)

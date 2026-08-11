@@ -1,13 +1,5 @@
 "use client";
 
-import { DateRangePicker } from "@/components/date-range-picker";
-import { DebouncedSearchInput } from "@/components/debounced-search-input";
-import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
-import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
-import {
-  TRANSACTION_STATUS_LABELS,
-  TRANSACTION_TYPE_LABELS,
-} from "@/modules/transactions/constants";
 import { Badge } from "@neuralpay/ui/components/badge";
 import { Button } from "@neuralpay/ui/components/button";
 import {
@@ -37,7 +29,14 @@ import {
   Tag,
   X,
 } from "lucide-react";
-import { SearchableCombobox } from "@/components/searchable-combobox";
+import { DateRangePicker } from "@/components/date-range-picker";
+import { DebouncedSearchInput } from "@/components/debounced-search-input";
+import { CATEGORY_LABELS } from "@/modules/dashboard/constants";
+import {
+  TRANSACTION_STATUS_LABELS,
+  TRANSACTION_TYPE_LABELS,
+} from "@/modules/transactions/constants";
+import { useTransactionFilters } from "@/modules/transactions/hooks/use-transaction-filters";
 
 const ACCOUNT_TYPES = [
   { value: "checking", label: "Checking", icon: Banknote },
@@ -224,13 +223,6 @@ export function TransactionFilters() {
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5 scrollbar-thin">
-            <SearchableCombobox
-              options={[]}
-              value={""}
-              onChange={() => {}}
-              placeholder="string"
-              searchPlaceholder="string"
-            />
             {/* Account Type */}
             <div className="space-y-2">
               <h3 className="text-sm font-semibold">Account Type</h3>
@@ -278,6 +270,7 @@ export function TransactionFilters() {
                   <h3 className="text-sm font-semibold">Transaction types</h3>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     const all = Object.keys(TRANSACTION_TYPE_LABELS);
                     setDraftTransactionTypes(
@@ -295,6 +288,7 @@ export function TransactionFilters() {
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(TRANSACTION_TYPE_LABELS).map(([key, label]) => (
                   <button
+                    type="button"
                     key={key}
                     onClick={() => toggleDraftTransactionType(key)}
                     className={cn(
@@ -320,6 +314,7 @@ export function TransactionFilters() {
                   <h3 className="text-sm font-semibold">Status</h3>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     const all = Object.keys(TRANSACTION_STATUS_LABELS);
                     setDraftStatuses(
@@ -338,6 +333,7 @@ export function TransactionFilters() {
                 {Object.entries(TRANSACTION_STATUS_LABELS).map(
                   ([key, label]) => (
                     <button
+                      type="button"
                       key={key}
                       onClick={() => toggleDraftStatus(key)}
                       className={cn(
@@ -364,6 +360,7 @@ export function TransactionFilters() {
                   <h3 className="text-sm font-semibold">Categories</h3>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     const all = Object.keys(CATEGORY_LABELS);
                     setDraftCategories(
@@ -381,6 +378,7 @@ export function TransactionFilters() {
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                   <button
+                    type="button"
                     key={key}
                     onClick={() => toggleDraftCategory(key)}
                     className={cn(
@@ -492,6 +490,7 @@ function FilterChip({
     >
       {label}
       <button
+        type="button"
         onClick={onRemove}
         className="ml-0.5 rounded-full hover:bg-background/20 p-0.5 transition-colors"
         aria-label={`Remove ${label} filter`}

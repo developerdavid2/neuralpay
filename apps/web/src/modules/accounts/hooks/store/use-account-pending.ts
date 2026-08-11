@@ -1,4 +1,5 @@
 "use client";
+
 import { create } from "zustand";
 
 type AccountPendingState = {
@@ -22,25 +23,33 @@ export const useAccountPendingStore = create<AccountPendingState>((set) => ({
   markDeleting: (ids) =>
     set((state) => {
       const pendingDeleteIds = new Set(state.pendingDeleteIds);
-      ids.forEach((id) => pendingDeleteIds.add(id));
+      for (const id of ids) {
+        pendingDeleteIds.add(id);
+      }
       return { pendingDeleteIds };
     }),
   unmarkDeleting: (ids) =>
     set((state) => {
       const pendingDeleteIds = new Set(state.pendingDeleteIds);
-      ids.forEach((id) => pendingDeleteIds.delete(id));
+      for (const id of ids) {
+        pendingDeleteIds.delete(id);
+      }
       return { pendingDeleteIds };
     }),
   markDisconnecting: (ids) =>
     set((state) => {
       const pendingDisconnectIds = new Set(state.pendingDisconnectIds);
-      ids.forEach((id) => pendingDisconnectIds.add(id));
+      for (const id of ids) {
+        pendingDisconnectIds.add(id);
+      }
       return { pendingDisconnectIds };
     }),
   unmarkDisconnecting: (ids) =>
     set((state) => {
       const pendingDisconnectIds = new Set(state.pendingDisconnectIds);
-      ids.forEach((id) => pendingDisconnectIds.delete(id));
+      for (const id of ids) {
+        pendingDisconnectIds.delete(id);
+      }
       return { pendingDisconnectIds };
     }),
   setPendingUpdateId: (id) => set({ pendingUpdateId: id }),

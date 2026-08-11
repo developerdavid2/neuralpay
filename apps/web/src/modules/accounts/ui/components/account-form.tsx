@@ -1,6 +1,5 @@
-import { createAccountSchema, updateAccountSchema } from "@neuralpay/types";
-
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createAccountSchema, updateAccountSchema } from "@neuralpay/types";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   DrawerClose,
@@ -9,12 +8,12 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@neuralpay/ui/components/drawer";
-import { Trash2, X, Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { cn } from "@neuralpay/ui/lib/utils";
-import { AccountFormFields } from "./account-form-fields";
-import type { FormValues } from "../../types";
 import { Spinner } from "@neuralpay/ui/components/spinner";
+import { cn } from "@neuralpay/ui/lib/utils";
+import { Trash2, X } from "lucide-react";
+import { FormProvider, useForm } from "react-hook-form";
+import type { FormValues } from "../../types";
+import { AccountFormFields } from "./account-form-fields";
 
 export function AccountForm({
   defaultValues,
@@ -114,7 +113,9 @@ export function AccountForm({
       </DrawerHeader>
 
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5 scrollbar-thin">
-        <AccountFormFields form={form} disabled={formDisabled} />
+        <FormProvider {...form}>
+          <AccountFormFields form={form} disabled={formDisabled} />
+        </FormProvider>
       </div>
 
       <DrawerFooter className="px-6 py-4 border-t shrink-0">

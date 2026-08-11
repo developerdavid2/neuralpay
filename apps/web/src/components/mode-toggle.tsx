@@ -20,12 +20,10 @@ export function ModeToggle() {
   }, []);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
           {!mounted ? (
-            // Static icon that won't cause hydration mismatch
-            // Shows something reasonable before JS loads
             <Sun className="h-[1.2rem] w-[1.2rem]" />
           ) : resolvedTheme === "dark" ? (
             <Moon className="h-[1.2rem] w-[1.2rem]" />

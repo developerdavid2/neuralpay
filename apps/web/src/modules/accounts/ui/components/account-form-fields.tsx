@@ -1,4 +1,4 @@
-import { AmountInput } from "@/components/amount-input";
+import { ACCOUNT_TYPES } from "@neuralpay/types";
 import {
   Field,
   FieldError,
@@ -15,8 +15,8 @@ import {
 } from "@neuralpay/ui/components/select";
 import { Textarea } from "@neuralpay/ui/components/textarea";
 import { Controller, type UseFormReturn } from "react-hook-form";
+import { AmountInput } from "@/components/amount-input";
 import type { FormValues } from "../../types";
-import { ACCOUNT_TYPES } from "@neuralpay/types";
 
 interface Props {
   form: UseFormReturn<FormValues>;
@@ -130,6 +130,7 @@ export function AccountFormFields({ form, disabled }: Props) {
               disabled={pending}
               placeholder="0.00"
               type="credit"
+              showTypeIndicator={false}
             />
             {fieldState.error && <FieldError errors={[fieldState.error]} />}
           </Field>

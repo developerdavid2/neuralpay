@@ -1,26 +1,30 @@
 "use client";
 
-import {
-  type CreateTransactionInput,
-  type UpdateTransactionInput,
+import type {
+  CreateTransactionInput,
+  UpdateTransactionInput,
 } from "@neuralpay/types";
+import { Button } from "@neuralpay/ui/components/button";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+} from "@neuralpay/ui/components/sheet";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
-
-import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
-
+import { X } from "lucide-react";
 import { useConfirm } from "@/hooks/ui/use-confirm";
+import { useAllAccounts } from "@/modules/accounts/hooks/queries/use-all-accounts";
 import { useTransactionMutations } from "@/modules/transactions/hooks/mutations/use-transaction-mutations";
 import { useTransactionDetail } from "@/modules/transactions/hooks/queries/use-transaction-detail";
 import { useTransactionUrlSync } from "@/modules/transactions/hooks/use-transaction-url-sync";
-import { Sheet, SheetContent } from "@neuralpay/ui/components/sheet";
 import {
-  useTransactionDrawer,
   type TransactionDrawerMode,
+  useTransactionDrawer,
 } from "../../hooks/store/use-transaction-drawer";
+import { useTransactionPendingSelectors } from "../../hooks/store/use-transaction-pending";
 import type { FormValues } from "../../types";
 import { TransactionForm } from "./transaction-form";
-import { useTransactionPendingSelectors } from "../../hooks/store/use-transaction-pending";
 
 export function TransactionFormDrawer() {
   const { isOpen, onClose, transactionId, mode } = useTransactionDrawer();
@@ -261,6 +265,18 @@ function FormDrawerSkeleton({ onClose }: { onClose: () => void }) {
         <Skeleton className="h-10 w-full rounded-md" />
         <Skeleton className="h-10 w-full rounded-md" />
       </div>
+
+      <SheetClose asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-6 top-4 size-8 opacity-0"
+          onClick={onClose}
+          tabIndex={-1}
+        >
+          <X className="size-4" />
+        </Button>
+      </SheetClose>
     </>
   );
 }

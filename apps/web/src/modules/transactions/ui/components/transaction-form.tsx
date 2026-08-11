@@ -11,12 +11,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@neuralpay/ui/components/sheet";
+import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Trash2, X } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import type { FormValues } from "../../types";
 import { TransactionFormFields } from "./transaction-form-fields";
-import { Spinner } from "@neuralpay/ui/components/spinner";
 export function TransactionForm({
   defaultValues,
   isEdit,
@@ -117,7 +117,9 @@ export function TransactionForm({
 
       {/* Scrollable fields */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5 scrollbar-thin">
-        <TransactionFormFields form={form} disabled={formDisabled} />
+        <FormProvider {...form}>
+          <TransactionFormFields form={form} disabled={formDisabled} />
+        </FormProvider>
       </div>
 
       {/* Footer */}

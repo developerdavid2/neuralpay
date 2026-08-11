@@ -1,7 +1,5 @@
 "use client";
 
-import { DebouncedSearchInput } from "@/components/debounced-search-input";
-
 import { Badge } from "@neuralpay/ui/components/badge";
 import { Button } from "@neuralpay/ui/components/button";
 import { Separator } from "@neuralpay/ui/components/separator";
@@ -15,6 +13,7 @@ import {
 import { Switch } from "@neuralpay/ui/components/switch";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { AlertTriangle, Filter, SlidersHorizontal, Tag, X } from "lucide-react";
+import { DebouncedSearchInput } from "@/components/debounced-search-input";
 import { ACCOUNT_STATUS_CONFIG, ACCOUNT_TYPE_CONFIG } from "../../constants";
 import { useAccountFilters } from "../../hooks/use-account-filters";
 
@@ -125,6 +124,7 @@ export function AccountFilters() {
                   <h3 className="text-sm font-semibold">Account Types</h3>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     const all = Object.keys(ACCOUNT_TYPE_CONFIG);
                     setDraftTypes(draftTypes.length === all.length ? [] : all);
@@ -140,6 +140,7 @@ export function AccountFilters() {
                 {Object.entries(ACCOUNT_TYPE_CONFIG).map(([key, config]) => (
                   <button
                     key={key}
+                    type="button"
                     onClick={() => toggleDraftType(key)}
                     className={cn(
                       "px-2.5 py-1 rounded-md text-xs font-medium transition-colors border",
@@ -164,6 +165,7 @@ export function AccountFilters() {
                   <h3 className="text-sm font-semibold">Status</h3>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     const all = Object.keys(ACCOUNT_STATUS_CONFIG);
                     setDraftStatuses(
@@ -181,6 +183,7 @@ export function AccountFilters() {
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(ACCOUNT_STATUS_CONFIG).map(([key, config]) => (
                   <button
+                    type="button"
                     key={key}
                     onClick={() => toggleDraftStatus(key)}
                     className={cn(
@@ -238,6 +241,7 @@ function FilterChip({
     <Badge variant="secondary" className="gap-1 pr-1.5 text-[11px] font-medium">
       {label}
       <button
+        type="button"
         onClick={onRemove}
         className="ml-0.5 rounded-full hover:bg-background/20 p-0.5 transition-colors"
         aria-label={`Remove ${label} filter`}

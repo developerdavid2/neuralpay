@@ -5,12 +5,7 @@ import {
   validateTransactionTypes,
 } from "@/modules/transactions/lib/validate-transaction-enums";
 import { TransactionsView } from "@/modules/transactions/ui/views/transactions-view";
-import {
-  HydrateClient,
-  prefetch,
-  prefetchInfinite,
-  trpc,
-} from "@/trpc/trpc-server";
+import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
 
 interface PageProps {
   searchParams: Promise<{

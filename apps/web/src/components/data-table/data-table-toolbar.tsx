@@ -1,7 +1,5 @@
-// components/data-table/data-table-toolbar.tsx
 "use client";
 
-import { useDataTableNavigation } from "@/hooks/routing/use-data-table-navigation";
 import { Button } from "@neuralpay/ui/components/button";
 import {
   DropdownMenu,
@@ -19,22 +17,20 @@ import {
 import { Spinner } from "@neuralpay/ui/components/spinner";
 import { cn } from "@neuralpay/ui/lib/utils";
 import { Settings2, Trash2 } from "lucide-react";
+import { useDataTableNavigation } from "@/hooks/routing/use-data-table-navigation";
 
 interface DataTableToolbarProps {
   columnVisibility: Record<string, boolean>;
   onColumnVisibilityChange: (visibility: Record<string, boolean>) => void;
   columnNames?: readonly string[];
-
   selectedCount?: number;
   deletableCount?: number;
   onClearSelection?: () => void;
   onBatchDelete?: () => void;
   isBatchDeleting?: boolean;
-
   showLimitSelector?: boolean;
   limitOptions?: string[];
   currentLimit?: number;
-
   className?: string;
 }
 

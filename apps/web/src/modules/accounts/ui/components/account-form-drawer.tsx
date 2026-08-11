@@ -1,24 +1,24 @@
 "use client";
 
-import {
-  type CreateAccountInput,
-  type SupportedCurrencies,
-  type UpdateAccountInput,
+import type {
+  CreateAccountInput,
+  SupportedCurrencies,
+  UpdateAccountInput,
 } from "@neuralpay/types";
 import { Drawer, DrawerContent } from "@neuralpay/ui/components/drawer";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { cn } from "@neuralpay/ui/lib/utils";
-import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
 import { useConfirm } from "@/hooks/ui/use-confirm";
+import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
 import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";
 import { useAccountDetail } from "../../hooks/queries/use-account-detail";
 import {
-  useAccountDrawer,
   type AccountDrawerMode,
+  useAccountDrawer,
 } from "../../hooks/store/use-account-drawer";
+import { useAccountPendingSelectors } from "../../hooks/store/use-account-pending";
 import type { FormValues } from "../../types";
 import { AccountForm } from "./account-form";
-import { useAccountPendingSelectors } from "../../hooks/store/use-account-pending";
 
 export function AccountFormDrawer() {
   const { isOpen, onClose, accountId, mode } = useAccountDrawer();

@@ -16,6 +16,14 @@ export function useInvalidateQueries() {
     invalidateAccounts: () =>
       queryClient.invalidateQueries(trpc.payments.accounts.pathFilter()),
 
+    // Budgets (+ insights, which read budget data)
+    invalidateBudgets: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries(trpc.payments.budgets.pathFilter()),
+        queryClient.invalidateQueries(trpc.ai.insights.pathFilter()),
+      ]);
+    },
+
     // Transactions + Insights
     invalidateTransactions: async () => {
       await Promise.all([
