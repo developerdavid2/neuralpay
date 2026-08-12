@@ -34,5 +34,7 @@ export function validateBudgetPeriod(raw?: string): BudgetPeriod | undefined {
 
 export function validateSortField(raw?: string): SortField | undefined {
   if (!raw) return undefined;
-  return VALID_SORT_FIELDS.includes(raw as SortField) ? raw : undefined;
+  return VALID_SORT_FIELDS.includes(raw as SortField)
+    ? (raw as SortField)
+    : undefined;
 }
