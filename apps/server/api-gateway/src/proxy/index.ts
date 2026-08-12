@@ -1,11 +1,11 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import { gatewayEnv } from "@neuralpay/env/gateway";
+import type { Express, NextFunction, Request, Response } from "express";
 import proxy from "express-http-proxy";
 import { createProxyMiddleware } from "http-proxy-middleware";
-import { gatewayEnv } from "@neuralpay/env/gateway";
 import { logger } from "../utils/logger";
 
 // ── Error handler
-const proxyError = (err: Error, res: any, _next: any) => {
+const proxyError = (err: Error, res: Response, _next: NextFunction) => {
   logger.error(`Proxy error: ${err.message}`);
   if (res.headersSent) {
     res.end();
@@ -142,10 +142,10 @@ export function mountAiSdkChatStreamProxy(app: Express) {
       on: {
         proxyReq: (proxyReq, req) => {
           proxyReq.setHeader("x-internal-source", "api-gateway");
-          proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
-          const userId = (req as any).headers["x-user-id"];
-          const userEmail = (req as any).headers["x-user-email"];
-          const userName = (req as any).headers["x-user-name"];
+          proxyReq.setHeader("cookie", (req as Request).headers.cookie ?? "");
+          const userId = (req as Request).headers["x-user-id"];
+          const userEmail = (req as Request).headers["x-user-email"];
+          const userName = (req as Request).headers["x-user-name"];
           if (userId) proxyReq.setHeader("x-user-id", userId);
           if (userEmail) proxyReq.setHeader("x-user-email", userEmail);
           if (userName) proxyReq.setHeader("x-user-name", userName);
@@ -182,12 +182,12 @@ export function mountNotificationStreamProxy(app: Express) {
       on: {
         proxyReq: (proxyReq, req) => {
           proxyReq.setHeader("x-internal-source", "api-gateway");
-          proxyReq.setHeader("cookie", (req as any).headers.cookie ?? "");
+          proxyReq.setHeader("cookie", (req as Request).headers.cookie ?? "");
           // Disable buffering on the upstream request
           proxyReq.setHeader("x-accel-buffering", "no");
-          const userId = (req as any).headers["x-user-id"];
-          const userEmail = (req as any).headers["x-user-email"];
-          const userName = (req as any).headers["x-user-name"];
+          const userId = (req as Request).headers["x-user-id"];
+          const userEmail = (req as Request).headers["x-user-email"];
+          const userName = (req as Request).headers["x-user-name"];
           if (userId) proxyReq.setHeader("x-user-id", userId);
           if (userEmail) proxyReq.setHeader("x-user-email", userEmail);
           if (userName) proxyReq.setHeader("x-user-name", userName);
@@ -199,7 +199,7 @@ export function mountNotificationStreamProxy(app: Express) {
           proxyRes.headers["x-accel-buffering"] = "no";
           (res as Response).setHeader("x-accel-buffering", "no");
           // Guard both ends so an SSE disconnect can't throw ECONNRESET
-          (req as any).socket?.on("error", () => {});
+          (req as Request).socket?.on("error", () => {});
           proxyRes.on("error", () => {});
         },
         error: (err, _req, res) => {

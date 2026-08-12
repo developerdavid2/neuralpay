@@ -30,7 +30,7 @@ interface BudgetCardProps {
   onView: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onAskCoach?: (budget: Budget) => void;
+  onAskCoach: (budget: Budget) => void;
   isPending?: boolean;
 }
 
@@ -175,10 +175,10 @@ export function BudgetCard({
                 Edit budget
               </DropdownMenuItem>
               <DropdownMenuItem
-                disabled={isPending || !onAskCoach}
+                disabled={isPending}
                 onSelect={(e) => {
                   e.preventDefault();
-                  onAskCoach?.(budget);
+                  onAskCoach(budget);
                 }}
               >
                 <MessageSquare className="size-3.5 mr-2" />

@@ -292,8 +292,6 @@ export const BudgetsService = {
         if (monthCondition) conditions.push(monthCondition);
       }
 
-      const isDbSort = sort.field !== "spent";
-
       const spentExpr = sql<string>`(
 	select coalesce(sum(t.amount::numeric), 0)
 	from ${transactions} t

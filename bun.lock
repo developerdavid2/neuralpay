@@ -32,6 +32,7 @@
         "@trpc/server": "catalog:",
         "ai": "^6.0.203",
         "cors": "catalog:",
+        "date-fns": "catalog:",
         "drizzle-orm": "catalog:",
         "express": "catalog:",
         "helmet": "catalog:",

@@ -1,7 +1,17 @@
 "use client";
 
+import { Button } from "@neuralpay/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@neuralpay/ui/components/card";
+import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@neuralpay/ui/components/tabs";
 import { PieChart } from "lucide-react";
 import { useCallback, useId, useMemo, useState } from "react";
+import type { DateRange } from "react-day-picker";
 import {
   Area,
   AreaChart,
@@ -19,19 +29,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
-import { Button } from "@neuralpay/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@neuralpay/ui/components/card";
-import { Tabs, TabsList, TabsTrigger } from "@neuralpay/ui/components/tabs";
-
 import { DateRangePicker } from "@/components/date-range-picker";
 import { formatAmount } from "@/lib/utils";
-import type { DateRange } from "react-day-picker";
+import { useSpendingOverview } from "@/modules/dashboard/hooks/queries/use-spending-overview";
 import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
@@ -40,10 +40,8 @@ import {
   CHART_TYPES,
   PERIOD_LABELS,
 } from "../../constants";
-import type { ChartType, Period } from "../../types";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { useSpendingOverview } from "@/modules/dashboard/hooks/queries/use-spending-overview";
 import { getPeriodDays } from "../../lib/utils";
+import type { ChartType, Period } from "../../types";
 
 interface PieDataItem {
   name: string;
@@ -153,9 +151,8 @@ function ChartTypeSwitcher({
   onChange: (t: ChartType) => void;
 }) {
   return (
-    <div
+    <fieldset
       className="flex rounded-lg border border-border"
-      role="group"
       aria-label="Chart type"
     >
       {CHART_TYPES.map(({ type, icon: Icon, label }) => (
@@ -171,7 +168,7 @@ function ChartTypeSwitcher({
           <Icon className="size-3.5" />
         </Button>
       ))}
-    </div>
+    </fieldset>
   );
 }
 

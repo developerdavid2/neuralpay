@@ -4,6 +4,8 @@ export const CHAT_CONTEXT_TYPES = [
   "insight",
   "transaction",
   "budget",
+  "account",
+  "institution",
   "vault",
   "split",
   "general",
@@ -81,6 +83,8 @@ export type ChatSession = {
     | "insight"
     | "transaction"
     | "budget"
+    | "account"
+    | "institution"
     | "vault"
     | "split"
     | "general"

@@ -1,8 +1,8 @@
-import { useInvalidateQueries } from "@/hooks/utils/use-invalidate-queries";
-import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation } from "@tanstack/react-query";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
+import { useInvalidateQueries } from "@/hooks/utils/use-invalidate-queries";
+import { useTRPC } from "@/trpc/trpc-client";
 
 export function useDeleteSession() {
   const trpc = useTRPC();
@@ -20,6 +20,7 @@ export function useDeleteSession() {
       }
       await Promise.all([
         invalidateChatSession(),
+        invalidateChats(),
         deletingActiveSession ? Promise.resolve() : invalidateChatSession(),
       ]);
     },

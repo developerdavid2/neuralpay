@@ -19,6 +19,7 @@ import { useAIChat } from "../../hooks/use-ai-chat";
 import { ChatContextPill } from "./chat-context-pill";
 import { ChatInput } from "./chat-input";
 import { ChatMessageItem } from "./chat-message-item";
+import { ChatToolPart } from "./chat-tool-part";
 
 interface Props {
   sessionId: string;
@@ -100,31 +101,71 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
               isLoading={false}
             />
 
-            {persistedMessages.map((message) => (
-              <ChatMessageItem key={message.id} message={message} />
-            ))}
+            {persistedMessages.map((message) => {
+              let toolResults: Array<{ toolName: string; result: unknown }> =
+                [];
+              try {
+                const parsed = message.metadata
+                  ? JSON.parse(message.metadata)
+                  : null;
+                toolResults = parsed?.toolResults ?? [];
+              } catch {}
 
+              return (
+                <div key={message.id} className="space-y-2">
+                  <ChatMessageItem message={message} />
+                  {toolResults.map((tr, i) => (
+                    <ChatToolPart
+                      key={`${message.id}-tool-${i}`}
+                      part={{
+                        toolName: tr.toolName,
+                        state: "result",
+                        result: tr.result,
+                      }}
+                    />
+                  ))}
+                </div>
+              );
+            })}
             {!isArchived &&
               streamingMessages.map((message) => {
-                const textContent = message.parts
-                  .filter((p) => p.type === "text")
-                  .map((p) => (p as { type: "text"; text: string }).text)
-                  .join("");
+                const textParts = message.parts.filter(
+                  (p): p is { type: "text"; text: string } => p.type === "text",
+                );
+                const toolParts = message.parts.filter(
+                  (
+                    p,
+                  ): p is Extract<
+                    (typeof message.parts)[number],
+                    { type: "tool-invocation" }
+                  > => p.type === "tool-invocation",
+                );
+
+                const textContent = textParts.map((p) => p.text).join("");
 
                 return (
-                  <ChatMessageItem
-                    key={message.id}
-                    message={{
-                      id: message.id,
-                      role: message.role as "user" | "assistant",
-                      content: textContent,
-                      createdAt: new Date(),
-                      sessionId,
-                      userId: "",
-                      tokensUsed: null,
-                      metadata: null,
-                    }}
-                  />
+                  <div key={message.id} className="space-y-2">
+                    {textContent && (
+                      <ChatMessageItem
+                        message={{
+                          id: message.id,
+                          role: message.role as "user" | "assistant",
+                          content: textContent,
+                          createdAt: new Date(),
+                          sessionId,
+                          userId: "",
+                          tokensUsed: null,
+                          metadata: null,
+                        }}
+                      />
+                    )}
+                    {toolParts.map((part, i) => (
+                      <ChatToolPart
+                        key={`${message.id}-tool-${i}`}
+                        part={part}
+                      />
+                    ))}
+                  </div>
                 );
               })}
 

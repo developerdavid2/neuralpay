@@ -1,12 +1,17 @@
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import { webEnv } from "@neuralpay/env/web";
+import { DefaultChatTransport } from "ai";
 import { useEffect, useRef, useState } from "react";
 
-type ChatMessagePart = {
-  type: "text";
-  text: string;
-};
+type ChatMessagePart =
+  | { type: "text"; text: string }
+  | {
+      type: "tool-invocation";
+      toolName: string;
+      state: "call" | "result";
+      args: unknown;
+      result?: unknown;
+    };
 
 type ChatMessage = {
   id: string;
@@ -18,18 +23,30 @@ function normalizeChatMessages(
   messages: Array<{
     id: string;
     role: string;
-    parts?: Array<{ type?: string; text?: string }>;
+    parts?: Array<Record<string, unknown>>;
   }>,
 ): ChatMessage[] {
   return messages.map((message) => ({
     id: message.id,
     role: message.role === "assistant" ? "assistant" : "user",
-    parts: (message.parts ?? [])
-      .filter((part) => part.type === "text")
-      .map((part) => ({
-        type: "text",
-        text: part.text ?? "",
-      })),
+    parts: (message.parts ?? []).flatMap((part): ChatMessagePart[] => {
+      if (part.type === "text") {
+        return [{ type: "text", text: (part.text as string) ?? "" }];
+      }
+      if (typeof part.type === "string" && part.type.startsWith("tool-")) {
+        return [
+          {
+            type: "tool-invocation",
+            toolName:
+              (part.toolName as string) ?? part.type.replace("tool-", ""),
+            state: part.output !== undefined ? "result" : "call",
+            args: part.input,
+            result: part.output,
+          },
+        ];
+      }
+      return [];
+    }),
   }));
 }
 

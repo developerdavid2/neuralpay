@@ -29,6 +29,7 @@
     "@trpc/server": "catalog:",
     "ai": "^6.0.203",
     "express": "catalog:",
+    "date-fns": "catalog:",
     "morgan": "catalog:",
     "cors": "catalog:",
     "helmet": "catalog:",

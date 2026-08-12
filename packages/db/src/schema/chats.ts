@@ -14,6 +14,8 @@ export const chatContextTypeEnum = pgEnum("chat_context_type", [
   "insight",
   "transaction",
   "budget",
+  "account",
+  "institution",
   "vault",
   "split",
   "general",

@@ -15,7 +15,7 @@ interface Props {
   onView: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onAskCoach?: (budget: Budget) => void;
+  onAskCoach: (budget: Budget) => void;
   isPending: (id: string) => boolean;
 }
 

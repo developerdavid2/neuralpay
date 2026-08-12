@@ -1,9 +1,9 @@
 import {
+  type AIUsageRecord,
   aiUsage,
   chatMessages,
   chatSessions,
   db,
-  type AIUsageRecord,
 } from "@neuralpay/db";
 
 import type {
@@ -153,8 +153,9 @@ export const AICoachService = {
     userId: string,
     options: Partial<StartOrCreateChatSessionInput>,
   ): Promise<ServiceResult<ChatSession>> {
+    console.log("[getOrCreateSession] received:", options);
     try {
-      // 1. Try to find existing session
+      // 1. Try to find existing session by explicit ID
       if (options.sessionId) {
         const [existing] = await db
           .select()
@@ -179,9 +180,36 @@ export const AICoachService = {
         };
       }
 
-      // 2. Create new session (only when no sessionId was provided)
+      // 2. For contextual sessions (not "general"), reuse an existing
+      // non-archived session for the same context item instead of
+      // creating a duplicate — keeps quota usage down and lets the user
+      // pick up where they left off rather than fragmenting across
+      // several sessions about the same budget/transaction/etc.
+      const contextType = options.contextType ?? "general";
+      if (contextType !== "general" && options.contextId) {
+        const [existingForContext] = await db
+          .select()
+          .from(chatSessions)
+          .where(
+            and(
+              eq(chatSessions.userId, userId),
+              eq(chatSessions.isActive, true),
+              eq(chatSessions.contextType, contextType),
+              eq(chatSessions.contextId, options.contextId),
+              isNull(chatSessions.archivedAt),
+            ),
+          )
+          .orderBy(desc(chatSessions.updatedAt))
+          .limit(1);
+
+        if (existingForContext) {
+          return { success: true, data: existingForContext };
+        }
+      }
+
+      // 3. Create new session (general chats, or first-time context chats)
       const title = generateTitle(
-        options.contextType ?? "general",
+        contextType,
         options.contextId,
         options.title,
       );
@@ -192,7 +220,7 @@ export const AICoachService = {
           userId,
           title,
           topic: options.topic ?? "general",
-          contextType: options.contextType ?? "general",
+          contextType,
           contextId: options.contextId ?? null,
           isActive: true,
         })
