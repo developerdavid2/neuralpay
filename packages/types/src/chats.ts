@@ -134,3 +134,41 @@ export interface ContextSnapshot {
   data: unknown;
   fetchedAt: string;
 }
+
+export const CONTEXT_TOOL_SCOPE: Record<string, string[]> = {
+  general: [
+    "getAccountBalances",
+    "getBudgetHealthSummary",
+    "listActiveBudgets",
+    "getRecentTransactions",
+    "getSpendingOverview",
+    "renderSpendingChart",
+    "getTopCategories",
+    "getUnbudgetedSpending",
+    "comparePeriods",
+  ],
+  budget: [
+    "getBudgetById",
+    "getBudgetHealthSummary",
+    "renderSpendingChart",
+    "proposeBudgetCreate",
+    "proposeBudgetEdit",
+    "proposeBudgetDelete",
+    "proposeBudgetRebalance",
+    "getAccountBalances",
+  ],
+  transaction: [
+    "searchTransactions",
+    "getRecentTransactions",
+    "getAnomalousTransactions",
+    "proposeRecategorize",
+    "getBudgetHealthSummary",
+  ],
+  account: [
+    "getAccountBalances",
+    "getAccountUtilization",
+    "getRecentTransactions",
+    "proposeAccountCreate",
+  ],
+  institution: ["getAccountBalances"],
+};

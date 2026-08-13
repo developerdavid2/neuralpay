@@ -1,5 +1,6 @@
 "use client";
 
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import {
   Conversation,
   ConversationContent,
@@ -10,7 +11,6 @@ import { Button } from "@neuralpay/ui/components/button";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { AlertCircle, ArchiveRestore, Bot } from "lucide-react";
 import { toast } from "sonner";
-import { InfiniteScroll } from "@/components/infinite-scroll";
 import { CHAT_SESSION_MESSAGES } from "../../constants";
 import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session";
 import { useMessages } from "../../hooks/queries/use-messages";
@@ -19,7 +19,7 @@ import { useAIChat } from "../../hooks/use-ai-chat";
 import { ChatContextPill } from "./chat-context-pill";
 import { ChatInput } from "./chat-input";
 import { ChatMessageItem } from "./chat-message-item";
-import { ChatToolPart } from "./chat-tool-part";
+import { ChatToolPart, type ToolPart } from "./chat-tool-part";
 
 interface Props {
   sessionId: string;
@@ -43,6 +43,7 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     input,
     handleInputChange,
     handleSubmit,
+    sendMessage,
     isLoading,
   } = useAIChat({ sessionId, initialMessage });
 
@@ -119,9 +120,10 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
                       key={`${message.id}-tool-${i}`}
                       part={{
                         toolName: tr.toolName,
-                        state: "result",
-                        result: tr.result,
+                        state: "output-available",
+                        output: tr.result,
                       }}
+                      sendMessage={sendMessage}
                     />
                   ))}
                 </div>
@@ -130,15 +132,10 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
             {!isArchived &&
               streamingMessages.map((message) => {
                 const textParts = message.parts.filter(
-                  (p): p is { type: "text"; text: string } => p.type === "text",
+                  (p): p is { type: "text"; text: string } => "text" in p,
                 );
                 const toolParts = message.parts.filter(
-                  (
-                    p,
-                  ): p is Extract<
-                    (typeof message.parts)[number],
-                    { type: "tool-invocation" }
-                  > => p.type === "tool-invocation",
+                  (p): p is ToolPart => "toolName" in p,
                 );
 
                 const textContent = textParts.map((p) => p.text).join("");
@@ -162,7 +159,8 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
                     {toolParts.map((part, i) => (
                       <ChatToolPart
                         key={`${message.id}-tool-${i}`}
-                        part={part}
+                        part={part} // ✅ Now matches ToolPart exactly
+                        sendMessage={sendMessage}
                       />
                     ))}
                   </div>

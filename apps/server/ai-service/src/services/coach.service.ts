@@ -16,6 +16,7 @@ import type {
   ServiceResult,
   StartOrCreateChatSessionInput,
 } from "@neuralpay/types";
+import type { UIMessage } from "ai";
 import { and, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 
 async function checkAIQuota(
@@ -368,18 +369,22 @@ export const AICoachService = {
     sessionId: string,
     userId: string,
     role: "user" | "assistant",
-    content: string,
+    content: string | UIMessage["parts"],
     tokensUsed?: number,
     metadata?: string,
   ): Promise<ServiceResult<ChatMessage>> {
     try {
+      const contentToStore = Array.isArray(content)
+        ? JSON.stringify(content)
+        : content;
+
       const [message] = await db
         .insert(chatMessages)
         .values({
           sessionId,
           userId,
           role,
-          content,
+          content: contentToStore,
           tokensUsed,
           metadata,
         })

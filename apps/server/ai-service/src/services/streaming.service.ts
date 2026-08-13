@@ -1,560 +1,44 @@
 import { db } from "@neuralpay/db";
+import { chatMessages } from "@neuralpay/db/schema";
 import {
-  bankAccounts,
-  budgetAccounts,
-  budgetCategories,
-  budgets,
-  chatMessages,
-  connectedPlaidBanks,
-  splits,
-  transactions,
-  vaults,
-} from "@neuralpay/db/schema";
-import type {
-  ContextSnapshot,
-  StreamChatRequest,
-  StreamChatResponse,
+  CONTEXT_TOOL_SCOPE,
+  type StreamChatRequest,
+  type StreamChatResponse,
 } from "@neuralpay/types";
-import { streamText } from "ai";
-import { startOfDay } from "date-fns";
-import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import {
+  convertToModelMessages,
+  createUIMessageStreamResponse,
+  streamText,
+  toUIMessageStream,
+  type UIMessage,
+} from "ai";
+import { and, eq } from "drizzle-orm";
 import type { Response } from "express";
+import { fetchContext } from "../context";
 import { getModel } from "../lib/ai-provider";
 import { buildSystemPrompt } from "../lib/prompt";
-import { buildTools } from "../lib/tools";
+import { buildTools } from "../tools";
 import { AICoachService } from "./coach.service";
 
 const MAX_HISTORY_MESSAGES = 15;
 
-async function fetchGeneralContext(userId: string): Promise<unknown> {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-
-  const currentMonthSpending = await db
-    .select({
-      category: transactions.category,
-      total: sql<number>`COALESCE(SUM(${transactions.amount}), 0)`.mapWith(
-        Number,
-      ),
-      count: sql<number>`COUNT(*)`.mapWith(Number),
-    })
-    .from(transactions)
-    .where(
-      and(
-        eq(transactions.userId, userId),
-        eq(transactions.type, "debit"),
-        gte(transactions.date, startOfMonth),
-      ),
-    )
-    .groupBy(transactions.category)
-    .orderBy(desc(sql`SUM(${transactions.amount})`));
-
-  const [lastMonthTotal] = await db
-    .select({
-      total: sql<number>`COALESCE(SUM(${transactions.amount}), 0)`.mapWith(
-        Number,
-      ),
-    })
-    .from(transactions)
-    .where(
-      and(
-        eq(transactions.userId, userId),
-        eq(transactions.type, "debit"),
-        gte(transactions.date, startOfLastMonth),
-        lte(transactions.date, endOfLastMonth),
-      ),
-    );
-
-  // All non-archived budgets — kept small, but no longer arbitrarily
-  // truncated to "5 most recently created", which was silently dropping
-  // budgets that are genuinely live today.
-  const allBudgets = await db
-    .select({
-      id: budgets.id,
-      name: budgets.name,
-      limitAmount: budgets.limitAmount,
-      startDate: budgets.startDate,
-      endDate: budgets.endDate,
-      period: budgets.period,
-    })
-    .from(budgets)
-    .where(and(eq(budgets.userId, userId), eq(budgets.isActive, true)))
-    .orderBy(desc(budgets.startDate))
-    .limit(20);
-
-  // Precompute "is this active TODAY" in code rather than asking the model
-  // to do date-range arithmetic from raw ISO strings — this is the actual
-  // fix for "AI says no budget matches today's date" when one clearly does.
-  const budgetsActiveToday = allBudgets.filter(
-    (b) =>
-      startOfDay(b.startDate) <= startOfDay(now) &&
-      startOfDay(b.endDate) >= startOfDay(now),
-  );
-
-  const accounts = await db
-    .select({
-      name: bankAccounts.name,
-      balance: bankAccounts.balance,
-      type: bankAccounts.type,
-      isManual: bankAccounts.isManual,
-    })
-    .from(bankAccounts)
-    .where(
-      and(eq(bankAccounts.userId, userId), eq(bankAccounts.status, "active")),
-    )
-    .limit(10);
-
-  const connectedBanks = await db
-    .select({ institutionName: connectedPlaidBanks.institutionName })
-    .from(connectedPlaidBanks)
-    .where(eq(connectedPlaidBanks.userId, userId));
-
-  const recentTransactions = await db
-    .select({
-      description: transactions.description,
-      merchant: transactions.merchant,
-      amount: transactions.amount,
-      category: transactions.category,
-      type: transactions.type,
-      date: transactions.date,
-    })
-    .from(transactions)
-    .where(eq(transactions.userId, userId))
-    .orderBy(desc(transactions.date))
-    .limit(10);
-
-  const userVaults = await db
-    .select()
-    .from(vaults)
-    .where(eq(vaults.userId, userId))
-    .limit(5);
-
-  return {
-    today: now.toISOString().split("T")[0],
-    currentMonthSpending: {
-      total: currentMonthSpending.reduce((sum, c) => sum + c.total, 0),
-      byCategory: currentMonthSpending.slice(0, 5),
-    },
-    lastMonthTotal: lastMonthTotal?.total ?? 0,
-    // Explicitly pre-filtered — the model should treat this as the
-    // authoritative answer to "what's active today", not recompute it.
-    budgetsActiveToday,
-    allBudgets,
-    accounts,
-    connectedBanks,
-    recentTransactions,
-    vaults: userVaults,
-  };
-}
-
-async function fetchAccountContext(
-  userId: string,
-  accountId: string,
-): Promise<unknown> {
-  const [account] = await db
-    .select()
-    .from(bankAccounts)
-    .where(and(eq(bankAccounts.id, accountId), eq(bankAccounts.userId, userId)))
-    .limit(1);
-
-  if (!account) return { error: "Account not found" };
-
-  const recentTransactions = await db
-    .select({
-      id: transactions.id,
-      description: transactions.description,
-      merchant: transactions.merchant,
-      amount: transactions.amount,
-      category: transactions.category,
-      type: transactions.type,
-      date: transactions.date,
-    })
-    .from(transactions)
-    .where(
-      and(
-        eq(transactions.bankAccountId, accountId),
-        eq(transactions.userId, userId),
-      ),
-    )
-    .orderBy(desc(transactions.date))
-    .limit(10);
-
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const [monthSpend] = await db
-    .select({
-      total: sql<number>`COALESCE(SUM(${transactions.amount}), 0)`.mapWith(
-        Number,
-      ),
-      count: sql<number>`COUNT(*)`.mapWith(Number),
-    })
-    .from(transactions)
-    .where(
-      and(
-        eq(transactions.bankAccountId, accountId),
-        eq(transactions.userId, userId),
-        eq(transactions.type, "debit"),
-        gte(transactions.date, monthStart),
-      ),
-    );
-
-  // Budgets this account is being tracked under — same relationship
-  // BudgetsService.loadAccounts reads, just inverted (account → budgets).
-  const linkedBudgets = await db
-    .select({
-      id: budgets.id,
-      name: budgets.name,
-      limitAmount: budgets.limitAmount,
-      isActive: budgets.isActive,
-    })
-    .from(budgetAccounts)
-    .innerJoin(budgets, eq(budgets.id, budgetAccounts.budgetId))
-    .where(eq(budgetAccounts.bankAccountId, accountId));
-
-  let connectedBank: { institutionName: string | null } | null = null;
-  if (!account.isManual && account.plaidItemId) {
-    const [bank] = await db
-      .select({ institutionName: connectedPlaidBanks.institutionName })
-      .from(connectedPlaidBanks)
-      .where(
-        and(
-          eq(connectedPlaidBanks.userId, userId),
-          eq(connectedPlaidBanks.itemId, account.plaidItemId),
-        ),
-      )
-      .limit(1);
-    connectedBank = bank ?? null;
-  }
-
-  return {
-    account,
-    recentTransactions,
-    currentMonthSpending: monthSpend?.total ?? 0,
-    currentMonthTransactionCount: monthSpend?.count ?? 0,
-    linkedBudgets,
-    connectedBank,
-  };
-}
-
-async function fetchInstitutionContext(
-  userId: string,
-  institutionId: string,
-): Promise<unknown> {
-  const [bank] = await db
-    .select()
-    .from(connectedPlaidBanks)
-    .where(
-      and(
-        eq(connectedPlaidBanks.id, institutionId),
-        eq(connectedPlaidBanks.userId, userId),
-      ),
-    )
-    .limit(1);
-
-  if (!bank) return { error: "Connected bank not found" };
-
-  const linkedAccounts = bank.itemId
-    ? await db
-        .select({
-          id: bankAccounts.id,
-          name: bankAccounts.name,
-          type: bankAccounts.type,
-          balance: bankAccounts.balance,
-          status: bankAccounts.status,
-          lastSyncedAt: bankAccounts.lastSyncedAt,
-        })
-        .from(bankAccounts)
-        .where(
-          and(
-            eq(bankAccounts.userId, userId),
-            eq(bankAccounts.plaidItemId, bank.itemId),
-          ),
-        )
-    : [];
-
-  return {
-    institution: { id: bank.id, name: bank.institutionName },
-    linkedAccounts,
-    accountCount: linkedAccounts.length,
-  };
-}
-
-async function fetchTransactionContext(
-  userId: string,
-  transactionId: string,
-): Promise<unknown> {
-  const [transaction] = await db
-    .select({
-      id: transactions.id,
-      amount: transactions.amount,
-      description: transactions.description,
-      date: transactions.date,
-      category: transactions.category,
-      merchant: transactions.merchant,
-      notes: transactions.notes,
-      bankAccountId: transactions.bankAccountId,
-    })
-    .from(transactions)
-    .where(
-      and(eq(transactions.id, transactionId), eq(transactions.userId, userId)),
-    )
-    .limit(1);
-
-  if (!transaction) return { error: "Transaction not found" };
-
-  const similarTransactions = await db
-    .select({
-      amount: transactions.amount,
-      date: transactions.date,
-      description: transactions.description,
-      category: transactions.category,
-    })
-    .from(transactions)
-    .where(
-      and(
-        eq(transactions.userId, userId),
-        eq(transactions.category, transaction.category!),
-        sql`${transactions.id} != ${transactionId}`,
-      ),
-    )
-    .orderBy(desc(transactions.date))
-    .limit(5);
-
-  // Excludes this transaction now, matching similarTransactions — previously
-  // this transaction's own amount was silently pulled into its own average.
-  const [categoryAvg] = await db
-    .select({
-      avg: sql<number>`AVG(ABS(${transactions.amount}))`.mapWith(Number),
-      count: sql<number>`COUNT(*)`.mapWith(Number),
-    })
-    .from(transactions)
-    .where(
-      and(
-        eq(transactions.userId, userId),
-        eq(transactions.category, transaction.category!),
-        sql`${transactions.id} != ${transactionId}`,
-      ),
-    );
-
-  // Any active budget whose category allocations and date range cover this
-  // transaction — so the AI can say "this pushed you over your Dining budget"
-  // rather than only knowing the transaction in isolation.
-  const relevantBudgets = transaction.category
-    ? await db
-        .select({
-          id: budgets.id,
-          name: budgets.name,
-          categoryLimit: budgetCategories.limitAmount,
-        })
-        .from(budgets)
-        .innerJoin(budgetCategories, eq(budgetCategories.budgetId, budgets.id))
-        .where(
-          and(
-            eq(budgets.userId, userId),
-            eq(budgets.isActive, true),
-            eq(budgetCategories.category, transaction.category),
-            lte(budgets.startDate, transaction.date),
-            gte(budgets.endDate, transaction.date),
-          ),
-        )
-    : [];
-
-  return {
-    transaction,
-    similarTransactions,
-    categoryAverage: categoryAvg?.avg ?? 0,
-    categoryCount: categoryAvg?.count ?? 0,
-    relevantBudgets,
-  };
-}
-
-async function fetchBudgetContext(
-  userId: string,
-  budgetId: string,
-): Promise<unknown> {
-  const [budget] = await db
-    .select()
-    .from(budgets)
-    .where(and(eq(budgets.id, budgetId), eq(budgets.userId, userId)))
-    .limit(1);
-
-  if (!budget) return { error: "Budget not found" };
-
-  const categoryRows = await db
-    .select()
-    .from(budgetCategories)
-    .where(eq(budgetCategories.budgetId, budgetId));
-
-  const linkedAccounts = await db
-    .select({
-      bankAccountId: budgetAccounts.bankAccountId,
-      name: bankAccounts.name,
-    })
-    .from(budgetAccounts)
-    .innerJoin(bankAccounts, eq(bankAccounts.id, budgetAccounts.bankAccountId))
-    .where(eq(budgetAccounts.budgetId, budgetId));
-
-  const accountIds = linkedAccounts.map((a) => a.bankAccountId);
-
-  // Per-category spend, scoped to THIS budget's own date range and its
-  // linked accounts (or all accounts, if none are linked) — the same
-  // relationship BudgetsService.loadCategories uses. The previous version
-  // compared transaction.category against budget.limitAmount, a dollar
-  // string, so it never matched anything and spend silently read as 0.
-  const categories = await Promise.all(
-    categoryRows.map(async (row) => {
-      const conditions = [
-        eq(transactions.userId, userId),
-        eq(transactions.type, "debit"),
-        eq(transactions.category, row.category),
-        gte(transactions.date, budget.startDate),
-        lte(transactions.date, budget.endDate),
-      ];
-      if (accountIds.length > 0) {
-        conditions.push(inArray(transactions.bankAccountId, accountIds));
-      }
-
-      const [result] = await db
-        .select({
-          total: sql<number>`COALESCE(SUM(${transactions.amount}), 0)`.mapWith(
-            Number,
-          ),
-          count: sql<number>`COUNT(*)`.mapWith(Number),
-        })
-        .from(transactions)
-        .where(and(...conditions));
-
-      const limit = Number(row.limitAmount);
-      const spent = result?.total ?? 0;
-      return {
-        category: row.category,
-        limitAmount: limit,
-        spent,
-        remaining: limit - spent,
-        percentUsed: limit > 0 ? Math.round((spent / limit) * 100) : 0,
-        transactionCount: result?.count ?? 0,
-      };
-    }),
-  );
-
-  const totalLimit = Number(budget.limitAmount);
-  const totalSpent = categories.reduce((sum, c) => sum + c.spent, 0);
-
-  return {
-    budget,
-    categories,
-    linkedAccounts: linkedAccounts.map((a) => a.name),
-    totalSpent,
-    remaining: totalLimit - totalSpent,
-    percentUsed:
-      totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0,
-  };
-}
-
-async function fetchVaultContext(
-  userId: string,
-  vaultId: string,
-): Promise<unknown> {
-  const [vault] = await db
-    .select()
-    .from(vaults)
-    .where(and(eq(vaults.id, vaultId), eq(vaults.userId, userId)))
-    .limit(1);
-
-  if (!vault) return { error: "Vault not found" };
-
-  const target = Number(vault.targetAmount);
-  const current = Number(vault.currentAmount);
-
-  return {
-    vault,
-    progress: target > 0 ? Math.round((current / target) * 100) : 0,
-    remaining: target - current,
-  };
-}
-
-async function fetchSplitContext(
-  userId: string,
-  splitId: string,
-): Promise<unknown> {
-  // splits uses creatorId, not userId
-  const [split] = await db
-    .select()
-    .from(splits)
-    .where(and(eq(splits.id, splitId), eq(splits.creatorId, userId)))
-    .limit(1);
-
-  if (!split) return { error: "Split not found" };
-
-  return { split };
-}
-
-export async function fetchContext(
-  userId: string,
+function scopedTools(
+  allTools: ReturnType<typeof buildTools>,
   contextType: string,
-  contextId: string | null,
-): Promise<{ data: unknown; snapshot: ContextSnapshot }> {
-  let data: unknown;
-
-  switch (contextType) {
-    case "general":
-      data = await fetchGeneralContext(userId);
-      break;
-    case "transaction":
-      data = contextId
-        ? await fetchTransactionContext(userId, contextId)
-        : { error: "No transaction ID provided" };
-      break;
-    case "budget":
-      data = contextId
-        ? await fetchBudgetContext(userId, contextId)
-        : { error: "No budget ID provided" };
-      break;
-    case "account":
-      data = contextId
-        ? await fetchAccountContext(userId, contextId)
-        : { error: "No account ID provided" };
-      break;
-    case "institution":
-      data = contextId
-        ? await fetchInstitutionContext(userId, contextId)
-        : { error: "No institution ID provided" };
-      break;
-    case "vault":
-      data = contextId
-        ? await fetchVaultContext(userId, contextId)
-        : { error: "No vault ID provided" };
-      break;
-    case "split":
-      data = contextId
-        ? await fetchSplitContext(userId, contextId)
-        : { error: "No split ID provided" };
-      break;
-    case "insight":
-      data = { note: "Insight context fetcher not yet implemented" };
-      break;
-    default:
-      data = await fetchGeneralContext(userId);
-  }
-
-  const snapshot: ContextSnapshot = {
-    type: contextType,
-    data,
-    fetchedAt: new Date().toISOString(),
-  };
-
-  return { data, snapshot };
+) {
+  const allowed = CONTEXT_TOOL_SCOPE[contextType] ?? Object.keys(allTools);
+  return Object.fromEntries(
+    Object.entries(allTools).filter(([name]) => allowed.includes(name)),
+  );
 }
 
-// ── Message History Fetcher ──
 export async function fetchMessageHistory(
   sessionId: string,
   userId: string,
-): Promise<Array<{ role: "user" | "assistant"; content: string }>> {
+): Promise<UIMessage[]> {
   const history = await db
     .select({
+      id: chatMessages.id,
       role: chatMessages.role,
       content: chatMessages.content,
     })
@@ -568,13 +52,32 @@ export async function fetchMessageHistory(
     .orderBy(chatMessages.createdAt)
     .limit(MAX_HISTORY_MESSAGES);
 
-  return history.map((msg) => ({
-    role: msg.role as "user" | "assistant",
-    content: msg.content,
-  }));
+  return history.map((msg) => {
+    let parts: UIMessage["parts"];
+
+    // Try to parse as JSON (new format: UIMessage parts)
+    try {
+      const parsed = JSON.parse(msg.content);
+      // Validate it's an array of parts (new format)
+      if (Array.isArray(parsed)) {
+        parts = parsed;
+      } else {
+        // Old format: plain text wrapped in a text part
+        parts = [{ type: "text", text: String(msg.content) }];
+      }
+    } catch {
+      // JSON parse failed — old plain-text format
+      parts = [{ type: "text", text: String(msg.content) }];
+    }
+
+    return {
+      id: msg.id,
+      role: msg.role as "user" | "assistant",
+      parts,
+    };
+  });
 }
 
-// ── Main Streaming Handler ──
 export async function handleStreamChat(
   req: StreamChatRequest,
   res: Response,
@@ -582,99 +85,136 @@ export async function handleStreamChat(
   const { sessionId, userId, content, planTier = "free" } = req;
 
   try {
-    // 1. Verify session and quota
+    // 1. Session & quota
     const sessionResult = await AICoachService.getOrCreateSession(userId, {
       sessionId,
     });
     if (!sessionResult.success) {
       return {
         success: false,
-        error: (
-          sessionResult as { success: false; error: string; code?: string }
-        ).error,
-        code: (
-          sessionResult as { success: false; error: string; code?: string }
-        ).code,
+        error: sessionResult.error,
+        code: sessionResult.code,
       };
     }
-
     const resolvedSessionId = sessionResult.data.id;
 
     const quotaResult = await AICoachService.checkQuota(userId, planTier);
     if (!quotaResult.success) {
-      return {
-        success: false,
-        error: (quotaResult as { success: false; error: string }).error,
-        code: "RATE_LIMITED" as const,
-      };
+      return { success: false, error: quotaResult.error, code: "RATE_LIMITED" };
     }
 
-    // 2. Save user message FIRST
-    const userMessageResult = await AICoachService.saveMessage(
+    // 2. Build + save the user message as a UIMessage (parts, not raw string)
+    const userMessage: UIMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      parts: [{ type: "text", text: content }],
+    };
+
+    const saveUserResult = await AICoachService.saveMessage(
       resolvedSessionId,
       userId,
       "user",
-      content,
+      userMessage.parts,
     );
-    if (!userMessageResult.success) {
+    if (!saveUserResult.success) {
       return {
         success: false,
-        error: (userMessageResult as { success: false; error: string }).error,
-        code: "INTERNAL_SERVER_ERROR" as const,
+        error: saveUserResult.error,
+        code: "INTERNAL_SERVER_ERROR",
       };
     }
 
-    // 3. Fetch context
+    // 3. Fetch context & history
     const { data: contextData, snapshot } = await fetchContext(
       userId,
-      sessionResult.data.contextType ?? "",
+      sessionResult.data.contextType ?? "general",
       sessionResult.data.contextId,
     );
 
-    // 4. Fetch conversation history
-    const history = await fetchMessageHistory(resolvedSessionId, userId);
+    // fetchMessageHistory now returns UIMessage[] (parts intact) — see note below
+    const history: UIMessage[] = await fetchMessageHistory(
+      resolvedSessionId,
+      userId,
+    );
 
-    // 5. Build system prompt
+    const originalMessages: UIMessage[] = [...history, userMessage];
+
     const systemPrompt = buildSystemPrompt(
       contextData,
       sessionResult.data.contextType ?? "",
     );
 
-    // 6. Stream
+    // 4. Stream
     const result = streamText({
       model: getModel(),
       system: systemPrompt,
-      messages: [...history, { role: "user" as const, content }],
-      tools: buildTools(userId),
+      messages: await convertToModelMessages(originalMessages),
+      tools: scopedTools(
+        buildTools(userId),
+        sessionResult.data.contextType ?? "general",
+      ),
       stopWhen: ({ steps }) => steps.length >= 5,
-      onFinish: async ({ text, usage, steps }) => {
-        const toolResults = steps
-          .flatMap((step) => step.toolResults ?? [])
-          .map((tr) => ({
-            toolName: tr.toolName,
-            result: tr.output,
-          }));
+      onError: ({ error }) => {
+        console.error("[handleStreamChat] streamText error:", error);
+      },
+    });
+
+    // Don't await the stream — let it run in the background even if the
+    // client disconnects, so persistence still completes.
+    result.consumeStream();
+
+    const uiStream = toUIMessageStream({
+      stream: result.stream,
+      originalMessages,
+      onFinish: async ({ messages }) => {
+        // `messages` = full UIMessage[] for this turn, including the new
+        // assistant message with parts in the exact order they streamed
+        // (text, tool calls, tool results, more text — all preserved).
+        const assistantMessage = messages[messages.length - 1];
 
         const metadata = JSON.stringify({
           contextSnapshot: snapshot,
-          model: getModel(),
-          toolResults,
+          model: process.env.AI_MODEL,
         });
 
         await AICoachService.saveMessage(
           resolvedSessionId,
           userId,
           "assistant",
-          text,
-          usage.totalTokens,
+          assistantMessage?.parts!,
+          undefined,
           metadata,
         );
       },
+      onError: (error) => {
+        console.error("[handleStreamChat] stream error:", error);
+        return "Something went wrong generating a response.";
+      },
     });
 
-    result.pipeUIMessageStreamToResponse(res, {
-      headers: { "Content-Encoding": "none" },
-    });
+    // Convert the Web Response from createUIMessageStreamResponse into the
+    // Express response manually — avoids relying on an unverified
+    // Express-specific convenience method for this `ai` version.
+    const response = createUIMessageStreamResponse({ stream: uiStream });
+
+    res.status(response.status);
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+
+    if (response.body) {
+      const reader = response.body.getReader();
+      const pump = async (): Promise<void> => {
+        const { done, value } = await reader.read();
+        if (done) {
+          res.end();
+          return;
+        }
+        res.write(value);
+        return pump();
+      };
+      await pump();
+    } else {
+      res.end();
+    }
 
     return { success: true };
   } catch (error) {

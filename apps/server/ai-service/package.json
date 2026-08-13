@@ -19,22 +19,25 @@
     "check-types": "tsc -b"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.38",
     "@ai-sdk/groq": "^3.0.41",
+    "@ai-sdk/huggingface": "^2.0.30",
+    "@ai-sdk/openai-compatible": "^3.0.30",
     "@neuralpay/auth": "workspace:*",
+    "@neuralpay/config": "workspace:*",
     "@neuralpay/db": "workspace:*",
     "@neuralpay/env": "workspace:*",
     "@neuralpay/types": "workspace:*",
-    "@neuralpay/config": "workspace:*",
     "@openrouter/ai-sdk-provider": "^2.9.1",
     "@trpc/server": "catalog:",
-    "ai": "^6.0.203",
-    "express": "catalog:",
-    "date-fns": "catalog:",
-    "morgan": "catalog:",
+    "ai": "^7.0.64",
     "cors": "catalog:",
+    "date-fns": "catalog:",
+    "drizzle-orm": "catalog:",
+    "express": "catalog:",
     "helmet": "catalog:",
-    "zod": "catalog:",
-    "drizzle-orm": "catalog:"
+    "morgan": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
