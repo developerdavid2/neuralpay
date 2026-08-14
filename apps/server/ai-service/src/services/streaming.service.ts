@@ -26,7 +26,8 @@ function scopedTools(
   allTools: ReturnType<typeof buildTools>,
   contextType: string,
 ) {
-  const allowed = CONTEXT_TOOL_SCOPE[contextType] ?? Object.keys(allTools);
+  // Default-deny: an unknown/unlisted context never widens to "all tools".
+  const allowed = CONTEXT_TOOL_SCOPE[contextType] ?? [];
   return Object.fromEntries(
     Object.entries(allTools).filter(([name]) => allowed.includes(name)),
   );

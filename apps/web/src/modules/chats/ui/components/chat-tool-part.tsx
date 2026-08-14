@@ -1,38 +1,102 @@
 "use client";
 
 import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+  ToolOutput,
+  type ToolState,
+} from "@neuralpay/ui/components/ai-elements/tool";
+import {
+  BarChart3Icon,
+  LandmarkIcon,
+  PiggyBankIcon,
+  SearchIcon,
+  SparklesIcon,
+} from "lucide-react";
+import { formatAmount } from "@/lib/utils";
+import {
   AccountBalanceList,
   BudgetHealthGrid,
   BudgetProposalCard,
   ChatSpendingChart,
   ComparisonCard,
-  ToolCallIndicator,
+  getToolLabel,
   TransactionList,
 } from "./chat-renderer";
 
 export interface ToolPart {
+  type?: "tool";
   toolName: string;
-  state:
-    | "input-streaming"
-    | "input-available"
-    | "output-available"
-    | "output-error";
+  state: ToolState;
   input?: unknown;
   output?: unknown;
   errorText?: string;
+  approval?: { id: string; approved?: boolean } | null;
 }
+
+// Unwrap common envelope keys so renderers keep working across tool refactors.
+const unwrapArray = (result: any): any => {
+  if (Array.isArray(result)) {
+    return result;
+  }
+  if (result && typeof result === "object") {
+    const record = result as Record<string, unknown>;
+    for (const key of ["transactions", "items", "budgets", "accounts", "data"]) {
+      if (Array.isArray(record[key])) {
+        return record[key];
+      }
+    }
+  }
+  return result;
+};
 
 // Query/render tools — pure data-in, JSX-out, no chat interaction needed.
 const QUERY_RENDERERS: Record<string, (result: any) => React.ReactNode> = {
   renderSpendingChart: (result) => <ChatSpendingChart {...result} />,
-  getBudgetHealthSummary: (result) => <BudgetHealthGrid data={result} />,
-  listActiveBudgets: (result) => <BudgetHealthGrid data={result} />,
-  getRecentTransactions: (result) => <TransactionList data={result} />,
-  searchTransactions: (result) => <TransactionList data={result} />,
-  getAnomalousTransactions: (result) => <TransactionList data={result} />,
-  getAccountBalances: (result) => <AccountBalanceList data={result} />,
-  getAccountUtilization: (result) => <AccountBalanceList data={result} />,
-  comparePeriods: (result) => <ComparisonCard {...result} />,
+  queryTransactions: (result) => <TransactionList data={unwrapArray(result)} />,
+  queryBudgets: (result) => <BudgetHealthGrid data={unwrapArray(result)} />,
+  getAccounts: (result) => <AccountBalanceList data={unwrapArray(result)} />,
+  getSpendingAnalysis: (result) => {
+    const r = result as {
+      totalSpent?: number;
+      previousPeriod?: {
+        totalSpent?: number;
+        percentChange?: number | null;
+      } | null;
+      byCategory?: {
+        category: string | null;
+        totalSpent: number;
+        count?: number;
+        percentage?: number;
+      }[];
+    };
+    return (
+      <div className="space-y-2">
+        <ComparisonCard
+          current={r.totalSpent ?? 0}
+          previous={r.previousPeriod?.totalSpent ?? 0}
+          percentChange={r.previousPeriod?.percentChange ?? null}
+        />
+        {Array.isArray(r.byCategory) && r.byCategory.length > 0 && (
+          <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
+            {r.byCategory.map((c, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between px-3 py-2 text-sm"
+              >
+                <span className="text-muted-foreground">
+                  {c.category ?? "Uncategorized"}
+                </span>
+                <span className="font-medium">{formatAmount(c.totalSpent)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  },
 };
 
 // Propose tools — need sendMessage wired through for confirm/decline.
@@ -45,6 +109,28 @@ const PROPOSAL_RENDERERS: Record<
   ),
 };
 
+const getToolIcon = (toolName: string): React.ReactNode => {
+  if (toolName.startsWith("propose")) {
+    return <SparklesIcon className="size-4" />;
+  }
+  if (toolName.includes("Account")) {
+    return <LandmarkIcon className="size-4" />;
+  }
+  if (toolName.includes("Budget")) {
+    return <PiggyBankIcon className="size-4" />;
+  }
+  if (
+    toolName.includes("Chart") ||
+    toolName.includes("Spending") ||
+    toolName.includes("Category") ||
+    toolName.includes("compare") ||
+    toolName.includes("Period")
+  ) {
+    return <BarChart3Icon className="size-4" />;
+  }
+  return <SearchIcon className="size-4" />;
+};
+
 export function ChatToolPart({
   part,
   sendMessage,
@@ -52,62 +138,53 @@ export function ChatToolPart({
   part: ToolPart;
   sendMessage?: (text: string) => void;
 }) {
-  // Loading states — tool call is being generated
-  if (part.state === "input-streaming" || part.state === "input-available") {
-    return (
-      <div className="flex gap-3 max-w-[80%]">
-        <div className="size-8 shrink-0" />
-        <ToolCallIndicator toolName={part.toolName} />
-      </div>
-    );
-  }
+  const proposalRenderer = PROPOSAL_RENDERERS[part.toolName];
+  const renderer = QUERY_RENDERERS[part.toolName];
 
-  // Error state
+  let output: React.ReactNode;
+
   if (part.state === "output-error") {
-    return (
-      <div className="flex gap-3 max-w-[80%]">
-        <div className="size-8 shrink-0" />
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          <p className="font-medium">Tool error: {part.toolName}</p>
-          <p className="mt-1">{part.errorText ?? "Unknown error"}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Result state — render the output
-  if (part.state === "output-available") {
-    const result = part.output;
-
-    if (PROPOSAL_RENDERERS[part.toolName]) {
-      if (!sendMessage) {
-        console.warn(
-          `[ChatToolPart] Proposal tool "${part.toolName}" needs sendMessage`,
-        );
-        return null;
-      }
-      return (
-        <div className="flex gap-3 max-w-[80%]">
-          <div className="size-8 shrink-0" />
-          {PROPOSAL_RENDERERS[part.toolName](result, sendMessage)}
-        </div>
+    output = undefined;
+  } else if (proposalRenderer) {
+    if (!sendMessage) {
+      console.warn(
+        `[ChatToolPart] Proposal tool "${part.toolName}" needs sendMessage`,
       );
+      output = undefined;
+    } else {
+      output = proposalRenderer(part.output, sendMessage);
     }
-
-    const renderer = QUERY_RENDERERS[part.toolName];
-    if (!renderer) {
-      console.warn(`[ChatToolPart] No renderer for tool: ${part.toolName}`);
-      return null;
-    }
-
-    return (
-      <div className="flex gap-3 max-w-[80%]">
-        <div className="size-8 shrink-0" />
-        {renderer(result)}
-      </div>
+  } else if (renderer) {
+    output = renderer(part.output);
+  } else if (part.output !== undefined) {
+    // Fallback — never silently drop a tool result.
+    output = (
+      <pre className="overflow-x-auto rounded-lg bg-muted p-2 font-mono text-xs text-muted-foreground">
+        {JSON.stringify(part.output, null, 2)}
+      </pre>
     );
   }
 
-  // Fallback — shouldn't reach here if types are correct
-  return null;
+  const isSettled =
+    part.state === "output-available" ||
+    part.state === "output-error" ||
+    part.state === "output-denied" ||
+    part.state === "approval-responded";
+
+  return (
+    <Tool className="w-full" state={part.state}>
+      <ToolHeader
+        icon={getToolIcon(part.toolName)}
+        state={part.state}
+        title={getToolLabel(part.toolName)}
+        toolName={part.toolName}
+      />
+      {isSettled && (
+        <ToolContent>
+          <ToolInput input={part.input} />
+          <ToolOutput errorText={part.errorText} output={output} />
+        </ToolContent>
+      )}
+    </Tool>
+  );
 }

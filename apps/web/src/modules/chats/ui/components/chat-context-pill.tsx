@@ -1,6 +1,15 @@
 "use client";
 
-import { Info, Lightbulb, Receipt, Split, Vault, Wallet } from "lucide-react";
+import {
+  Building2,
+  Info,
+  Landmark,
+  Lightbulb,
+  Receipt,
+  Split,
+  Vault,
+  Wallet,
+} from "lucide-react";
 
 import type { ChatContextType } from "@neuralpay/types";
 import { Badge } from "@neuralpay/ui/components/badge";
@@ -36,6 +45,16 @@ const contextConfig: Record<
     icon: <Wallet className="size-3" />,
     label: "Budget",
     color: "bg-green-100 text-green-700",
+  },
+  account: {
+    icon: <Landmark className="size-3" />,
+    label: "Account",
+    color: "bg-cyan-100 text-cyan-700",
+  },
+  institution: {
+    icon: <Building2 className="size-3" />,
+    label: "Institution",
+    color: "bg-teal-100 text-teal-700",
   },
   vault: {
     icon: <Vault className="size-3" />,

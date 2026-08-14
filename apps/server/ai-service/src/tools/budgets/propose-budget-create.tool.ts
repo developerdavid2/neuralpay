@@ -10,7 +10,7 @@ import { z } from "zod";
 export function buildProposeBudgetCreateTool(userId: string) {
   return tool({
     description:
-      "Draft a new budget proposal for user confirmation. Never creates the budget directly. Use this when the user wants a budget for a category/purpose they don't already have one for. Base the suggested limit on their actual recent spending in that category when possible — call this only after checking their spend history, or pass reasonable category guesses if no history exists.",
+      "Draft a new budget proposal for user confirmation (never creates directly). Use when the user wants a budget they don't have. Base the limit on their actual recent spending where possible.",
     inputSchema: z.object({
       name: z.string(),
       period: z.enum(["weekly", "monthly", "custom"]).default("monthly"),
@@ -21,11 +21,7 @@ export function buildProposeBudgetCreateTool(userId: string) {
         }),
       ),
       alertThreshold: z.number().int().min(1).max(100).default(80),
-      reasoning: z
-        .string()
-        .describe(
-          "Why this budget/amount is being suggested, referencing real numbers",
-        ),
+      reasoning: z.string(),
     }),
     execute: async ({
       name,

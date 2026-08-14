@@ -4,72 +4,12 @@ import { useChat } from "@ai-sdk/react";
 import { webEnv } from "@neuralpay/env/web";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useRef, useState } from "react";
-import type { ToolPart } from "../ui/components/chat-tool-part";
+import { normalizeChatMessages } from "../lib/message-parts";
 
-type ChatMessagePart = { type: "text"; text: string } | ToolPart;
+export type { ChatMessage } from "../lib/message-parts";
 
-type ChatMessage = {
-  id: string;
-  role: "user" | "assistant";
-  parts: ChatMessagePart[];
-};
-
-function normalizeChatMessages(
-  messages: Array<{
-    id: string;
-    role: string;
-    parts?: Array<Record<string, unknown>>;
-  }>,
-): ChatMessage[] {
-  return messages.map((message) => ({
-    id: message.id,
-    role: message.role === "assistant" ? "assistant" : "user",
-    parts: (message.parts ?? []).flatMap((part): ChatMessagePart[] => {
-      if (part.type === "text") {
-        return [{ type: "text", text: (part.text as string) ?? "" }];
-      }
-
-      // AI SDK v7 tool parts: type is "tool-{name}"
-      if (typeof part.type === "string" && part.type.startsWith("tool-")) {
-        const tp = part as any;
-
-        // Map AI SDK state → our ToolPart state
-        let state: ToolPart["state"];
-        if (tp.state === "input-streaming") state = "input-streaming";
-        else if (tp.state === "input-available") state = "input-available";
-        else if (tp.state === "output-available") state = "output-available";
-        else if (tp.state === "output-error") state = "output-error";
-        else {
-          // Fallback for any other state
-          state =
-            tp.output !== undefined ? "output-available" : "input-available";
-        }
-
-        return [
-          {
-            toolName: (tp.toolName as string) ?? tp.type.replace("tool-", ""),
-            state,
-            input: tp.input ?? tp.args,
-            output: tp.output ?? tp.result,
-            errorText: tp.errorText as string | undefined,
-          },
-        ];
-      }
-
-      return [];
-    }),
-  }));
-}
-
-export function useAIChat({
-  sessionId,
-  initialMessage,
-}: {
-  sessionId: string;
-  initialMessage?: string;
-}) {
+export function useAIChat({ sessionId }: { sessionId: string }) {
   const [input, setInput] = useState("");
-  const hasSentInitial = useRef(false);
   const prevSessionId = useRef(sessionId);
 
   const isLocal = window.location.hostname === "localhost";
@@ -89,18 +29,10 @@ export function useAIChat({
   useEffect(() => {
     if (prevSessionId.current !== sessionId) {
       prevSessionId.current = sessionId;
-      hasSentInitial.current = false;
       chat.setMessages([]);
       setInput("");
     }
   }, [chat, sessionId]);
-
-  useEffect(() => {
-    if (initialMessage && !hasSentInitial.current) {
-      hasSentInitial.current = true;
-      chat.sendMessage({ text: initialMessage });
-    }
-  }, [chat, initialMessage]);
 
   const sendMessage = (text: string) => {
     const trimmed = text.trim();

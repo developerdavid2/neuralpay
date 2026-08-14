@@ -8,15 +8,13 @@ import { z } from "zod";
 export function buildProposeBudgetRebalanceTool(userId: string) {
   return tool({
     description:
-      "Draft a multi-step plan to shift budget allocation between two or more budgets (e.g. reduce an under-used budget, increase an over-budget one). Never applies changes directly. Use only after checking getBudgetHealthSummary to ground the proposal in real usage.",
+      "Draft a multi-step plan to shift budget allocation between two or more budgets (e.g. reduce an under-used budget, increase an over-budget one). Never applies changes directly. Check current usage via queryBudgets first.",
     inputSchema: z.object({
       steps: z
         .array(
           z.object({
             budgetId: z.string(),
-            changeAmount: z
-              .number()
-              .describe("Positive to increase limit, negative to decrease"),
+            changeAmount: z.number(),
             reason: z.string(),
           }),
         )

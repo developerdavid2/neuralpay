@@ -8,7 +8,7 @@ import { z } from "zod";
 export function buildProposeBudgetDeleteTool(userId: string) {
   return tool({
     description:
-      "Draft a proposal to delete a budget for user confirmation. Never deletes directly. Use only when the user asks to remove a budget, or when suggesting cleanup of a stale/unused one — always explain why.",
+      "Draft a proposal to delete a budget for user confirmation (never deletes directly). Use when the user asks to remove a budget or when suggesting cleanup of a stale one — always explain why.",
     inputSchema: z.object({
       budgetId: z.string(),
       reasoning: z.string(),

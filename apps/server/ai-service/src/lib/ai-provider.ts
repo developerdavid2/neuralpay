@@ -1,4 +1,3 @@
-// lib/ai-provider.ts
 import { createGroq } from "@ai-sdk/groq";
 
 const groq = createGroq({

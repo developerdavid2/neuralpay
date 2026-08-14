@@ -8,7 +8,7 @@ import { z } from "zod";
 export function buildProposeBudgetEditTool(userId: string) {
   return tool({
     description:
-      "Draft changes to an existing budget for user confirmation. Never edits directly. Use when suggesting the user raise/lower a limit, add/remove a category, or change the alert threshold.",
+      "Draft changes to an existing budget for user confirmation (never edits directly). Use when suggesting a user raise/lower a limit, add/remove a category, or change the alert threshold.",
     inputSchema: z.object({
       budgetId: z.string(),
       changes: z.object({

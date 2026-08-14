@@ -8,7 +8,7 @@ import { z } from "zod";
 export function buildGetUnbudgetedSpendingTool(userId: string) {
   return tool({
     description:
-      "Find spending categories the user is spending real money in this month but has no active budget covering. Use for proactive coaching, e.g. 'what should I budget for that I haven't yet'.",
+      "Find spending categories the user spent money on this month that no active budget covers. Use for 'what should I budget for that I haven't yet'.",
     inputSchema: z.object({}),
     execute: async () => {
       const monthStart = startOfMonth(new Date());

@@ -10,16 +10,17 @@ import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
 import { Button } from "@neuralpay/ui/components/button";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { AlertCircle, ArchiveRestore, Bot } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { CHAT_SESSION_MESSAGES } from "../../constants";
 import { useUnarchiveSession } from "../../hooks/mutations/use-unarchive-session";
 import { useMessages } from "../../hooks/queries/use-messages";
 import { useSessionDetails } from "../../hooks/queries/use-session-details";
 import { useAIChat } from "../../hooks/use-ai-chat";
+import { dbMessageToChatMessage } from "../../lib/message-parts";
 import { ChatContextPill } from "./chat-context-pill";
 import { ChatInput } from "./chat-input";
-import { ChatMessageItem } from "./chat-message-item";
-import { ChatToolPart, type ToolPart } from "./chat-tool-part";
+import { ChatStreamMessage } from "./chat-stream-message";
 
 interface Props {
   sessionId: string;
@@ -45,7 +46,7 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     handleSubmit,
     sendMessage,
     isLoading,
-  } = useAIChat({ sessionId, initialMessage });
+  } = useAIChat({ sessionId });
 
   const unarchiveSession = useUnarchiveSession();
 
@@ -54,6 +55,23 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
       .slice()
       .reverse()
       .flatMap((page) => page.items) ?? [];
+
+  // useChat keeps its in-memory messages per session; once persisted data is
+  // refetched it can overlap with the streaming list, so skip ids already
+  // shown by the streaming list.
+  const streamingIds = new Set(streamingMessages.map((message) => message.id));
+
+  // Send a URL-provided initial message exactly once, and only for a brand-new
+  // session (no persisted messages). Without this gate the ?initialMessage=
+  // param would resubmit on every refresh.
+  const autoSentInitialFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!initialMessage) return;
+    if (autoSentInitialFor.current === sessionId) return;
+    if (persistedMessages.length > 0) return;
+    autoSentInitialFor.current = sessionId;
+    sendMessage(initialMessage);
+  }, [initialMessage, sessionId, persistedMessages.length, sendMessage]);
 
   const handleUnarchive = () => {
     unarchiveSession.mutate(
@@ -102,70 +120,27 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
               isLoading={false}
             />
 
-            {persistedMessages.map((message) => {
-              let toolResults: Array<{ toolName: string; result: unknown }> =
-                [];
-              try {
-                const parsed = message.metadata
-                  ? JSON.parse(message.metadata)
-                  : null;
-                toolResults = parsed?.toolResults ?? [];
-              } catch {}
-
-              return (
-                <div key={message.id} className="space-y-2">
-                  <ChatMessageItem message={message} />
-                  {toolResults.map((tr, i) => (
-                    <ChatToolPart
-                      key={`${message.id}-tool-${i}`}
-                      part={{
-                        toolName: tr.toolName,
-                        state: "output-available",
-                        output: tr.result,
-                      }}
-                      sendMessage={sendMessage}
-                    />
-                  ))}
-                </div>
-              );
-            })}
+            {persistedMessages
+              .filter((message) => !streamingIds.has(message.id))
+              .map((message) => (
+                <ChatStreamMessage
+                  key={message.id}
+                  message={dbMessageToChatMessage(message)}
+                  isLast={false}
+                  isStreaming={false}
+                  sendMessage={sendMessage}
+                />
+              ))}
             {!isArchived &&
-              streamingMessages.map((message) => {
-                const textParts = message.parts.filter(
-                  (p): p is { type: "text"; text: string } => "text" in p,
-                );
-                const toolParts = message.parts.filter(
-                  (p): p is ToolPart => "toolName" in p,
-                );
-
-                const textContent = textParts.map((p) => p.text).join("");
-
-                return (
-                  <div key={message.id} className="space-y-2">
-                    {textContent && (
-                      <ChatMessageItem
-                        message={{
-                          id: message.id,
-                          role: message.role as "user" | "assistant",
-                          content: textContent,
-                          createdAt: new Date(),
-                          sessionId,
-                          userId: "",
-                          tokensUsed: null,
-                          metadata: null,
-                        }}
-                      />
-                    )}
-                    {toolParts.map((part, i) => (
-                      <ChatToolPart
-                        key={`${message.id}-tool-${i}`}
-                        part={part} // ✅ Now matches ToolPart exactly
-                        sendMessage={sendMessage}
-                      />
-                    ))}
-                  </div>
-                );
-              })}
+              streamingMessages.map((message, index) => (
+                <ChatStreamMessage
+                  key={message.id}
+                  message={message}
+                  isLast={index === streamingMessages.length - 1}
+                  isStreaming={isLoading}
+                  sendMessage={sendMessage}
+                />
+              ))}
 
             {isLoading &&
               streamingMessages[streamingMessages.length - 1]?.role ===

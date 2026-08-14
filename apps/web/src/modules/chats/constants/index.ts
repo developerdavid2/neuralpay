@@ -1,14 +1,16 @@
 import type { ElementType } from "react";
 import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
 import {
-  TrendingUp,
-  Receipt,
-  Lightbulb,
-  Wallet,
-  PiggyBank,
   AlertTriangle,
+  Building2,
+  Landmark,
+  Lightbulb,
+  PiggyBank,
+  Receipt,
   Target,
+  TrendingUp,
   Users,
+  Wallet,
 } from "lucide-react";
 
 type Suggestion = {
@@ -43,6 +45,16 @@ export const contextSuggestions: Record<ChatContextType, Suggestion[]> = {
     { text: "What categories are eating my budget?", icon: TrendingUp },
     { text: "Adjust my budget allocation", icon: Target },
   ],
+  account: [
+    { text: "Show me my account balances", icon: Landmark },
+    { text: "How is my credit utilization?", icon: Wallet },
+    { text: "Which account should I use to pay?", icon: PiggyBank },
+  ],
+  institution: [
+    { text: "Which banks are linked to my account?", icon: Building2 },
+    { text: "When was my last sync?", icon: Receipt },
+    { text: "How do I connect a new bank?", icon: Target },
+  ],
   vault: [
     { text: "Am I on track to hit my goal?", icon: Target },
     { text: "When will I reach my target?", icon: TrendingUp },
@@ -59,6 +71,8 @@ export const CONTEXT_LABELS: Record<string, string> = {
   insight: "Insight",
   transaction: "Transaction",
   budget: "Budget",
+  account: "Account",
+  institution: "Institution",
   vault: "Vault",
   split: "Split",
   general: "General",

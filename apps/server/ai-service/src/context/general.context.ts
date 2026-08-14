@@ -50,9 +50,9 @@ export async function fetchGeneralContext(userId: string): Promise<unknown> {
       ),
     );
 
-  // All non-archived budgets — kept small, but no longer arbitrarily
-  // truncated to "5 most recently created", which was silently dropping
-  // budgets that are genuinely live today.
+  // All non-archived budgets, kept compact for the prompt budget. Only the
+  // ones active TODAY are included in the JSON (capped); broader budget
+  // questions fall back to queryBudgets.
   const allBudgets = await db
     .select({
       id: budgets.id,
@@ -65,16 +65,18 @@ export async function fetchGeneralContext(userId: string): Promise<unknown> {
     .from(budgets)
     .where(and(eq(budgets.userId, userId), eq(budgets.isActive, true)))
     .orderBy(desc(budgets.startDate))
-    .limit(10);
+    .limit(20);
 
   // Precompute "is this active TODAY" in code rather than asking the model
   // to do date-range arithmetic from raw ISO strings — this is the actual
   // fix for "AI says no budget matches today's date" when one clearly does.
-  const budgetsActiveToday = allBudgets.filter(
-    (b) =>
-      startOfDay(b.startDate) <= startOfDay(now) &&
-      startOfDay(b.endDate) >= startOfDay(now),
-  );
+  const budgetsActiveToday = allBudgets
+    .filter(
+      (b) =>
+        startOfDay(b.startDate) <= startOfDay(now) &&
+        startOfDay(b.endDate) >= startOfDay(now),
+    )
+    .slice(0, 5);
 
   const accounts = await db
     .select({
@@ -87,7 +89,7 @@ export async function fetchGeneralContext(userId: string): Promise<unknown> {
     .where(
       and(eq(bankAccounts.userId, userId), eq(bankAccounts.status, "active")),
     )
-    .limit(10);
+    .limit(5);
 
   const connectedBanks = await db
     .select({ institutionName: connectedPlaidBanks.institutionName })
@@ -106,25 +108,24 @@ export async function fetchGeneralContext(userId: string): Promise<unknown> {
     .from(transactions)
     .where(eq(transactions.userId, userId))
     .orderBy(desc(transactions.date))
-    .limit(5);
+    .limit(3);
 
   const userVaults = await db
     .select()
     .from(vaults)
     .where(eq(vaults.userId, userId))
-    .limit(5);
+    .limit(3);
 
   return {
     today: now.toISOString().split("T")[0],
     currentMonthSpending: {
       total: currentMonthSpending.reduce((sum, c) => sum + c.total, 0),
-      byCategory: currentMonthSpending.slice(0, 5),
+      byCategory: currentMonthSpending.slice(0, 3),
     },
     lastMonthTotal: lastMonthTotal?.total ?? 0,
     // Explicitly pre-filtered — the model should treat this as the
     // authoritative answer to "what's active today", not recompute it.
     budgetsActiveToday,
-    allBudgets,
     accounts,
     connectedBanks,
     recentTransactions,

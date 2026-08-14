@@ -4,5 +4,5 @@ export { ChatSpendingChart } from "./chat-spending-chart";
 export { ComparisonCard } from "./comparison-card";
 export { ConfirmationBar } from "./confirmation-bar";
 export { BudgetProposalCard } from "./proposals/budget-proposal-card";
-export { ToolCallIndicator } from "./tool-call-indicator";
+export { getToolLabel, TOOL_LABELS } from "./tool-labels";
 export { TransactionList } from "./transaction-list";
