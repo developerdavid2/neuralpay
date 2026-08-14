@@ -6,9 +6,10 @@ export const aiServiceEnv = createEnv({
   server: {
     ...baseServerEnv,
     PORT: z.coerce.number().default(4003),
-    GROQ_API_KEY: z.string().min(1),
+    GROQ_API_KEY: z.string().optional(),
+    OPENROUTER_API_KEY: z.string().optional(),
     AI_PROVIDER: z.string().default("groq"),
-    AI_MODEL: z.string().default("qwen/qwen3.6-27b"),
+    AI_MODEL: z.string().default("openrouter/free"),
   },
   runtimeEnv: process.env,
 });

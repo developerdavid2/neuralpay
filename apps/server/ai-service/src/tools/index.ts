@@ -13,9 +13,23 @@ import { buildProposeInsightDismissTool } from "./insights/propose-insight-dismi
 import { buildGetSpendingAnalysisTool } from "./transactions/get-spending-analysis.tool";
 import { buildProposeRecategorizeTool } from "./transactions/propose-recategorize.tool";
 import { buildQueryTransactionsTool } from "./transactions/query-transactions.tool";
+import { type Tool } from "ai";
+import { toJsonSafe } from "../lib/to-json-safe";
+
+function withJsonSafeExecute<T extends Tool>(tool: T): T {
+  const execute = tool.execute;
+  if (!execute) return tool;
+  tool.execute = (async (
+    args: unknown,
+    options: Parameters<NonNullable<T["execute"]>>[1],
+  ) => toJsonSafe(await execute(args, options))) as NonNullable<
+    T["execute"]
+  >;
+  return tool;
+}
 
 export function buildTools(userId: string) {
-  return {
+  const tools = {
     // Accounts — query
     getAccounts: buildGetAccountsTool(userId),
     // Accounts — propose
@@ -43,4 +57,11 @@ export function buildTools(userId: string) {
     // Charts
     renderSpendingChart: buildSpendingChartTool(userId),
   };
+
+  return Object.fromEntries(
+    Object.entries(tools).map(([name, tool]) => [
+      name,
+      withJsonSafeExecute(tool),
+    ]),
+  );
 }
