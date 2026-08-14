@@ -18,11 +18,18 @@ import {
 import { formatAmount } from "@/lib/utils";
 import {
   AccountBalanceList,
+  AccountCreateProposalCard,
+  BudgetDeleteProposalCard,
+  BudgetEditProposalCard,
   BudgetHealthGrid,
   BudgetProposalCard,
+  BudgetRebalanceProposalCard,
   ChatSpendingChart,
   ComparisonCard,
   getToolLabel,
+  InsightDismissProposalCard,
+  RecategorizeProposalCard,
+  SpendingGoalProposalCard,
   TransactionList,
 } from "./chat-renderer";
 
@@ -43,7 +50,13 @@ const unwrapArray = (result: any): any => {
   }
   if (result && typeof result === "object") {
     const record = result as Record<string, unknown>;
-    for (const key of ["transactions", "items", "budgets", "accounts", "data"]) {
+    for (const key of [
+      "transactions",
+      "items",
+      "budgets",
+      "accounts",
+      "data",
+    ]) {
       if (Array.isArray(record[key])) {
         return record[key];
       }
@@ -89,7 +102,9 @@ const QUERY_RENDERERS: Record<string, (result: any) => React.ReactNode> = {
                 <span className="text-muted-foreground">
                   {c.category ?? "Uncategorized"}
                 </span>
-                <span className="font-medium">{formatAmount(c.totalSpent)}</span>
+                <span className="font-medium">
+                  {formatAmount(c.totalSpent)}
+                </span>
               </div>
             ))}
           </div>
@@ -106,6 +121,27 @@ const PROPOSAL_RENDERERS: Record<
 > = {
   proposeBudgetCreate: (result, sendMessage) => (
     <BudgetProposalCard {...result} sendMessage={sendMessage} />
+  ),
+  proposeAccountCreate: (result, sendMessage) => (
+    <AccountCreateProposalCard {...result} sendMessage={sendMessage} />
+  ),
+  proposeBudgetEdit: (result, sendMessage) => (
+    <BudgetEditProposalCard {...result} sendMessage={sendMessage} />
+  ),
+  proposeBudgetDelete: (result, sendMessage) => (
+    <BudgetDeleteProposalCard {...result} sendMessage={sendMessage} />
+  ),
+  proposeBudgetRebalance: (result, sendMessage) => (
+    <BudgetRebalanceProposalCard {...result} sendMessage={sendMessage} />
+  ),
+  proposeSpendingGoal: (result, sendMessage) => (
+    <SpendingGoalProposalCard {...result} sendMessage={sendMessage} />
+  ),
+  proposeRecategorize: (result, sendMessage) => (
+    <RecategorizeProposalCard {...result} sendMessage={sendMessage} />
+  ),
+  proposeInsightDismiss: (result, sendMessage) => (
+    <InsightDismissProposalCard {...result} sendMessage={sendMessage} />
   ),
 };
 
@@ -181,7 +217,7 @@ export function ChatToolPart({
       />
       {isSettled && (
         <ToolContent>
-          <ToolInput input={part.input} />
+          {/* <ToolInput input={part.input} /> */}
           <ToolOutput errorText={part.errorText} output={output} />
         </ToolContent>
       )}

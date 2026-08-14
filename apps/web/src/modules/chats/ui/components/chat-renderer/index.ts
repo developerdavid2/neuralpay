@@ -1,8 +1,15 @@
 export { AccountBalanceList } from "./account-balance-list";
+export { AccountCreateProposalCard } from "./proposals/account-create-proposal-card";
+export { BudgetDeleteProposalCard } from "./proposals/budget-delete-proposal-card";
+export { BudgetEditProposalCard } from "./proposals/budget-edit-proposal-card";
 export { BudgetHealthGrid } from "./budget-health-grid";
+export { BudgetProposalCard } from "./proposals/budget-proposal-card";
+export { BudgetRebalanceProposalCard } from "./proposals/budget-rebalance-proposal-card";
 export { ChatSpendingChart } from "./chat-spending-chart";
 export { ComparisonCard } from "./comparison-card";
 export { ConfirmationBar } from "./confirmation-bar";
-export { BudgetProposalCard } from "./proposals/budget-proposal-card";
 export { getToolLabel, TOOL_LABELS } from "./tool-labels";
+export { InsightDismissProposalCard } from "./proposals/insight-dismiss-proposal-card";
+export { RecategorizeProposalCard } from "./proposals/recategorize-proposal-card";
+export { SpendingGoalProposalCard } from "./proposals/spending-goal-proposal-card";
 export { TransactionList } from "./transaction-list";
