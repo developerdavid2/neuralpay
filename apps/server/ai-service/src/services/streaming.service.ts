@@ -104,7 +104,21 @@ export async function handleStreamChat(
       return { success: false, error: quotaResult.error, code: "RATE_LIMITED" };
     }
 
-    // 2. Build + save the user message as a UIMessage (parts, not raw string)
+    // 2. Fetch context & history BEFORE saving the new user message — the
+    // freshly saved turn would otherwise show up in the history result AND be
+    // appended below, handing the model (and UI stream) two copies of it.
+    const { data: contextData, snapshot } = await fetchContext(
+      userId,
+      sessionResult.data.contextType ?? "general",
+      sessionResult.data.contextId,
+    );
+
+    const history: UIMessage[] = await fetchMessageHistory(
+      resolvedSessionId,
+      userId,
+    );
+
+    // 3. Build + save the user message as a UIMessage (parts, not raw string)
     const userMessage: UIMessage = {
       id: crypto.randomUUID(),
       role: "user",
@@ -125,19 +139,8 @@ export async function handleStreamChat(
       };
     }
 
-    // 3. Fetch context & history
-    const { data: contextData, snapshot } = await fetchContext(
-      userId,
-      sessionResult.data.contextType ?? "general",
-      sessionResult.data.contextId,
-    );
-
-    // fetchMessageHistory now returns UIMessage[] (parts intact) — see note below
-    const history: UIMessage[] = await fetchMessageHistory(
-      resolvedSessionId,
-      userId,
-    );
-
+    // History ends with the previous assistant turn; the current user turn is
+    // appended exactly once below.
     const originalMessages: UIMessage[] = [...history, userMessage];
 
     const systemPrompt = buildSystemPrompt(
