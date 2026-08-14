@@ -40,7 +40,7 @@ export const getServerSession = async (): Promise<Session | null> => {
     );
 
     const appUrl = new URL(
-      process.env.NEXT_PUBLIC_APP_URL ?? "https://neuralpayai.vercel.app",
+      process.env.NEXT_PUBLIC_APP_URL ?? "https://localhost:3001",
     );
 
     const response = await fetch(

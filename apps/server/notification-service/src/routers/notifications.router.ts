@@ -1,14 +1,20 @@
-import { z } from "zod";
-
-import { protectedProcedure, router } from "@neuralpay/config/trpc";
 import {
+  protectedProcedure,
+  publicProcedure,
+  router,
+} from "@neuralpay/config/trpc";
+import { subscribeToUser } from "@neuralpay/redis";
+import {
+  type AppNotification,
   markReadSchema,
   notificationsFilterSchema,
   notificationsSummarySchema,
   registerDeviceSchema,
   updatePreferencesSchema,
-  type AppNotification,
 } from "@neuralpay/types";
+import { tracked } from "@trpc/server";
+import { z } from "zod";
+import { zAsyncIterable } from "../lib/zAsyncIterable";
 import {
   getNotifications,
   getNotificationsSummary,
@@ -24,9 +30,6 @@ import {
   getUserPreferences,
   updateUserPreferences,
 } from "../services/preferences.service";
-import { tracked } from "@trpc/server";
-import { subscribeToUser } from "@neuralpay/redis";
-import { zAsyncIterable } from "../lib/zAsyncIterable";
 
 export interface NotificationBroadcastPayload {
   type: "notification.new";
@@ -36,6 +39,10 @@ export interface NotificationBroadcastPayload {
 const notificationBroadcastSchema = z.custom<NotificationBroadcastPayload>();
 
 export const appNotificationRouter = router({
+  health: publicProcedure.query(() => ({
+    ok: true,
+    service: "notification-service",
+  })),
   list: protectedProcedure
     .input(notificationsFilterSchema.passthrough().optional())
     .query(async ({ ctx, input }) => {

@@ -25,6 +25,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import { useAskAICoach } from "@/hooks/mutations/use-ask-ai-coach";
 import { useConfirm } from "@/hooks/ui/use-confirm";
 import { formatAmount } from "@/lib/utils";
 import { ACCOUNT_STATUS_CONFIG } from "@/modules/accounts/constants";
@@ -93,6 +94,7 @@ function BudgetViewInner({
 }) {
   const { budget, isLoading } = useBudgetDetail(budgetId ?? "");
   const { handleDelete } = useBudgetMutations();
+  const { askAboutContext } = useAskAICoach();
   const { isDeleting } = useBudgetPendingSelectors();
   const [ConfirmDialog, confirm] = useConfirm();
 
@@ -134,7 +136,12 @@ function BudgetViewInner({
   };
 
   const onAskCoach = () => {
-    // TODO: wire to the AI coach once the entry point is available.
+    if (!b) return;
+    askAboutContext(
+      "budget",
+      b.id,
+      `Tell me about my "${b.name}" budget — how am I tracking against it?`,
+    );
   };
 
   return (

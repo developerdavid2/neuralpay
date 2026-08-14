@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { CHAT_SESSIONS_LIMIT } from "@/modules/chats/constants";
 import { ChatsView } from "@/modules/chats/ui/views/chats-view";
 import {
@@ -6,7 +7,6 @@ import {
   prefetchInfinite,
   trpc,
 } from "@/trpc/trpc-server";
-import { Suspense } from "react";
 
 interface PageProps {
   searchParams: Promise<{

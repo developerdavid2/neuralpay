@@ -78,6 +78,7 @@ export const coachRouter = router({
   startSession: protectedProcedure
     .input(startOrCreateChatSessionSchema)
     .mutation(async ({ ctx, input }) => {
+      console.log("[getOrCreateSession] received:", input);
       const result = await AICoachService.getOrCreateSession(
         ctx.session.user.id,
         {

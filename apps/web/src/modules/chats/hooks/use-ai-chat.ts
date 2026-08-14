@@ -1,47 +1,15 @@
+"use client";
+
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import { webEnv } from "@neuralpay/env/web";
+import { DefaultChatTransport } from "ai";
 import { useEffect, useRef, useState } from "react";
+import { normalizeChatMessages } from "../lib/message-parts";
 
-type ChatMessagePart = {
-  type: "text";
-  text: string;
-};
+export type { ChatMessage } from "../lib/message-parts";
 
-type ChatMessage = {
-  id: string;
-  role: "user" | "assistant";
-  parts: ChatMessagePart[];
-};
-
-function normalizeChatMessages(
-  messages: Array<{
-    id: string;
-    role: string;
-    parts?: Array<{ type?: string; text?: string }>;
-  }>,
-): ChatMessage[] {
-  return messages.map((message) => ({
-    id: message.id,
-    role: message.role === "assistant" ? "assistant" : "user",
-    parts: (message.parts ?? [])
-      .filter((part) => part.type === "text")
-      .map((part) => ({
-        type: "text",
-        text: part.text ?? "",
-      })),
-  }));
-}
-
-export function useAIChat({
-  sessionId,
-  initialMessage,
-}: {
-  sessionId: string;
-  initialMessage?: string;
-}) {
+export function useAIChat({ sessionId }: { sessionId: string }) {
   const [input, setInput] = useState("");
-  const hasSentInitial = useRef(false);
   const prevSessionId = useRef(sessionId);
 
   const isLocal = window.location.hostname === "localhost";
@@ -61,18 +29,10 @@ export function useAIChat({
   useEffect(() => {
     if (prevSessionId.current !== sessionId) {
       prevSessionId.current = sessionId;
-      hasSentInitial.current = false;
       chat.setMessages([]);
       setInput("");
     }
   }, [chat, sessionId]);
-
-  useEffect(() => {
-    if (initialMessage && !hasSentInitial.current) {
-      hasSentInitial.current = true;
-      chat.sendMessage({ text: initialMessage });
-    }
-  }, [chat, initialMessage]);
 
   const sendMessage = (text: string) => {
     const trimmed = text.trim();
@@ -90,14 +50,29 @@ export function useAIChat({
     setInput("");
   };
 
+  const hasPendingToolCall = chat.messages.some(
+    (m) =>
+      m.role === "assistant" &&
+      m.parts?.some((p) => {
+        if (typeof p.type !== "string" || !p.type.startsWith("tool-"))
+          return false;
+        const state = (p as any).state;
+        return state !== "output-available" && state !== "output-error";
+      }),
+  );
+
   return {
     messages: normalizeChatMessages(chat.messages),
     input,
     handleInputChange,
     handleSubmit,
-    isLoading: chat.status === "streaming" || chat.status === "submitted",
+    isLoading:
+      chat.status === "streaming" ||
+      chat.status === "submitted" ||
+      hasPendingToolCall,
     error: chat.error,
     setMessages: chat.setMessages,
     status: chat.status,
+    sendMessage,
   };
 }

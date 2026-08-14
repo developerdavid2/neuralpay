@@ -8,11 +8,6 @@ export function useBudgetUrlSync() {
   const setUrl = useCallback(
     (mode: BudgetDrawerMode, budgetId: string | null) => {
       const params = new URLSearchParams(window.location.search);
-      console.log("setUrl called", {
-        mode,
-        budgetId,
-        currentSearch: window.location.search,
-      });
 
       if (mode === "add") {
         params.set("mode", "add");
@@ -23,7 +18,6 @@ export function useBudgetUrlSync() {
       }
 
       const query = params.toString();
-      console.log("new query", query);
 
       window.history.replaceState(
         null,
@@ -32,8 +26,6 @@ export function useBudgetUrlSync() {
           ? `${window.location.pathname}?${query}`
           : window.location.pathname,
       );
-
-      console.log("URL after replaceState", window.location.search);
     },
     [],
   );

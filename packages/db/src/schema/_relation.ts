@@ -1,26 +1,23 @@
 import { relations } from "drizzle-orm";
+import { bankAccounts } from "./accounts";
 import { account, session, user } from "./auth";
-import {
-  transactions,
-  transactionTags,
-  transactionTagMapping,
-} from "./transactions";
-
-import { splits, splitParticipants, splitChatMessages } from "./splits";
-
-import {
-  vaults,
-  vaultMembers,
-  vaultContributions,
-  vaultInvitations,
-} from "./vaults";
+import { budgetAccounts, budgetCategories, budgets } from "./budgets";
+import { chatMessages, chatSessions } from "./chats";
 
 import { insights } from "./insights";
-import { chatSessions, chatMessages } from "./chats";
-
-import { notifications, deviceTokens } from "./notifications";
-import { bankAccounts } from "./accounts";
-import { budgetAccounts, budgetCategories, budgets } from "./budgets";
+import { deviceTokens, notifications } from "./notifications";
+import { splitChatMessages, splitParticipants, splits } from "./splits";
+import {
+  transactions,
+  transactionTagMapping,
+  transactionTags,
+} from "./transactions";
+import {
+  vaultContributions,
+  vaultInvitations,
+  vaultMembers,
+  vaults,
+} from "./vaults";
 
 // ========== Auth Relations ==========
 export const userRelations = relations(user, ({ many }) => ({

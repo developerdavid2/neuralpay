@@ -1,14 +1,14 @@
 import "dotenv/config";
 
-import * as trpcExpress from "@trpc/server/adapters/express";
 import { createExpressApp } from "@neuralpay/config/express-config";
-import { usersRouter } from "./routers";
 import { userServiceEnv } from "@neuralpay/env/user-service";
+import { mountUploadThing } from "@neuralpay/file-upload/express";
+import * as trpcExpress from "@trpc/server/adapters/express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
-import { createContext } from "./trpc/context";
-import { mountUploadThing } from "@neuralpay/file-upload/express";
 import { userFileRouter } from "./lib/uploadthing";
+import { usersRouter } from "./routers";
+import { createContext } from "./trpc/context";
 
 const PORT = Number(userServiceEnv.PORT) || 4001;
 const app = createExpressApp({

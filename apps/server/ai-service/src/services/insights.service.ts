@@ -5,7 +5,7 @@ import type {
   InsightRecord,
   ServiceResult,
 } from "@neuralpay/types";
-import { and, desc, eq, isNull, sql, or, ilike } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 
 export const AIInsightsService = {
   async getInsights(

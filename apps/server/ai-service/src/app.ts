@@ -1,8 +1,8 @@
 import { createExpressApp } from "@neuralpay/config/express-config";
 import { aiServiceEnv } from "@neuralpay/env/ai-service";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { chatStreamHandler } from "./routers/chat-stream.router";
 import { aiRouter } from "./routers";
+import { chatStreamHandler } from "./routers/chat-stream.router";
 import { createContext } from "./trpc/context";
 
 const PORT = Number(aiServiceEnv.PORT) || 4003;
@@ -22,5 +22,9 @@ app.use(
     },
   }),
 );
+
+app.listen(PORT, () => {
+  console.log(`🤖 ai-service running on http://localhost:${PORT}`);
+});
 
 export default app;

@@ -26,7 +26,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
           const h = await headers();
           const cookie = h.get("cookie") ?? "";
           const appUrl = new URL(
-            process.env.NEXT_PUBLIC_APP_URL ?? "https://neuralpayai.vercel.app",
+            process.env.NEXT_PUBLIC_APP_URL ?? "https://localhost:3001",
           );
           return {
             cookie,

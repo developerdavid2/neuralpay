@@ -4,6 +4,8 @@ export const CHAT_CONTEXT_TYPES = [
   "insight",
   "transaction",
   "budget",
+  "account",
+  "institution",
   "vault",
   "split",
   "general",
@@ -81,6 +83,8 @@ export type ChatSession = {
     | "insight"
     | "transaction"
     | "budget"
+    | "account"
+    | "institution"
     | "vault"
     | "split"
     | "general"
@@ -130,3 +134,55 @@ export interface ContextSnapshot {
   data: unknown;
   fetchedAt: string;
 }
+
+export const CONTEXT_TOOL_SCOPE: Record<string, string[]> = {
+  general: [
+    "queryTransactions",
+    "getSpendingAnalysis",
+    "renderSpendingChart",
+    "queryBudgets",
+    "getUnbudgetedSpending",
+    "getAccounts",
+    "proposeRecategorize",
+    "proposeBudgetCreate",
+    "proposeBudgetEdit",
+    "proposeBudgetDelete",
+    "proposeBudgetRebalance",
+    "proposeSpendingGoal",
+    "proposeAccountCreate",
+    "proposeInsightDismiss",
+  ],
+  transaction: [
+    "queryTransactions",
+    "getSpendingAnalysis",
+    "queryBudgets",
+    "getAccounts",
+    "proposeRecategorize",
+  ],
+  budget: [
+    "queryBudgets",
+    "renderSpendingChart",
+    "getAccounts",
+    "proposeBudgetCreate",
+    "proposeBudgetEdit",
+    "proposeBudgetDelete",
+    "proposeBudgetRebalance",
+    "proposeSpendingGoal",
+  ],
+  account: ["getAccounts", "queryTransactions", "proposeAccountCreate"],
+  institution: ["getAccounts"],
+  vault: [
+    "getAccounts",
+    "queryBudgets",
+    "renderSpendingChart",
+    "proposeSpendingGoal",
+  ],
+  split: ["queryTransactions", "getAccounts", "queryBudgets"],
+  insight: [
+    "queryTransactions",
+    "getSpendingAnalysis",
+    "queryBudgets",
+    "getAccounts",
+    "proposeInsightDismiss",
+  ],
+};

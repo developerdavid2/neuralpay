@@ -1,9 +1,11 @@
 "use client";
 
+import type { Budget } from "@neuralpay/types";
 import { Skeleton } from "@neuralpay/ui/components/skeleton";
 import { Sparkles } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { InfiniteScroll } from "@/components/infinite-scroll";
+import { useAskAICoach } from "@/hooks/mutations/use-ask-ai-coach";
 import { useConfirm } from "@/hooks/ui/use-confirm";
 import { useBudgetMutations } from "../../hooks/mutations/use-budget-mutations";
 import { useBudgetsList } from "../../hooks/queries/use-budgets";
@@ -61,6 +63,7 @@ export function BudgetList({ queryState }: BudgetListProps) {
   const { isRowPending, isBatchDeleting } = useBudgetPendingSelectors();
   const { onSelect, onSelectMany, setAllBudgetIds } =
     useBudgetSelectionActions();
+  const { askAboutContext } = useAskAICoach();
   const [ConfirmDialog, confirm] = useConfirm();
 
   useEffect(() => {
@@ -98,7 +101,14 @@ export function BudgetList({ queryState }: BudgetListProps) {
     [confirm, runDelete],
   );
 
-  const handleAskCoach = undefined;
+  const handleAskCoach = (budget: Budget) => {
+    if (!budget) return;
+    askAboutContext(
+      "budget",
+      budget.id,
+      `Tell me about my "${budget.name}" budget — how am I tracking against it?`,
+    );
+  };
 
   if (budgets.length === 0) {
     return (
