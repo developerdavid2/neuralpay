@@ -149,6 +149,9 @@ export async function handleStreamChat(
     );
 
     // 4. Stream
+    // maxRetries: 1 — a 429 on the AI Gateway free tier is account-wide and
+    // won't clear within the SDK's short backoff; retrying 3x (the default)
+    // only triples request count and burns rate-limit quota faster.
     const result = streamText({
       model: getModel(),
       system: systemPrompt,
@@ -157,6 +160,7 @@ export async function handleStreamChat(
         buildTools(userId),
         sessionResult.data.contextType ?? "general",
       ),
+      maxRetries: 1,
       stopWhen: ({ steps }) => steps.length >= 5,
       onError: ({ error }) => {
         console.error("[handleStreamChat] streamText error:", error);
