@@ -90,6 +90,23 @@
   --color-landing-emerald: #10b981;
   --color-landing-orange: #f97316;
 
+  /* Light Mode Surfaces & Backgrounds */
+  --color-landing-bg-light: #f6f4fb;
+  --color-landing-card-light: #ffffff;
+  --color-landing-popover-light: #ffffff;
+  --color-landing-foreground-light: #221d2e;
+  --color-landing-muted-foreground-light: #6e6879;
+  --color-landing-border-light: rgba(34, 29, 46, 0.12);
+  --color-landing-border-subtle-light: rgba(34, 29, 46, 0.06);
+  --color-landing-border-glow-light: rgba(139, 92, 246, 0.28);
+
+  /* Section polarity tokens, resolved by [data-polarity] below */
+  --color-section-bg: var(--section-bg);
+  --color-section-surface: var(--section-surface);
+  --color-section-ink: var(--section-ink);
+  --color-section-muted: var(--section-muted);
+  --color-section-border: var(--section-border);
+
   --animate-spin-slow: spin 15s linear infinite;
   --animate-spotlight: spotlight 2s ease 0.75s 1 forwards;
   --animate-aurora: aurora 60s ease-in-out infinite alternate;
@@ -132,6 +149,12 @@
   /* Custom colors */
   --main: oklch(60.6% 0.25 292.717);
   --main-tint: oklch(0.811 0.111 293.571 / 8%);
+
+  /* Landing aurora colorways (light appearance) */
+  --landing-aurora-1: #ffffff;
+  --landing-aurora-2: #efe9fb;
+  --landing-aurora-3: #e3dbf6;
+  --landing-aurora-4: #f5f1fc;
 }
 
 .dark {
@@ -170,6 +193,77 @@
   /* Custom colors */
   --main: oklch(81.1% 0.111 293.571);
   --main-tint: oklch(0.811 0.111 293.571 / 5%);
+
+  /* Landing aurora colorways (dark appearance) */
+  --landing-aurora-1: #0e0c15;
+  --landing-aurora-2: #312956;
+  --landing-aurora-3: #373542;
+  --landing-aurora-4: #281c30;
+}
+
+/* -------------------------------------------------------------------------- */
+/* LANDING SECTION POLARITY                                                     */
+/* A section declares its visual identity with data-polarity; the token        */
+/* mapping flips under the .dark ancestor so one attribute drives both themes. */
+/* -------------------------------------------------------------------------- */
+[data-polarity="light"] {
+  --section-bg: var(--color-landing-bg-light);
+  --section-surface: var(--color-landing-card-light);
+  --section-ink: var(--color-landing-foreground-light);
+  --section-muted: var(--color-landing-muted-foreground-light);
+  --section-border: var(--color-landing-border-light);
+}
+
+[data-polarity="dark"] {
+  --section-bg: var(--color-landing-bg);
+  --section-surface: var(--color-landing-card);
+  --section-ink: var(--color-landing-foreground);
+  --section-muted: var(--color-landing-muted-foreground);
+  --section-border: var(--color-landing-border);
+}
+
+.dark [data-polarity="light"] {
+  --section-bg: var(--color-landing-bg);
+  --section-surface: var(--color-landing-card);
+  --section-ink: var(--color-landing-foreground);
+  --section-muted: var(--color-landing-muted-foreground);
+  --section-border: var(--color-landing-border);
+}
+
+.dark [data-polarity="dark"] {
+  --section-bg: var(--color-landing-bg-light);
+  --section-surface: var(--color-landing-card-light);
+  --section-ink: var(--color-landing-foreground-light);
+  --section-muted: var(--color-landing-muted-foreground-light);
+  --section-border: var(--color-landing-border-light);
+}
+
+/* Aurora blobs default to a dark screen blend; the section polarity flips them */
+[data-polarity="light"] .aurora-blob {
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+.dark [data-polarity="light"] .aurora-blob {
+  mix-blend-mode: screen;
+  opacity: 0.6;
+}
+
+/* -------------------------------------------------------------------------- */
+/* REDUCED MOTION GUARD (shared, partial disable)                               */
+/* Disables loops and reveal animations while keeping gentle fades, small       */
+/* transitions, and every element visible in its final state.                   */
+/* -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin,
+  .animate-spin-slow,
+  .animate-ping,
+  .animate-pulse,
+  .animate-aurora,
+  .animate-spotlight,
+  .aurora-blob {
+    animation: none !important;
+  }
 }
 
 @layer base {

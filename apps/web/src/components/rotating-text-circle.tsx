@@ -32,7 +32,7 @@ export function RotatingTextCircle({
       </div>
 
       {/* 2. Rotating Curved Text Circle */}
-      <div className="animate-spin-slow absolute inset-0 text-muted-foreground/80 font-mono">
+      <div className="animate-spin-slow absolute inset-0 text-section-muted/80 font-mono">
         {letters.map((letter, i) => (
           <span
             key={i}

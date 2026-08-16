@@ -265,8 +265,8 @@ export default function MagicRings({
       uniforms.uFadeIn.value = p.fadeIn;
       uniforms.uFadeOut.value = p.fadeOut;
       uniforms.uMouse.value.set(
-        smoothMouseRef.current[0],
-        smoothMouseRef.current[1],
+        smoothMouseRef.current[0]!,
+        smoothMouseRef.current[1]!,
       );
       uniforms.uMouseInfluence.value = p.followMouse ? p.mouseInfluence : 0;
       uniforms.uHoverAmount.value = hoverAmountRef.current;

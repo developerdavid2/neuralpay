@@ -3,6 +3,8 @@
 import { Activity, BarChart2, PieChart } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
+import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
 import {
   Area,
   AreaChart,
@@ -35,13 +37,13 @@ function MiniCustomTooltip({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 4, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className="pointer-events-none rounded-lg border border-violet-500/30 bg-neutral-950/90 px-2.5 py-1.5 shadow-xl backdrop-blur-md"
+      className="pointer-events-none rounded-lg border border-landing-violet-500/30 bg-neutral-950/90 px-2.5 py-1.5 shadow-xl backdrop-blur-md"
     >
       <div className="flex items-center gap-1.5 text-[11px] font-mono">
         <span
           className="size-1.5 rounded-full"
           style={{
-            backgroundColor: data.color || data.payload?.fill || "#8b5cf6",
+            backgroundColor: data.color || data.payload?.fill || LANDING_THEME.violet500,
           }}
         />
         <span className="text-white/60">{data.name}:</span>
@@ -52,10 +54,12 @@ function MiniCustomTooltip({
 }
 
 export function HeroMiniChart() {
+  const reduced = useReducedMotion();
   const [activeType, setActiveType] = useState<ChartKind>("area");
 
   // Auto-cycle charts every 3.5 seconds
   useEffect(() => {
+    if (reduced) return;
     const timer = setInterval(() => {
       setActiveType((prev) => {
         if (prev === "area") return "bar";
@@ -65,7 +69,7 @@ export function HeroMiniChart() {
     }, 7000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [reduced]);
 
   // Frame Variants for Container Card Slide-Up Fade Out/In Animation
   const containerVariants = {
@@ -99,13 +103,13 @@ export function HeroMiniChart() {
       <motion.div
         key={activeType}
         variants={containerVariants}
-        initial="initial"
+        initial={reduced ? false : "initial"}
         animate="animate"
         exit="exit"
-        className="relative w-70 ml-auto rounded-2xl p-4 backdrop-blur-xl shadow-md overflow-hidden select-none"
+        className="relative w-70 ml-auto rounded-2xl p-4 bg-section-surface backdrop-blur-xl shadow-md overflow-hidden select-none"
       >
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-border/10 pb-2.5 mb-3">
+        <div className="flex items-center justify-between border-b border-section-border pb-2.5 mb-3">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-main-tint opacity-75"></span>
@@ -117,7 +121,7 @@ export function HeroMiniChart() {
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="flex items-center gap-1 rounded-lg bg-secondary p-1 border border-white/5">
+          <div className="flex items-center gap-1 rounded-lg bg-section-bg p-1 border border-section-border">
             <button
               onClick={() => setActiveType("area")}
               className={`rounded p-1 transition-colors ${
@@ -168,10 +172,10 @@ export function HeroMiniChart() {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.6} />
+                      <stop offset="5%" stopColor={LANDING_THEME.violet500} stopOpacity={0.6} />
                       <stop
                         offset="95%"
-                        stopColor="#8b5cf6"
+                        stopColor={LANDING_THEME.violet500}
                         stopOpacity={0.0}
                       />
                     </linearGradient>
@@ -181,7 +185,7 @@ export function HeroMiniChart() {
                     type="monotone"
                     dataKey="val"
                     name="Spending"
-                    stroke="#8b5cf6"
+                    stroke={LANDING_THEME.violet500}
                     strokeWidth={2.5}
                     fill="url(#violetGradient)"
                   />
@@ -205,12 +209,12 @@ export function HeroMiniChart() {
                 >
                   <Tooltip
                     content={<MiniCustomTooltip />}
-                    cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
+                    cursor={{ fill: "var(--section-border)" }}
                   />
                   <Bar
                     dataKey="val"
                     name="Volume"
-                    fill="#464555"
+                    fill="var(--section-muted)"
                     radius={[4, 4, 0, 0]}
                     maxBarSize={18}
                   />
@@ -251,7 +255,7 @@ export function HeroMiniChart() {
         </div>
 
         {/* Mini Bottom Metrics Footer */}
-        <div className="mt-2 flex items-center justify-between border-t border-white/5 pt-2 text-[10px] text-muted-foreground font-mono">
+        <div className="mt-2 flex items-center justify-between border-t border-section-border pt-2 text-[10px] text-section-muted font-mono">
           <span>Volume Peak: $1,940</span>
           <span className="text-violet-400 font-semibold">+18.4%</span>
         </div>

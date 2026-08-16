@@ -8,6 +8,8 @@ interface AuroraBackgroundProps extends React.HTMLProps<HTMLDivElement> {
   showRadialGradient?: boolean;
   /** 2–5 blob colors */
   colors?: string[];
+  /** Optional inline appearance. Omit to let the polarity CSS rules control
+   * opacity and blend mode (see the `.aurora-blob` rules in globals.css). */
   mode?: "light" | "dark";
   blur?: string;
   /** base seconds per loop; each blob gets a slightly different duration */
@@ -55,7 +57,7 @@ export const AuroraBackground = ({
   children,
   showRadialGradient = true,
   colors = ["#a5b4fc"],
-  mode = "dark",
+  mode,
   blur = "90px",
   speed = 10,
   style,
@@ -108,12 +110,15 @@ export const AuroraBackground = ({
         {blobs.map(({ color, name, duration }, i) => (
           <div
             key={i}
-            className="absolute w-[60vw] h-[60vw] rounded-[37%_29%_27%_27%/28%_25%_41%_37%]"
+            className="aurora-blob absolute w-[60vw] h-[60vw] rounded-[37%_29%_27%_27%/28%_25%_41%_37%]"
             style={{
               backgroundColor: color,
               filter: `blur(${blur})`,
-              opacity: mode === "light" ? 0.5 : 0.6,
-              mixBlendMode: mode === "light" ? "multiply" : "screen",
+              ...(mode === "light"
+                ? ({ opacity: 0.5, mixBlendMode: "multiply" } as const)
+                : mode === "dark"
+                  ? ({ opacity: 0.6, mixBlendMode: "screen" } as const)
+                  : ({} as const)),
               animationName: name,
               animationDuration: `${duration}s`,
               animationTimingFunction: "ease-in-out",

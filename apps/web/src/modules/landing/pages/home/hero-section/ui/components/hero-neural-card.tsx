@@ -1,6 +1,7 @@
 "use client";
 
 import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
+import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
 import { NoiseTexture } from "@neuralpay/ui/components/magicui/noise-texture";
 import BorderGlow from "@neuralpay/ui/components/react-bits/border-glow";
 import Strands from "@neuralpay/ui/components/react-bits/strands";
@@ -20,6 +21,9 @@ const containerVariants = {
 };
 
 export default function HeroNeuralCard() {
+  const reduced = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const clipWrapRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const coreRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
@@ -34,47 +38,97 @@ export default function HeroNeuralCard() {
 
   const currentScenario = AGENT_SCENARIOS[scenarioIndex]!;
 
-  // ── GSAP entrance animations
-  useGSAP(() => {
-    const tl = gsap.timeline({ delay: 0.3 });
+  // ── GSAP entrance timeline (one coordinated reveal, clip first so nothing flashes on load)
+  useGSAP(
+    () => {
+      if (reduced) {
+        // Reduced motion: resolve straight to the final, fully visible state
+        gsap.set(clipWrapRef.current, {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+        });
+        return;
+      }
 
-    // Card entrance
-    tl.fromTo(
-      cardRef.current,
-      { opacity: 0, y: 40, scale: 0.95 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out" },
-    );
+      const tl = gsap.timeline({ delay: 0.3 });
 
-    // Badge entrance
-    tl.fromTo(
-      badgeRef.current,
-      { opacity: 0, x: -20 },
-      { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" },
-      "-=0.4",
-    );
+      tl.fromTo(
+        clipWrapRef.current,
+        { clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)" },
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          duration: 0.9,
+          ease: "power4.inOut",
+        },
+      )
+        .fromTo(
+          cardRef.current,
+          { opacity: 0, y: 40, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out" },
+          "-=0.55",
+        )
+        .fromTo(
+          badgeRef.current,
+          { opacity: 0, x: -16 },
+          { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" },
+          "<",
+        )
+        .fromTo(
+          coreRef.current,
+          { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
+          "-=0.35",
+        )
+        .fromTo(
+          chatRef.current,
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" },
+          "-=0.3",
+        );
 
-    // Neural core pulse
-    if (coreRef.current) {
+      // Neural core continuous pulse (starts once the entrance settles)
       gsap.to(coreRef.current, {
         scale: 1.06,
         duration: 2,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
+        delay: 1,
       });
-    }
+    },
+    { scope: containerRef, dependencies: [reduced] },
+  );
 
-    // Chat area entrance
-    tl.fromTo(
-      chatRef.current,
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
-      "-=0.3",
-    );
-  }, []);
+  // ── GSAP staggered reveal of the response rows when the agent answers (bar grow, not Motion)
+  useGSAP(
+    () => {
+      if (reduced) return;
+      if (phase !== "response") return;
+      const rows = containerRef.current?.querySelectorAll(".chart-bar");
+      if (!rows?.length) return;
+      gsap.fromTo(
+        rows,
+        { opacity: 0, y: 14, scaleY: 0.85, transformOrigin: "top" },
+        {
+          opacity: 1,
+          y: 0,
+          scaleY: 1,
+          duration: 0.45,
+          ease: "power3.out",
+          stagger: 0.07,
+          delay: 0.15,
+        },
+      );
+    },
+    { scope: containerRef, dependencies: [reduced, phase] },
+  );
 
   // ── Typewriter loop
   useEffect(() => {
+    if (reduced) {
+      setDisplayedPrompt(currentScenario.prompt);
+      setPhase("response");
+      return;
+    }
     let timeout: NodeJS.Timeout;
     const fullText = currentScenario.prompt;
 
@@ -99,7 +153,7 @@ export default function HeroNeuralCard() {
     }
 
     return () => clearTimeout(timeout);
-  }, [displayedPrompt, phase, currentScenario.prompt, scenarioIndex]);
+  }, [displayedPrompt, phase, currentScenario.prompt, scenarioIndex, reduced]);
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -114,28 +168,35 @@ export default function HeroNeuralCard() {
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-6 select-none overflow-hidden  mask-[linear-gradient(to_bottom,black_80%,transparent_90%)]">
-      <BorderGlow
-        borderRadius={28}
-        edgeSensitivity={25}
-        backgroundColor="#1a1a21"
-        animated={true}
-        colors={[LANDING_THEME.foreground, "#b296ff"]}
-        fillOpacity={0.5}
-        className="w-95 h-200 overflow-hidden transition-transform duration-300 border-border"
+    <div
+      ref={containerRef}
+      className="relative flex flex-col items-center justify-center p-6 select-none"
+    >
+      <div
+        ref={clipWrapRef}
+        className="overflow-hidden rounded-[28px] mask-[linear-gradient(to_bottom,black_80%,transparent_90%)]"
       >
-        <div
-          ref={cardRef}
-          onPointerMove={handlePointerMove}
-          onPointerLeave={handlePointerLeave}
-          className="relative h-full w-full p-5 flex flex-col gap-y-15 overflow-hidden rounded-[inherit]"
+        <BorderGlow
+          borderRadius={28}
+          edgeSensitivity={25}
+          backgroundColor={LANDING_THEME.card}
+          animated={true}
+          colors={[LANDING_THEME.foreground, LANDING_THEME.violet600]}
+          fillOpacity={0.5}
+          className="w-full max-w-[20rem] sm:max-w-[21rem] xl:w-95 xl:max-w-none xl:h-[min(46rem,calc(100svh-7rem))] overflow-hidden transition-transform duration-300"
         >
-          <NoiseTexture
-            frequency={0.5}
-            octaves={5}
-            slope={0.4}
-            noiseOpacity={0.2}
-          />
+          <div
+            ref={cardRef}
+            onPointerMove={handlePointerMove}
+            onPointerLeave={handlePointerLeave}
+            className="relative h-full w-full p-5 flex flex-col justify-between gap-y-5 xl:gap-y-15 overflow-hidden rounded-[inherit]"
+          >
+            <NoiseTexture
+              frequency={0.5}
+              octaves={5}
+              slope={0.4}
+              noiseOpacity={0.2}
+            />
 
           {/* GLARE OVERLAY */}
           <div
@@ -162,11 +223,15 @@ export default function HeroNeuralCard() {
           {/* CENTER NEURAL CORE */}
           <div
             ref={coreRef}
-            className="relative z-20 mt-0 flex flex-col items-center justify-center"
+            className="relative z-20 flex flex-1 flex-col items-center justify-center"
           >
             <div className="relative size-fit flex items-center justify-center">
               <Strands
-                colors={["#f9f9f9", "#ffffff", LANDING_THEME.indigo]}
+                colors={[
+                  LANDING_THEME.foreground,
+                  LANDING_THEME.foreground,
+                  LANDING_THEME.indigo,
+                ]}
                 count={3}
                 speed={0.5}
                 amplitude={1}
@@ -195,7 +260,7 @@ export default function HeroNeuralCard() {
           {/* AGENT CHAT */}
           <div
             ref={chatRef}
-            className="relative z-20 flex flex-col gap-2.5 mb-2 min-h-55"
+            className="relative z-20 flex flex-col gap-2.5 mb-2 min-h-[9.5rem] xl:min-h-55"
           >
             {/* USER PROMPT */}
             <div className="flex items-start gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
@@ -255,7 +320,7 @@ export default function HeroNeuralCard() {
 
                   {/* HERO CARD BALANCE (Pulls directly from currentScenario.tags[0]) */}
                   {currentScenario.tags.length > 0 && (
-                    <div className="relative overflow-hidden flex items-center justify-between p-3.5 rounded-xl shadow-inner">
+                    <div className="chart-bar relative overflow-hidden flex items-center justify-between p-3.5 rounded-xl shadow-inner">
                       <div className="flex flex-col z-10">
                         <span className="text-[9px] font-mono uppercase tracking-widest text-violet-300/80">
                           {currentScenario.tags[0].label}
@@ -281,7 +346,7 @@ export default function HeroNeuralCard() {
                       {currentScenario.tags.slice(1).map((tag, i) => (
                         <div
                           key={i}
-                          className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/3 hover:bg-white/6 border border-white/5 transition-colors text-[11px] font-mono"
+                          className="chart-bar flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/3 hover:bg-white/6 border border-white/5 transition-colors text-[11px] font-mono"
                         >
                           <span className="text-white/80 flex items-center gap-1.5">
                             <CheckCircle2 className="size-3.5 text-violet-400 shrink-0" />
@@ -300,6 +365,7 @@ export default function HeroNeuralCard() {
           </div>
         </div>
       </BorderGlow>
+    </div>
     </div>
   );
 }

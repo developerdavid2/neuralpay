@@ -58,3 +58,9 @@ temp
 #READ ME
 VERCEL_DEPLOYMENT_FIX.md
 DEPLOYMENT_STATUS.md
+
+
+#Agents
+.agents
+.opencode/plans
+.claude
