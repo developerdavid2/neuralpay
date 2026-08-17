@@ -71,7 +71,7 @@
   --color-landing-popover: #1d172e;
 
   /* Typography */
-  --color-landing-foreground: #ffffff;
+  --color-landing-fg-light: #f2eff6;
   --color-landing-muted-foreground: #a1a1aa;
 
   /* Borders & Dividers */
@@ -91,7 +91,7 @@
   --color-landing-orange: #f97316;
 
   /* Light Mode Surfaces & Backgrounds */
-  --color-landing-bg-light: #f6f4fb;
+  --color-landing-bg-light: #f2eff6;
   --color-landing-card-light: #ffffff;
   --color-landing-popover-light: #ffffff;
   --color-landing-foreground-light: #221d2e;

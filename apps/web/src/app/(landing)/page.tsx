@@ -1,5 +1,6 @@
 import HeroSectionView from "@/modules/landing/pages/home/hero-section/ui/views/hero-section-view";
 import { ManifestoSectionView } from "@/modules/landing/pages/home/manifesto-section/ui/views/manifesto-section-view";
+
 export default function Home() {
   return (
     <div className="relative w-full">

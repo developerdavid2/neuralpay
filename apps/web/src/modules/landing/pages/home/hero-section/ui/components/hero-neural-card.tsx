@@ -2,6 +2,7 @@
 
 import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
 import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
+import { useLandingReady } from "@/modules/landing/lib/use-landing-ready";
 import { NoiseTexture } from "@neuralpay/ui/components/magicui/noise-texture";
 import BorderGlow from "@neuralpay/ui/components/react-bits/border-glow";
 import Strands from "@neuralpay/ui/components/react-bits/strands";
@@ -22,6 +23,7 @@ const containerVariants = {
 
 export default function HeroNeuralCard() {
   const reduced = useReducedMotion();
+  const ready = useLandingReady((s) => s.ready);
   const containerRef = useRef<HTMLDivElement>(null);
   const clipWrapRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -48,6 +50,14 @@ export default function HeroNeuralCard() {
         });
         return;
       }
+
+      // Park the card behind a zero-height clip until the preloader has
+      // finished, so its entrance plays only once the page is revealed.
+      gsap.set(clipWrapRef.current, {
+        clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+      });
+
+      if (!ready) return;
 
       const tl = gsap.timeline({ delay: 0.3 });
 
@@ -95,7 +105,7 @@ export default function HeroNeuralCard() {
         delay: 1,
       });
     },
-    { scope: containerRef, dependencies: [reduced] },
+    { scope: containerRef, dependencies: [reduced, ready] },
   );
 
   // ── GSAP staggered reveal of the response rows when the agent answers (bar grow, not Motion)

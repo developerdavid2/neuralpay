@@ -7,6 +7,7 @@ import { PremiumButton } from "@/components/premium-button";
 import { RotatingTextCircle } from "@/components/rotating-text-circle";
 import { LandingContainer } from "@/modules/landing/components/landing-container";
 import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
+import { useLandingReady } from "@/modules/landing/lib/use-landing-ready";
 import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
 import { Spotlight } from "@neuralpay/ui/components/spotlight";
 import HeroBackground from "../components/hero-background";
@@ -43,15 +44,13 @@ const blurWordVariants = {
 
 export default function HeroSectionView() {
   const reduced = useReducedMotion();
+  const ready = useLandingReady((s) => s.ready);
   const subtitleText = "Understand your money with effortless clarity.";
   const paragraphText =
     "NeuralPay connects to your bank accounts, explains your spending in plain English, and automates peer bill splits.";
 
   return (
-    <section
-      data-polarity="light"
-      className="relative min-h-svh w-full overflow-hidden bg-section-bg text-section-ink"
-    >
+    <section className="relative min-h-svh w-full overflow-hidden">
       <HeroBackground />
 
       <LandingContainer className="relative z-10 flex min-h-svh flex-col pt-12 pb-8">
@@ -74,7 +73,7 @@ export default function HeroSectionView() {
               <motion.h1
                 variants={containerVariants}
                 initial={reduced ? false : "hidden"}
-                animate="visible"
+                animate={ready ? "visible" : "hidden"}
                 custom={1}
                 className="select-none text-[clamp(2.5rem,9vw,5rem)] 3xl:text-[clamp(2.5rem,5vw,6rem)] font-normal leading-none text-section-ink"
               >
@@ -106,7 +105,7 @@ export default function HeroSectionView() {
               <motion.p
                 variants={containerVariants}
                 initial={reduced ? false : "hidden"}
-                animate="visible"
+                animate={ready ? "visible" : "hidden"}
                 custom={1.4}
                 className="mt-4 flex flex-wrap justify-center gap-x-[0.35em] font-mono font-light text-[clamp(0.85rem,2vw,1rem)] uppercase tracking-wide text-section-ink xl:justify-start"
               >
@@ -134,7 +133,7 @@ export default function HeroSectionView() {
               <motion.p
                 variants={containerVariants}
                 initial={reduced ? false : "hidden"}
-                animate="visible"
+                animate={ready ? "visible" : "hidden"}
                 custom={2}
                 className="flex flex-wrap justify-center gap-x-[0.35em] gap-y-1 text-center text-sm font-light xl:justify-end xl:text-end"
               >

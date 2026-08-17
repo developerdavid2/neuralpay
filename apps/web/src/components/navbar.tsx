@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { NeuralPayLogo } from "./logo";
-import { ModeToggle } from "./mode-toggle";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,7 +46,6 @@ export default function Navbar() {
 
           {/* Menu Toggle Button (Stays above the full-screen overlay) */}
           <div className="flex items-center justify-center">
-            <ModeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle Menu"

@@ -4,6 +4,7 @@ import { Activity, BarChart2, PieChart } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
+import { useLandingReady } from "@/modules/landing/lib/use-landing-ready";
 import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
 import {
   Area,
@@ -55,6 +56,7 @@ function MiniCustomTooltip({
 
 export function HeroMiniChart() {
   const reduced = useReducedMotion();
+  const ready = useLandingReady((s) => s.ready);
   const [activeType, setActiveType] = useState<ChartKind>("area");
 
   // Auto-cycle charts every 3.5 seconds
@@ -104,7 +106,7 @@ export function HeroMiniChart() {
         key={activeType}
         variants={containerVariants}
         initial={reduced ? false : "initial"}
-        animate="animate"
+        animate={ready ? "animate" : "initial"}
         exit="exit"
         className="relative w-70 ml-auto rounded-2xl p-4 bg-section-surface backdrop-blur-xl shadow-md overflow-hidden select-none"
       >
