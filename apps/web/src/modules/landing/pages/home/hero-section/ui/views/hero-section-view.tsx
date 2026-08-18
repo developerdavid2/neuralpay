@@ -8,11 +8,8 @@ import { RotatingTextCircle } from "@/components/rotating-text-circle";
 import { LandingContainer } from "@/modules/landing/components/landing-container";
 import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
 import { useLandingReady } from "@/modules/landing/lib/use-landing-ready";
-import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
-import { Spotlight } from "@neuralpay/ui/components/spotlight";
 import HeroBackground from "../components/hero-background";
 import { HeroMiniChart } from "../components/hero-mini-chart";
-import HeroNeuralCard from "../components/hero-neural-card";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -54,17 +51,6 @@ export default function HeroSectionView() {
       <HeroBackground />
 
       <LandingContainer className="relative z-10 flex min-h-svh flex-col pt-12 pb-8">
-        <div className="pointer-events-none absolute inset-0 z-20 overflow-visible opacity-10 dark:opacity-70">
-          <Spotlight
-            className="-top-40 left-0 md:-top-20 md:left-30 rotate-50 "
-            fill={LANDING_THEME.violet600}
-          />
-          <Spotlight
-            className="-top-40 left-0 md:-top-20 md:-left-70 rotate-70 "
-            fill={LANDING_THEME.violet600}
-          />
-        </div>
-
         {/* INTERACTIVE CONTENT (z-10 above Spotlight inside the container) */}
         <div className="relative z-10 flex flex-1 flex-col justify-center py-8">
           <div className="grid grid-cols-1 gap-10 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-6 2xl:gap-10">
@@ -119,11 +105,6 @@ export default function HeroSectionView() {
                   </motion.span>
                 ))}
               </motion.p>
-            </div>
-
-            {/* CENTER CARD */}
-            <div className="order-1 mx-auto xl:order-2">
-              <HeroNeuralCard />
             </div>
 
             {/* RIGHT COLUMN */}

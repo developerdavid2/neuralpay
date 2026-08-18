@@ -1,25 +1,33 @@
 "use client";
 
-import Image from "next/image";
+import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
 import { useSidebar } from "@neuralpay/ui/components/sidebar";
 import { cn } from "@neuralpay/ui/lib/utils";
 import type { Route } from "next";
 
 interface NeuralPayLogoProps {
-  /** Path relative to /public directory (default: "/assets/logos/neuralpay.svg") */
+  /** Path relative to /public directory or remote URL */
   src?: string;
+  /** Fixed width & height in px. Ignored when `fill` is true. */
   size?: number;
+  /** Enables Next.js fill mode for responsive scaling based on parent container. */
+  fill?: boolean;
+  /** Class names applied to the root <Link> wrapper. */
   className?: string;
+  /** Class names applied directly to the internal Next.js <Image /> element. */
+  imageClassName?: string;
   href?: string;
   /** Force text to show when outside of a SidebarProvider context */
   showText?: boolean;
 }
 
 export function NeuralPayLogo({
-  src = "/assets/logos/neuralpay.svg",
+  src = "https://eqr61bekec.ufs.sh/f/sH4weU3V69zXnzhdeSMk3esQXWfzAdqRZFS04jaIGwr1umCg",
   size = 32,
+  fill = false,
   className,
+  imageClassName,
   href = "/",
   showText,
 }: NeuralPayLogoProps) {
@@ -43,18 +51,25 @@ export function NeuralPayLogo({
         className,
       )}
     >
-      {/* Dynamic Size SVG Image Wrapper */}
+      {/* Dynamic Sizing / Fill SVG Image Wrapper */}
       <div
-        className="relative flex shrink-0 items-center justify-center"
-        style={{ width: `${size}px`, height: `${size}px` }}
+        className={cn(
+          "relative flex shrink-0 items-center justify-center",
+          fill ? "w-full h-full" : undefined,
+        )}
+        style={!fill ? { width: `${size}px`, height: `${size}px` } : undefined}
       >
         <Image
           src={src}
           alt="NeuralPay Logo"
-          width={size}
-          height={size}
+          fill={fill}
+          width={!fill ? size : undefined}
+          height={!fill ? size : undefined}
           priority
-          className="object-contain transition-transform duration-300 hover:scale-105"
+          className={cn(
+            "object-contain transition-transform duration-300 hover:scale-105",
+            imageClassName,
+          )}
         />
       </div>
 

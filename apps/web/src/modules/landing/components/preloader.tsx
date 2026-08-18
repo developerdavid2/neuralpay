@@ -1,10 +1,10 @@
 "use client";
 
+import { NeuralPayLogo } from "@/components/logo";
 import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { CustomEase } from "gsap/CustomEase";
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLandingReady } from "../lib/use-landing-ready";
 
@@ -25,23 +25,11 @@ const jitter = () => (Math.random() - 0.5) * 0.04;
 
 export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
   const reduced = useReducedMotion();
+
+  // Only 1 ref needed!
   const rootRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const columnsARef = useRef<HTMLDivElement>(null);
-  const columnsBRef = useRef<HTMLDivElement>(null);
-
-  const logoDimRef = useRef<HTMLDivElement>(null);
-  const logoBrightRef = useRef<HTMLDivElement>(null);
-
-  const wordDimRef = useRef<HTMLHeadingElement>(null);
-  const wordBrightRef = useRef<HTMLHeadingElement>(null);
-
-  const counterRef = useRef<HTMLSpanElement>(null);
-  const svgFillRef = useRef<SVGLineElement>(null);
 
   const [hidden, setHidden] = useState(false);
-
-  // Responsive Column Count (4 on mobile, 8 on tablet/desktop)
   const [columnCount, setColumnCount] = useState(8);
 
   useEffect(() => {
@@ -60,49 +48,51 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
   }, [onComplete]);
 
   useGSAP(
-    () => {
+    (_, contextSafe) => {
       if (hidden) return;
 
-      const colsA =
-        columnsARef.current?.querySelectorAll<HTMLElement>("[data-wipe-col]");
-      const colsB =
-        columnsBRef.current?.querySelectorAll<HTMLElement>("[data-wipe-col]");
+      // Scoped GSAP Selector Utility bound to rootRef
+      const q = gsap.utils.selector(rootRef);
+
+      const colsA = q("[data-layer-a] [data-wipe-col]");
+      const colsB = q("[data-layer-b] [data-wipe-col]");
 
       if (reduced) {
         const tl = gsap.timeline({ onComplete: handleDone });
         tl.call(() => onReveal?.());
-        tl.to(contentRef.current, { opacity: 0, duration: 0.3 });
+        tl.to(q("[data-preloader-content]"), { opacity: 0, duration: 0.3 });
         return;
       }
 
       const tl = gsap.timeline({ onComplete: handleDone });
 
       // ── Initial states
-      gsap.set([logoBrightRef.current, wordBrightRef.current], {
+      gsap.set(q("[data-logo-bright], [data-word-bright]"), {
         clipPath: "inset(0 100% 0 0)",
       });
 
-      if (colsA?.length) gsap.set(colsA, { clipPath: "inset(0% 0 0% 0)" });
-      if (colsB?.length) gsap.set(colsB, { clipPath: "inset(0% 0 0% 0)" });
+      if (colsA.length) gsap.set(colsA, { clipPath: "inset(0% 0 0% 0)" });
+      if (colsB.length) gsap.set(colsB, { clipPath: "inset(0% 0 0% 0)" });
 
       // ── Entrance
-      tl.to(logoDimRef.current, {
+      tl.to(q("[data-logo-dim]"), {
         opacity: 1,
         duration: 0.4,
         ease: "power2.out",
       });
       tl.to(
-        wordDimRef.current,
+        q("[data-word-dim]"),
         { opacity: 1, duration: 0.4, ease: "power2.out" },
         "<",
       );
-      tl.to(contentRef.current, { opacity: 1, duration: 0.01 }, "<");
+      tl.to(q("[data-preloader-content]"), { opacity: 1, duration: 0.01 }, "<");
 
       const values = STOPS.map((s, i) =>
         i === STOPS.length - 1 ? s : Math.min(1, Math.max(0, s + jitter())),
       );
       const half = Math.ceil(values.length / 2);
       const counter = { value: 0 };
+      const counterEl = q<HTMLSpanElement>("[data-counter]")[0];
 
       values.forEach((val, i) => {
         const label = `stop${i}`;
@@ -114,7 +104,7 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
         if (i < half) {
           const logoProgress = (i + 1) / half;
           tl.to(
-            logoBrightRef.current,
+            q("[data-logo-bright]"),
             {
               clipPath: `inset(0 ${(1 - logoProgress) * 100}% 0 0)`,
               duration: SEGMENT,
@@ -125,7 +115,7 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
         } else {
           const wordProgress = (i - half + 1) / (values.length - half);
           tl.to(
-            wordBrightRef.current,
+            q("[data-word-bright]"),
             {
               clipPath: `inset(0 ${(1 - wordProgress) * 100}% 0 0)`,
               duration: SEGMENT,
@@ -142,8 +132,8 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
             duration: SEGMENT,
             ease: "glide",
             onUpdate: () => {
-              if (counterRef.current) {
-                counterRef.current.textContent = Math.round(counter.value)
+              if (counterEl) {
+                counterEl.textContent = Math.round(counter.value)
                   .toString()
                   .padStart(3, "0");
               }
@@ -153,7 +143,7 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
         );
 
         tl.to(
-          svgFillRef.current,
+          q("[data-svg-fill]"),
           {
             attr: { "stroke-dashoffset": remaining },
             duration: SEGMENT,
@@ -165,23 +155,23 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
 
       // ── Exit Sequence
       tl.to(
-        contentRef.current,
+        q("[data-preloader-content]"),
         { y: "-100%", duration: 0.8, ease: "hop" },
         ">+=0.3",
       );
       tl.to(
-        counterRef.current,
+        q("[data-counter]"),
         { y: "-100%", duration: 0.8, ease: "hop" },
         "<-=0.2",
       );
       tl.to(
-        svgFillRef.current,
+        q("[data-svg-fill]"),
         { opacity: 0, duration: 0.3, ease: "power2.out" },
         "<",
       );
 
       // Layer A wipes down
-      if (colsA?.length) {
+      if (colsA.length) {
         tl.to(
           colsA,
           {
@@ -197,7 +187,7 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
       tl.call(() => onReveal?.(), undefined, ">");
 
       // Layer B wipes down
-      if (colsB?.length) {
+      if (colsB.length) {
         tl.to(
           colsB,
           {
@@ -227,7 +217,7 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
     >
       {/* Layer A — Front layer */}
       <div
-        ref={columnsARef}
+        data-layer-a
         className="absolute inset-0 z-10 flex w-full h-full pointer-events-none"
       >
         {Array.from({ length: columnCount }).map((_, i) => (
@@ -241,7 +231,7 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
 
       {/* Layer B — Accent transition layer */}
       <div
-        ref={columnsBRef}
+        data-layer-b
         className="absolute inset-0 z-0 flex w-full h-full pointer-events-none"
       >
         {Array.from({ length: columnCount }).map((_, i) => (
@@ -251,51 +241,56 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
             className="h-full flex-1 bg-landing-bg-light scale-x-[1.01] -mr-px will-change-[clip-path]"
           />
         ))}
+
+        <div className="absolute top-1/2 left-1/2">
+          <NeuralPayLogo
+            size={78}
+            showText={false}
+            src="https://eqr61bekec.ufs.sh/f/sH4weU3V69zXXnnMPIifkPbws3hnSHtBAq6jeKT2Fr7GvEda"
+          />
+        </div>
       </div>
 
       {/* Content Layer */}
       <div className="relative z-20 overflow-hidden px-4">
         <div
-          ref={contentRef}
+          data-preloader-content
           className="flex items-center justify-center gap-3 sm:gap-5 md:gap-6 opacity-0"
         >
           {/* Logo Container with Dynamic Width & Height */}
-          <div className="relative size-12 sm:size-18 md:size-22 lg:size-26 shrink-0">
+          <div className="relative size-12 sm:size-18 shrink-0">
             <div
-              ref={logoDimRef}
+              data-logo-dim
               className="absolute inset-0 opacity-100 grayscale brightness-50"
             >
-              <Image
-                src="/assets/logos/neuralpay.svg"
-                alt=""
+              <NeuralPayLogo
+                showText={false}
                 fill
-                priority
-                className="object-contain"
-                aria-hidden="true"
+                className="w-full h-full p-0"
+                imageClassName="object-contain"
               />
             </div>
-            <div ref={logoBrightRef} className="absolute inset-0">
-              <Image
-                src="/assets/logos/neuralpay.svg"
-                alt="NeuralPay"
+            <div data-logo-bright className="absolute inset-0">
+              <NeuralPayLogo
+                showText={false}
                 fill
-                priority
-                className="object-contain"
+                className="w-full h-full p-0"
+                imageClassName="object-contain"
               />
             </div>
           </div>
 
-          {/* Text Container with Fluid Clamped Typography */}
+          {/* Text Container */}
           <div className="relative">
             <h4
-              ref={wordDimRef}
+              data-word-dim
               className="text-[clamp(1.75rem,5vw,3.5rem)] font-semibold font-rostex tracking-tight text-[#6b6b6b] leading-none"
               aria-hidden="true"
             >
               NeuralPay
             </h4>
             <h4
-              ref={wordBrightRef}
+              data-word-bright
               className="absolute inset-0 text-[clamp(1.75rem,5vw,3.5rem)] font-semibold font-rostex tracking-tight text-landing-fg-light leading-none"
             >
               NeuralPay
@@ -304,10 +299,10 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
         </div>
       </div>
 
-      {/* Counter Container with Clamped Font Size */}
+      {/* Counter Container */}
       <div className="overflow-hidden absolute bottom-[3%] left-[4%] sm:left-[3%] z-20">
         <span
-          ref={counterRef}
+          data-counter
           className="block font-mono text-[clamp(1.5rem,4vw,3rem)] tabular-nums text-landing-fg-light/80 leading-none"
         >
           000
@@ -329,7 +324,7 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
           strokeWidth="2"
         />
         <line
-          ref={svgFillRef}
+          data-svg-fill
           x1="0"
           y1="50%"
           x2="100%"
