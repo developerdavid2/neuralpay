@@ -3,7 +3,7 @@ import {
   INSIGHT_TYPES,
   type InsightSeverity,
   type InsightType,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 export function validateInsightSeverity(
   raw?: string,

@@ -1,4 +1,4 @@
-import { notificationsServiceEnv } from "@neuralpay/env/notifications";
+import { notificationsServiceEnv } from "@orra/env/notifications";
 import { cert, initializeApp } from "firebase-admin/app";
 import { getMessaging } from "firebase-admin/messaging";
 import {

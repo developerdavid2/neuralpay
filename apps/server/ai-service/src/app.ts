@@ -1,5 +1,5 @@
-import { createExpressApp } from "@neuralpay/config/express-config";
-import { aiServiceEnv } from "@neuralpay/env/ai-service";
+import { createExpressApp } from "@orra/config/express-config";
+import { aiServiceEnv } from "@orra/env/ai-service";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { aiRouter } from "./routers";
 import { chatStreamHandler } from "./routers/chat-stream.router";

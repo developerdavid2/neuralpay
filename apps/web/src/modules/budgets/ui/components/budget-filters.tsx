@@ -1,23 +1,23 @@
 "use client";
 
-import { Badge } from "@neuralpay/ui/components/badge";
-import { Button } from "@neuralpay/ui/components/button";
+import { Badge } from "@orra/ui/components/badge";
+import { Button } from "@orra/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@neuralpay/ui/components/dropdown-menu";
-import { Separator } from "@neuralpay/ui/components/separator";
+} from "@orra/ui/components/dropdown-menu";
+import { Separator } from "@orra/ui/components/separator";
 import {
   Sheet,
   SheetContent,
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@neuralpay/ui/components/sheet";
-import { Switch } from "@neuralpay/ui/components/switch";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/sheet";
+import { Switch } from "@orra/ui/components/switch";
+import { cn } from "@orra/ui/lib/utils";
 import {
   ArrowDownAZ,
   ArrowUpAZ,

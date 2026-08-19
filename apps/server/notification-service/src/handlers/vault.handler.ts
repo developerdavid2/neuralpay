@@ -7,7 +7,7 @@ import type {
   VaultMilestonePayload,
   VaultContributionPayload,
   VaultInvitePayload,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 type VaultEvent = Extract<
   NotificationEvent,

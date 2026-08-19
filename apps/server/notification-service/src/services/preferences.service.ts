@@ -1,8 +1,8 @@
-import { db } from "@neuralpay/db";
-import { notificationPreferences } from "@neuralpay/db/schema";
+import { db } from "@orra/db";
+import { notificationPreferences } from "@orra/db/schema";
 import { eq } from "drizzle-orm";
-import { getRedisClient } from "@neuralpay/redis";
-import type { NotificationPreferences, ServiceResult } from "@neuralpay/types";
+import { getRedisClient } from "@orra/redis";
+import type { NotificationPreferences, ServiceResult } from "@orra/types";
 
 const DEFAULTS: NotificationPreferences = {
   transactionAlerts: true,

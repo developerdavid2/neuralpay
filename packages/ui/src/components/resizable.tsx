@@ -4,7 +4,7 @@ import * as React from "react";
 import { GripVerticalIcon } from "lucide-react";
 import * as ResizablePrimitive from "react-resizable-panels";
 
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 
 function ResizablePanelGroup({
   className,

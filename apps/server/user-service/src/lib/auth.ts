@@ -1,5 +1,5 @@
-import { createAuth } from "@neuralpay/auth";
-import { userServiceEnv } from "@neuralpay/env/user-service";
+import { createAuth } from "@orra/auth";
+import { userServiceEnv } from "@orra/env/user-service";
 
 export const auth = createAuth({
   secret: userServiceEnv.BETTER_AUTH_SECRET,

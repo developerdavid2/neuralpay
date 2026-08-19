@@ -1,5 +1,5 @@
 import { useTRPC } from "@/trpc/trpc-client";
-import type { ChatSessionsFilterInput } from "@neuralpay/types";
+import type { ChatSessionsFilterInput } from "@orra/types";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 

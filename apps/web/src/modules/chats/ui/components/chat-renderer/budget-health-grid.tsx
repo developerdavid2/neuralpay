@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@neuralpay/ui/components/badge";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { Badge } from "@orra/ui/components/badge";
+import { cn } from "@orra/ui/lib/utils";
 import { formatAmount } from "@/lib/utils";
 import { HEALTH_META } from "@/modules/budgets/constants";
 

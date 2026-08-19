@@ -1,4 +1,4 @@
-import { db, splits } from "@neuralpay/db";
+import { db, splits } from "@orra/db";
 import { and, eq } from "drizzle-orm";
 
 export async function fetchSplitContext(

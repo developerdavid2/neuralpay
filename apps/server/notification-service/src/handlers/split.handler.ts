@@ -8,7 +8,7 @@ import type {
   SplitPaidPayload,
   SplitSettledPayload,
   SplitReminderPayload,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 type SplitEvent = Extract<
   NotificationEvent,

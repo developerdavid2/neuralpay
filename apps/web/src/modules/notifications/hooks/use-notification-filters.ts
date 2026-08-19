@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import type { NotificationCategory } from "@neuralpay/types";
+import type { NotificationCategory } from "@orra/types";
 
 const DEFAULTS = {
   search: "",

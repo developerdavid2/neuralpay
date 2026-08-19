@@ -1,15 +1,15 @@
-import { db } from "@neuralpay/db";
+import { db } from "@orra/db";
 import {
   bankAccounts,
   connectedPlaidBanks,
   transactions,
-} from "@neuralpay/db/schema";
-import { cache, cacheKeys, emitNotification } from "@neuralpay/redis";
+} from "@orra/db/schema";
+import { cache, cacheKeys, emitNotification } from "@orra/redis";
 import type {
   AccountType,
   TransactionStatus,
   TransactionType,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { and, eq, inArray } from "drizzle-orm";
 import { CountryCode, Products } from "plaid";
 import { decrypt, encrypt } from "../lib/crypto";
@@ -47,7 +47,7 @@ export const PlaidService = {
   async createLinkToken(userId: string) {
     const token = await plaidClient.linkTokenCreate({
       user: { client_user_id: userId },
-      client_name: "NeuralPay",
+      client_name: "Orra",
       products: [Products.Transactions],
       country_codes: [CountryCode.Us],
       language: "en",

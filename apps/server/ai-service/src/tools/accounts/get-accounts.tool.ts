@@ -1,5 +1,5 @@
-import { db } from "@neuralpay/db";
-import { bankAccounts, transactions } from "@neuralpay/db/schema";
+import { db } from "@orra/db";
+import { bankAccounts, transactions } from "@orra/db/schema";
 import { tool } from "ai";
 import { startOfMonth } from "date-fns";
 import { and, eq, gte, sql } from "drizzle-orm";

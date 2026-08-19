@@ -1,12 +1,12 @@
-import { db } from "@neuralpay/db";
+import { db } from "@orra/db";
 import {
   bankAccounts,
   budgetAccounts,
   budgetCategories,
   budgets,
   transactions,
-} from "@neuralpay/db/schema";
-import { cache, cacheKeys } from "@neuralpay/redis";
+} from "@orra/db/schema";
+import { cache, cacheKeys } from "@orra/redis";
 import type {
   Budget,
   BudgetAccountRef,
@@ -20,7 +20,7 @@ import type {
   PaginatedBudgets,
   ServiceResult,
   UpdateBudgetInput,
-} from "@neuralpay/types";
+} from "@orra/types";
 import {
   differenceInCalendarDays,
   endOfMonth,

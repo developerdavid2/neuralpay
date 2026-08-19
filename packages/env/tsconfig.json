@@ -1,3 +1,3 @@
 {
-  "extends": "@neuralpay/config/tsconfig.base.json"
+  "extends": "@orra/config/tsconfig.base.json"
 }

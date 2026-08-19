@@ -1,7 +1,7 @@
 "use client";
 
-import type { AccountStatus, AccountType, BankAccount } from "@neuralpay/types";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import type { AccountStatus, AccountType, BankAccount } from "@orra/types";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { Package } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table/data-table";
@@ -20,191 +20,191 @@ import { AccountFormDrawer } from "./account-form-drawer";
 import { AccountViewDrawer } from "./account-view-drawer";
 
 interface Props {
-	currentSearch: string;
-	currentTypes?: string[];
-	currentStatuses?: string[];
-	currentIsManual: boolean;
-	currentLimit: number;
-	currentPage: number;
-	focusAccountId?: string;
+  currentSearch: string;
+  currentTypes?: string[];
+  currentStatuses?: string[];
+  currentIsManual: boolean;
+  currentLimit: number;
+  currentPage: number;
+  focusAccountId?: string;
 }
 
 export function AccountsList({
-	currentSearch,
-	currentTypes,
-	currentStatuses,
-	currentIsManual,
-	currentLimit,
-	currentPage,
+  currentSearch,
+  currentTypes,
+  currentStatuses,
+  currentIsManual,
+  currentLimit,
+  currentPage,
 }: Props) {
-	const [columnVisibility, setColumnVisibility] = useState<
-		Record<string, boolean>
-	>({});
-	const [globalSelection, setGlobalSelection] = useState<Set<string>>(
-		new Set(),
-	);
+  const [columnVisibility, setColumnVisibility] = useState<
+    Record<string, boolean>
+  >({});
+  const [globalSelection, setGlobalSelection] = useState<Set<string>>(
+    new Set(),
+  );
 
-	const { onOpenView, onOpenEdit } = useAccountDrawer();
-	const { setUrl } = useAccountUrlSync();
-	const { handleDelete: runDelete, handleBatchDelete } = useAccountMutations();
-	const { isRowPending, isBatchDeleting } = useAccountPendingSelectors();
-	const [ConfirmDialog, confirm] = useConfirm();
-	const { setPage } = useDataTableNavigation();
+  const { onOpenView, onOpenEdit } = useAccountDrawer();
+  const { setUrl } = useAccountUrlSync();
+  const { handleDelete: runDelete, handleBatchDelete } = useAccountMutations();
+  const { isRowPending, isBatchDeleting } = useAccountPendingSelectors();
+  const [ConfirmDialog, confirm] = useConfirm();
+  const { setPage } = useDataTableNavigation();
 
-	const filters = useMemo(
-		() => ({
-			limit: Math.min(currentLimit || ACCOUNTS_LIMIT, 50),
-			page: currentPage,
-			search: currentSearch.trim() || undefined,
-			type: currentTypes?.length ? (currentTypes as AccountType[]) : undefined,
-			status: currentStatuses?.length
-				? (currentStatuses as AccountStatus[])
-				: undefined,
-			isManual: currentIsManual || undefined,
-		}),
-		[
-			currentSearch,
-			currentTypes,
-			currentStatuses,
-			currentIsManual,
-			currentLimit,
-			currentPage,
-		],
-	);
+  const filters = useMemo(
+    () => ({
+      limit: Math.min(currentLimit || ACCOUNTS_LIMIT, 50),
+      page: currentPage,
+      search: currentSearch.trim() || undefined,
+      type: currentTypes?.length ? (currentTypes as AccountType[]) : undefined,
+      status: currentStatuses?.length
+        ? (currentStatuses as AccountStatus[])
+        : undefined,
+      isManual: currentIsManual || undefined,
+    }),
+    [
+      currentSearch,
+      currentTypes,
+      currentStatuses,
+      currentIsManual,
+      currentLimit,
+      currentPage,
+    ],
+  );
 
-	const { bankAccounts, totalCount, pageCount } = useAccountsList(filters);
+  const { bankAccounts, totalCount, pageCount } = useAccountsList(filters);
 
-	const deletableIds = useMemo(
-		() =>
-			Array.from(globalSelection).filter(
-				(id) => bankAccounts.find((a) => a.id === id)?.isManual,
-			),
-		[globalSelection, bankAccounts],
-	);
+  const deletableIds = useMemo(
+    () =>
+      Array.from(globalSelection).filter(
+        (id) => bankAccounts.find((a) => a.id === id)?.isManual,
+      ),
+    [globalSelection, bankAccounts],
+  );
 
-	const handleBatchDeleteWithConfirm = async () => {
-		const count = deletableIds.length;
-		if (count === 0) return;
+  const handleBatchDeleteWithConfirm = async () => {
+    const count = deletableIds.length;
+    if (count === 0) return;
 
-		const ok = await confirm({
-			title: `Delete ${count} account${count > 1 ? "s" : ""}`,
-			message: `Do you want to delete ${count} selected account${count > 1 ? "s" : ""}? This will also remove associated transactions. This action cannot be undone.`,
-			variant: "destructive",
-			confirmLabel: `Delete ${count}`,
-		});
-		if (!ok) return;
+    const ok = await confirm({
+      title: `Delete ${count} account${count > 1 ? "s" : ""}`,
+      message: `Do you want to delete ${count} selected account${count > 1 ? "s" : ""}? This will also remove associated transactions. This action cannot be undone.`,
+      variant: "destructive",
+      confirmLabel: `Delete ${count}`,
+    });
+    if (!ok) return;
 
-		await handleBatchDelete(deletableIds);
-		setGlobalSelection(new Set());
-	};
+    await handleBatchDelete(deletableIds);
+    setGlobalSelection(new Set());
+  };
 
-	const handleView = (account: BankAccount) => {
-		onOpenView(account.id);
-		setUrl("view", account.id);
-	};
+  const handleView = (account: BankAccount) => {
+    onOpenView(account.id);
+    setUrl("view", account.id);
+  };
 
-	const handleEdit = (account: BankAccount) => {
-		onOpenEdit(account.id);
-		setUrl("edit", account.id);
-	};
+  const handleEdit = (account: BankAccount) => {
+    onOpenEdit(account.id);
+    setUrl("edit", account.id);
+  };
 
-	const handleDelete = async (account: BankAccount) => {
-		const ok = await confirm({
-			title: "Delete account",
-			message:
-				"Are you sure you want to delete this account? This will also remove all associated transactions. This action cannot be undone.",
-			variant: "destructive",
-			confirmLabel: "Delete",
-		});
-		if (!ok) return;
-		await runDelete(account.id);
-	};
+  const handleDelete = async (account: BankAccount) => {
+    const ok = await confirm({
+      title: "Delete account",
+      message:
+        "Are you sure you want to delete this account? This will also remove all associated transactions. This action cannot be undone.",
+      variant: "destructive",
+      confirmLabel: "Delete",
+    });
+    if (!ok) return;
+    await runDelete(account.id);
+  };
 
-	const emptyState = (
-		<div className="flex flex-col items-center justify-center h-64 text-center px-6">
-			<Package className="size-8 text-muted-foreground mb-3" />
-			<p className="text-sm font-medium">No accounts found</p>
-			<p className="text-xs text-muted-foreground mt-1 max-w-xs">
-				You haven't added any accounts yet. Add your first account to get
-				started.
-			</p>
-		</div>
-	);
+  const emptyState = (
+    <div className="flex flex-col items-center justify-center h-64 text-center px-6">
+      <Package className="size-8 text-muted-foreground mb-3" />
+      <p className="text-sm font-medium">No accounts found</p>
+      <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+        You haven't added any accounts yet. Add your first account to get
+        started.
+      </p>
+    </div>
+  );
 
-	return (
-		<div className="flex flex-col h-full px-10">
-			<ConfirmDialog />
-			<DataTableToolbar
-				columnVisibility={columnVisibility}
-				onColumnVisibilityChange={setColumnVisibility}
-				columnNames={["name", "type", "accountNumber", "balance", "status"]}
-				selectedCount={globalSelection.size}
-				deletableCount={deletableIds.length}
-				onClearSelection={() => setGlobalSelection(new Set())}
-				onBatchDelete={handleBatchDeleteWithConfirm}
-				isBatchDeleting={isBatchDeleting}
-				showLimitSelector
-				currentLimit={currentLimit}
-				limitOptions={["2", "10", "20", "30", "50"]}
-				className="py-2 border-b"
-			/>
+  return (
+    <div className="flex flex-col h-full px-10">
+      <ConfirmDialog />
+      <DataTableToolbar
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+        columnNames={["name", "type", "accountNumber", "balance", "status"]}
+        selectedCount={globalSelection.size}
+        deletableCount={deletableIds.length}
+        onClearSelection={() => setGlobalSelection(new Set())}
+        onBatchDelete={handleBatchDeleteWithConfirm}
+        isBatchDeleting={isBatchDeleting}
+        showLimitSelector
+        currentLimit={currentLimit}
+        limitOptions={["2", "10", "20", "30", "50"]}
+        className="py-2 border-b"
+      />
 
-			<DataTable
-				columns={accountColumns({
-					onView: handleView,
-					onEdit: handleEdit,
-					onDelete: handleDelete,
-					isRowPending,
-				})}
-				data={bankAccounts}
-				pagination="paged"
-				pageSize={currentLimit}
-				pageCount={pageCount}
-				currentPage={currentPage}
-				onPageChange={setPage}
-				rowIdKey="id"
-				emptyState={emptyState}
-				columnVisibility={columnVisibility}
-				onColumnVisibilityChange={setColumnVisibility}
-				headerClassName="sticky top-0 z-0 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary"
-				getRowClassName={(row: BankAccount) =>
-					isRowPending(row.id) ? "pointer-events-none opacity-50" : ""
-				}
-			/>
+      <DataTable
+        columns={accountColumns({
+          onView: handleView,
+          onEdit: handleEdit,
+          onDelete: handleDelete,
+          isRowPending,
+        })}
+        data={bankAccounts}
+        pagination="paged"
+        pageSize={currentLimit}
+        pageCount={pageCount}
+        currentPage={currentPage}
+        onPageChange={setPage}
+        rowIdKey="id"
+        emptyState={emptyState}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={setColumnVisibility}
+        headerClassName="sticky top-0 z-0 backdrop-blur-xl bg-muted drop-shadow-lg dark:bg-secondary"
+        getRowClassName={(row: BankAccount) =>
+          isRowPending(row.id) ? "pointer-events-none opacity-50" : ""
+        }
+      />
 
-			<DataTablePagination
-				currentPage={currentPage}
-				pageCount={pageCount}
-				pageSize={currentLimit}
-				totalRows={totalCount}
-				showPageSelect={true}
-			/>
+      <DataTablePagination
+        currentPage={currentPage}
+        pageCount={pageCount}
+        pageSize={currentLimit}
+        totalRows={totalCount}
+        showPageSelect={true}
+      />
 
-			<AccountViewDrawer />
-			<AccountFormDrawer />
-		</div>
-	);
+      <AccountViewDrawer />
+      <AccountFormDrawer />
+    </div>
+  );
 }
 
 export function AccountsListSkeleton() {
-	return (
-		<div className="space-y-6 px-6 py-4">
-			<div className="rounded-xl border border-border bg-card overflow-hidden">
-				{Array.from({ length: 5 }).map((_, i) => (
-					<div key={i} className="flex items-center gap-4 px-4 py-3">
-						<Skeleton className="size-4 rounded" />
-						<Skeleton className="size-9 rounded-lg" />
-						<div className="flex-1 space-y-1.5">
-							<Skeleton className="h-3.5 w-32" />
-							<Skeleton className="h-3 w-24" />
-						</div>
-						<Skeleton className="h-5 w-16 hidden sm:block" />
-						<Skeleton className="h-4 w-20" />
-						<Skeleton className="h-5 w-16" />
-						<Skeleton className="size-8" />
-					</div>
-				))}
-			</div>
-		</div>
-	);
+  return (
+    <div className="space-y-6 px-6 py-4">
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 px-4 py-3">
+            <Skeleton className="size-4 rounded" />
+            <Skeleton className="size-9 rounded-lg" />
+            <div className="flex-1 space-y-1.5">
+              <Skeleton className="h-3.5 w-32" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+            <Skeleton className="h-5 w-16 hidden sm:block" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="size-8" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }

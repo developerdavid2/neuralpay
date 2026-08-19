@@ -1,6 +1,6 @@
 "use client";
 
-import type { AccountType } from "@neuralpay/types";
+import type { AccountType } from "@orra/types";
 import { formatAmount } from "@/lib/utils";
 import { useCreateAccount } from "@/modules/accounts/hooks/mutations/use-create-account";
 import { ProposalCardShell } from "./proposal-card-shell";

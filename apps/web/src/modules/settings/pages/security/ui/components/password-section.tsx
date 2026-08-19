@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@neuralpay/ui/components/button";
-import { Input } from "@neuralpay/ui/components/input";
-import { Label } from "@neuralpay/ui/components/label";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
+import { Button } from "@orra/ui/components/button";
+import { Input } from "@orra/ui/components/input";
+import { Label } from "@orra/ui/components/label";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
 import { toast } from "sonner";
 import { useChangePassword } from "../../hooks/mutations/use-change-password";
 

@@ -1,5 +1,5 @@
 {
-  "name": "@neuralpay/notification-service",
+  "name": "@orra/notification-service",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -21,11 +21,11 @@
     "check-types": "tsc -b"
   },
   "dependencies": {
-    "@neuralpay/config": "workspace:*",
-    "@neuralpay/env": "workspace:*",
-    "@neuralpay/types": "workspace:*",
-    "@neuralpay/db": "workspace:*",
-    "@neuralpay/redis": "workspace:*",
+    "@orra/config": "workspace:*",
+    "@orra/env": "workspace:*",
+    "@orra/types": "workspace:*",
+    "@orra/db": "workspace:*",
+    "@orra/redis": "workspace:*",
     "@trpc/server": "catalog:",
     "ioredis": "catalog:",
     "bullmq": "catalog:",

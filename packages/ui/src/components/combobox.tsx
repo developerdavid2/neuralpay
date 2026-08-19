@@ -3,14 +3,14 @@
 import * as React from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 
-import { cn } from "@neuralpay/ui/lib/utils";
-import { Button } from "@neuralpay/ui/components/button";
+import { cn } from "@orra/ui/lib/utils";
+import { Button } from "@orra/ui/components/button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@neuralpay/ui/components/input-group";
+} from "@orra/ui/components/input-group";
 import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react";
 
 const Combobox = ComboboxPrimitive.Root;

@@ -3,8 +3,8 @@
 import * as React from "react";
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
 
-import { cn } from "@neuralpay/ui/lib/utils";
-import { Button } from "@neuralpay/ui/components/button";
+import { cn } from "@orra/ui/lib/utils";
+import { Button } from "@orra/ui/components/button";
 
 function AlertDialog({
   ...props

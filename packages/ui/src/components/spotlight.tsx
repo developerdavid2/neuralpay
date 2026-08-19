@@ -1,4 +1,4 @@
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 
 type SpotlightProps = {
   className?: string;

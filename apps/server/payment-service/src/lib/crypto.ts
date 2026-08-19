@@ -1,4 +1,4 @@
-import { paymentServiceEnv } from "@neuralpay/env/payment";
+import { paymentServiceEnv } from "@orra/env/payment";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 
 const ALGORITHM = "aes-256-gcm";

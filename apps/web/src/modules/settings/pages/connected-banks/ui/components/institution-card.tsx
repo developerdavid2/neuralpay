@@ -1,16 +1,16 @@
-import type { BankAccount, ConnectedPlaidBank } from "@neuralpay/types";
-import { Badge } from "@neuralpay/ui/components/badge";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Separator } from "@neuralpay/ui/components/separator";
-import { Switch } from "@neuralpay/ui/components/switch";
-import { cn } from "@neuralpay/ui/lib/utils";
+import type { BankAccount, ConnectedPlaidBank } from "@orra/types";
+import { Badge } from "@orra/ui/components/badge";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Separator } from "@orra/ui/components/separator";
+import { Switch } from "@orra/ui/components/switch";
+import { cn } from "@orra/ui/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronDown, Landmark, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Show } from "@/components/show";
 import { AccountStatusToggle } from "@/modules/accounts/ui/components/account-status-toggle";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { useToggleInstitutionAccounts } from "../../hooks/mutations/use-toggle-institution-accounts";
 import { DisconnectButton } from "./disconnect-button";
 import { SyncButton } from "./sync-button";

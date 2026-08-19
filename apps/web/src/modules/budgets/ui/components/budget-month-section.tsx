@@ -1,7 +1,7 @@
 "use client";
 
-import type { Budget } from "@neuralpay/types";
-import { Checkbox } from "@neuralpay/ui/components/checkbox";
+import type { Budget } from "@orra/types";
+import { Checkbox } from "@orra/ui/components/checkbox";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { BudgetCard } from "./budget-card";

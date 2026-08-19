@@ -7,16 +7,16 @@ import { useDeleteSession } from "@/modules/chats/hooks/mutations/use-delete-ses
 import { useUpdateTitle } from "@/modules/chats/hooks/mutations/use-update-title";
 import { useConfirm } from "@/hooks/ui/use-confirm";
 import { ChatRenameDialog } from "./chat-rename-dialog";
-import type { ChatSession } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
+import type { ChatSession } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@neuralpay/ui/components/dropdown-menu";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/dropdown-menu";
+import { Skeleton } from "@orra/ui/components/skeleton";
+import { cn } from "@orra/ui/lib/utils";
 import {
   Archive,
   ArchiveRestore,
@@ -29,7 +29,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
 import type { Route } from "next";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+import { Spinner } from "@orra/ui/components/spinner";
 
 interface ChatSessionItemProps {
   session: ChatSession;

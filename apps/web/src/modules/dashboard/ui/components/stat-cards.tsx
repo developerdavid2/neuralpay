@@ -1,8 +1,8 @@
 "use client";
 
 import { useStatCards } from "@/modules/dashboard/hooks/use-stat-cards";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { Skeleton } from "@orra/ui/components/skeleton";
+import { cn } from "@orra/ui/lib/utils";
 import { cardTemplates } from "../../constants";
 
 export function StatCards() {

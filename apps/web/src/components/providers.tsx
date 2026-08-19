@@ -1,7 +1,7 @@
 "use client";
 
 import { TRPCReactProvider } from "@/trpc/trpc-client";
-import { Toaster } from "@neuralpay/ui/components/sonner";
+import { Toaster } from "@orra/ui/components/sonner";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect } from "react";
 import { ThemeProvider } from "./theme-provider";

@@ -1,5 +1,5 @@
 {
-  "name": "@neuralpay/user-service",
+  "name": "@orra/user-service",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,12 +18,12 @@
     "check-types": "tsc -b"
   },
   "dependencies": {
-    "@neuralpay/auth": "workspace:*",
-    "@neuralpay/db": "workspace:*",
-    "@neuralpay/env": "workspace:*",
-    "@neuralpay/types": "workspace:*",
-    "@neuralpay/file-upload": "workspace:*",
-    "@neuralpay/config": "workspace:*",
+    "@orra/auth": "workspace:*",
+    "@orra/db": "workspace:*",
+    "@orra/env": "workspace:*",
+    "@orra/types": "workspace:*",
+    "@orra/file-upload": "workspace:*",
+    "@orra/config": "workspace:*",
     "@trpc/server": "catalog:",
     "axios": "^1.18.1",
     "better-auth": "catalog:",

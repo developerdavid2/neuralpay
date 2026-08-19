@@ -6,7 +6,7 @@ import type {
   NotificationEvent,
   SystemMaintenancePayload,
   SystemWelcomePayload,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 type SystemEvent = Extract<
   NotificationEvent,
@@ -33,7 +33,7 @@ export async function handleSystem(event: SystemEvent) {
     }
     case "system_welcome": {
       const p = payload as SystemWelcomePayload;
-      title = `Welcome to NeuralPay, ${p.userName}!`;
+      title = `Welcome to Orra, ${p.userName}!`;
       body = "We're glad you're here. Let's get your accounts connected.";
       break;
     }

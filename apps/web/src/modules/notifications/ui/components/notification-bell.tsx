@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 import { Bell } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useUnreadCountNotifications } from "../../hooks/queries/use-unread-count-notifications";

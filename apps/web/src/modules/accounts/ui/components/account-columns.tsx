@@ -1,13 +1,13 @@
-import type { BankAccount } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
-import { Checkbox } from "@neuralpay/ui/components/checkbox";
+import type { BankAccount } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
+import { Checkbox } from "@orra/ui/components/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@neuralpay/ui/components/dropdown-menu";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+} from "@orra/ui/components/dropdown-menu";
+import { Spinner } from "@orra/ui/components/spinner";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   ChevronsUpDown,

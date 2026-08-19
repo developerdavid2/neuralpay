@@ -2,7 +2,7 @@ import { sendInApp } from "../channels/inapp";
 import { sendPush } from "../channels/push";
 import { broadcastToUser } from "../channels/realtime";
 import { getUserPreferences } from "../services/preferences.service";
-import type { NotificationEvent } from "@neuralpay/types";
+import type { NotificationEvent } from "@orra/types";
 
 type BudgetEvent = Extract<NotificationEvent, { type: "budget_threshold" }>;
 

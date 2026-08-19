@@ -1,6 +1,6 @@
 "use client";
 
-import type { TransactionCategory } from "@neuralpay/types";
+import type { TransactionCategory } from "@orra/types";
 import { formatAmountSigned } from "@/lib/utils";
 import { useUpdateTransaction } from "@/modules/transactions/hooks/mutations/use-update-transaction";
 import { ProposalCardShell } from "./proposal-card-shell";

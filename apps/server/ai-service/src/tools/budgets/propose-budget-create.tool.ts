@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { db } from "@neuralpay/db";
-import { transactions } from "@neuralpay/db/schema";
-import type { BudgetCategory } from "@neuralpay/types";
+import { db } from "@orra/db";
+import { transactions } from "@orra/db/schema";
+import type { BudgetCategory } from "@orra/types";
 import { tool } from "ai";
 import { subMonths } from "date-fns";
 import { and, eq, gte, sql } from "drizzle-orm";

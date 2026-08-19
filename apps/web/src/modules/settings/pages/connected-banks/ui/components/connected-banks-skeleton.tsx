@@ -1,5 +1,5 @@
-import { Card, CardContent } from "@neuralpay/ui/components/card";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Card, CardContent } from "@orra/ui/components/card";
+import { Skeleton } from "@orra/ui/components/skeleton";
 
 export function ConnectedBanksSkeleton() {
   return (

@@ -1,6 +1,6 @@
 import { InfiniteScroll } from "@/components/infinite-scroll";
-import type { ChatSession } from "@neuralpay/types";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import type { ChatSession } from "@orra/types";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { Calendar, Clock } from "lucide-react";
 import { useParams } from "next/navigation";
 import { groupSessionsByDate } from "../../lib/utils";

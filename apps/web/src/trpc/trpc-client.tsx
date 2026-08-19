@@ -1,7 +1,7 @@
 "use client";
 
-import type { AppRouter } from "@neuralpay/api-gateway/router";
-import { webEnv } from "@neuralpay/env/web";
+import type { AppRouter } from "@orra/api-gateway/router";
+import { webEnv } from "@orra/env/web";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import {
   createTRPCClient,

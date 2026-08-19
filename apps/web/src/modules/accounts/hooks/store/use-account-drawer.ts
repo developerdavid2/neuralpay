@@ -1,5 +1,5 @@
 "use client";
-import type { BankAccount } from "@neuralpay/types";
+import type { BankAccount } from "@orra/types";
 import { create } from "zustand";
 
 export type AccountDrawerMode = "view" | "edit" | "add";

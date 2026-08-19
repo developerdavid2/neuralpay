@@ -1,6 +1,6 @@
-import type { Transaction, TransactionStatus } from "@neuralpay/types";
-import { Badge } from "@neuralpay/ui/components/badge";
-import { cn } from "@neuralpay/ui/lib/utils";
+import type { Transaction, TransactionStatus } from "@orra/types";
+import { Badge } from "@orra/ui/components/badge";
+import { cn } from "@orra/ui/lib/utils";
 import { Building2, FileText, Landmark, Pencil, Wallet } from "lucide-react";
 import { TRANSACTION_STATUS_STYLES } from "../../constants";
 

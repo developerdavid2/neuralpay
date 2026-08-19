@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { formatAmount } from "@/lib/utils";
 

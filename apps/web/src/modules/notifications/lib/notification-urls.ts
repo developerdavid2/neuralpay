@@ -1,5 +1,5 @@
 import type { Route } from "next";
-import type { NotificationType } from "@neuralpay/types";
+import type { NotificationType } from "@orra/types";
 
 type RouteConfig = {
   path: string;

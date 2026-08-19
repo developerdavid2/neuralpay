@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { FaApple } from "react-icons/fa";
-import { Button } from "@neuralpay/ui/components/button";
-import { Spinner } from "@neuralpay/ui/components/spinner";
-import { webEnv } from "@neuralpay/env/web";
+import { Button } from "@orra/ui/components/button";
+import { Spinner } from "@orra/ui/components/spinner";
+import { webEnv } from "@orra/env/web";
 import { useGetSocialSignInUrl } from "../../hooks/mutations/use-get-social-sign-in-url";
 
 interface AppleSignInButtonProps {

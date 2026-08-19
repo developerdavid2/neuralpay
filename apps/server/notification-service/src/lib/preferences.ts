@@ -1,6 +1,6 @@
-import { getRedisClient } from "@neuralpay/redis";
-import { db } from "@neuralpay/db";
-import { notificationPreferences } from "@neuralpay/db/schema";
+import { getRedisClient } from "@orra/redis";
+import { db } from "@orra/db";
+import { notificationPreferences } from "@orra/db/schema";
 import { eq } from "drizzle-orm";
 
 const redis = getRedisClient();

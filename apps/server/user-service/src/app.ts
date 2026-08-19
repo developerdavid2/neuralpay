@@ -1,8 +1,8 @@
 import "dotenv/config";
 
-import { createExpressApp } from "@neuralpay/config/express-config";
-import { userServiceEnv } from "@neuralpay/env/user-service";
-import { mountUploadThing } from "@neuralpay/file-upload/express";
+import { createExpressApp } from "@orra/config/express-config";
+import { userServiceEnv } from "@orra/env/user-service";
+import { mountUploadThing } from "@orra/file-upload/express";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";

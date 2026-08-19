@@ -5,8 +5,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@neuralpay/ui/components/tooltip";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/tooltip";
+import { cn } from "@orra/ui/lib/utils";
 import { Info, MinusCircle, PlusCircle } from "lucide-react";
 import { CurrencyInput } from "react-currency-input-field";
 import { useWatch } from "react-hook-form";

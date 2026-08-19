@@ -1,6 +1,6 @@
 // modules/budgets/hooks/store/use-budget-drawer.ts
 "use client";
-import type { Budget } from "@neuralpay/types";
+import type { Budget } from "@orra/types";
 import { create } from "zustand";
 
 export type BudgetDrawerMode = "view" | "edit" | "add";

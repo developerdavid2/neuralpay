@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "@neuralpay/config/trpc";
+import { protectedProcedure, router } from "@orra/config/trpc";
 import { SecurityService } from "../services/security.service";
 import {
   changePasswordSchema,
   verify2FASchema,
   disable2FASchema,
   revokeSessionSchema,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { TRPCError } from "@trpc/server";
 
 export const securityRouter = router({

@@ -4,10 +4,10 @@ import type {
   CreateAccountInput,
   SupportedCurrencies,
   UpdateAccountInput,
-} from "@neuralpay/types";
-import { Drawer, DrawerContent } from "@neuralpay/ui/components/drawer";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/types";
+import { Drawer, DrawerContent } from "@orra/ui/components/drawer";
+import { Skeleton } from "@orra/ui/components/skeleton";
+import { cn } from "@orra/ui/lib/utils";
 import { useConfirm } from "@/hooks/ui/use-confirm";
 import { useAccountUrlSync } from "@/modules/accounts/hooks/use-account-url-sync";
 import { useAccountMutations } from "../../hooks/mutations/use-account-mutations";

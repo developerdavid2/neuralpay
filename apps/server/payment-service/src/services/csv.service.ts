@@ -1,11 +1,11 @@
-import { db, bankAccounts, csvImports, transactions } from "@neuralpay/db";
+import { db, bankAccounts, csvImports, transactions } from "@orra/db";
 import type {
   CsvColumnMapping,
   ServiceResult,
   CsvImportPreview,
   CsvPreviewRow,
   CsvImportResult,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { format, isValid, parse } from "date-fns";
 import { and, eq } from "drizzle-orm";
 

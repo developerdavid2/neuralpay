@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { Button } from "@orra/ui/components/button";
+import { cn } from "@orra/ui/lib/utils";
 import { useQueryErrorResetBoundary } from "@tanstack/react-query";
 
 import { AlertCircle, RefreshCw } from "lucide-react";

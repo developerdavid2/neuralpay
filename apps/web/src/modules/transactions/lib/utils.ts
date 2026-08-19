@@ -1,4 +1,4 @@
-import type { Transaction } from "@neuralpay/types";
+import type { Transaction } from "@orra/types";
 
 export function isSyncedSource(tx: Transaction | null): boolean {
   if (!tx) return false;

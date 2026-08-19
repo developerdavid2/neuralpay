@@ -1,17 +1,17 @@
 "use client";
 
-import type { Budget } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
-import { Checkbox } from "@neuralpay/ui/components/checkbox";
+import type { Budget } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
+import { Checkbox } from "@orra/ui/components/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@neuralpay/ui/components/dropdown-menu";
-import { Spinner } from "@neuralpay/ui/components/spinner";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/dropdown-menu";
+import { Spinner } from "@orra/ui/components/spinner";
+import { cn } from "@orra/ui/lib/utils";
 import {
   BarChart3,
   Eye,

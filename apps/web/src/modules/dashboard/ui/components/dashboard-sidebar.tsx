@@ -12,11 +12,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@neuralpay/ui/components/sidebar";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/sidebar";
+import { cn } from "@orra/ui/lib/utils";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
-import { NeuralPayLogo } from "@/components/logo";
+import { OrraLogo } from "@/components/logo";
 import { navGroups } from "../../constants";
 import { DashboardUserButton } from "./dashboard-user-button";
 
@@ -57,7 +57,7 @@ export const DashboardSidebar = () => {
     <Sidebar collapsible="icon" className="bg-sidebar font-sans">
       {/* ── Logo ── */}
       <SidebarHeader className="border-b border-border px-3 py-3">
-        <NeuralPayLogo />
+        <OrraLogo />
       </SidebarHeader>
 
       {/* ── Nav groups ── */}

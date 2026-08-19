@@ -13,7 +13,7 @@
   "$schema": "https://r2.better-t-stack.dev/schema.json",
   "version": "3.27.5",
   "createdAt": "2026-04-26T19:17:12.789Z",
-  "reproducibleCommand": "bun create better-t-stack@latest neuralpay --frontend next --backend express --runtime bun --database postgres --orm drizzle --api trpc --auth better-auth --payments polar --addons husky turborepo --examples none --db-setup docker --web-deploy none --server-deploy none --git --package-manager bun --install",
+  "reproducibleCommand": "bun create better-t-stack@latest orra --frontend next --backend express --runtime bun --database postgres --orm drizzle --api trpc --auth better-auth --payments polar --addons husky turborepo --examples none --db-setup docker --web-deploy none --server-deploy none --git --package-manager bun --install",
   "database": "postgres",
   "orm": "drizzle",
   "backend": "express",

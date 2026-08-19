@@ -5,7 +5,7 @@ import { fetchTransactionContext } from "./transaction.context";
 import { fetchInstitutionContext } from "./institution.context";
 import { fetchVaultContext } from "./vault.context";
 import { fetchSplitContext } from "./split.context";
-import type { ContextSnapshot } from "@neuralpay/types";
+import type { ContextSnapshot } from "@orra/types";
 
 export async function fetchContext(
   userId: string,

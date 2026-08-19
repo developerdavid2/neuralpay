@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Switch } from "@neuralpay/ui/components/switch";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Switch } from "@orra/ui/components/switch";
 
 interface PushNotificationsSectionProps {
   pushEnabled: boolean | null;

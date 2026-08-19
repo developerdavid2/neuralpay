@@ -1,11 +1,11 @@
-import type { ChatMessage } from "@neuralpay/types";
+import type { ChatMessage } from "@orra/types";
 import {
   Message,
   MessageContent,
   MessageResponse,
-} from "@neuralpay/ui/components/ai-elements/message";
-import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/ai-elements/message";
+import { Avatar, AvatarFallback } from "@orra/ui/components/avatar";
+import { cn } from "@orra/ui/lib/utils";
 import { Bot, User } from "lucide-react";
 import { sanitizeMessageContent } from "../../lib/utils";
 

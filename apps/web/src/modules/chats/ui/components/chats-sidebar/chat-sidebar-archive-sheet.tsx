@@ -4,12 +4,8 @@ import { SectionBoundary } from "@/components/section-boundary";
 import { CHAT_SESSIONS_LIMIT } from "@/modules/chats/constants";
 import { useUnarchiveSession } from "@/modules/chats/hooks/mutations/use-unarchive-session";
 import { useSessions } from "@/modules/chats/hooks/queries/use-sessions";
-import { Button } from "@neuralpay/ui/components/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-} from "@neuralpay/ui/components/sheet";
+import { Button } from "@orra/ui/components/button";
+import { Sheet, SheetContent, SheetTitle } from "@orra/ui/components/sheet";
 import { Archive, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { ChatSessionList, ChatSessionListSkeleton } from "../chat-session-list";

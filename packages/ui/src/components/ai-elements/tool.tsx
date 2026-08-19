@@ -1,13 +1,13 @@
 "use client";
 
-import { Badge } from "@neuralpay/ui/components/badge";
+import { Badge } from "@orra/ui/components/badge";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@neuralpay/ui/components/collapsible";
-import { Spinner } from "@neuralpay/ui/components/spinner";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/collapsible";
+import { Spinner } from "@orra/ui/components/spinner";
+import { cn } from "@orra/ui/lib/utils";
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
@@ -19,7 +19,12 @@ import {
   WrenchIcon,
   XCircleIcon,
 } from "lucide-react";
-import { useEffect, useState, type ComponentProps, type ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 
 export type ToolState =
   | "input-streaming"
@@ -32,7 +37,13 @@ export type ToolState =
 
 export interface ToolStatusMeta {
   label: string;
-  variant: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link";
+  variant:
+    | "default"
+    | "secondary"
+    | "destructive"
+    | "outline"
+    | "ghost"
+    | "link";
   icon: ReactNode;
 }
 

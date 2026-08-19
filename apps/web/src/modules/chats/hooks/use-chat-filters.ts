@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
+import type { ChatContextType, ChatTopicType } from "@orra/types";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";

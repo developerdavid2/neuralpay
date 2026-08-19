@@ -2,7 +2,7 @@
 
 import { useId, type ComponentProps } from "react";
 
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 
 export interface NoiseTextureProps extends ComponentProps<"svg"> {
   /** Extra classes merged onto the root `svg` element. */

@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@neuralpay/ui/components/input";
+import { Input } from "@orra/ui/components/input";
 import { SearchableCombobox } from "@/components/searchable-combobox";
 import { useCountries } from "../../hooks/queries/use-countries";
 

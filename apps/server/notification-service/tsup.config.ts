@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["src/app.ts"],
-  noExternal: [/@neuralpay/],
+  noExternal: [/@orra/],
   splitting: false,
   bundle: true,
   outDir: "dist",

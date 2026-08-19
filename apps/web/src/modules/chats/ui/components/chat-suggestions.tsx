@@ -1,8 +1,8 @@
-import type { ChatContextType } from "@neuralpay/types";
+import type { ChatContextType } from "@orra/types";
 import {
   Suggestion,
   Suggestions,
-} from "@neuralpay/ui/components/ai-elements/suggestion";
+} from "@orra/ui/components/ai-elements/suggestion";
 import { useMemo, type ElementType } from "react";
 import { contextSuggestions } from "../../constants";
 import { useSessionDetails } from "../../hooks/queries/use-session-details";

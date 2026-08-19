@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { Checkbox } from "@neuralpay/ui/components/checkbox";
+import { Button } from "@orra/ui/components/button";
+import { Checkbox } from "@orra/ui/components/checkbox";
 import { Trash2 } from "lucide-react";
 import { useConfirm } from "@/hooks/ui/use-confirm";
 import { useBudgetMutations } from "../../hooks/mutations/use-budget-mutations";

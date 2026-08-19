@@ -6,16 +6,16 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@neuralpay/ui/components/avatar";
-import { Button } from "@neuralpay/ui/components/button";
-import { Slider } from "@neuralpay/ui/components/slider";
+} from "@orra/ui/components/avatar";
+import { Button } from "@orra/ui/components/button";
+import { Slider } from "@orra/ui/components/slider";
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogFooter,
   DialogTrigger,
-} from "@neuralpay/ui/components/dialog";
+} from "@orra/ui/components/dialog";
 import type { FileWithPath } from "react-dropzone";
 
 import { CropIcon, Trash2Icon, ZoomIn } from "lucide-react";

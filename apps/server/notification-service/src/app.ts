@@ -1,5 +1,5 @@
-import { createExpressApp } from "@neuralpay/config/express-config";
-import { notificationsServiceEnv } from "@neuralpay/env/notifications";
+import { createExpressApp } from "@orra/config/express-config";
+import { notificationsServiceEnv } from "@orra/env/notifications";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { notificationsRouter } from "./routers";
 import { startNotificationWorker } from "./services/bullmq.service";

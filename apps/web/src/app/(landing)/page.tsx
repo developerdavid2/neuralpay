@@ -1,5 +1,6 @@
 import HeroSectionView from "@/modules/landing/pages/home/hero-section/ui/views/hero-section-view";
 import { ManifestoSectionView } from "@/modules/landing/pages/home/manifesto-section/ui/views/manifesto-section-view";
+
 export default function Home() {
   return (
     <div className="relative w-full">
@@ -7,7 +8,7 @@ export default function Home() {
         <HeroSectionView />
       </section>
 
-      <section data-blur-section id="manifesto">
+      {/* <section data-blur-section id="manifesto">
         <ManifestoSectionView />
       </section>
 
@@ -21,7 +22,7 @@ export default function Home() {
             banking data.
           </p>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

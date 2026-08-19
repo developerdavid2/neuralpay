@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { Spinner } from "@neuralpay/ui/components/spinner";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { Button } from "@orra/ui/components/button";
+import { Spinner } from "@orra/ui/components/spinner";
+import { cn } from "@orra/ui/lib/utils";
 import {
   Archive,
   ChevronRight,

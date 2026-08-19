@@ -1,11 +1,8 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
-import {
-  ScrollArea,
-  ScrollBar,
-} from "@neuralpay/ui/components/scroll-area";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { Button } from "@orra/ui/components/button";
+import { ScrollArea, ScrollBar } from "@orra/ui/components/scroll-area";
+import { cn } from "@orra/ui/lib/utils";
 import type { ComponentProps } from "react";
 import { useCallback } from "react";
 

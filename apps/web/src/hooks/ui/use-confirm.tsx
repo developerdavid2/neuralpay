@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState, type JSX, type ReactNode } from "react";
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -9,7 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@neuralpay/ui/components/alert-dialog";
+} from "@orra/ui/components/alert-dialog";
 
 type ConfirmVariant = "default" | "destructive";
 

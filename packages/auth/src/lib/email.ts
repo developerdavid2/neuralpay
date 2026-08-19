@@ -19,7 +19,7 @@ export async function sendEmail({
   html: string;
 }) {
   await transporter.sendMail({
-    from: `"NeuralPay" <${process.env.SMTP_USER}>`,
+    from: `"Orra" <${process.env.SMTP_USER}>`,
     to,
     subject,
     html,

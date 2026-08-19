@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@neuralpay/ui/lib/utils";
-import { Button } from "@neuralpay/ui/components/button";
+import { cn } from "@orra/ui/lib/utils";
+import { Button } from "@orra/ui/components/button";
 import { Loader } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 

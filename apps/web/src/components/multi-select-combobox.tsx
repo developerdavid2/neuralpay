@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@neuralpay/ui/components/badge";
-import { Button } from "@neuralpay/ui/components/button";
+import { Badge } from "@orra/ui/components/badge";
+import { Button } from "@orra/ui/components/button";
 import {
   Command,
   CommandEmpty,
@@ -9,13 +9,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@neuralpay/ui/components/command";
+} from "@orra/ui/components/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@neuralpay/ui/components/popover";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/popover";
+import { cn } from "@orra/ui/lib/utils";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { useState } from "react";
 

@@ -1,6 +1,6 @@
-import type { AccountStatus, AccountType } from "@neuralpay/types";
-import { Badge } from "@neuralpay/ui/components/badge";
-import { cn } from "@neuralpay/ui/lib/utils";
+import type { AccountStatus, AccountType } from "@orra/types";
+import { Badge } from "@orra/ui/components/badge";
+import { cn } from "@orra/ui/lib/utils";
 
 import { ACCOUNT_STATUS_CONFIG, ACCOUNT_TYPE_CONFIG } from "../../constants";
 

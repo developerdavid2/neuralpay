@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { AppRouter } from "@neuralpay/api-gateway/router";
+import type { AppRouter } from "@orra/api-gateway/router";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink, httpLink } from "@trpc/client";
 import {

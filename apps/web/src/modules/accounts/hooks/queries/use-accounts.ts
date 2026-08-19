@@ -1,5 +1,5 @@
 import { useTRPC } from "@/trpc/trpc-client";
-import type { AccountsFilterInput } from "@neuralpay/types";
+import type { AccountsFilterInput } from "@orra/types";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 export function useAccountsList(filters: AccountsFilterInput) {

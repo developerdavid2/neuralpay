@@ -1,4 +1,4 @@
-import type { NotificationCategory } from "@neuralpay/types";
+import type { NotificationCategory } from "@orra/types";
 import {
   Bell,
   Brain,

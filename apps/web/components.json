@@ -13,8 +13,8 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
-    "utils": "@neuralpay/ui/lib/utils",
-    "ui": "@neuralpay/ui/components",
+    "utils": "@orra/ui/lib/utils",
+    "ui": "@orra/ui/components",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },

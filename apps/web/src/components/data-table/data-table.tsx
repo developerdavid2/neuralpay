@@ -8,8 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@neuralpay/ui/components/table";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/table";
+import { cn } from "@orra/ui/lib/utils";
 import {
   type ColumnDef,
   type ColumnFiltersState,

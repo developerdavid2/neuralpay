@@ -1,6 +1,6 @@
 import { generateReactHelpers } from "@uploadthing/react";
-import type { UserUploadFileRouter } from "@neuralpay/api-gateway/router";
-import { webEnv } from "@neuralpay/env/web";
+import type { UserUploadFileRouter } from "@orra/api-gateway/router";
+import { webEnv } from "@orra/env/web";
 
 export const { useUploadThing, uploadFiles } =
   generateReactHelpers<UserUploadFileRouter>({

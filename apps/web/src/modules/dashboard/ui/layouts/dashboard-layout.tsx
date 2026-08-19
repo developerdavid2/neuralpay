@@ -1,5 +1,5 @@
 import React from "react";
-import { SidebarProvider } from "@neuralpay/ui/components/sidebar";
+import { SidebarProvider } from "@orra/ui/components/sidebar";
 import { cookies } from "next/headers";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import DashboardNavbar from "../components/dashboard-navbar";

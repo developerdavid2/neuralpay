@@ -1,9 +1,5 @@
-import {
-  protectedProcedure,
-  publicProcedure,
-  router,
-} from "@neuralpay/config/trpc";
-import { insightFilterSchema } from "@neuralpay/types";
+import { protectedProcedure, publicProcedure, router } from "@orra/config/trpc";
+import { insightFilterSchema } from "@orra/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { AIInsightsService } from "../services/insights.service";

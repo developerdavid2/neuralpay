@@ -1,4 +1,4 @@
-import type { ChatSession } from "@neuralpay/types";
+import type { ChatSession } from "@orra/types";
 
 export function groupSessionsByDate(sessions: ChatSession[]) {
   const now = new Date();

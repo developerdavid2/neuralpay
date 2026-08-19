@@ -1,5 +1,5 @@
 {
-  "name": "@neuralpay/api-gateway",
+  "name": "@orra/api-gateway",
   "type": "module",
   "main": "src/app.ts",
   "exports": {
@@ -14,13 +14,13 @@
     "start": "node dist/app.js"
   },
   "dependencies": {
-    "@neuralpay/config": "workspace:*",
-    "@neuralpay/env": "workspace:*",
-    "@neuralpay/redis": "workspace:*",
-    "@neuralpay/ai-service": "workspace:*",
-    "@neuralpay/payment-service": "workspace:*",
-    "@neuralpay/user-service": "workspace:*",
-    "@neuralpay/notification-service": "workspace:*",
+    "@orra/config": "workspace:*",
+    "@orra/env": "workspace:*",
+    "@orra/redis": "workspace:*",
+    "@orra/ai-service": "workspace:*",
+    "@orra/payment-service": "workspace:*",
+    "@orra/user-service": "workspace:*",
+    "@orra/notification-service": "workspace:*",
     "@trpc/server": "catalog:",
     "express": "catalog:",
     "morgan": "catalog:",

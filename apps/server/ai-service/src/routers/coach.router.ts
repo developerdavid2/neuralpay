@@ -1,10 +1,10 @@
-import { protectedProcedure, router } from "@neuralpay/config/trpc";
+import { protectedProcedure, router } from "@orra/config/trpc";
 import {
   chatSessionsFilterSchema,
   sendMessageSchema,
   startOrCreateChatSessionSchema,
   updateSessionTitleSchema,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { AICoachService } from "../services/coach.service";
@@ -188,7 +188,7 @@ export const coachRouter = router({
       }
 
       const aiResponse =
-        "I'm your NeuralPay AI Coach. I'm learning your financial patterns and will provide personalized insights soon. (AI integration coming in Phase 3)";
+        "I'm your Orra AI Coach. I'm learning your financial patterns and will provide personalized insights soon. (AI integration coming in Phase 3)";
       const tokensUsed = 0;
 
       // 5. Save AI response

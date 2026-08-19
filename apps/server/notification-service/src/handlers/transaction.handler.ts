@@ -2,7 +2,7 @@ import type {
   NotificationEvent,
   TransactionAnomalyPayload,
   TransactionCreatedPayload,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { sendInApp } from "../channels/inapp";
 import { sendPush } from "../channels/push";
 import { broadcastToUser } from "../channels/realtime";

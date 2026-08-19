@@ -1,5 +1,5 @@
-import { getRedisClient } from "@neuralpay/redis/client";
-import { gatewayEnv } from "@neuralpay/env/gateway";
+import { getRedisClient } from "@orra/redis/client";
+import { gatewayEnv } from "@orra/env/gateway";
 import crypto from "crypto";
 
 const redis = getRedisClient(gatewayEnv.REDIS_URL);

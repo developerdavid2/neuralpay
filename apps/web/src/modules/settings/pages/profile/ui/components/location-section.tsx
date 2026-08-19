@@ -1,10 +1,10 @@
 "use client";
 
 import { Controller, type UseFormReturn } from "react-hook-form";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Label } from "@neuralpay/ui/components/label";
-import { Textarea } from "@neuralpay/ui/components/textarea";
-import type { UpdateProfileInput } from "@neuralpay/types";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Label } from "@orra/ui/components/label";
+import { Textarea } from "@orra/ui/components/textarea";
+import type { UpdateProfileInput } from "@orra/types";
 import { CountrySelect } from "./country-select";
 import { StateSelect } from "./state-select";
 import { CitySelect } from "./city-select";

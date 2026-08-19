@@ -1,12 +1,8 @@
-import {
-  protectedProcedure,
-  publicProcedure,
-  router,
-} from "@neuralpay/config/trpc";
-import { db } from "@neuralpay/db";
-import { user } from "@neuralpay/db/schema";
-import { deleteFileIfExists } from "@neuralpay/file-upload";
-import { updateProfileSchema } from "@neuralpay/types";
+import { protectedProcedure, publicProcedure, router } from "@orra/config/trpc";
+import { db } from "@orra/db";
+import { user } from "@orra/db/schema";
+import { deleteFileIfExists } from "@orra/file-upload";
+import { updateProfileSchema } from "@orra/types";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { UsersService } from "../services/users.service";

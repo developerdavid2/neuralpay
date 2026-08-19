@@ -1,6 +1,6 @@
 "use client";
 
-import type { BudgetCategoryAllocation } from "@neuralpay/types";
+import type { BudgetCategoryAllocation } from "@orra/types";
 import { formatAmount } from "@/lib/utils";
 import { useUpdateBudget } from "@/modules/budgets/hooks/mutations/use-update-budget";
 import { ProposalCardShell } from "./proposal-card-shell";
@@ -109,8 +109,7 @@ export function BudgetEditProposalCard({
           })}
         {proposed.categories
           .filter(
-            (p) =>
-              !current.categories.some((c) => c.category === p.category),
+            (p) => !current.categories.some((c) => c.category === p.category),
           )
           .map((p) => (
             <Row

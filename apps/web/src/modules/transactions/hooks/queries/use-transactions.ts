@@ -1,5 +1,5 @@
 import { useTRPC } from "@/trpc/trpc-client";
-import type { Transaction, TransactionsFilterInput } from "@neuralpay/types";
+import type { Transaction, TransactionsFilterInput } from "@orra/types";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo } from "react";

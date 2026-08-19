@@ -1,9 +1,6 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
-import {
-  CHAT_CONTEXT_TYPES,
-  CONTEXT_TOOL_SCOPE,
-} from "@neuralpay/types";
+import { CHAT_CONTEXT_TYPES, CONTEXT_TOOL_SCOPE } from "@orra/types";
 import { buildTools } from "./index";
 
 const FAKE_USER_ID = "00000000-0000-0000-0000-000000000000";

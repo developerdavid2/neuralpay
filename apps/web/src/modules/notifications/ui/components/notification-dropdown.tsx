@@ -2,8 +2,8 @@
 
 import { Show } from "@/components/show";
 import { formatGroupLabel, getDateGroup, groupByDate } from "@/lib/utils";
-import type { AppNotification } from "@neuralpay/types";
-import { cn } from "@neuralpay/ui/lib/utils";
+import type { AppNotification } from "@orra/types";
+import { cn } from "@orra/ui/lib/utils";
 import { ArrowRight, Bell, Check, Settings } from "lucide-react";
 import Link from "next/link";
 import { useMarkAllRead } from "../../hooks/mutations/use-mark-all-read-notifications";

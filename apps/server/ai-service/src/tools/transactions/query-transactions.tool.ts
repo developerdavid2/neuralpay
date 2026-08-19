@@ -1,5 +1,5 @@
-import { db } from "@neuralpay/db";
-import { transactions } from "@neuralpay/db/schema";
+import { db } from "@orra/db";
+import { transactions } from "@orra/db/schema";
 import { tool } from "ai";
 import { and, asc, desc, eq, gte, ilike, lte, or } from "drizzle-orm";
 import { z } from "zod";
@@ -88,7 +88,8 @@ export function buildQueryTransactionsTool(userId: string) {
         );
         if (searchCond) conditions.push(searchCond);
       }
-      if (category) conditions.push(eq(transactions.category, category as never));
+      if (category)
+        conditions.push(eq(transactions.category, category as never));
       if (type) conditions.push(eq(transactions.type, type));
       if (status) conditions.push(eq(transactions.status, status));
       if (accountId) conditions.push(eq(transactions.bankAccountId, accountId));

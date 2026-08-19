@@ -8,7 +8,7 @@ import {
 } from "date-fns";
 
 // ═══════════════════════════════════════════════════════════════
-//  DATE UTILITIES — Unified, reusable across all NeuralPay features
+//  DATE UTILITIES — Unified, reusable across all Orra features
 // ═══════════════════════════════════════════════════════════════
 
 function toDate(date: Date | string | number): Date {

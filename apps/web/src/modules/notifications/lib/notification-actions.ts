@@ -1,6 +1,6 @@
 "use client";
 
-import type { NotificationType } from "@neuralpay/types";
+import type { NotificationType } from "@orra/types";
 import { extractRelatedId } from "./notification-urls";
 import { useTransactionDrawer } from "@/modules/transactions/hooks/store/use-transaction-drawer";
 import { useAccountDrawer } from "@/modules/accounts/hooks/store/use-account-drawer";

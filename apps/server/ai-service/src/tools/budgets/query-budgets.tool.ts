@@ -1,11 +1,11 @@
-import { db } from "@neuralpay/db";
+import { db } from "@orra/db";
 import {
   bankAccounts,
   budgetAccounts,
   budgetCategories,
   budgets,
   transactions,
-} from "@neuralpay/db/schema";
+} from "@orra/db/schema";
 import { tool } from "ai";
 import { differenceInCalendarDays } from "date-fns";
 import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
@@ -67,7 +67,10 @@ export function buildQueryBudgetsTool(userId: string) {
 
       // linkedAccounts only when requested — same relationship budget.context.ts
       // reads (spend stays scoped to a budget's linked accounts when it has any).
-      let linkedByBudget = new Map<string, { id: string; name: string; type: string; bankName: string | null }[]>();
+      let linkedByBudget = new Map<
+        string,
+        { id: string; name: string; type: string; bankName: string | null }[]
+      >();
       if (withLinked) {
         const linkedRows = await db
           .select({
@@ -78,12 +81,20 @@ export function buildQueryBudgetsTool(userId: string) {
             bankName: bankAccounts.bankName,
           })
           .from(budgetAccounts)
-          .innerJoin(bankAccounts, eq(bankAccounts.id, budgetAccounts.bankAccountId))
+          .innerJoin(
+            bankAccounts,
+            eq(bankAccounts.id, budgetAccounts.bankAccountId),
+          )
           .where(inArray(budgetAccounts.budgetId, budgetIds));
 
         for (const row of linkedRows) {
           const list = linkedByBudget.get(row.budgetId) ?? [];
-          list.push({ id: row.id, name: row.name, type: row.type, bankName: row.bankName });
+          list.push({
+            id: row.id,
+            name: row.name,
+            type: row.type,
+            bankName: row.bankName,
+          });
           linkedByBudget.set(row.budgetId, list);
         }
       }
@@ -91,10 +102,17 @@ export function buildQueryBudgetsTool(userId: string) {
       const results = await Promise.all(
         budgetRows.map(async (budget) => {
           const cats = categoryRows.filter((c) => c.budgetId === budget.id);
-          const accountIds = (linkedByBudget.get(budget.id) ?? []).map((a) => a.id);
+          const accountIds = (linkedByBudget.get(budget.id) ?? []).map(
+            (a) => a.id,
+          );
 
           let totalSpent = 0;
-          let categories: { category: string; limitAmount: number; spent: number; percentUsed: number }[] = [];
+          let categories: {
+            category: string;
+            limitAmount: number;
+            spent: number;
+            percentUsed: number;
+          }[] = [];
 
           // Spend scoped to THIS budget's date range + linked accounts (or all
           // accounts when none linked) — the budget.context.ts fix, preserved.
@@ -110,7 +128,9 @@ export function buildQueryBudgetsTool(userId: string) {
               ),
             ];
             if (accountIds.length > 0) {
-              spendConditions.push(inArray(transactions.bankAccountId, accountIds));
+              spendConditions.push(
+                inArray(transactions.bankAccountId, accountIds),
+              );
             }
 
             const spendRows = await db
@@ -125,7 +145,9 @@ export function buildQueryBudgetsTool(userId: string) {
               .where(and(...spendConditions))
               .groupBy(transactions.category);
 
-            const spendMap = new Map(spendRows.map((r) => [r.category, r.total]));
+            const spendMap = new Map(
+              spendRows.map((r) => [r.category, r.total]),
+            );
             categories = cats.map((c) => {
               const spent = spendMap.get(c.category) ?? 0;
               const limitAmount = Number(c.limitAmount);

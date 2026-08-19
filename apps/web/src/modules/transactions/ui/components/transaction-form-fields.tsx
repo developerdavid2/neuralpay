@@ -1,19 +1,19 @@
-import { TRANSACTION_CATEGORY } from "@neuralpay/types";
+import { TRANSACTION_CATEGORY } from "@orra/types";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@neuralpay/ui/components/field";
-import { Input } from "@neuralpay/ui/components/input";
+} from "@orra/ui/components/field";
+import { Input } from "@orra/ui/components/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@neuralpay/ui/components/select";
-import { Textarea } from "@neuralpay/ui/components/textarea";
+} from "@orra/ui/components/select";
+import { Textarea } from "@orra/ui/components/textarea";
 import { Controller, type UseFormReturn } from "react-hook-form";
 import { AmountInput } from "@/components/amount-input";
 import { DatePicker } from "@/components/date-picker";

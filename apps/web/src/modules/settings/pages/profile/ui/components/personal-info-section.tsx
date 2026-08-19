@@ -1,19 +1,19 @@
 "use client";
 
 import { Controller, type UseFormReturn } from "react-hook-form";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Field, FieldError, FieldLabel } from "@neuralpay/ui/components/field";
-import { Input } from "@neuralpay/ui/components/input";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Field, FieldError, FieldLabel } from "@orra/ui/components/field";
+import { Input } from "@orra/ui/components/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@neuralpay/ui/components/select";
+} from "@orra/ui/components/select";
 import { DatePicker } from "@/components/date-picker";
 import { PhoneInput } from "./phone-input";
-import { GENDER_TYPES, type UpdateProfileInput } from "@neuralpay/types";
+import { GENDER_TYPES, type UpdateProfileInput } from "@orra/types";
 import { Lock } from "lucide-react";
 import { subYears } from "date-fns";
 

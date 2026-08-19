@@ -1,6 +1,6 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { AppNotification } from "@neuralpay/types";
+import type { AppNotification } from "@orra/types";
 
 export function useMarkManyUnreadNotifications() {
   const trpc = useTRPC();

@@ -6,11 +6,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@neuralpay/ui/components/dialog";
-import { Button } from "@neuralpay/ui/components/button";
-import { Badge } from "@neuralpay/ui/components/badge";
+} from "@orra/ui/components/dialog";
+import { Button } from "@orra/ui/components/button";
+import { Badge } from "@orra/ui/components/badge";
 import { Lock, CheckCircle2, Loader } from "lucide-react";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 import { useProviderModal } from "../../hooks/store/use-provider-modal";
 import { PROVIDERS } from "../../constants";
 

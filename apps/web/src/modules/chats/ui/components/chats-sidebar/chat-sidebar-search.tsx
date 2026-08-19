@@ -1,6 +1,6 @@
 import { Search, X } from "lucide-react";
-import { Input } from "@neuralpay/ui/components/input";
-import { Button } from "@neuralpay/ui/components/button";
+import { Input } from "@orra/ui/components/input";
+import { Button } from "@orra/ui/components/button";
 
 interface ChatSidebarSearchProps {
   value: string;

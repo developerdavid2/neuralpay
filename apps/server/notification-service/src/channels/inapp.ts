@@ -4,7 +4,7 @@ import type {
   NotificationCategory,
   CreateNotificationInput,
   NotificationData,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { createNotification } from "../services/notifications.service";
 
 export async function sendInApp(

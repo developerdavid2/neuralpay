@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import {
   Drawer,
   DrawerClose,
@@ -9,10 +9,10 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from "@neuralpay/ui/components/drawer";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { Spinner } from "@neuralpay/ui/components/spinner";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/drawer";
+import { Skeleton } from "@orra/ui/components/skeleton";
+import { Spinner } from "@orra/ui/components/spinner";
+import { cn } from "@orra/ui/lib/utils";
 import { Archive, MessageCircle, RotateCcw, X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/ui/use-media-query";
 import { formatDateTime } from "@/lib/utils";

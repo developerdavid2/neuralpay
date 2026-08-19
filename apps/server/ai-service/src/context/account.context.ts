@@ -5,7 +5,7 @@ import {
   connectedPlaidBanks,
   db,
   transactions,
-} from "@neuralpay/db";
+} from "@orra/db";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 
 export async function fetchAccountContext(

@@ -21,7 +21,7 @@ export const TRANSACTIONS = [
   {
     id: "tx-1",
     name: "Payment Received",
-    source: "NeuralPay Network",
+    source: "Orra Network",
     time: "Just now",
     amount: "+$1,250.00",
     icon: "⚡",

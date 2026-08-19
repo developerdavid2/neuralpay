@@ -4,7 +4,7 @@ import {
   chatMessages,
   chatSessions,
   db,
-} from "@neuralpay/db";
+} from "@orra/db";
 
 import type {
   ChatMessage,
@@ -15,7 +15,7 @@ import type {
   PaginatedChatSessions,
   ServiceResult,
   StartOrCreateChatSessionInput,
-} from "@neuralpay/types";
+} from "@orra/types";
 import type { UIMessage } from "ai";
 import { and, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 

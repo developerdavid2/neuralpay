@@ -1,10 +1,10 @@
 "use client";
 
 import { parseUserAgent } from "@/lib/parse-user-agent";
-import type { SessionInfo } from "@neuralpay/types";
-import { Badge } from "@neuralpay/ui/components/badge";
-import { Button } from "@neuralpay/ui/components/button";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+import type { SessionInfo } from "@orra/types";
+import { Badge } from "@orra/ui/components/badge";
+import { Button } from "@orra/ui/components/button";
+import { Spinner } from "@orra/ui/components/spinner";
 import { formatDistanceToNow } from "date-fns";
 
 export function SessionItem({

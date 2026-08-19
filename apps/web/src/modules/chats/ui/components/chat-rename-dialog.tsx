@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { ChatSession } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
+import type { ChatSession } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -13,9 +13,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@neuralpay/ui/components/dialog";
-import { Input } from "@neuralpay/ui/components/input";
-import { Label } from "@neuralpay/ui/components/label";
+} from "@orra/ui/components/dialog";
+import { Input } from "@orra/ui/components/input";
+import { Label } from "@orra/ui/components/label";
 import { Pencil } from "lucide-react";
 
 const renameSchema = z.object({

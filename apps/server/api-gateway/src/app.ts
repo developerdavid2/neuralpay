@@ -1,5 +1,5 @@
-import { createExpressApp } from "@neuralpay/config/express-config";
-import { gatewayEnv } from "@neuralpay/env/gateway";
+import { createExpressApp } from "@orra/config/express-config";
+import { gatewayEnv } from "@orra/env/gateway";
 import { authMiddleware } from "./middleware/auth.middleware";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";

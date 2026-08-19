@@ -6,7 +6,7 @@ import type {
   NotificationEvent,
   AiInsightPayload,
   AiWeeklyReportPayload,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 type AiEvent = Extract<
   NotificationEvent,

@@ -1,4 +1,4 @@
-import { protectedProcedure, router } from "@neuralpay/config/trpc";
+import { protectedProcedure, router } from "@orra/config/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { decrypt } from "../lib/crypto";

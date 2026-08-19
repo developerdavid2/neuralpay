@@ -5,7 +5,7 @@ import {
   BUDGET_PERIODS,
   type BudgetHealth,
   type BudgetPeriod,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 const VALID_STATUSES = BUDGET_HEALTH;
 const VALID_PERIODS = BUDGET_PERIODS;

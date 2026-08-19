@@ -1,18 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  createTransactionSchema,
-  updateTransactionSchema,
-} from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
+import { createTransactionSchema, updateTransactionSchema } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
 import {
   SheetClose,
   SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@neuralpay/ui/components/sheet";
-import { Spinner } from "@neuralpay/ui/components/spinner";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/sheet";
+import { Spinner } from "@orra/ui/components/spinner";
+import { cn } from "@orra/ui/lib/utils";
 import { Trash2, X } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import type { FormValues } from "../../types";

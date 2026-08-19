@@ -7,8 +7,8 @@ import {
   batchDeleteSchema,
   csvColumnMappingSchema,
   txMonthlySummaryFilterSchema,
-} from "@neuralpay/types";
-import { protectedProcedure, router } from "@neuralpay/config/trpc";
+} from "@orra/types";
+import { protectedProcedure, router } from "@orra/config/trpc";
 import { TransactionsService } from "../services/transactions.service";
 import { CSVService } from "../services/csv.service";
 

@@ -7,7 +7,7 @@ import {
   ToolInput,
   ToolOutput,
   type ToolState,
-} from "@neuralpay/ui/components/ai-elements/tool";
+} from "@orra/ui/components/ai-elements/tool";
 import {
   BarChart3Icon,
   LandmarkIcon,

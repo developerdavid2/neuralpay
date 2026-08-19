@@ -7,6 +7,7 @@ interface OrbProps {
   rotateOnHover?: boolean;
   forceHoverState?: boolean;
   backgroundColor?: string;
+  paused?: boolean;
 }
 
 export default function Orb({
@@ -108,9 +109,9 @@ export default function Orb({
       return vec4(colorIn.rgb / (a + 1e-5), a);
     }
     
-    const vec3 baseColor1 = vec3(0.611765, 0.262745, 0.996078);
-    const vec3 baseColor2 = vec3(0.298039, 0.760784, 0.913725);
-    const vec3 baseColor3 = vec3(0.062745, 0.078431, 0.600000);
+    const vec3 baseColor1 = vec3(0.40, 0.36, 0.82);
+    const vec3 baseColor2 = vec3(0.72, 0.69, 0.98);
+    const vec3 baseColor3 = vec3(0.055, 0.045, 0.16);
     const float innerRadius = 0.6;
     const float noiseScale = 0.65;
     
@@ -146,7 +147,7 @@ export default function Orb({
       float a = iTime * -1.0;
       vec2 pos = vec2(cos(a), sin(a)) * r0;
       float d = distance(uv, pos);
-      float v1 = light2(1.5, 5.0, d);
+      float v1 = light2(0.75, 5.0, d);
       v1 *= light1(1.0, 50.0, d0);
       
       float v2 = smoothstep(1.0, mix(innerRadius, 1.0, n0 * 0.5), len);
@@ -237,8 +238,15 @@ export default function Orb({
         gl.canvas.width / gl.canvas.height,
       );
     }
-    window.addEventListener("resize", resize);
-    resize();
+
+    // OLD: only reacted to window resize, missed container-driven size changes
+    // window.addEventListener("resize", resize);
+    // resize();
+
+    // NEW: watch the container element itself
+    const resizeObserver = new ResizeObserver(() => resize());
+    resizeObserver.observe(container);
+    resize(); // still call once immediately for initial paint
 
     let targetHover = 0;
     let lastTime = 0;
@@ -296,7 +304,7 @@ export default function Orb({
 
     return () => {
       cancelAnimationFrame(rafId);
-      window.removeEventListener("resize", resize);
+      resizeObserver.disconnect(); // clean up observer instead of window listener
       container.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("mouseleave", handleMouseLeave);
       container.removeChild(gl.canvas);

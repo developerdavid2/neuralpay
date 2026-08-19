@@ -5,7 +5,7 @@ import {
   db,
   transactions,
   vaults,
-} from "@neuralpay/db";
+} from "@orra/db";
 import { startOfDay } from "date-fns";
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 

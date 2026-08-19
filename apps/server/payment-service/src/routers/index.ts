@@ -1,4 +1,4 @@
-import { router } from "@neuralpay/config/trpc";
+import { router } from "@orra/config/trpc";
 import { accountsRouter } from "./accounts.router";
 import { budgetsRouter } from "./budgets.router";
 import { transactionsRouter } from "./transactions.router";

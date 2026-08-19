@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import {
   Drawer,
   DrawerClose,
@@ -8,12 +8,12 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-} from "@neuralpay/ui/components/drawer";
-import { ScrollArea } from "@neuralpay/ui/components/scroll-area";
-import { Separator } from "@neuralpay/ui/components/separator";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { Spinner } from "@neuralpay/ui/components/spinner";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/drawer";
+import { ScrollArea } from "@orra/ui/components/scroll-area";
+import { Separator } from "@orra/ui/components/separator";
+import { Skeleton } from "@orra/ui/components/skeleton";
+import { Spinner } from "@orra/ui/components/spinner";
+import { cn } from "@orra/ui/lib/utils";
 import { format } from "date-fns";
 import {
   AlertTriangle,

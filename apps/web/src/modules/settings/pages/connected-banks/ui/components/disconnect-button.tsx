@@ -1,7 +1,7 @@
 "use client";
 
 import { Unlink } from "lucide-react";
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import { useConfirm } from "@/hooks/ui/use-confirm";
 import { useDisconnectBank } from "../../hooks/mutations/use-disconnect-bank";
 import { toast } from "sonner";

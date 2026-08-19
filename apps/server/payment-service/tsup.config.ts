@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["src/render.ts"],
-  noExternal: [/@neuralpay/],
+  noExternal: [/@orra/],
   external: ["ioredis", "bullmq", "rate-limiter-flexible"],
   splitting: false,
   bundle: true,

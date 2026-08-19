@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@neuralpay/ui/components/select";
+} from "@orra/ui/components/select";
 import {
   ChevronFirst,
   ChevronLast,
@@ -15,7 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useDataTableNavigation } from "@/hooks/routing/use-data-table-navigation";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 
 interface DataTablePaginationProps {
   currentPage: number;

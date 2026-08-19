@@ -1,9 +1,9 @@
-import { protectedProcedure, router, toTrpcCode } from "@neuralpay/config/trpc";
+import { protectedProcedure, router, toTrpcCode } from "@orra/config/trpc";
 import {
   budgetsListInputSchema,
   createBudgetSchema,
   updateBudgetSchema,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { BudgetsService } from "../services/budgets.service";
