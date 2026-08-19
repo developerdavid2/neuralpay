@@ -6,7 +6,8 @@ import { CustomEase } from "gsap/CustomEase";
 import { SplitText } from "gsap/SplitText";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { NeuralPayLogo } from "./logo";
+import { cn } from "@neuralpay/ui/lib/utils";
+import { Logo } from "./logo";
 
 gsap.registerPlugin(CustomEase, SplitText);
 
@@ -29,8 +30,11 @@ export default function Navbar() {
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "unset";
 
+    document.body.classList.toggle("navbar-open", isOpen);
+
     return () => {
       document.body.style.overflow = "unset";
+      document.body.classList.remove("navbar-open");
     };
   }, [isOpen]);
 
@@ -84,13 +88,23 @@ export default function Navbar() {
         containerRef.current!,
       );
 
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
+      const isTablet = window.matchMedia(
+        "(min-width: 768px) and (max-width: 1023px)",
+      ).matches;
+
+      const menuDuration = isMobile ? 0.8 : isTablet ? 1.1 : 1.5;
+      const contentDelay = isMobile ? 0.2 : isTablet ? 0.45 : 0.85;
+      const videoDelay = isMobile ? 0.1 : isTablet ? 0.3 : 0.5;
+      const headerDelay = isMobile ? 0.25 : isTablet ? 0.5 : 0.75;
+
       setIsAnimating(true);
 
       if (isOpen) {
         gsap.to(menu, {
           clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
           ease: "hop",
-          duration: 1.5,
+          duration: menuDuration,
           onStart: () => {
             menu.style.pointerEvents = "all";
           },
@@ -100,49 +114,51 @@ export default function Navbar() {
         gsap.to(links, {
           y: 0,
           opacity: 1,
-          stagger: 0.1,
-          delay: 0.85,
-          duration: 1,
+          stagger: isMobile ? 0.05 : 0.1,
+          delay: contentDelay,
+          duration: isMobile ? 0.65 : 1,
           ease: "power3.out",
         });
 
         gsap.to(socialLines, {
           y: 0,
           opacity: 1,
-          stagger: 0.05,
-          delay: 0.85,
-          duration: 1,
+          stagger: isMobile ? 0.025 : 0.05,
+          delay: contentDelay,
+          duration: isMobile ? 0.65 : 1,
           ease: "power3.out",
         });
 
         gsap.to(".orra-video-wrapper", {
-          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-          ease: "hop",
-          duration: 1.5,
-          delay: 0.5,
+          clipPath: isMobile
+            ? "inset(0% 0% 0% 0%)"
+            : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          ease: isMobile ? "power3.out" : "hop",
+          duration: isMobile ? 0.55 : 1.5,
+          delay: isMobile ? 0.05 : 0.5,
         });
 
         gsap.to(".orra-menu-header h1 .char", {
           rotateY: 0,
-          stagger: 0.05,
-          delay: 0.75,
-          duration: 1.5,
+          stagger: isMobile ? 0.025 : 0.05,
+          delay: headerDelay,
+          duration: isMobile ? 0.9 : 1.5,
           ease: "power4.out",
         });
 
         gsap.to(".orra-menu-header h1 .char", {
           y: 0,
           scale: 1,
-          stagger: 0.05,
-          delay: 0.5,
-          duration: 1.5,
+          stagger: isMobile ? 0.025 : 0.05,
+          delay: isMobile ? 0.15 : 0.5,
+          duration: isMobile ? 0.9 : 1.5,
           ease: "power4.out",
         });
       } else {
         gsap.to(menu, {
           clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
           ease: "hop",
-          duration: 1.5,
+          duration: menuDuration,
           onComplete: () => {
             menu.style.pointerEvents = "none";
 
@@ -188,7 +204,7 @@ export default function Navbar() {
           ========================================================= */}
 
       <div className="fixed left-4 top-4 z-10 sm:left-6 sm:top-6 md:left-8 md:top-8">
-        <NeuralPayLogo size={48} showText={false} />
+        <Logo size={48} showText={false} />
       </div>
 
       {/* =========================================================
@@ -205,53 +221,21 @@ export default function Navbar() {
             handleToggle();
           }
         }}
-        className={`
-          group
-          fixed
-          right-4
-          top-4
-          z-[70]
-          h-14
-          cursor-pointer
-          rounded-[8em]
-          border
-          border-white/20
-          bg-neutral-500/30
-          shadow-lg
-          backdrop-blur-sm
-          transition-[width]
-          duration-500
-          ease-[cubic-bezier(0.075,0.82,0.165,1)]
-          origin-right
-
-          sm:right-6
-          sm:top-6
-          sm:h-15
-
-          md:right-[2em]
-          md:top-[2em]
-
-          ${isOpen ? "w-[56px] sm:w-[60px]" : "w-[108px] sm:w-[120px]"}
-        `}
+        className={cn(
+          "group fixed right-4 top-4 z-[70] h-14 cursor-pointer rounded-[8em] border border-white/20 bg-violet-500/10 shadow-lg backdrop-blur-sm transition-[width] duration-500 ease-[cubic-bezier(0.075,0.82,0.165,1)] origin-right",
+          "sm:right-6 sm:top-6 sm:h-15",
+          "md:right-[2em] md:top-[2em]",
+          isOpen ? "w-[56px] sm:w-[60px]" : "w-[108px] sm:w-[120px]",
+        )}
       >
         {/* Toggle Copy */}
         <div
-          className={`
-            absolute
-            top-1/2
-            -translate-y-1/2
-            text-white
-            transition-[left,opacity]
-            duration-500
-            ease-[cubic-bezier(0.075,0.82,0.165,1)]
-            z-[1]
-
-            ${
-              isOpen
-                ? "left-[28px] opacity-0"
-                : "left-[25px] opacity-100 group-hover:left-[18px]"
-            }
-          `}
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 text-white transition-[left,opacity] duration-500 ease-[cubic-bezier(0.075,0.82,0.165,1)] z-[1]",
+            isOpen
+              ? "left-[28px] opacity-0"
+              : "left-[25px] opacity-100 group-hover:left-[18px]",
+          )}
         >
           <p className="m-0 p-0 text-[11px] font-medium uppercase tracking-[0.05em] sm:text-[12px]">
             Menu
@@ -260,85 +244,38 @@ export default function Navbar() {
 
         {/* Dynamic Circle */}
         <div
-          className={`
-            absolute
-            right-0
-            top-0
-            h-14
-            w-14
-            overflow-hidden
-            rounded-full
-            bg-landing-violet-400
-            transition-all
-            duration-500
-            ease-[cubic-bezier(0.075,0.82,0.165,1)]
-            z-10
-
-            sm:h-[60px]
-            sm:w-[60px]
-
-            ${
-              isOpen
-                ? "[clip-path:circle(50%_at_50%_50%)] scale-[1.125]"
-                : "[clip-path:circle(10%_at_50%_50%)] group-hover:[clip-path:circle(35%_at_50%_50%)]"
-            }
-          `}
+          className={cn(
+            "absolute right-0 top-0 h-14 w-14 overflow-hidden rounded-full bg-landing-violet-400 transition-all duration-500 ease-[cubic-bezier(0.075,0.82,0.165,1)] z-10",
+            "sm:h-[60px] sm:w-[60px]",
+            isOpen
+              ? "[clip-path:circle(50%_at_50%_50%)] scale-[1.125]"
+              : "[clip-path:circle(10%_at_50%_50%)] group-hover:[clip-path:circle(35%_at_50%_50%)]",
+          )}
         >
           <div
-            className={`
-              absolute
-              left-1/2
-              top-1/2
-              flex
-              h-[30px]
-              w-[30px]
-              -translate-x-1/2
-              -translate-y-1/2
-              items-center
-              justify-center
-              transition-all
-              duration-1000
-              ease-[cubic-bezier(0.075,0.82,0.165,1)]
-
-              ${isOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
-            `}
+            className={cn(
+              "absolute left-1/2 top-1/2 flex h-[30px] w-[30px] -translate-x-1/2 -translate-y-1/2 items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.075,0.82,0.165,1)]",
+              isOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+            )}
           >
             {/* Top Bar */}
             <div
-              className={`
-                absolute
-                h-[1.5px]
-                w-[15px]
-                bg-black
-                transition-transform
-                duration-250
-                ease-out
-
-                ${
-                  isOpen
-                    ? "translate-y-0 rotate-45 scale-x-[1.05]"
-                    : "-translate-y-[3px]"
-                }
-              `}
+              className={cn(
+                "absolute h-[1.5px] w-[15px] bg-black transition-transform duration-250 ease-out",
+                isOpen
+                  ? "translate-y-0 rotate-45 scale-x-[1.05]"
+                  : "-translate-y-[3px]",
+              )}
             />
 
             {/* Bottom Bar */}
             <div
-              className={`
-                absolute
-                h-[1.5px]
-                w-[15px]
-                bg-black
-                transition-transform
-                duration-250
-                ease-out
-
-                ${
-                  isOpen
-                    ? "translate-y-0 -rotate-45 scale-x-[1.05]"
-                    : "translate-y-0.75"
-                }
-              `}
+              className={cn(
+                "absolute h-[1.5px] w-[15px] bg-black transition-transform duration-250 ease-out",
+                isOpen
+                  ? "translate-y-0 -rotate-45 scale-x-[1.05]"
+                  : "translate-y-0.75",
+              )}
             />
           </div>
         </div>
@@ -349,28 +286,11 @@ export default function Navbar() {
           ========================================================= */}
 
       <div
-        className="
-          orra-menu
-          fixed
-          inset-0
-          z-50
-          flex
-          h-screen
-          w-screen
-          flex-col
-          overflow-y-auto
-          overflow-x-hidden
-          bg-white
-          text-black
-          pointer-events-none
-          transform-3d
-          perspective-[1000px]
-
-          [scrollbar-width:none]
-          [&::-webkit-scrollbar]:hidden
-
-          md:flex-row
-        "
+        className={cn(
+          "orra-menu fixed inset-0 z-50 flex h-screen w-screen flex-col overflow-y-auto overflow-x-hidden bg-white text-black pointer-events-none transform-3d perspective-[1000px]",
+          "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          "md:flex-row",
+        )}
         style={{
           clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
         }}
@@ -380,48 +300,21 @@ export default function Navbar() {
             ======================================================= */}
 
         <div
-          className="
-            orra-col
-            orra-col-1
-            relative
-            flex
-            min-h-fit
-            w-full
-            shrink-0
-            flex-col
-            items-start
-            justify-between
-            px-5
-            pb-8
-            pt-24
-
-            sm:px-8
-            sm:pb-10
-            sm:pt-28
-
-            md:h-full
-            md:w-auto
-            md:flex-1
-            md:px-[3em]
-            md:pb-[3em]
-            md:pt-[8em]
-          "
+          className={cn(
+            "orra-col orra-col-1 relative flex min-h-fit w-full shrink-0 flex-col items-start justify-between px-5 pb-8 pt-24",
+            "sm:px-8 sm:pb-10 sm:pt-28",
+            "md:h-full md:w-auto md:flex-1 md:px-[3em] md:pb-[3em] md:pt-[8em]",
+          )}
         >
           {/* Overlay Logo */}
           <div
-            className="
-              absolute
-              left-5
-              top-5
-
-              sm:left-8
-              sm:top-6
-
-              md:left-[2em]
-              md:top-[2em]
-            "
+            className={cn(
+              "absolute left-5 top-5",
+              "sm:left-8 sm:top-6",
+              "md:left-[2em] md:top-[2em]",
+            )}
           >
-            <NeuralPayLogo
+            <Logo
               size={48}
               showText={false}
               src="https://eqr61bekec.ufs.sh/f/sH4weU3V69zXXnnMPIifkPbws3hnSHtBAq6jeKT2Fr7GvEda"
@@ -430,19 +323,11 @@ export default function Navbar() {
 
           {/* Navigation Links */}
           <div
-            className="
-              mt-4
-              flex
-              w-full
-              flex-col
-              gap-1
-
-              sm:mt-6
-              sm:gap-1
-
-              md:mt-[2em]
-              md:gap-[0.25em]
-            "
+            className={cn(
+              "mt-4 flex w-full flex-col gap-1",
+              "sm:mt-6 sm:gap-1",
+              "md:mt-[2em] md:gap-[0.25em]",
+            )}
           >
             {NAV_LINKS.map((item) => {
               const isActive = activeLink === item;
@@ -450,37 +335,18 @@ export default function Navbar() {
               return (
                 <div
                   key={item}
-                  className="
-                    orra-link
-                    relative
-                    translate-y-7.5
-                    opacity-0
-                  "
+                  className="orra-link relative translate-y-7.5 opacity-0"
                 >
                   <Link
                     href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
                     onClick={() => handleLinkClick(item)}
-                    className={`
-                      block
-                      no-underline
-                      font-light
-                      tracking-tight
-                      leading-[115%]
-                      transition-colors
-                      duration-300
-
-                      text-[clamp(1.65rem,7vw,3rem)]
-
-                      sm:text-[clamp(2rem,5vw,3rem)]
-
-                      md:text-[clamp(2rem,4vw,3rem)]
-
-                      ${
-                        isActive
-                          ? "text-landing-violet-600"
-                          : "text-black hover:text-landing-violet-600"
-                      }
-                    `}
+                    className={cn(
+                      "block no-underline font-light tracking-tight leading-[115%] transition-colors duration-300",
+                      "text-[clamp(1.65rem,7vw,3rem)] sm:text-[clamp(2rem,5vw,3rem)] md:text-[clamp(2rem,4vw,3rem)]",
+                      isActive
+                        ? "text-landing-violet-600"
+                        : "text-black hover:text-landing-violet-600",
+                    )}
                   >
                     {item}
                   </Link>
@@ -491,22 +357,11 @@ export default function Navbar() {
 
           {/* Video */}
           <div
-            className="
-              orra-video-wrapper
-              mt-12
-              w-full
-              max-w-[420px]
-              overflow-hidden
-              bg-landing-card-dark/70
-              p-3
-              aspect-video
-
-              sm:mt-14
-              sm:p-5
-
-              md:mt-0
-              md:p-8
-            "
+            className={cn(
+              "orra-video-wrapper mt-12 w-full max-w-[420px] overflow-hidden bg-landing-card-dark/70 p-3 aspect-video",
+              "sm:mt-14 sm:p-5",
+              "md:mt-0 md:p-8",
+            )}
             style={{
               clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
             }}
@@ -531,49 +386,22 @@ export default function Navbar() {
             ======================================================= */}
 
         <div
-          className="
-            orra-col
-            orra-col-2
-            relative
-            flex
-            min-h-fit
-            w-full
-            shrink-0
-            flex-col
-            items-start
-            justify-between
-            px-5
-            pb-10
-            pt-8
-
-            sm:px-8
-            sm:pb-12
-
-            md:h-full
-            md:w-auto
-            md:flex-[2]
-            md:items-end
-            md:px-[3em]
-            md:pb-[3em]
-            md:pt-[8em]
-          "
+          className={cn(
+            "orra-col orra-col-2 relative flex min-h-fit w-full shrink-0 flex-col items-start justify-between px-5 pb-10 pt-8",
+            "sm:px-8 sm:pb-12",
+            "md:h-full md:w-auto md:flex-[2] md:items-end md:px-[3em] md:pb-[3em] md:pt-[8em]",
+          )}
         >
           {/* =====================================================
               CONTACT / SOCIAL INFORMATION
               ===================================================== */}
 
           <div
-            className="
-              orra-socials
-              flex
-              w-full
-              gap-8
-
-              sm:gap-12
-
-              md:w-[60%]
-              md:gap-[2em]
-            "
+            className={cn(
+              "orra-socials flex w-full gap-8",
+              "sm:gap-12",
+              "md:w-[60%] md:gap-[2em]",
+            )}
           >
             <div className="min-w-0 flex-1">
               <p className="relative translate-y-7.5 opacity-0 m-0 text-[9px] font-normal uppercase leading-[1.6] text-black sm:text-[10px] md:text-[11px]">
@@ -617,43 +445,18 @@ export default function Navbar() {
               ===================================================== */}
 
           <div
-            className="
-              orra-menu-header
-              mt-20
-              flex
-              w-full
-              justify-start
-              overflow-hidden
-
-              sm:mt-24
-
-              md:mt-0
-              md:justify-end
-            "
+            className={cn(
+              "orra-menu-header mt-20 flex w-full justify-start overflow-hidden",
+              "sm:mt-24",
+              "md:mt-0 md:justify-end",
+            )}
           >
             <h1
-              className="
-                m-0
-                uppercase
-                font-light
-                leading-[0.85]
-                text-landing-fg-dark
-                font-rostex
-
-                text-[clamp(4rem,20vw,9rem)]
-
-                sm:text-[clamp(5rem,17vw,12rem)]
-
-                md:text-[clamp(4rem,11vw,20vw)]
-
-                [&_.char]:relative
-                [&_.char]:inline-block
-                [&_.char]:font-rostex
-                [&_.char]:origin-bottom
-                [&_.char]:translate-y-125
-                [&_.char]:rotate-y-90
-                [&_.char]:scale-[0.75]
-              "
+              className={cn(
+                "m-0 uppercase font-light leading-[0.85] text-landing-fg-dark font-rostex",
+                "text-[clamp(3rem,16vw,7rem)] sm:text-[clamp(5rem,17vw,12rem)] md:text-[clamp(4rem,11vw,20vw)]",
+                "[&_.char]:relative [&_.char]:inline-block [&_.char]:font-rostex [&_.char]:origin-bottom [&_.char]:translate-y-125 [&_.char]:rotate-y-90 [&_.char]:scale-[0.75]",
+              )}
             >
               AGENT
             </h1>

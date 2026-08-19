@@ -6,7 +6,7 @@ import { useSidebar } from "@neuralpay/ui/components/sidebar";
 import { cn } from "@neuralpay/ui/lib/utils";
 import type { Route } from "next";
 
-interface NeuralPayLogoProps {
+interface LogoProps {
   /** Path relative to /public directory or remote URL */
   src?: string;
   /** Fixed width & height in px. Ignored when `fill` is true. */
@@ -22,7 +22,7 @@ interface NeuralPayLogoProps {
   showText?: boolean;
 }
 
-export function NeuralPayLogo({
+export function Logo({
   src = "https://eqr61bekec.ufs.sh/f/sH4weU3V69zXnzhdeSMk3esQXWfzAdqRZFS04jaIGwr1umCg",
   size = 32,
   fill = false,
@@ -30,7 +30,7 @@ export function NeuralPayLogo({
   imageClassName,
   href = "/",
   showText,
-}: NeuralPayLogoProps) {
+}: LogoProps) {
   // Safely attempt to read sidebar context
   let isExpanded = true;
   try {

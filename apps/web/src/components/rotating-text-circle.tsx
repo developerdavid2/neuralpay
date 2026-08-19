@@ -2,15 +2,11 @@
 
 import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
 import type { LucideIcon } from "lucide-react";
-import React from "react";
 
 interface RotatingTextCircleProps {
   text: string;
-  /** Pass any Lucide icon component, e.g., Shield, Zap, Sparkles, ArrowUpRight */
   icon: LucideIcon;
-  /** Size of the icon in pixels (default: 24) */
   iconSize?: number;
-  /** Optional custom class names for positioning or container overrides */
   className?: string;
 }
 
@@ -24,7 +20,7 @@ export function RotatingTextCircle({
 
   return (
     <div
-      className={`hidden lg:flex relative w-[140px] h-[140px] items-center justify-center select-none ${className}`}
+      className={`hidden lg:flex absolute bottom-[20%] right-0 w-[140px] h-[140px] items-center justify-center select-none ${className}`}
     >
       {/* 1. Fixed Center Icon (Does not rotate) */}
       <div className="z-10 flex items-center justify-center rounded-full p-3 bg-landing-card/60 backdrop-blur-md border border-white/10 text-landing-violet-400 shadow-md">

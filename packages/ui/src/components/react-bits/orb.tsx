@@ -7,6 +7,7 @@ interface OrbProps {
   rotateOnHover?: boolean;
   forceHoverState?: boolean;
   backgroundColor?: string;
+  paused?: boolean;
 }
 
 export default function Orb({
@@ -237,8 +238,15 @@ export default function Orb({
         gl.canvas.width / gl.canvas.height,
       );
     }
-    window.addEventListener("resize", resize);
-    resize();
+
+    // OLD: only reacted to window resize, missed container-driven size changes
+    // window.addEventListener("resize", resize);
+    // resize();
+
+    // NEW: watch the container element itself
+    const resizeObserver = new ResizeObserver(() => resize());
+    resizeObserver.observe(container);
+    resize(); // still call once immediately for initial paint
 
     let targetHover = 0;
     let lastTime = 0;
@@ -296,7 +304,7 @@ export default function Orb({
 
     return () => {
       cancelAnimationFrame(rafId);
-      window.removeEventListener("resize", resize);
+      resizeObserver.disconnect(); // clean up observer instead of window listener
       container.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("mouseleave", handleMouseLeave);
       container.removeChild(gl.canvas);

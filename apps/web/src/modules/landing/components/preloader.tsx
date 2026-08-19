@@ -1,6 +1,6 @@
 "use client";
 
-import { NeuralPayLogo } from "@/components/logo";
+import { Logo } from "@/components/logo";
 import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -26,7 +26,6 @@ const jitter = () => (Math.random() - 0.5) * 0.04;
 export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
   const reduced = useReducedMotion();
 
-  // Only 1 ref needed!
   const rootRef = useRef<HTMLDivElement>(null);
 
   const [hidden, setHidden] = useState(false);
@@ -241,14 +240,6 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
             className="h-full flex-1 bg-landing-bg-light scale-x-[1.01] -mr-px will-change-[clip-path]"
           />
         ))}
-
-        <div className="absolute top-1/2 left-1/2">
-          <NeuralPayLogo
-            size={78}
-            showText={false}
-            src="https://eqr61bekec.ufs.sh/f/sH4weU3V69zXXnnMPIifkPbws3hnSHtBAq6jeKT2Fr7GvEda"
-          />
-        </div>
       </div>
 
       {/* Content Layer */}
@@ -263,7 +254,7 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
               data-logo-dim
               className="absolute inset-0 opacity-100 grayscale brightness-50"
             >
-              <NeuralPayLogo
+              <Logo
                 showText={false}
                 fill
                 className="w-full h-full p-0"
@@ -271,7 +262,7 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
               />
             </div>
             <div data-logo-bright className="absolute inset-0">
-              <NeuralPayLogo
+              <Logo
                 showText={false}
                 fill
                 className="w-full h-full p-0"
@@ -287,13 +278,13 @@ export default function Preloader({ onComplete, onReveal }: PreloaderProps) {
               className="text-[clamp(1.75rem,5vw,3.5rem)] font-semibold font-rostex tracking-tight text-[#6b6b6b] leading-none"
               aria-hidden="true"
             >
-              NeuralPay
+              ORRA
             </h4>
             <h4
               data-word-bright
               className="absolute inset-0 text-[clamp(1.75rem,5vw,3.5rem)] font-semibold font-rostex tracking-tight text-landing-fg-light leading-none"
             >
-              NeuralPay
+              ORRA
             </h4>
           </div>
         </div>
