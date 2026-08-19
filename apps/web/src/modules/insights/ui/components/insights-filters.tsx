@@ -1,14 +1,14 @@
 "use client";
 
-import { cn } from "@neuralpay/ui/lib/utils";
-import { Button } from "@neuralpay/ui/components/button";
+import { cn } from "@orra/ui/lib/utils";
+import { Button } from "@orra/ui/components/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@neuralpay/ui/components/select";
+} from "@orra/ui/components/select";
 import { Filter, Archive } from "lucide-react";
 import { INSIGHTS_TYPE_LABELS } from "../../constants";
 import { DebouncedSearchInput } from "@/components/debounced-search-input";

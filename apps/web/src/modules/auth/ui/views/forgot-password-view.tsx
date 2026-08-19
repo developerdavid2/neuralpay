@@ -1,25 +1,22 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  forgotPasswordSchema,
-  type ForgotPasswordInput,
-} from "@neuralpay/types";
+import { forgotPasswordSchema, type ForgotPasswordInput } from "@orra/types";
 import { ArrowLeft, Mail, OctagonAlertIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { Alert, AlertTitle } from "@neuralpay/ui/components/alert";
-import { Button } from "@neuralpay/ui/components/button";
+import { Alert, AlertTitle } from "@orra/ui/components/alert";
+import { Button } from "@orra/ui/components/button";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@neuralpay/ui/components/field";
-import { Input } from "@neuralpay/ui/components/input";
+} from "@orra/ui/components/field";
+import { Input } from "@orra/ui/components/input";
 import type { Route } from "next";
 import { toast } from "sonner";
 import { useSendOtp } from "../../hooks/mutations/use-send-otp";

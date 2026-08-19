@@ -1,14 +1,14 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@neuralpay/ui/components/card";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@neuralpay/ui/components/tabs";
+} from "@orra/ui/components/card";
+import { Skeleton } from "@orra/ui/components/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@orra/ui/components/tabs";
 import { PieChart } from "lucide-react";
 import { useCallback, useId, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";

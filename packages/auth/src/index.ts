@@ -1,5 +1,5 @@
-import { createDb } from "@neuralpay/db";
-import * as schema from "@neuralpay/db/schema";
+import { createDb } from "@orra/db";
+import * as schema from "@orra/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailOTP, twoFactor } from "better-auth/plugins";
@@ -42,7 +42,7 @@ export function createAuth(config: AuthConfig) {
       async sendResetPassword({ user, url }) {
         void sendEmail({
           to: user.email,
-          subject: "Reset your password — NeuralPay",
+          subject: "Reset your password — Orra",
           html: resetPasswordTemplate({ url }),
         });
       },
@@ -166,7 +166,7 @@ export function createAuth(config: AuthConfig) {
         },
       }),
       twoFactor({
-        issuer: "NeuralPay AI",
+        issuer: "Orra AI",
         otpOptions: { digits: 6, period: 30 },
       }),
     ],

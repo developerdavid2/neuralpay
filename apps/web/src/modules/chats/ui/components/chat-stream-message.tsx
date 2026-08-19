@@ -3,14 +3,14 @@
 import {
   MessageContent,
   MessageResponse,
-} from "@neuralpay/ui/components/ai-elements/message";
+} from "@orra/ui/components/ai-elements/message";
 import {
   Reasoning,
   ReasoningContent,
   ReasoningTrigger,
-} from "@neuralpay/ui/components/ai-elements/reasoning";
-import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/ai-elements/reasoning";
+import { Avatar, AvatarFallback } from "@orra/ui/components/avatar";
+import { cn } from "@orra/ui/lib/utils";
 import { Bot } from "lucide-react";
 import type { ChatMessage } from "../../hooks/use-ai-chat";
 import { ChatMessageItem } from "./chat-message-item";
@@ -37,8 +37,8 @@ export function ChatStreamMessage({
   // User messages only carry text — reuse the regular bubble.
   if (message.role === "user") {
     const text = message.parts
-      .filter((part): part is { type: "text"; text: string } =>
-        part.type === "text",
+      .filter(
+        (part): part is { type: "text"; text: string } => part.type === "text",
       )
       .map((part) => part.text)
       .join("");

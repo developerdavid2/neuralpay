@@ -1,4 +1,4 @@
-import type { BudgetHealth, BudgetPeriod } from "@neuralpay/types";
+import type { BudgetHealth, BudgetPeriod } from "@orra/types";
 import {
   addMonths,
   addWeeks,

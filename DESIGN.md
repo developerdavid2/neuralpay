@@ -1,4 +1,4 @@
-# NeuralPay design system
+# Orra design system
 
 > Source of truth for tokens: `packages/ui/src/styles/globals.css`. Pattern evidence: `apps/web/src/modules/*`.
 > This document describes what the dashboard actually does today. If a pattern is not listed here, it does not exist yet in the codebase.
@@ -15,37 +15,43 @@
 
 ## 2. Component patterns
 
-- Default to shadcn primitives first. Dashboard code imports every surface from `@neuralpay/ui/components/*` (button, badge, card, drawer, sheet, skeleton, spinner, input, select, checkbox, dropdown-menu, table, tabs, separator, switch, field, textarea, scroll-area, command, popover, calendar, avatar, alert-dialog, dialog, sidebar, sonner, and more). Custom code only where shadcn has no equivalent. `cn` comes from `@neuralpay/ui/lib/utils`.
+- Default to shadcn primitives first. Dashboard code imports every surface from `@orra/ui/components/*` (button, badge, card, drawer, sheet, skeleton, spinner, input, select, checkbox, dropdown-menu, table, tabs, separator, switch, field, textarea, scroll-area, command, popover, calendar, avatar, alert-dialog, dialog, sidebar, sonner, and more). Custom code only where shadcn has no equivalent. `cn` comes from `@orra/ui/lib/utils`.
 
 ### Card shapes
+
 - Standard section card: `rounded-xl border border-border bg-card` (recent transactions, top categories).
 - Page container: `bg-card border border-muted shadow rounded-2xl` wrapping a section with a filter bar plus table or list (accounts page, transactions page).
 - Stat highlight cards: `rounded-3xl` with a gradient overlay and custom shadows (dashboard overview).
 - Grouped card rows use `divide-y divide-border` on the container.
 
 ### Headers
+
 - Page header: title `text-2xl md:text-3xl font-semibold tracking-tight`, description `text-sm text-muted-foreground`, optional action button on the right.
 - Card section header: title `text-sm font-semibold text-foreground` beside a `text-primary` icon, sub copy `text-xs text-muted-foreground`.
 - Table column header: ghost Button, `uppercase text-[12px]`, with a ChevronsUpDown icon that toggles sort.
 
 ### Status color logic
+
 - Every status to color mapping lives in a per module constants file (`HEALTH_META`, `TRANSACTION_STATUS_STYLES`, `ACCOUNT_STATUS_CONFIG`) and exports ready made class strings for badge, bar, dot, and text variants.
 - The shared recipe: badge `bg-{color}-500/10 text-{color}-600 dark:text-{color}-400 border-{color}-500/20`, progress bar `h-1.5 w-full rounded-full bg-muted` with an inner bar in the status color, plus dot and text variants for inline use.
 - Palette: on track and successful use emerald, warning and pending use amber, over and failed use red (destructive), refunded uses blue, reversed uses violet, active uses emerald, inactive uses slate. Ranked category bars scale one hue by opacity (`bg-primary/80`, `/60`, `/40`).
 - Amounts: `font-mono text-sm font-semibold tabular-nums`, credit in emerald with a plus, debit in default foreground with a minus, negative balance in destructive.
 
 ### Lists and tables
+
 - Transactions group rows into month sections with month headers.
 - Row icon chips: `size-9 rounded-lg bg-accent` with a `text-muted-foreground` lucide icon (recent transactions, account name cell).
 - Data tables (TanStack Table on shadcn Table): row selection Checkbox, sticky table header (`sticky top-0 backdrop-blur-xl bg-muted dark:bg-secondary`), filter bar in a `border-b border-border` strip, row actions in a DropdownMenu (View Details, Edit, Delete) with destructive styling on delete. List rows hover with `hover:bg-muted/30` (or `hover:bg-accent dark:hover:bg-white/4` on cards).
 - Empty states: centered `flex flex-col items-center justify-center h-64 text-center`, a `text-muted-foreground` icon, a `text-sm font-medium` title, a `text-xs text-muted-foreground` hint capped at `max-w-xs`. Category cards use a `rounded-full bg-muted p-3` icon circle.
 
 ### Loading and error states
+
 - Skeletons mirror the real layout closely (same headings, row counts, widths) so the page does not jump.
 - `SectionBoundary` wraps every data section with Suspense plus ErrorBoundary: pass a matching skeleton as fallback and an errorMessage; the error fallback shows an AlertCircle icon, the message, and a Try again button.
 - Pending mutations disable the row action menu and swap the MoreHorizontal icon for a Spinner.
 
 ### Overlay panels
+
 - Detail views open in a Drawer (account, transaction, budget, insight). Create/edit forms use a Sheet in transactions and budgets but a Drawer in accounts (accounts is the inconsistent module).
 - Dialogs (AlertDialog) are reserved for destructive confirmations.
 

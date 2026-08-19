@@ -5,7 +5,7 @@ import type {
   SessionInfo,
   TwoFactorStatus,
   Verify2FAResult,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { auth } from "../lib/auth";
 import { UsersService } from "./users.service";
 
@@ -119,7 +119,7 @@ export const SecurityService = {
   ): Promise<ServiceResult<Enable2FAResult>> {
     try {
       const result = await auth.api.enableTwoFactor({
-        body: { password, issuer: "Neuralpay AI" },
+        body: { password, issuer: "Orra AI" },
         headers,
       });
       return {

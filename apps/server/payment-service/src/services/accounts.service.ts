@@ -1,6 +1,6 @@
-import { db } from "@neuralpay/db";
-import { bankAccounts } from "@neuralpay/db/schema";
-import { cache, cacheKeys } from "@neuralpay/redis";
+import { db } from "@orra/db";
+import { bankAccounts } from "@orra/db/schema";
+import { cache, cacheKeys } from "@orra/redis";
 import {
   ACCOUNT_STATUSES,
   ACCOUNT_TYPES,
@@ -11,7 +11,7 @@ import {
   type PaginatedAccounts,
   type ServiceResult,
   type UpdateAccountInput,
-} from "@neuralpay/types";
+} from "@orra/types";
 import {
   and,
   desc,

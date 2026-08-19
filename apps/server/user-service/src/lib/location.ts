@@ -1,4 +1,4 @@
-import type { CityOption } from "@neuralpay/types";
+import type { CityOption } from "@orra/types";
 import axios from "axios";
 import { City } from "country-state-city";
 

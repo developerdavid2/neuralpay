@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
 import { handleEvent } from "../handlers";
-import type { NotificationJob } from "@neuralpay/types";
-import { notificationsServiceEnv } from "@neuralpay/env/notifications";
+import type { NotificationJob } from "@orra/types";
+import { notificationsServiceEnv } from "@orra/env/notifications";
 
 const connection = {
   host: new URL(notificationsServiceEnv.REDIS_URL ?? "redis://localhost:6379")

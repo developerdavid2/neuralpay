@@ -1,7 +1,7 @@
 "use client";
 
 import { RefreshCw } from "lucide-react";
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import { useSyncTransactions } from "../../hooks/mutations/use-sync-transactions";
 
 export function SyncButton({ bankId }: { bankId: string }) {

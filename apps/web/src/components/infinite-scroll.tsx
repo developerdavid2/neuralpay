@@ -1,6 +1,6 @@
 import { useIntersectionObserver } from "@/hooks/ui/use-intersection-observer";
-import { Button } from "@neuralpay/ui/components/button";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+import { Button } from "@orra/ui/components/button";
+import { Spinner } from "@orra/ui/components/spinner";
 import { useEffect } from "react";
 
 interface InfiniteScrollProps {

@@ -1,5 +1,5 @@
-import { db } from "@neuralpay/db";
-import { deviceTokens, notifications } from "@neuralpay/db/schema";
+import { db } from "@orra/db";
+import { deviceTokens, notifications } from "@orra/db/schema";
 import type {
   AppNotification,
   CreateNotificationInput,
@@ -8,7 +8,7 @@ import type {
   NotificationsSummaryInput,
   PaginatedNotifications,
   ServiceResult,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 export async function createNotification(

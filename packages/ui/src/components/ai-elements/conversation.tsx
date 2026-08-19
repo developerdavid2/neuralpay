@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { Button } from "@orra/ui/components/button";
+import { cn } from "@orra/ui/lib/utils";
 import type { UIMessage } from "ai";
 import { ArrowDownIcon, DownloadIcon } from "lucide-react";
 import type { ComponentProps } from "react";

@@ -1,9 +1,5 @@
-import {
-  protectedProcedure,
-  publicProcedure,
-  router,
-} from "@neuralpay/config/trpc";
-import { subscribeToUser } from "@neuralpay/redis";
+import { protectedProcedure, publicProcedure, router } from "@orra/config/trpc";
+import { subscribeToUser } from "@orra/redis";
 import {
   type AppNotification,
   markReadSchema,
@@ -11,7 +7,7 @@ import {
   notificationsSummarySchema,
   registerDeviceSchema,
   updatePreferencesSchema,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { tracked } from "@trpc/server";
 import { z } from "zod";
 import { zAsyncIterable } from "../lib/zAsyncIterable";

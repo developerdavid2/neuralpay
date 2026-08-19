@@ -1,5 +1,5 @@
 import { useTRPC } from "@/trpc/trpc-client";
-import type { NotificationsFilterInput } from "@neuralpay/types";
+import type { NotificationsFilterInput } from "@orra/types";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 
 export function useNotifications(input: NotificationsFilterInput) {

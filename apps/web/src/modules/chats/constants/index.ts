@@ -1,5 +1,5 @@
 import type { ElementType } from "react";
-import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
+import type { ChatContextType, ChatTopicType } from "@orra/types";
 import {
   AlertTriangle,
   Building2,

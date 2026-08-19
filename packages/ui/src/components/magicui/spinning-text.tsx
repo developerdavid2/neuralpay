@@ -3,7 +3,7 @@
 import React, { type ComponentPropsWithoutRef } from "react";
 import { motion, type Transition, type Variants } from "motion/react";
 
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 
 interface SpinningTextProps extends ComponentPropsWithoutRef<"div"> {
   children: string | string[];

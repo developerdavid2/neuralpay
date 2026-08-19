@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import { Check, X } from "lucide-react";
 import { useState } from "react";
 

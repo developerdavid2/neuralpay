@@ -1,5 +1,5 @@
 // apps/server/notification-service/src/test-notif.ts
-import { emitNotification } from "@neuralpay/redis";
+import { emitNotification } from "@orra/redis";
 import { config } from "dotenv";
 config({ path: "../../../.env" });
 
@@ -260,8 +260,7 @@ const events = [
         userId: USER_ID,
         scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         durationMinutes: 30,
-        message:
-          "NeuralPay will be briefly unavailable for scheduled maintenance.",
+        message: "Orra will be briefly unavailable for scheduled maintenance.",
       },
     },
   },

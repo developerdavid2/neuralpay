@@ -4,25 +4,25 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 
-import { useIsMobile } from "@neuralpay/ui/hooks/use-mobile";
-import { cn } from "@neuralpay/ui/lib/utils";
-import { Button } from "@neuralpay/ui/components/button";
-import { Input } from "@neuralpay/ui/components/input";
-import { Separator } from "@neuralpay/ui/components/separator";
+import { useIsMobile } from "@orra/ui/hooks/use-mobile";
+import { cn } from "@orra/ui/lib/utils";
+import { Button } from "@orra/ui/components/button";
+import { Input } from "@orra/ui/components/input";
+import { Separator } from "@orra/ui/components/separator";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@neuralpay/ui/components/sheet";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+} from "@orra/ui/components/sheet";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@neuralpay/ui/components/tooltip";
+} from "@orra/ui/components/tooltip";
 import { PanelLeftIcon } from "lucide-react";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";

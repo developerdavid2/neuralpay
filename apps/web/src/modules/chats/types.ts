@@ -1,8 +1,4 @@
-import type {
-  ChatContextType,
-  ChatMessage,
-  ChatSession,
-} from "@neuralpay/types";
+import type { ChatContextType, ChatMessage, ChatSession } from "@orra/types";
 
 export interface SessionWithMessages {
   session: ChatSession;

@@ -2,12 +2,12 @@
 
 ## Overview
 
-The Next.js client for NeuralPay: auth flows, onboarding, the dashboard (accounts, transactions, budgets, splits, vaults), the AI coach chat, and notifications. Talks to services through the gateway via tRPC.
+The Next.js client for Orra: auth flows, onboarding, the dashboard (accounts, transactions, budgets, splits, vaults), the AI coach chat, and notifications. Talks to services through the gateway via tRPC.
 
 ## Stack
 
 - **Framework**: Next.js 16 (app router), React 19
-- **Key dependencies**: tRPC 11 client, AI SDK, zustand, TanStack Query, Tailwind v4 via `@neuralpay/ui`, lucide-react, recharts
+- **Key dependencies**: tRPC 11 client, AI SDK, zustand, TanStack Query, Tailwind v4 via `@orra/ui`, lucide-react, recharts
 
 ## Commands
 
@@ -19,7 +19,7 @@ bun dev:web      # dev on port 3001 with NODE_OPTIONS=--max-old-space-size=4096
 
 - App code lives in `src/app`; feature code in `src/modules/<feature>/` split into `ui`, `hooks`, `lib`, `constants`, `types`, `store`
 - tRPC client wiring in `src/trpc`; server prefetch helpers in `src/trpc/trpc-server.tsx`
-- Global styles: `src/index.css` imports `@neuralpay/ui/globals.css` on a single line
+- Global styles: `src/index.css` imports `@orra/ui/globals.css` on a single line
 
 ## Gotchas
 

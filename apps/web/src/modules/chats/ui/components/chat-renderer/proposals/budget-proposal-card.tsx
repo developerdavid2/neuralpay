@@ -1,6 +1,6 @@
 "use client";
 
-import type { BudgetCategoryAllocation } from "@neuralpay/types";
+import type { BudgetCategoryAllocation } from "@orra/types";
 import { format } from "date-fns";
 import { formatAmount } from "@/lib/utils";
 import { useCreateBudget } from "@/modules/budgets/hooks/mutations/use-create-budget";

@@ -1,6 +1,6 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import type { TxMonthlySummaryFilterInput } from "@neuralpay/types";
+import type { TxMonthlySummaryFilterInput } from "@orra/types";
 
 export function useTransactionsMonthlySummaries(
   filters: TxMonthlySummaryFilterInput,

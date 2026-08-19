@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { RateLimiterRedis, RateLimiterRes } from "rate-limiter-flexible";
 import { logger } from "../utils/logger";
-import { getRedisClient } from "@neuralpay/redis";
-import { gatewayEnv } from "@neuralpay/env/gateway";
+import { getRedisClient } from "@orra/redis";
+import { gatewayEnv } from "@orra/env/gateway";
 
 const redis = getRedisClient(gatewayEnv.REDIS_URL);
 

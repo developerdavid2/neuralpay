@@ -2,16 +2,16 @@
 
 import { useEffect } from "react";
 import { Controller, type UseFormReturn } from "react-hook-form";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Label } from "@neuralpay/ui/components/label";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Label } from "@orra/ui/components/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@neuralpay/ui/components/select";
-import type { UpdateProfileInput } from "@neuralpay/types";
+} from "@orra/ui/components/select";
+import type { UpdateProfileInput } from "@orra/types";
 import { CURRENCIES, LANGUAGES } from "../../constants";
 
 function useBrowserTimezone() {

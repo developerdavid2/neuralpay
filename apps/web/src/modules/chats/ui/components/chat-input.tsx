@@ -6,8 +6,8 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
-} from "@neuralpay/ui/components/ai-elements/prompt-input";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+} from "@orra/ui/components/ai-elements/prompt-input";
+import { Spinner } from "@orra/ui/components/spinner";
 import { Send } from "lucide-react";
 import { useMemo } from "react";
 

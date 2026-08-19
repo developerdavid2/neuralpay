@@ -2,8 +2,8 @@
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { NotificationBell } from "@/modules/notifications/ui/components/notification-bell";
-import { SidebarTrigger, useSidebar } from "@neuralpay/ui/components/sidebar";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { SidebarTrigger, useSidebar } from "@orra/ui/components/sidebar";
+import { cn } from "@orra/ui/lib/utils";
 
 const DashboardNavbar = () => {
   const { state, isMobile } = useSidebar();

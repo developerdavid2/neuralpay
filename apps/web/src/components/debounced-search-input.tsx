@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, X } from "lucide-react";
-import { Input } from "@neuralpay/ui/components/input";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { Input } from "@orra/ui/components/input";
+import { cn } from "@orra/ui/lib/utils";
 
 interface DebouncedSearchInputProps {
   value: string;

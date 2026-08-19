@@ -8,8 +8,8 @@ import {
   type Locale,
 } from "react-day-picker";
 
-import { cn } from "@neuralpay/ui/lib/utils";
-import { Button, buttonVariants } from "@neuralpay/ui/components/button";
+import { cn } from "@orra/ui/lib/utils";
+import { Button, buttonVariants } from "@orra/ui/components/button";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,

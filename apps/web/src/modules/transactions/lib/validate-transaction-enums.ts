@@ -5,7 +5,7 @@ import {
   type TransactionStatus,
   type TransactionType,
   type TransactionCategory,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 const VALID_STATUSES = TRANSACTION_STATUS;
 const VALID_TYPES = TRANSACTION_TYPE;

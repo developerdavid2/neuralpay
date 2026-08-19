@@ -1,4 +1,4 @@
-import { publishToUser } from "@neuralpay/redis";
+import { publishToUser } from "@orra/redis";
 import type { Request, Response } from "express";
 
 export function notifyStreamHandler(req: Request, res: Response) {

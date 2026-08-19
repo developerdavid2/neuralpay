@@ -1,7 +1,7 @@
 "use client";
 
-import { ACCOUNT_TYPES } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
+import { ACCOUNT_TYPES } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
 import { Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import {
@@ -9,8 +9,8 @@ import {
   CarouselContent,
   CarouselItem,
   type CarouselApi,
-} from "@neuralpay/ui/components/carousel";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/carousel";
+import { cn } from "@orra/ui/lib/utils";
 import { formatAmount } from "@/lib/utils";
 import { AccountTypeCard } from "../components/account-type-card";
 import { NewAccountButton } from "../components/new-account-button";

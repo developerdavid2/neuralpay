@@ -1,4 +1,4 @@
-import type { AppRouter } from "@neuralpay/api-gateway/router";
+import type { AppRouter } from "@orra/api-gateway/router";
 import type { inferProcedureInput, inferRouterOutputs } from "@trpc/server";
 
 type RawInsightsInput = inferProcedureInput<

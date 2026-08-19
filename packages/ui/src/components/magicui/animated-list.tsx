@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { AnimatePresence, motion, type MotionProps } from "motion/react";
 
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 
 export function AnimatedListItem({ children }: { children: React.ReactNode }) {
   const animations: MotionProps = {

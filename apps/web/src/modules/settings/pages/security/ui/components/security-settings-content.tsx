@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Skeleton } from "@orra/ui/components/skeleton";
 
 export function SecuritySettingsSkeleton() {
   return (

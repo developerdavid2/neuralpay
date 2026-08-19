@@ -1,17 +1,17 @@
 "use client";
 
 import { DebouncedSearchInput } from "@/components/debounced-search-input";
-import { Button } from "@neuralpay/ui/components/button";
-import { Badge } from "@neuralpay/ui/components/badge";
+import { Button } from "@orra/ui/components/button";
+import { Badge } from "@orra/ui/components/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@neuralpay/ui/components/select";
-import { cn } from "@neuralpay/ui/lib/utils";
-import type { NotificationCategory } from "@neuralpay/types";
+} from "@orra/ui/components/select";
+import { cn } from "@orra/ui/lib/utils";
+import type { NotificationCategory } from "@orra/types";
 import { Filter } from "lucide-react";
 
 interface NotificationFiltersProps {

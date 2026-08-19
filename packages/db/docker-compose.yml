@@ -1,17 +1,17 @@
-name: neuralpay
+name: orra
 
 services:
   postgres:
     image: postgres
-    container_name: neuralpay-postgres
+    container_name: orra-postgres
     environment:
-      POSTGRES_DB: neuralpay
+      POSTGRES_DB: orra
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
     volumes:
-      - neuralpay_postgres_data:/var/lib/postgresql
+      - orra_postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -20,4 +20,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  neuralpay_postgres_data:
+  orra_postgres_data:

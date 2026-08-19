@@ -14,11 +14,11 @@
   "menuColor": "default",
   "menuAccent": "subtle",
   "aliases": {
-    "components": "@neuralpay/ui/components",
-    "utils": "@neuralpay/ui/lib/utils",
-    "ui": "@neuralpay/ui/components",
-    "lib": "@neuralpay/ui/lib",
-    "hooks": "@neuralpay/ui/hooks"
+    "components": "@orra/ui/components",
+    "utils": "@orra/ui/lib/utils",
+    "ui": "@orra/ui/components",
+    "lib": "@orra/ui/lib",
+    "hooks": "@orra/ui/hooks"
   },
   "registries": {
     "@ai-elements": "https://ai-sdk.dev/elements/api/registry/{name}.json"

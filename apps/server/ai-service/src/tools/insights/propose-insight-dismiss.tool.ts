@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { db } from "@neuralpay/db";
-import { insights } from "@neuralpay/db/schema";
+import { db } from "@orra/db";
+import { insights } from "@orra/db/schema";
 import { tool } from "ai";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";

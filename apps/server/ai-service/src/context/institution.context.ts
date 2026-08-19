@@ -1,4 +1,4 @@
-import { bankAccounts, connectedPlaidBanks, db } from "@neuralpay/db";
+import { bankAccounts, connectedPlaidBanks, db } from "@orra/db";
 import { and, eq } from "drizzle-orm";
 
 export async function fetchInstitutionContext(

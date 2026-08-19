@@ -21,7 +21,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@neuralpay/ui/*": ["../../packages/ui/src/*"]
+      "@orra/ui/*": ["../../packages/ui/src/*"]
     }
   },
   "include": [

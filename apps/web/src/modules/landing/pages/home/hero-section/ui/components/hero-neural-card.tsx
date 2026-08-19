@@ -3,9 +3,9 @@
 import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
 import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
 import { useLandingReady } from "@/modules/landing/lib/use-landing-ready";
-import { NoiseTexture } from "@neuralpay/ui/components/magicui/noise-texture";
-import BorderGlow from "@neuralpay/ui/components/react-bits/border-glow";
-import Strands from "@neuralpay/ui/components/react-bits/strands";
+import { NoiseTexture } from "@orra/ui/components/magicui/noise-texture";
+import BorderGlow from "@orra/ui/components/react-bits/border-glow";
+import Strands from "@orra/ui/components/react-bits/strands";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { Bot, CheckCircle2, Sparkles, User } from "lucide-react";
@@ -208,174 +208,174 @@ export default function HeroNeuralCard() {
               noiseOpacity={0.2}
             />
 
-          {/* GLARE OVERLAY */}
-          <div
-            className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-300 rounded-[inherit]"
-            style={{
-              opacity: glare.opacity,
-              background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%)`,
-            }}
-          />
+            {/* GLARE OVERLAY */}
+            <div
+              className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-300 rounded-[inherit]"
+              style={{
+                opacity: glare.opacity,
+                background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%)`,
+              }}
+            />
 
-          {/* HEADER BADGE */}
-          <div
-            ref={badgeRef}
-            className="relative z-20 flex items-center justify-between"
-          >
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-              <span className="h-2 w-2 rounded-full bg-violet-400 animate-pulse" />
-              <span className="text-[10px] font-mono tracking-widest text-white/80 font-semibold uppercase">
-                NEURAL • AGENT ACTIVE
+            {/* HEADER BADGE */}
+            <div
+              ref={badgeRef}
+              className="relative z-20 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                <span className="h-2 w-2 rounded-full bg-violet-400 animate-pulse" />
+                <span className="text-[10px] font-mono tracking-widest text-white/80 font-semibold uppercase">
+                  NEURAL • AGENT ACTIVE
+                </span>
+              </div>
+            </div>
+
+            {/* CENTER NEURAL CORE */}
+            <div
+              ref={coreRef}
+              className="relative z-20 flex flex-1 flex-col items-center justify-center"
+            >
+              <div className="relative size-fit flex items-center justify-center">
+                <Strands
+                  colors={[
+                    LANDING_THEME.foreground,
+                    LANDING_THEME.foreground,
+                    LANDING_THEME.indigo,
+                  ]}
+                  count={3}
+                  speed={0.5}
+                  amplitude={1}
+                  waviness={1}
+                  thickness={0.7}
+                  glow={2.6}
+                  taper={3}
+                  spread={1.6}
+                  intensity={0.6}
+                  saturation={2}
+                  opacity={1}
+                  scale={1.4}
+                  glass={false}
+                  refraction={1}
+                  dispersion={1}
+                  glassSize={1}
+                  hueShift={0}
+                />
+              </div>
+              <span className="text-[10px] font-mono tracking-widest text-white/40 uppercase -mt-1 flex items-center gap-1">
+                <Sparkles className="size-3 text-violet-400" /> REASONING ENGINE
+                v2.4
               </span>
             </div>
-          </div>
 
-          {/* CENTER NEURAL CORE */}
-          <div
-            ref={coreRef}
-            className="relative z-20 flex flex-1 flex-col items-center justify-center"
-          >
-            <div className="relative size-fit flex items-center justify-center">
-              <Strands
-                colors={[
-                  LANDING_THEME.foreground,
-                  LANDING_THEME.foreground,
-                  LANDING_THEME.indigo,
-                ]}
-                count={3}
-                speed={0.5}
-                amplitude={1}
-                waviness={1}
-                thickness={0.7}
-                glow={2.6}
-                taper={3}
-                spread={1.6}
-                intensity={0.6}
-                saturation={2}
-                opacity={1}
-                scale={1.4}
-                glass={false}
-                refraction={1}
-                dispersion={1}
-                glassSize={1}
-                hueShift={0}
-              />
-            </div>
-            <span className="text-[10px] font-mono tracking-widest text-white/40 uppercase -mt-1 flex items-center gap-1">
-              <Sparkles className="size-3 text-violet-400" /> REASONING ENGINE
-              v2.4
-            </span>
-          </div>
-
-          {/* AGENT CHAT */}
-          <div
-            ref={chatRef}
-            className="relative z-20 flex flex-col gap-2.5 mb-2 min-h-[9.5rem] xl:min-h-55"
-          >
-            {/* USER PROMPT */}
-            <div className="flex items-start gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
-              <div className="size-6 rounded-md bg-violet-500/20 border border-violet-400/30 flex items-center justify-center shrink-0 mt-0.5">
-                <User className="size-3.5 text-violet-300" />
+            {/* AGENT CHAT */}
+            <div
+              ref={chatRef}
+              className="relative z-20 flex flex-col gap-2.5 mb-2 min-h-[9.5rem] xl:min-h-55"
+            >
+              {/* USER PROMPT */}
+              <div className="flex items-start gap-2 p-2.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <div className="size-6 rounded-md bg-violet-500/20 border border-violet-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <User className="size-3.5 text-violet-300" />
+                </div>
+                <p className="text-xs font-mono text-white/90 leading-relaxed min-h-9">
+                  {displayedPrompt}
+                  {phase === "typing" && (
+                    <span className="inline-block w-1.5 h-3 bg-violet-400 ml-1 animate-pulse" />
+                  )}
+                </p>
               </div>
-              <p className="text-xs font-mono text-white/90 leading-relaxed min-h-9">
-                {displayedPrompt}
-                {phase === "typing" && (
-                  <span className="inline-block w-1.5 h-3 bg-violet-400 ml-1 animate-pulse" />
+
+              {/* THINKING / RESPONSE */}
+              <AnimatePresence mode="wait">
+                {phase === "thinking" && (
+                  <motion.div
+                    key="thinking"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-main/10 border border-violet-500/20 text-[11px] font-mono text-violet-300"
+                  >
+                    <Sparkles className="size-3.5 animate-spin text-violet-400" />
+                    <span>Analyzing ledger & context...</span>
+                  </motion.div>
                 )}
-              </p>
-            </div>
 
-            {/* THINKING / RESPONSE */}
-            <AnimatePresence mode="wait">
-              {phase === "thinking" && (
-                <motion.div
-                  key="thinking"
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-main/10 border border-violet-500/20 text-[11px] font-mono text-violet-300"
-                >
-                  <Sparkles className="size-3.5 animate-spin text-violet-400" />
-                  <span>Analyzing ledger & context...</span>
-                </motion.div>
-              )}
-
-              {phase === "response" && (
-                <motion.div
-                  key={`response-${scenarioIndex}`}
-                  initial={{ opacity: 0, y: 12, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="flex flex-col gap-3 p-3.5 rounded-2xl bg-linear-to-tr from-zinc-900/10  to-neutral-500/20 shadow-2xl backdrop-blur-lg overflow-hidden"
-                >
-                  {/* Subtle glass gloss highlight */}
-                  <div className="absolute -top-10 left-40 w-full h-100 bg-white/10 rounded-full blur-xl pointer-events-none rotate-30" />
-                  {/* AI AGENT HEADER BADGE */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono text-violet-300 font-semibold uppercase tracking-wider">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
-                      </span>
-                      <Bot className="size-3.5 text-violet-400" />
-                      <span>Agent Insight</span>
-                    </div>
-                  </div>
-
-                  {/* AI RESPONSE PROSE */}
-                  <p className="text-xs font-sans text-white/90 leading-relaxed font-light">
-                    {currentScenario.response}
-                  </p>
-
-                  {/* HERO CARD BALANCE (Pulls directly from currentScenario.tags[0]) */}
-                  {currentScenario.tags.length > 0 && (
-                    <div className="chart-bar relative overflow-hidden flex items-center justify-between p-3.5 rounded-xl shadow-inner">
-                      <div className="flex flex-col z-10">
-                        <span className="text-[9px] font-mono uppercase tracking-widest text-violet-300/80">
-                          {currentScenario.tags[0].label}
+                {phase === "response" && (
+                  <motion.div
+                    key={`response-${scenarioIndex}`}
+                    initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                    className="flex flex-col gap-3 p-3.5 rounded-2xl bg-linear-to-tr from-zinc-900/10  to-neutral-500/20 shadow-2xl backdrop-blur-lg overflow-hidden"
+                  >
+                    {/* Subtle glass gloss highlight */}
+                    <div className="absolute -top-10 left-40 w-full h-100 bg-white/10 rounded-full blur-xl pointer-events-none rotate-30" />
+                    {/* AI AGENT HEADER BADGE */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-[10px] font-mono text-violet-300 font-semibold uppercase tracking-wider">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
                         </span>
-                        <div
-                          className={`text-2xl font-bold font-mono tracking-tight drop-shadow-[0_2px_10px_rgba(168,85,247,0.4)] ${currentScenario.tags[0].color}`}
-                        >
-                          {currentScenario.tags[0].amount}
-                        </div>
-                      </div>
-
-                      {/* Status / Indicator Badge */}
-                      <div className="z-10 px-2.5 py-1 rounded-md bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-mono font-semibold text-emerald-300 flex items-center gap-1.5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        Calculated
+                        <Bot className="size-3.5 text-violet-400" />
+                        <span>Agent Insight</span>
                       </div>
                     </div>
-                  )}
 
-                  {/* SUB-TAGS / BREAKDOWN ITEMS (Renders remaining tags if there are more than one) */}
-                  {currentScenario.tags.length > 1 && (
-                    <div className="flex flex-col gap-1.5 mt-0.5">
-                      {currentScenario.tags.slice(1).map((tag, i) => (
-                        <div
-                          key={i}
-                          className="chart-bar flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/3 hover:bg-white/6 border border-white/5 transition-colors text-[11px] font-mono"
-                        >
-                          <span className="text-white/80 flex items-center gap-1.5">
-                            <CheckCircle2 className="size-3.5 text-violet-400 shrink-0" />
-                            {tag.label}
+                    {/* AI RESPONSE PROSE */}
+                    <p className="text-xs font-sans text-white/90 leading-relaxed font-light">
+                      {currentScenario.response}
+                    </p>
+
+                    {/* HERO CARD BALANCE (Pulls directly from currentScenario.tags[0]) */}
+                    {currentScenario.tags.length > 0 && (
+                      <div className="chart-bar relative overflow-hidden flex items-center justify-between p-3.5 rounded-xl shadow-inner">
+                        <div className="flex flex-col z-10">
+                          <span className="text-[9px] font-mono uppercase tracking-widest text-violet-300/80">
+                            {currentScenario.tags[0].label}
                           </span>
-                          <span className={`font-bold ${tag.color}`}>
-                            {tag.amount}
-                          </span>
+                          <div
+                            className={`text-2xl font-bold font-mono tracking-tight drop-shadow-[0_2px_10px_rgba(168,85,247,0.4)] ${currentScenario.tags[0].color}`}
+                          >
+                            {currentScenario.tags[0].amount}
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+
+                        {/* Status / Indicator Badge */}
+                        <div className="z-10 px-2.5 py-1 rounded-md bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-mono font-semibold text-emerald-300 flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          Calculated
+                        </div>
+                      </div>
+                    )}
+
+                    {/* SUB-TAGS / BREAKDOWN ITEMS (Renders remaining tags if there are more than one) */}
+                    {currentScenario.tags.length > 1 && (
+                      <div className="flex flex-col gap-1.5 mt-0.5">
+                        {currentScenario.tags.slice(1).map((tag, i) => (
+                          <div
+                            key={i}
+                            className="chart-bar flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/3 hover:bg-white/6 border border-white/5 transition-colors text-[11px] font-mono"
+                          >
+                            <span className="text-white/80 flex items-center gap-1.5">
+                              <CheckCircle2 className="size-3.5 text-violet-400 shrink-0" />
+                              {tag.label}
+                            </span>
+                            <span className={`font-bold ${tag.color}`}>
+                              {tag.amount}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
-      </BorderGlow>
-    </div>
+        </BorderGlow>
+      </div>
     </div>
   );
 }

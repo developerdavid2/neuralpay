@@ -5,7 +5,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@neuralpay/ui/components/card";
+} from "@orra/ui/components/card";
 import {
   Area,
   AreaChart,

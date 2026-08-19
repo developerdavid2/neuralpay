@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, router } from "@neuralpay/config/trpc";
+import { publicProcedure, router } from "@orra/config/trpc";
 import { LocationService } from "../services/location.service";
 
 export const locationRouter = router({

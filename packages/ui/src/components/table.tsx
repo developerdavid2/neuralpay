@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 
 function Table({
   className,

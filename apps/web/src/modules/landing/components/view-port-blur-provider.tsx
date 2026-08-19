@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import GradualBlurMemo from "@neuralpay/ui/components/react-bits/gradual-blur";
+import GradualBlurMemo from "@orra/ui/components/react-bits/gradual-blur";
 
 export default function ViewportBlurProvider({
   children,

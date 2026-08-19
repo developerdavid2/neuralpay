@@ -1,4 +1,4 @@
-import { redisEnv } from "@neuralpay/redis/client";
+import { redisEnv } from "@orra/redis/client";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 import { baseServerEnv } from "./server";

@@ -1,4 +1,4 @@
-import type { NotificationJob } from "@neuralpay/types";
+import type { NotificationJob } from "@orra/types";
 import { Queue } from "bullmq";
 
 let notificationQueue: Queue | null = null;
@@ -15,10 +15,10 @@ function getConnection() {
     tls: url.protocol === "rediss:" ? {} : undefined,
     maxRetriesPerRequest: 3,
     connectTimeout: 10_000, // Increased for Render cold starts
-    commandTimeout: 8_000,  // Increased tolerance for slow Redis
-    keepAlive: 30_000,      // Keep connections alive longer
+    commandTimeout: 8_000, // Increased tolerance for slow Redis
+    keepAlive: 30_000, // Keep connections alive longer
     enableOfflineQueue: true, // Queue commands during reconnect
-    lazyConnect: false,      // Connect eagerly on startup
+    lazyConnect: false, // Connect eagerly on startup
   };
 }
 

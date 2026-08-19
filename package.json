@@ -1,5 +1,5 @@
 {
-  "name": "neuralpay",
+  "name": "orra",
   "private": true,
   "workspaces": {
     "packages": [
@@ -57,23 +57,23 @@
     "dev:notification": "turbo -F notification-service dev",
     "dev:backend": "turbo -F api-gateway -F user-service -F payment-service -F ai-service -F notification-service dev",
     "health:check": "bun scripts/health-check.ts",
-    "db:push": "turbo -F @neuralpay/db db:push",
-    "db:studio": "turbo -F @neuralpay/db db:studio",
-    "db:generate": "turbo -F @neuralpay/db db:generate",
-    "db:migrate": "turbo -F @neuralpay/db db:migrate",
-    "db:start": "turbo -F @neuralpay/db db:start",
-    "db:watch": "turbo -F @neuralpay/db db:watch",
-    "db:stop": "turbo -F @neuralpay/db db:stop",
-    "db:down": "turbo -F @neuralpay/db db:down",
+    "db:push": "turbo -F @orra/db db:push",
+    "db:studio": "turbo -F @orra/db db:studio",
+    "db:generate": "turbo -F @orra/db db:generate",
+    "db:migrate": "turbo -F @orra/db db:migrate",
+    "db:start": "turbo -F @orra/db db:start",
+    "db:watch": "turbo -F @orra/db db:watch",
+    "db:stop": "turbo -F @orra/db db:stop",
+    "db:down": "turbo -F @orra/db db:down",
     "prepare": "husky"
   },
   "dependencies": {
-    "@neuralpay/env": "workspace:*",
+    "@orra/env": "workspace:*",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@neuralpay/config": "workspace:*",
+    "@orra/config": "workspace:*",
     "@types/bun": "catalog:",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",

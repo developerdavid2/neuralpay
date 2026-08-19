@@ -1,6 +1,6 @@
 "use client";
 
-import { Switch } from "@neuralpay/ui/components/switch";
+import { Switch } from "@orra/ui/components/switch";
 import { useToggleAccountStatus } from "../../hooks/mutations/use-toggle-account-status";
 
 interface AccountStatusToggleProps {

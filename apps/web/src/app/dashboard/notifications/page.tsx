@@ -1,6 +1,6 @@
 import { NotificationsView } from "@/modules/notifications/ui/views/notifications-view";
 import { HydrateClient, prefetch, trpc } from "@/trpc/trpc-server";
-import { NOTIFICATION_CATEGORY } from "@neuralpay/types";
+import { NOTIFICATION_CATEGORY } from "@orra/types";
 
 export const dynamic = "force-dynamic";
 

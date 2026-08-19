@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
+import type { ChatContextType, ChatTopicType } from "@orra/types";
 
 interface ChatUIState {
   sessionSidebarOpen: boolean;

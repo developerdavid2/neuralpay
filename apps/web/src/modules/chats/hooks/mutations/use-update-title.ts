@@ -5,7 +5,7 @@ import type {
   PaginatedChatMessages,
   PaginatedChatSessions,
   UpdateSessionTitleInput,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 

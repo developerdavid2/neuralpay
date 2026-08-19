@@ -49,8 +49,8 @@ const fontRostexOutline = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "neuralpay",
-  description: "neuralpay",
+  title: "orra",
+  description: "orra",
 };
 
 export default function RootLayout({

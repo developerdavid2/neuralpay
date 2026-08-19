@@ -2,19 +2,19 @@
   "rewrites": [
     {
       "source": "/api/auth/:path*",
-      "destination": "https://neuralpay-api-gateway.vercel.app/v1/auth/:path*"
+      "destination": "https://orra-api-gateway.vercel.app/v1/auth/:path*"
     },
     {
       "source": "/api/trpc/:path*",
-      "destination": "https://neuralpay-api-gateway.vercel.app/v1/trpc/:path*"
+      "destination": "https://orra-api-gateway.vercel.app/v1/trpc/:path*"
     },
     {
       "source": "/api/stream/chat",
-      "destination": "https://neuralpay-api-gateway.vercel.app/v1/ai/chat/stream"
+      "destination": "https://orra-api-gateway.vercel.app/v1/ai/chat/stream"
     },
     {
       "source": "/api/stream/notifications",
-      "destination": "https://neuralpay-api-gateway.vercel.app/v1/notifications/stream"
+      "destination": "https://orra-api-gateway.vercel.app/v1/notifications/stream"
     }
   ]
 }

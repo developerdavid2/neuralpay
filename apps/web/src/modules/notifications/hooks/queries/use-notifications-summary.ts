@@ -1,6 +1,6 @@
 import { useTRPC } from "@/trpc/trpc-client";
 import { useQuery } from "@tanstack/react-query";
-import type { NotificationsSummaryInput } from "@neuralpay/types";
+import type { NotificationsSummaryInput } from "@orra/types";
 
 export function useNotificationsSummary(input: NotificationsSummaryInput) {
   const trpc = useTRPC();

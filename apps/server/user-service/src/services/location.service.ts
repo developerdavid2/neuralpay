@@ -1,4 +1,4 @@
-import type { CityOption, CountryOption, StateOption } from "@neuralpay/types";
+import type { CityOption, CountryOption, StateOption } from "@orra/types";
 import { Country, State } from "country-state-city";
 import {
   dedupeCities,

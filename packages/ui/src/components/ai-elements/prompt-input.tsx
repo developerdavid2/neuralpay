@@ -8,38 +8,38 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@neuralpay/ui/components/command";
+} from "@orra/ui/components/command";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@neuralpay/ui/components/dropdown-menu";
+} from "@orra/ui/components/dropdown-menu";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@neuralpay/ui/components/hover-card";
+} from "@orra/ui/components/hover-card";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupTextarea,
-} from "@neuralpay/ui/components/input-group";
+} from "@orra/ui/components/input-group";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@neuralpay/ui/components/select";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+} from "@orra/ui/components/select";
+import { Spinner } from "@orra/ui/components/spinner";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@neuralpay/ui/components/tooltip";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/tooltip";
+import { cn } from "@orra/ui/lib/utils";
 import type { ChatStatus, FileUIPart, SourceDocumentUIPart } from "ai";
 import {
   CornerDownLeftIcon,

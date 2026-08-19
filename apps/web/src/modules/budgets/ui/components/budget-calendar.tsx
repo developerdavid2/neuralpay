@@ -1,9 +1,9 @@
 "use client";
 
-import type { BudgetCalendarDay } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { cn } from "@neuralpay/ui/lib/utils";
+import type { BudgetCalendarDay } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
+import { Skeleton } from "@orra/ui/components/skeleton";
+import { cn } from "@orra/ui/lib/utils";
 import {
   eachDayOfInterval,
   endOfMonth,

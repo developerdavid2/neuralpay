@@ -1,13 +1,9 @@
 "use client";
 
-import type { CreateBudgetInput, UpdateBudgetInput } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-} from "@neuralpay/ui/components/sheet";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import type { CreateBudgetInput, UpdateBudgetInput } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
+import { Sheet, SheetClose, SheetContent } from "@orra/ui/components/sheet";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { endOfMonth, startOfMonth } from "date-fns";
 import { X } from "lucide-react";
 import { useConfirm } from "@/hooks/ui/use-confirm";

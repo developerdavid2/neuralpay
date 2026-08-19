@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 import React, { type CSSProperties, type ReactNode, useId } from "react";
 
 interface AuroraBackgroundProps extends React.HTMLProps<HTMLDivElement> {

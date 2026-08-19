@@ -1,10 +1,10 @@
-import { db } from "@neuralpay/db";
-import { insights } from "@neuralpay/db/schema";
+import { db } from "@orra/db";
+import { insights } from "@orra/db/schema";
 import type {
   InsightFilterInput,
   InsightRecord,
   ServiceResult,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 
 export const AIInsightsService = {

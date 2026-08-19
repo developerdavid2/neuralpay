@@ -7,8 +7,8 @@ importScripts(
 
 firebase.initializeApp({
   apiKey: "AIzaSyAhYAQaYz426m6eWZTWKIUVtPM6AAUftKo",
-  authDomain: "neuralpay-ai-notify.firebaseapp.com",
-  projectId: "neuralpay-ai-notify",
+  authDomain: "orra-ai-notify.firebaseapp.com",
+  projectId: "orra-ai-notify",
   messagingSenderId: "70963151111",
   appId: "1:70963151111:web:81c7bba7563820a16045a2",
 });

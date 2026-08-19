@@ -6,7 +6,7 @@ import { CustomEase } from "gsap/CustomEase";
 import { SplitText } from "gsap/SplitText";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 import { Logo } from "./logo";
 
 gsap.registerPlugin(CustomEase, SplitText);
@@ -405,7 +405,7 @@ export default function Navbar() {
           >
             <div className="min-w-0 flex-1">
               <p className="relative translate-y-7.5 opacity-0 m-0 text-[9px] font-normal uppercase leading-[1.6] text-black sm:text-[10px] md:text-[11px]">
-                NeuralPay Inc
+                Orra Inc
               </p>
 
               <p className="relative translate-y-7.5 opacity-0 m-0 text-[9px] font-normal uppercase leading-[1.6] text-black sm:text-[10px] md:text-[11px]">
@@ -415,11 +415,11 @@ export default function Navbar() {
               <br />
 
               <p className="relative translate-y-7.5 opacity-0 m-0 break-all text-[9px] font-normal uppercase leading-[1.6] text-black sm:text-[10px] md:text-[11px]">
-                contact@neuralpay.io
+                contact@orra.io
               </p>
 
               <p className="relative translate-y-7.5 opacity-0 m-0 break-all text-[9px] font-normal uppercase leading-[1.6] text-black sm:text-[10px] md:text-[11px]">
-                careers@neuralpay.io
+                careers@orra.io
               </p>
             </div>
 

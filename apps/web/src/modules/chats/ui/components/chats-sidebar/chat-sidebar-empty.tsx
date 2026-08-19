@@ -1,4 +1,4 @@
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import { MessageSquare, Plus } from "lucide-react";
 
 interface ChatSidebarEmptyProps {

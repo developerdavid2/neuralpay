@@ -5,7 +5,7 @@ import type {
   BudgetSortField,
   CreateBudgetInput,
   UpdateBudgetFormInput,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 export type CreateFormValues = CreateBudgetInput;
 export type UpdateFormValues = UpdateBudgetFormInput;

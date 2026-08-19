@@ -1,4 +1,4 @@
-import type { NotificationPreferences } from "@neuralpay/types";
+import type { NotificationPreferences } from "@orra/types";
 
 export type AlertPreferenceKey = Extract<
   keyof NotificationPreferences,

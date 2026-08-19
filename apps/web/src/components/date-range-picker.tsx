@@ -4,15 +4,15 @@ import { useState, useCallback } from "react";
 import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@neuralpay/ui/components/popover";
-import { Calendar } from "@neuralpay/ui/components/calendar";
+} from "@orra/ui/components/popover";
+import { Calendar } from "@orra/ui/components/calendar";
 import type { DateRange } from "react-day-picker";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 
 interface DateRangePickerProps {
   value: DateRange | undefined;

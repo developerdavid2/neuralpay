@@ -11,16 +11,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Alert, AlertTitle } from "@neuralpay/ui/components/alert";
-import { Button } from "@neuralpay/ui/components/button";
-import { Field, FieldGroup } from "@neuralpay/ui/components/field";
+import { Alert, AlertTitle } from "@orra/ui/components/alert";
+import { Button } from "@orra/ui/components/button";
+import { Field, FieldGroup } from "@orra/ui/components/field";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@neuralpay/ui/components/input-otp";
-import { Spinner } from "@neuralpay/ui/components/spinner";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/input-otp";
+import { Spinner } from "@orra/ui/components/spinner";
+import { cn } from "@orra/ui/lib/utils";
 import { toast } from "sonner";
 import { Show } from "@/components/show";
 import { useSendOtp } from "../../hooks/mutations/use-send-otp";

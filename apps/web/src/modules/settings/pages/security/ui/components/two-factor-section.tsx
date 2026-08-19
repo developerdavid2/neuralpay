@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Button } from "@neuralpay/ui/components/button";
-import { Badge } from "@neuralpay/ui/components/badge";
-import { Input } from "@neuralpay/ui/components/input";
-import { Label } from "@neuralpay/ui/components/label";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Button } from "@orra/ui/components/button";
+import { Badge } from "@orra/ui/components/badge";
+import { Input } from "@orra/ui/components/input";
+import { Label } from "@orra/ui/components/label";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { toast } from "sonner";
 import { use2FAStatus } from "../../hooks/queries/use-2fa-status";
 import { useDisable2FA } from "../../hooks/mutations/use-disable-2fa";

@@ -1,4 +1,4 @@
-import type { categoryEnum } from "@neuralpay/db";
+import type { categoryEnum } from "@orra/db";
 
 type AppCategory = (typeof categoryEnum.enumValues)[number];
 

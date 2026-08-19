@@ -38,7 +38,7 @@ export function otpTemplate({
             <!-- Header -->
             <tr>
               <td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:36px 40px;text-align:center;">
-                <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">NeuralPay</h1>
+                <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">Orra</h1>
                 <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">Intelligent Payment Infrastructure</p>
               </td>
             </tr>
@@ -80,7 +80,7 @@ export function otpTemplate({
             <tr>
               <td style="background-color:#f9fafb;border-top:1px solid #e5e7eb;padding:24px 40px;text-align:center;">
                 <p style="margin:0;color:#9ca3af;font-size:12px;">
-                  © ${new Date().getFullYear()} NeuralPay. All rights reserved.
+                  © ${new Date().getFullYear()} Orra. All rights reserved.
                 </p>
                 <p style="margin:6px 0 0;color:#9ca3af;font-size:12px;">
                   This is an automated message, please do not reply.
@@ -114,7 +114,7 @@ export function resetPasswordTemplate({ url }: { url: string }) {
             <!-- Header -->
             <tr>
               <td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:36px 40px;text-align:center;">
-                <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">NeuralPay</h1>
+                <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">Orra</h1>
                 <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">Intelligent Payment Infrastructure</p>
               </td>
             </tr>
@@ -124,7 +124,7 @@ export function resetPasswordTemplate({ url }: { url: string }) {
               <td style="padding:40px;">
                 <h2 style="margin:0 0 8px;color:#111827;font-size:20px;font-weight:600;">Reset your password</h2>
                 <p style="margin:0 0 32px;color:#6b7280;font-size:15px;line-height:1.6;">
-                  We received a request to reset your NeuralPay password. Click the button below to choose a new one.
+                  We received a request to reset your Orra password. Click the button below to choose a new one.
                 </p>
 
                 <!-- CTA Button -->
@@ -158,7 +158,7 @@ export function resetPasswordTemplate({ url }: { url: string }) {
             <!-- Footer -->
             <tr>
               <td style="background-color:#f9fafb;border-top:1px solid #e5e7eb;padding:24px 40px;text-align:center;">
-                <p style="margin:0;color:#9ca3af;font-size:12px;">© ${new Date().getFullYear()} NeuralPay. All rights reserved.</p>
+                <p style="margin:0;color:#9ca3af;font-size:12px;">© ${new Date().getFullYear()} Orra. All rights reserved.</p>
               </td>
             </tr>
 

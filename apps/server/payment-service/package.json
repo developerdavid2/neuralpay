@@ -1,5 +1,5 @@
 {
-  "name": "@neuralpay/payment-service",
+  "name": "@orra/payment-service",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,19 +15,19 @@
   "scripts": {
     "dev": "PORT=4002 bun run --hot src/local.ts",
     "build": "tsup",
-  "start": "node dist/render.js",
+    "start": "node dist/render.js",
     "check-types": "tsc -b"
   },
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/helmet": "^13.0.2",
     "@fastify/rate-limit": "^10.3.0",
-    "@neuralpay/auth": "workspace:*",
-    "@neuralpay/redis": "workspace:*",
-    "@neuralpay/config": "workspace:*",
-    "@neuralpay/db": "workspace:*",
-    "@neuralpay/env": "workspace:*",
-    "@neuralpay/types": "workspace:*",
+    "@orra/auth": "workspace:*",
+    "@orra/redis": "workspace:*",
+    "@orra/config": "workspace:*",
+    "@orra/db": "workspace:*",
+    "@orra/env": "workspace:*",
+    "@orra/types": "workspace:*",
     "@paralleldrive/cuid2": "^2.2.2",
     "@trpc/server": "catalog:",
     "better-auth": "catalog:",

@@ -1,5 +1,5 @@
 {
-  "name": "@neuralpay/redis",
+  "name": "@orra/redis",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "ioredis": "catalog:",
-    "@neuralpay/db": "workspace:*",
-    "@neuralpay/types": "workspace:*",
+    "@orra/db": "workspace:*",
+    "@orra/types": "workspace:*",
     "bullmq": "catalog:",
     "rate-limiter-flexible": "^11.2.0"
   },

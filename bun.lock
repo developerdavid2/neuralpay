@@ -3,14 +3,14 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "neuralpay",
+      "name": "orra",
       "dependencies": {
-        "@neuralpay/env": "workspace:*",
+        "@orra/env": "workspace:*",
         "dotenv": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@neuralpay/config": "workspace:*",
+        "@orra/config": "workspace:*",
         "@types/bun": "catalog:",
         "husky": "^9.1.7",
         "lint-staged": "^16.1.2",
@@ -19,18 +19,18 @@
       },
     },
     "apps/server/ai-service": {
-      "name": "@neuralpay/ai-service",
+      "name": "@orra/ai-service",
       "version": "0.0.0",
       "dependencies": {
         "@ai-sdk/anthropic": "^4.0.38",
         "@ai-sdk/groq": "^3.0.41",
         "@ai-sdk/huggingface": "^2.0.30",
         "@ai-sdk/openai-compatible": "^3.0.30",
-        "@neuralpay/auth": "workspace:*",
-        "@neuralpay/config": "workspace:*",
-        "@neuralpay/db": "workspace:*",
-        "@neuralpay/env": "workspace:*",
-        "@neuralpay/types": "workspace:*",
+        "@orra/auth": "workspace:*",
+        "@orra/config": "workspace:*",
+        "@orra/db": "workspace:*",
+        "@orra/env": "workspace:*",
+        "@orra/types": "workspace:*",
         "@openrouter/ai-sdk-provider": "^2.9.1",
         "@trpc/server": "catalog:",
         "ai": "^7.0.64",
@@ -53,15 +53,15 @@
       },
     },
     "apps/server/api-gateway": {
-      "name": "@neuralpay/api-gateway",
+      "name": "@orra/api-gateway",
       "dependencies": {
-        "@neuralpay/ai-service": "workspace:*",
-        "@neuralpay/config": "workspace:*",
-        "@neuralpay/env": "workspace:*",
-        "@neuralpay/notification-service": "workspace:*",
-        "@neuralpay/payment-service": "workspace:*",
-        "@neuralpay/redis": "workspace:*",
-        "@neuralpay/user-service": "workspace:*",
+        "@orra/ai-service": "workspace:*",
+        "@orra/config": "workspace:*",
+        "@orra/env": "workspace:*",
+        "@orra/notification-service": "workspace:*",
+        "@orra/payment-service": "workspace:*",
+        "@orra/redis": "workspace:*",
+        "@orra/user-service": "workspace:*",
         "@trpc/server": "catalog:",
         "cors": "catalog:",
         "express": "catalog:",
@@ -87,14 +87,14 @@
       },
     },
     "apps/server/notification-service": {
-      "name": "@neuralpay/notification-service",
+      "name": "@orra/notification-service",
       "version": "0.0.0",
       "dependencies": {
-        "@neuralpay/config": "workspace:*",
-        "@neuralpay/db": "workspace:*",
-        "@neuralpay/env": "workspace:*",
-        "@neuralpay/redis": "workspace:*",
-        "@neuralpay/types": "workspace:*",
+        "@orra/config": "workspace:*",
+        "@orra/db": "workspace:*",
+        "@orra/env": "workspace:*",
+        "@orra/redis": "workspace:*",
+        "@orra/types": "workspace:*",
         "@trpc/server": "catalog:",
         "bullmq": "catalog:",
         "cors": "catalog:",
@@ -117,18 +117,18 @@
       },
     },
     "apps/server/payment-service": {
-      "name": "@neuralpay/payment-service",
+      "name": "@orra/payment-service",
       "version": "0.0.0",
       "dependencies": {
         "@fastify/cors": "^11.2.0",
         "@fastify/helmet": "^13.0.2",
         "@fastify/rate-limit": "^10.3.0",
-        "@neuralpay/auth": "workspace:*",
-        "@neuralpay/config": "workspace:*",
-        "@neuralpay/db": "workspace:*",
-        "@neuralpay/env": "workspace:*",
-        "@neuralpay/redis": "workspace:*",
-        "@neuralpay/types": "workspace:*",
+        "@orra/auth": "workspace:*",
+        "@orra/config": "workspace:*",
+        "@orra/db": "workspace:*",
+        "@orra/env": "workspace:*",
+        "@orra/redis": "workspace:*",
+        "@orra/types": "workspace:*",
         "@paralleldrive/cuid2": "^2.2.2",
         "@trpc/server": "catalog:",
         "better-auth": "catalog:",
@@ -150,15 +150,15 @@
       },
     },
     "apps/server/user-service": {
-      "name": "@neuralpay/user-service",
+      "name": "@orra/user-service",
       "version": "0.0.0",
       "dependencies": {
-        "@neuralpay/auth": "workspace:*",
-        "@neuralpay/config": "workspace:*",
-        "@neuralpay/db": "workspace:*",
-        "@neuralpay/env": "workspace:*",
-        "@neuralpay/file-upload": "workspace:*",
-        "@neuralpay/types": "workspace:*",
+        "@orra/auth": "workspace:*",
+        "@orra/config": "workspace:*",
+        "@orra/db": "workspace:*",
+        "@orra/env": "workspace:*",
+        "@orra/file-upload": "workspace:*",
+        "@orra/types": "workspace:*",
         "@trpc/server": "catalog:",
         "@uploadthing/shared": "7.1.8",
         "axios": "^1.18.1",
@@ -190,12 +190,12 @@
         "@ai-sdk/react": "^3.0.205",
         "@gsap/react": "^2.1.2",
         "@hookform/resolvers": "^5.2.2",
-        "@neuralpay/api-gateway": "workspace:*",
-        "@neuralpay/auth": "workspace:*",
-        "@neuralpay/db": "workspace:*",
-        "@neuralpay/env": "workspace:*",
-        "@neuralpay/types": "workspace:*",
-        "@neuralpay/ui": "workspace:*",
+        "@orra/api-gateway": "workspace:*",
+        "@orra/auth": "workspace:*",
+        "@orra/db": "workspace:*",
+        "@orra/env": "workspace:*",
+        "@orra/types": "workspace:*",
+        "@orra/ui": "workspace:*",
         "@polar-sh/better-auth": "catalog:",
         "@tanstack/react-form": "^1.28.0",
         "@tanstack/react-query": "^5.90.12",
@@ -242,7 +242,7 @@
         "zustand": "^5.0.13",
       },
       "devDependencies": {
-        "@neuralpay/config": "workspace:*",
+        "@orra/config": "workspace:*",
         "@tailwindcss/postcss": "^4.1.18",
         "@tanstack/react-query-devtools": "^5.91.1",
         "@types/node": "^20",
@@ -253,9 +253,9 @@
       },
     },
     "packages/auth": {
-      "name": "@neuralpay/auth",
+      "name": "@orra/auth",
       "dependencies": {
-        "@neuralpay/db": "workspace:*",
+        "@orra/db": "workspace:*",
         "@polar-sh/better-auth": "catalog:",
         "@polar-sh/sdk": "^0.42.2",
         "better-auth": "catalog:",
@@ -269,7 +269,7 @@
       },
     },
     "packages/config": {
-      "name": "@neuralpay/config",
+      "name": "@orra/config",
       "version": "0.0.0",
       "dependencies": {
         "@trpc/server": "catalog:",
@@ -287,7 +287,7 @@
       },
     },
     "packages/db": {
-      "name": "@neuralpay/db",
+      "name": "@orra/db",
       "version": "0.0.0",
       "dependencies": {
         "drizzle-orm": "catalog:",
@@ -304,11 +304,11 @@
       },
     },
     "packages/env": {
-      "name": "@neuralpay/env",
+      "name": "@orra/env",
       "version": "0.0.0",
       "dependencies": {
-        "@neuralpay/db": "workspace:*",
-        "@neuralpay/redis": "workspace:*",
+        "@orra/db": "workspace:*",
+        "@orra/redis": "workspace:*",
         "@t3-oss/env-core": "^0.13.1",
         "@t3-oss/env-nextjs": "^0.13.1",
         "dotenv": "catalog:",
@@ -320,7 +320,7 @@
       },
     },
     "packages/file-upload": {
-      "name": "@neuralpay/file-upload",
+      "name": "@orra/file-upload",
       "version": "0.0.0",
       "dependencies": {
         "express": "catalog:",
@@ -335,11 +335,11 @@
       },
     },
     "packages/redis": {
-      "name": "@neuralpay/redis",
+      "name": "@orra/redis",
       "version": "0.0.0",
       "dependencies": {
-        "@neuralpay/db": "workspace:*",
-        "@neuralpay/types": "workspace:*",
+        "@orra/db": "workspace:*",
+        "@orra/types": "workspace:*",
         "bullmq": "catalog:",
         "ioredis": "catalog:",
         "rate-limiter-flexible": "^11.2.0",
@@ -350,7 +350,7 @@
       },
     },
     "packages/types": {
-      "name": "@neuralpay/types",
+      "name": "@orra/types",
       "version": "0.0.0",
       "dependencies": {
         "zod": "catalog:",
@@ -360,7 +360,7 @@
       },
     },
     "packages/ui": {
-      "name": "@neuralpay/ui",
+      "name": "@orra/ui",
       "version": "0.0.0",
       "dependencies": {
         "@base-ui/react": "^1.5.0",
@@ -396,7 +396,7 @@
         "vaul": "^1.1.2",
       },
       "devDependencies": {
-        "@neuralpay/config": "workspace:*",
+        "@orra/config": "workspace:*",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@types/three": "^0.185.1",
@@ -864,31 +864,31 @@
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.1.4", "", { "dependencies": { "@tybys/wasm-util": "^0.10.1" }, "peerDependencies": { "@emnapi/core": "^1.7.1", "@emnapi/runtime": "^1.7.1" } }, "sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow=="],
 
-    "@neuralpay/ai-service": ["@neuralpay/ai-service@workspace:apps/server/ai-service"],
+    "@orra/ai-service": ["@orra/ai-service@workspace:apps/server/ai-service"],
 
-    "@neuralpay/api-gateway": ["@neuralpay/api-gateway@workspace:apps/server/api-gateway"],
+    "@orra/api-gateway": ["@orra/api-gateway@workspace:apps/server/api-gateway"],
 
-    "@neuralpay/auth": ["@neuralpay/auth@workspace:packages/auth"],
+    "@orra/auth": ["@orra/auth@workspace:packages/auth"],
 
-    "@neuralpay/config": ["@neuralpay/config@workspace:packages/config"],
+    "@orra/config": ["@orra/config@workspace:packages/config"],
 
-    "@neuralpay/db": ["@neuralpay/db@workspace:packages/db"],
+    "@orra/db": ["@orra/db@workspace:packages/db"],
 
-    "@neuralpay/env": ["@neuralpay/env@workspace:packages/env"],
+    "@orra/env": ["@orra/env@workspace:packages/env"],
 
-    "@neuralpay/file-upload": ["@neuralpay/file-upload@workspace:packages/file-upload"],
+    "@orra/file-upload": ["@orra/file-upload@workspace:packages/file-upload"],
 
-    "@neuralpay/notification-service": ["@neuralpay/notification-service@workspace:apps/server/notification-service"],
+    "@orra/notification-service": ["@orra/notification-service@workspace:apps/server/notification-service"],
 
-    "@neuralpay/payment-service": ["@neuralpay/payment-service@workspace:apps/server/payment-service"],
+    "@orra/payment-service": ["@orra/payment-service@workspace:apps/server/payment-service"],
 
-    "@neuralpay/redis": ["@neuralpay/redis@workspace:packages/redis"],
+    "@orra/redis": ["@orra/redis@workspace:packages/redis"],
 
-    "@neuralpay/types": ["@neuralpay/types@workspace:packages/types"],
+    "@orra/types": ["@orra/types@workspace:packages/types"],
 
-    "@neuralpay/ui": ["@neuralpay/ui@workspace:packages/ui"],
+    "@orra/ui": ["@orra/ui@workspace:packages/ui"],
 
-    "@neuralpay/user-service": ["@neuralpay/user-service@workspace:apps/server/user-service"],
+    "@orra/user-service": ["@orra/user-service@workspace:apps/server/user-service"],
 
     "@next/env": ["@next/env@16.2.4", "", {}, "sha512-dKkkOzOSwFYe5RX6y26fZgkSpVAlIOJKQHIiydQcrWH6y/97+RceSOAdjZ14Qa3zLduVUy0TXcn+EiM6t4rPgw=="],
 
@@ -3130,7 +3130,7 @@
 
     "@mswjs/interceptors/@open-draft/deferred-promise": ["@open-draft/deferred-promise@2.2.0", "", {}, "sha512-CecwLWx3rhxVQF6V4bAgPS5t+So2sTbPgAzafKkVizyi7tlwpcFpdFqq+wqF2OwNBmqFuu6tOyouTuxgpMfzmA=="],
 
-    "@neuralpay/ui/ai": ["ai@6.0.203", "", { "dependencies": { "@ai-sdk/gateway": "3.0.129", "@ai-sdk/provider": "3.0.10", "@ai-sdk/provider-utils": "4.0.29", "@opentelemetry/api": "^1.9.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-2Qi1ZPGF/FnlvnRqntVgRbUYGeA5ZKFYwTtgu8rcUzMmddArM/nLsvCW69Ip99B1cop6XHRHl+GCKk9t9B+GDA=="],
+    "@orra/ui/ai": ["ai@6.0.203", "", { "dependencies": { "@ai-sdk/gateway": "3.0.129", "@ai-sdk/provider": "3.0.10", "@ai-sdk/provider-utils": "4.0.29", "@opentelemetry/api": "^1.9.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-2Qi1ZPGF/FnlvnRqntVgRbUYGeA5ZKFYwTtgu8rcUzMmddArM/nLsvCW69Ip99B1cop6XHRHl+GCKk9t9B+GDA=="],
 
     "@noble/curves/@noble/hashes": ["@noble/hashes@1.8.0", "", {}, "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="],
 
@@ -3634,11 +3634,11 @@
 
     "@isaacs/cliui/string-width/emoji-regex": ["emoji-regex@9.2.2", "", {}, "sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg=="],
 
-    "@neuralpay/ui/ai/@ai-sdk/gateway": ["@ai-sdk/gateway@3.0.129", "", { "dependencies": { "@ai-sdk/provider": "3.0.10", "@ai-sdk/provider-utils": "4.0.29", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-KEQpZGJuCksc4iFxYtVHeHHG7yH0izGFzJLmRZlriI0hFIzJF9bT2AzJoaTHUI6minlxtP0WKYh84dP18o/Cuw=="],
+    "@orra/ui/ai/@ai-sdk/gateway": ["@ai-sdk/gateway@3.0.129", "", { "dependencies": { "@ai-sdk/provider": "3.0.10", "@ai-sdk/provider-utils": "4.0.29", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-KEQpZGJuCksc4iFxYtVHeHHG7yH0izGFzJLmRZlriI0hFIzJF9bT2AzJoaTHUI6minlxtP0WKYh84dP18o/Cuw=="],
 
-    "@neuralpay/ui/ai/@ai-sdk/provider": ["@ai-sdk/provider@3.0.10", "", { "dependencies": { "json-schema": "^0.4.0" } }, "sha512-Q3BZ27qfpYqnCYGvE3vt+Qi6LGOF9R5Nmzn+9JoM1lCRsD9mYaIhfJLkSunN48nfGXJ6n+XNV0J/XVpqGQl7Dw=="],
+    "@orra/ui/ai/@ai-sdk/provider": ["@ai-sdk/provider@3.0.10", "", { "dependencies": { "json-schema": "^0.4.0" } }, "sha512-Q3BZ27qfpYqnCYGvE3vt+Qi6LGOF9R5Nmzn+9JoM1lCRsD9mYaIhfJLkSunN48nfGXJ6n+XNV0J/XVpqGQl7Dw=="],
 
-    "@neuralpay/ui/ai/@ai-sdk/provider-utils": ["@ai-sdk/provider-utils@4.0.29", "", { "dependencies": { "@ai-sdk/provider": "3.0.10", "@standard-schema/spec": "^1.1.0", "eventsource-parser": "^3.0.8" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-uhukHaCBvqkwBHkT8C2PrnqKTCoLn3pdHXqtcR9I8ErH+flbzgW4o7VHSNIup9LRu+WBvZIZDQLsx6rwl2tiOA=="],
+    "@orra/ui/ai/@ai-sdk/provider-utils": ["@ai-sdk/provider-utils@4.0.29", "", { "dependencies": { "@ai-sdk/provider": "3.0.10", "@standard-schema/spec": "^1.1.0", "eventsource-parser": "^3.0.8" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-uhukHaCBvqkwBHkT8C2PrnqKTCoLn3pdHXqtcR9I8ErH+flbzgW4o7VHSNIup9LRu+WBvZIZDQLsx6rwl2tiOA=="],
 
     "@openrouter/ai-sdk-provider/ai/@ai-sdk/gateway": ["@ai-sdk/gateway@3.0.129", "", { "dependencies": { "@ai-sdk/provider": "3.0.10", "@ai-sdk/provider-utils": "4.0.29", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-KEQpZGJuCksc4iFxYtVHeHHG7yH0izGFzJLmRZlriI0hFIzJF9bT2AzJoaTHUI6minlxtP0WKYh84dP18o/Cuw=="],
 
@@ -4066,7 +4066,7 @@
 
     "@google-cloud/storage/google-auth-library/gcp-metadata/google-logging-utils": ["google-logging-utils@0.0.2", "", {}, "sha512-NEgUnEcBiP5HrPzufUkBzJOD/Sxsco3rLNo1F1TNf7ieU8ryUzBhqba8r756CjLX7rn3fHl6iLEwPYuqpoKgQQ=="],
 
-    "@neuralpay/ui/ai/@ai-sdk/provider-utils/@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
+    "@orra/ui/ai/@ai-sdk/provider-utils/@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 
     "@openrouter/ai-sdk-provider/ai/@ai-sdk/provider-utils/@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 

@@ -2,8 +2,8 @@
 
 import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
-import { useSidebar } from "@neuralpay/ui/components/sidebar";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { useSidebar } from "@orra/ui/components/sidebar";
+import { cn } from "@orra/ui/lib/utils";
 import type { Route } from "next";
 
 interface LogoProps {
@@ -61,7 +61,7 @@ export function Logo({
       >
         <Image
           src={src}
-          alt="NeuralPay Logo"
+          alt="Orra Logo"
           fill={fill}
           width={!fill ? size : undefined}
           height={!fill ? size : undefined}
@@ -76,7 +76,7 @@ export function Logo({
       {/* Brand Text */}
       {shouldDisplayText && (
         <span className="text-[15px] font-semibold tracking-tight text-foreground transition-opacity duration-200">
-          NeuralPay
+          Orra
         </span>
       )}
     </Link>

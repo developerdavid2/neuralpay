@@ -1,5 +1,5 @@
-import { db } from "@neuralpay/db";
-import { transactions } from "@neuralpay/db/schema";
+import { db } from "@orra/db";
+import { transactions } from "@orra/db/schema";
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 
 const SUM_TOTAL = sql<number>`COALESCE(SUM(${transactions.amount}), 0)`;
@@ -39,13 +39,7 @@ export async function fetchCategorySpending(
   userId: string,
   input: CategorySpendingInput,
 ): Promise<CategoryTotal[]> {
-  const {
-    startDate,
-    endDate,
-    includeCount = false,
-    limit,
-    category,
-  } = input;
+  const { startDate, endDate, includeCount = false, limit, category } = input;
 
   const query = db
     .select({

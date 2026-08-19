@@ -5,13 +5,13 @@ import {
   BUDGET_COLORS,
   BUDGET_PERIODS,
   type BudgetPeriod,
-} from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
-import { Field, FieldError, FieldLabel } from "@neuralpay/ui/components/field";
-import { Input } from "@neuralpay/ui/components/input";
-import { Slider } from "@neuralpay/ui/components/slider";
-import { Textarea } from "@neuralpay/ui/components/textarea";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/types";
+import { Button } from "@orra/ui/components/button";
+import { Field, FieldError, FieldLabel } from "@orra/ui/components/field";
+import { Input } from "@orra/ui/components/input";
+import { Slider } from "@orra/ui/components/slider";
+import { Textarea } from "@orra/ui/components/textarea";
+import { cn } from "@orra/ui/lib/utils";
 import { endOfMonth, endOfWeek, startOfMonth, startOfWeek } from "date-fns";
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo } from "react";

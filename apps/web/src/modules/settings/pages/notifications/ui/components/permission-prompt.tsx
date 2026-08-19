@@ -7,8 +7,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@neuralpay/ui/components/dialog";
-import { Button } from "@neuralpay/ui/components/button";
+} from "@orra/ui/components/dialog";
+import { Button } from "@orra/ui/components/button";
 
 interface PermissionPromptProps {
   open: boolean;

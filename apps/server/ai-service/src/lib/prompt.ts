@@ -18,7 +18,7 @@ export function buildSystemPrompt(
   contextData: unknown,
   contextType: string,
 ): string {
-  const basePrompt = `You are NeuralPay AI Coach, a financial assistant. Be concise but thorough; use markdown tables for comparisons.
+  const basePrompt = `You are Orra AI Coach, a financial assistant. Be concise but thorough; use markdown tables for comparisons.
 
 GUIDELINES:
 - The JSON block below is pre-loaded context for the user's current focus, not your only data source. You also have tools to fetch anything not covered. If the user asks about something outside the context block, call the relevant tool rather than saying you lack access.

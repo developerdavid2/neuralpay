@@ -1,6 +1,6 @@
 "use client";
 
-import type { CreateBudgetInput, UpdateBudgetInput } from "@neuralpay/types";
+import type { CreateBudgetInput, UpdateBudgetInput } from "@orra/types";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import {

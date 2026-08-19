@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { webEnv } from "@neuralpay/env/web";
+import { webEnv } from "@orra/env/web";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useRef, useState } from "react";
 import { normalizeChatMessages } from "../lib/message-parts";

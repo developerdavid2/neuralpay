@@ -1,7 +1,7 @@
 "use client";
 
-import type { Budget } from "@neuralpay/types";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import type { Budget } from "@orra/types";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { Sparkles } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { InfiniteScroll } from "@/components/infinite-scroll";

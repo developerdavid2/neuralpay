@@ -1,5 +1,5 @@
 {
-  "name": "@neuralpay/auth",
+  "name": "@orra/auth",
   "type": "module",
   "exports": {
     ".": {
@@ -11,7 +11,7 @@
   },
   "scripts": {},
   "dependencies": {
-    "@neuralpay/db": "workspace:*",
+    "@orra/db": "workspace:*",
     "@polar-sh/better-auth": "catalog:",
     "@polar-sh/sdk": "^0.42.2",
     "better-auth": "catalog:",

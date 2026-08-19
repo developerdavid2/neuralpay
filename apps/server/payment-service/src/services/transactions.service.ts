@@ -1,11 +1,11 @@
-import { db } from "@neuralpay/db";
+import { db } from "@orra/db";
 import {
   bankAccounts,
   budgetCategories,
   budgets,
   transactions,
-} from "@neuralpay/db/schema";
-import { cache, cacheKeys, emitNotification } from "@neuralpay/redis";
+} from "@orra/db/schema";
+import { cache, cacheKeys, emitNotification } from "@orra/redis";
 import {
   type BatchDeleteInput,
   type CreateTransactionInput,
@@ -20,7 +20,7 @@ import {
   type TransactionsFilterInput,
   type TxMonthlySummaryFilterInput,
   type UpdateTransactionInput,
-} from "@neuralpay/types";
+} from "@orra/types";
 import {
   differenceInDays,
   endOfDay,

@@ -7,7 +7,7 @@ import type {
   SubscriptionExpiringPayload,
   SubscriptionCancelledPayload,
   NotificationEvent,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 type SubscriptionEvent = Extract<
   NotificationEvent,

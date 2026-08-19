@@ -1,4 +1,4 @@
-import type { BudgetsListInput } from "@neuralpay/types";
+import type { BudgetsListInput } from "@orra/types";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo } from "react";

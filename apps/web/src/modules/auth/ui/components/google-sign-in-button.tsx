@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+import { Spinner } from "@orra/ui/components/spinner";
 import { useGetSocialSignInUrl } from "../../hooks/mutations/use-get-social-sign-in-url";
-import { webEnv } from "@neuralpay/env/web";
+import { webEnv } from "@orra/env/web";
 import GoogleIcon from "../../../../../public/assets/icons/google";
 
 interface GoogleSignInButtonProps {

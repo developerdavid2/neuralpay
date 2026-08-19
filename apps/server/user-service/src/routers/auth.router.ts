@@ -1,4 +1,4 @@
-import { publicProcedure, router } from "@neuralpay/config/trpc";
+import { publicProcedure, router } from "@orra/config/trpc";
 import {
   signInSchema,
   signUpSchema,
@@ -8,7 +8,7 @@ import {
   sendOtpSchema,
   socialSignInSchema,
   socialSignInUrlSchema,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { TRPCError } from "@trpc/server";
 import { AuthService } from "../services/auth.service";
 

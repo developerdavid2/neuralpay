@@ -1,10 +1,10 @@
-import { db } from "@neuralpay/db";
-import { chatMessages } from "@neuralpay/db/schema";
+import { db } from "@orra/db";
+import { chatMessages } from "@orra/db/schema";
 import {
   CONTEXT_TOOL_SCOPE,
   type StreamChatRequest,
   type StreamChatResponse,
-} from "@neuralpay/types";
+} from "@orra/types";
 import {
   convertToModelMessages,
   createUIMessageStreamResponse,

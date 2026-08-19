@@ -3,7 +3,7 @@ import {
   ACCOUNT_TYPES,
   type AccountStatus,
   type AccountType,
-} from "@neuralpay/types";
+} from "@orra/types";
 
 export function validateAccountStatuses(
   raw?: string | string[],

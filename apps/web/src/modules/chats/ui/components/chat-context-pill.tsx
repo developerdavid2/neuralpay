@@ -11,15 +11,15 @@ import {
   Wallet,
 } from "lucide-react";
 
-import type { ChatContextType } from "@neuralpay/types";
-import { Badge } from "@neuralpay/ui/components/badge";
+import type { ChatContextType } from "@orra/types";
+import { Badge } from "@orra/ui/components/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@neuralpay/ui/components/tooltip";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/tooltip";
+import { cn } from "@orra/ui/lib/utils";
 import { useSessionDetails } from "../../hooks/queries/use-session-details";
 
 const contextConfig: Record<

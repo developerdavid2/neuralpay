@@ -1,4 +1,4 @@
-import { db, vaults } from "@neuralpay/db";
+import { db, vaults } from "@orra/db";
 import { and, eq } from "drizzle-orm";
 
 export async function fetchVaultContext(

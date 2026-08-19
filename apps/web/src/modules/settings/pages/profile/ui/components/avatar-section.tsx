@@ -6,8 +6,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@neuralpay/ui/components/avatar";
-import { Button } from "@neuralpay/ui/components/button";
+} from "@orra/ui/components/avatar";
+import { Button } from "@orra/ui/components/button";
 import { Camera, Trash2 } from "lucide-react";
 import { Show } from "@/components/show";
 import { ImageCropper, type FileWithPreview } from "@/components/image-cropper";

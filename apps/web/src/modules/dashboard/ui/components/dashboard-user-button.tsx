@@ -16,12 +16,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@neuralpay/ui/components/alert-dialog";
+} from "@orra/ui/components/alert-dialog";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@neuralpay/ui/components/avatar";
+} from "@orra/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,15 +29,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@neuralpay/ui/components/dropdown-menu";
+} from "@orra/ui/components/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@neuralpay/ui/components/sidebar";
-import { Spinner } from "@neuralpay/ui/components/spinner";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/sidebar";
+import { Spinner } from "@orra/ui/components/spinner";
+import { cn } from "@orra/ui/lib/utils";
 import { useSignOut } from "@/modules/auth/hooks/mutations/use-sign-out";
 
 export function DashboardUserButton() {

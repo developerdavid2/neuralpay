@@ -1,4 +1,4 @@
-import { router } from "@neuralpay/config/trpc";
+import { router } from "@orra/config/trpc";
 import { appNotificationRouter } from "./notifications.router";
 
 export const notificationsRouter = router({

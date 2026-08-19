@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Button } from "@neuralpay/ui/components/button";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Button } from "@orra/ui/components/button";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { toast } from "sonner";
 import { useSessions } from "../../hooks/queries/use-sessions";
 import { useRevokeSession } from "../../hooks/mutations/use-revoke-session";

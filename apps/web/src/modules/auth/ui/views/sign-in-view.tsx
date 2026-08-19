@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signInSchema, type SignInInput } from "@neuralpay/types";
+import { signInSchema, type SignInInput } from "@orra/types";
 import { Eye, EyeOff, OctagonAlertIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,22 +9,22 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { PremiumButton } from "@/components/premium-button";
-import { Alert, AlertTitle } from "@neuralpay/ui/components/alert";
-import { Button } from "@neuralpay/ui/components/button";
-import { Checkbox } from "@neuralpay/ui/components/checkbox";
+import { Alert, AlertTitle } from "@orra/ui/components/alert";
+import { Button } from "@orra/ui/components/button";
+import { Checkbox } from "@orra/ui/components/checkbox";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@neuralpay/ui/components/field";
-import { Input } from "@neuralpay/ui/components/input";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/field";
+import { Input } from "@orra/ui/components/input";
+import { cn } from "@orra/ui/lib/utils";
 import { toast } from "sonner";
 import { AppleSignInButton } from "../components/apple-sign-in-button";
 import { GoogleSignInButton } from "../components/google-sign-in-button";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+import { Spinner } from "@orra/ui/components/spinner";
 import { useSignIn } from "../../hooks/mutations/use-sign-in";
 
 type FormStatus =

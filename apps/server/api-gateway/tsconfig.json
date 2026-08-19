@@ -1,5 +1,5 @@
 {
-  "extends": "@neuralpay/config/tsconfig.base.json",
+  "extends": "@orra/config/tsconfig.base.json",
   "compilerOptions": {
     // No `composite`/declaration emit: nothing consumes this project's .d.ts
     // (consumers import ./src/router.ts directly via package exports), and

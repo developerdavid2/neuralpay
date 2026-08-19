@@ -39,7 +39,7 @@ const checks = async () => {
   );
 };
 
-console.log(`${color.cyan}NeuralPay Backend Health Check${color.reset}`);
+console.log(`${color.cyan}Orra Backend Health Check${color.reset}`);
 console.log(
   [
     pad("SERVICE", 24),

@@ -1,4 +1,4 @@
-# NeuralPay landing design standard
+# Orra landing design standard
 
 > The full decision and its reasoning live in spec `docs/specs/apps/web/0001-landing-design-system/`. This file is the quick reference every landing section should read. Pattern evidence: `apps/web/src/modules/landing`.
 > This is the landing's own standard, separate from the dashboard's `DESIGN.md`. Working on the landing follows this file; working on the dashboard follows DESIGN.md.

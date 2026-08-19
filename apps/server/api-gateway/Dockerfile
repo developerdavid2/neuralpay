@@ -5,7 +5,7 @@ WORKDIR /app
 # ── Stage 1: Prune monorepo to only what this service needs
 FROM base AS pruner
 COPY . .
-RUN turbo prune @neuralpay/api-gateway --docker
+RUN turbo prune @orra/api-gateway --docker
 
 # ── Stage 2: Install dependencies
 FROM base AS installer
@@ -17,7 +17,7 @@ RUN bun install
 FROM base AS builder
 COPY --from=installer /app .
 COPY --from=pruner /app/out/full/ .
-RUN bun run build --filter=@neuralpay/api-gateway
+RUN bun run build --filter=@orra/api-gateway
 
 # ── Stage 4: Production runner
 FROM oven/bun:1.3.11-alpine AS runner

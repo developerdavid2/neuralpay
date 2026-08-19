@@ -7,17 +7,17 @@ import {
   type Disable2FAInput,
   type Enable2FAResult,
   type Verify2FAInput,
-} from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
+} from "@orra/types";
+import { Button } from "@orra/ui/components/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@neuralpay/ui/components/dialog";
-import { Input } from "@neuralpay/ui/components/input";
-import { Label } from "@neuralpay/ui/components/label";
+} from "@orra/ui/components/dialog";
+import { Input } from "@orra/ui/components/input";
+import { Label } from "@orra/ui/components/label";
 import { Check, Copy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
@@ -106,7 +106,7 @@ export function TwoFaSetupDialog({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "neuralpay-backup-codes.txt";
+    a.download = "orra-backup-codes.txt";
     a.click();
     URL.revokeObjectURL(url);
   };

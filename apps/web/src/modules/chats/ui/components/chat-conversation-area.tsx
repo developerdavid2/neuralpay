@@ -5,10 +5,10 @@ import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
-} from "@neuralpay/ui/components/ai-elements/conversation";
-import { Avatar, AvatarFallback } from "@neuralpay/ui/components/avatar";
-import { Button } from "@neuralpay/ui/components/button";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+} from "@orra/ui/components/ai-elements/conversation";
+import { Avatar, AvatarFallback } from "@orra/ui/components/avatar";
+import { Button } from "@orra/ui/components/button";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { AlertCircle, ArchiveRestore, Bot } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";

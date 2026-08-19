@@ -4,14 +4,14 @@ import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import { Button } from "@neuralpay/ui/components/button";
-import { Calendar } from "@neuralpay/ui/components/calendar";
+import { Button } from "@orra/ui/components/button";
+import { Calendar } from "@orra/ui/components/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@neuralpay/ui/components/popover";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/popover";
+import { cn } from "@orra/ui/lib/utils";
 import type { Matcher } from "react-day-picker";
 
 interface DatePickerProps {

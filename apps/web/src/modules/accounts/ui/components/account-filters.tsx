@@ -1,17 +1,17 @@
 "use client";
 
-import { Badge } from "@neuralpay/ui/components/badge";
-import { Button } from "@neuralpay/ui/components/button";
-import { Separator } from "@neuralpay/ui/components/separator";
+import { Badge } from "@orra/ui/components/badge";
+import { Button } from "@orra/ui/components/button";
+import { Separator } from "@orra/ui/components/separator";
 import {
   Sheet,
   SheetContent,
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@neuralpay/ui/components/sheet";
-import { Switch } from "@neuralpay/ui/components/switch";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/sheet";
+import { Switch } from "@orra/ui/components/switch";
+import { cn } from "@orra/ui/lib/utils";
 import { AlertTriangle, Filter, SlidersHorizontal, Tag, X } from "lucide-react";
 import { DebouncedSearchInput } from "@/components/debounced-search-input";
 import { ACCOUNT_STATUS_CONFIG, ACCOUNT_TYPE_CONFIG } from "../../constants";

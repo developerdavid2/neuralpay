@@ -6,7 +6,7 @@ import type {
   SignUpInput,
   SignUpResult,
   VerifyOTPResult,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { auth } from "../lib/auth";
 
 function getCookies(response: Response): string[] {

@@ -9,7 +9,7 @@ export interface CacheOptions {
 export class Cache {
   private defaultPrefix: string;
 
-  constructor(prefix = "neuralpay") {
+  constructor(prefix = "orra") {
     this.defaultPrefix = prefix;
   }
 

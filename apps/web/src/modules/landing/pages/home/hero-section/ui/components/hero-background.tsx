@@ -8,11 +8,11 @@ import { LANDING_THEME } from "@/modules/landing/pages/constants/theme";
 import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
 import { useLandingReady } from "@/modules/landing/lib/use-landing-ready";
 
-import Orb from "@neuralpay/ui/components/react-bits/orb";
-import MagicRings from "@neuralpay/ui/components/react-bits/magic-rings";
+import Orb from "@orra/ui/components/react-bits/orb";
+import MagicRings from "@orra/ui/components/react-bits/magic-rings";
 
 const LightRays = dynamic(
-  () => import("@neuralpay/ui/components/react-bits/light-rays"),
+  () => import("@orra/ui/components/react-bits/light-rays"),
   { ssr: false },
 );
 

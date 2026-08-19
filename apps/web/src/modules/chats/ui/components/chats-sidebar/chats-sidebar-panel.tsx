@@ -6,8 +6,8 @@ import { CHAT_SESSIONS_LIMIT } from "@/modules/chats/constants";
 import { useSessions } from "@/modules/chats/hooks/queries/use-sessions";
 import { useChatFilters } from "@/modules/chats/hooks/use-chat-filters";
 import { useChatSidebarActions } from "@/modules/chats/hooks/use-chat-sidebar-actions";
-import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import type { ChatContextType, ChatTopicType } from "@orra/types";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { useCallback, useState } from "react";
 import { ChatSessionList, ChatSessionListSkeleton } from "../chat-session-list";
 

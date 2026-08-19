@@ -1,4 +1,4 @@
-import { publishToUser } from "@neuralpay/redis";
+import { publishToUser } from "@orra/redis";
 
 export async function broadcastToUser(
   userId: string,

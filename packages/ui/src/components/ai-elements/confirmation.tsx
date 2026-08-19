@@ -1,12 +1,8 @@
 "use client";
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@neuralpay/ui/components/alert";
-import { Button } from "@neuralpay/ui/components/button";
-import { cn } from "@neuralpay/ui/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@orra/ui/components/alert";
+import { Button } from "@orra/ui/components/button";
+import { cn } from "@orra/ui/lib/utils";
 import { CheckIcon, XIcon } from "lucide-react";
 import {
   createContext,
@@ -104,9 +100,7 @@ export type ConfirmationRequestProps = {
   children: ReactNode;
 };
 
-export const ConfirmationRequest = ({
-  children,
-}: ConfirmationRequestProps) => {
+export const ConfirmationRequest = ({ children }: ConfirmationRequestProps) => {
   const { state } = useConfirmation();
 
   if (state !== "approval-requested") {
@@ -185,10 +179,7 @@ export const ConfirmationActions = ({
 
   return (
     <div
-      className={cn(
-        "mt-3 flex flex-wrap items-center gap-2",
-        className,
-      )}
+      className={cn("mt-3 flex flex-wrap items-center gap-2", className)}
       {...props}
     >
       {children}

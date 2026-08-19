@@ -4,8 +4,8 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@neuralpay/ui/components/collapsible";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/collapsible";
+import { cn } from "@orra/ui/lib/utils";
 import { BrainIcon, ChevronDownIcon } from "lucide-react";
 import {
   createContext,
@@ -119,10 +119,7 @@ const defaultThinkingMessage = (
 export type ReasoningTriggerProps = ComponentProps<
   typeof CollapsibleTrigger
 > & {
-  getThinkingMessage?: (
-    isStreaming: boolean,
-    duration?: number,
-  ) => ReactNode;
+  getThinkingMessage?: (isStreaming: boolean, duration?: number) => ReactNode;
 };
 
 export const ReasoningTrigger = ({

@@ -1,7 +1,7 @@
 "use client";
 
-import { AuroraBackground } from "@neuralpay/ui/components/aurora-background";
-import { FlutedGlass } from "@neuralpay/ui/components/react-bits/fluted-glass";
+import { AuroraBackground } from "@orra/ui/components/aurora-background";
+import { FlutedGlass } from "@orra/ui/components/react-bits/fluted-glass";
 import { LandingContainer } from "@/modules/landing/components/landing-container";
 import { useReducedMotion } from "@/modules/landing/lib/reduced-motion";
 import { motion, useInView } from "motion/react";
@@ -20,7 +20,7 @@ export function ManifestoSectionView() {
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
 
   const rawText =
-    "Most banking apps just show you numbers. NeuralPay tells you what they mean — where your money is going, what's unusual, and what you can do about it.";
+    "Most banking apps just show you numbers. Orra tells you what they mean — where your money is going, what's unusual, and what you can do about it.";
 
   const words = rawText.split(" ");
 
@@ -84,7 +84,7 @@ export function ManifestoSectionView() {
               >
                 {words.map((word, idx) => {
                   const isHighlight =
-                    word.includes("NeuralPay") ||
+                    word.includes("Orra") ||
                     word.includes("mean") ||
                     word.includes("unusual");
 

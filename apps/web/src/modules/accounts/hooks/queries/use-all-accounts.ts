@@ -1,4 +1,4 @@
-import type { AccountsListAllInput } from "@neuralpay/types";
+import type { AccountsListAllInput } from "@orra/types";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/trpc-client";
 

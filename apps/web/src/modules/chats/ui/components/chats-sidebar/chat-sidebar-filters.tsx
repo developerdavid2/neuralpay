@@ -2,16 +2,16 @@ import {
   CHAT_CONTEXT_TYPES,
   CHAT_TOPIC_TYPES,
 } from "@/modules/chats/constants";
-import type { ChatContextType, ChatTopicType } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
+import type { ChatContextType, ChatTopicType } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@neuralpay/ui/components/select";
-import { cn } from "@neuralpay/ui/lib/utils";
+} from "@orra/ui/components/select";
+import { cn } from "@orra/ui/lib/utils";
 import { Archive, Filter, X } from "lucide-react";
 
 interface ChatSidebarFiltersProps {

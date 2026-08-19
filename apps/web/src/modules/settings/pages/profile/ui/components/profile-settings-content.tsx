@@ -3,10 +3,10 @@
 import { useProfile } from "@/hooks/queries/use-profile";
 import { useConfirm } from "@/hooks/ui/use-confirm";
 import { useUploadThing } from "@/lib/uploadthing";
-import type { UpdateProfileInput, UserRecord } from "@neuralpay/types";
-import { Button } from "@neuralpay/ui/components/button";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import type { UpdateProfileInput, UserRecord } from "@orra/types";
+import { Button } from "@orra/ui/components/button";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ import { AvatarSection } from "./avatar-section";
 import { LanguageRegionSection } from "./language-region-section";
 import { LocationSection } from "./location-section";
 import { PersonalInfoSection } from "./personal-info-section";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+import { Spinner } from "@orra/ui/components/spinner";
 
 export function ProfileSettingsContent() {
   const { profile, isLoading } = useProfile();

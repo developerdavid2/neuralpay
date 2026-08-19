@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@neuralpay/ui/components/card";
+} from "@orra/ui/components/card";
 
 import {
   CopyIcon,
@@ -28,7 +28,7 @@ import {
   SettingsIcon,
   ChevronUpIcon,
 } from "lucide-react";
-import { Button } from "@neuralpay/ui/components/button";
+import { Button } from "@orra/ui/components/button";
 
 import {
   DropdownMenu,
@@ -38,8 +38,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@neuralpay/ui/components/dropdown-menu";
-import { Spinner } from "@neuralpay/ui/components/spinner";
+} from "@orra/ui/components/dropdown-menu";
+import { Spinner } from "@orra/ui/components/spinner";
 
 export function Demo() {
   const [sliderValue, setSliderValue] = React.useState<number[]>([500]);

@@ -1,4 +1,4 @@
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 import type { HTMLAttributes } from "react";
 
 export function LandingContainer({

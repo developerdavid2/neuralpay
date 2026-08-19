@@ -3,18 +3,15 @@
 import * as React from "react";
 import { Command as CommandPrimitive } from "cmdk";
 
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@neuralpay/ui/components/dialog";
-import {
-  InputGroup,
-  InputGroupAddon,
-} from "@neuralpay/ui/components/input-group";
+} from "@orra/ui/components/dialog";
+import { InputGroup, InputGroupAddon } from "@orra/ui/components/input-group";
 import { SearchIcon, CheckIcon } from "lucide-react";
 
 function Command({

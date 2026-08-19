@@ -4,13 +4,13 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@neuralpay/ui/components/resizable";
+} from "@orra/ui/components/resizable";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@neuralpay/ui/components/tooltip";
+} from "@orra/ui/components/tooltip";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
 import type { ImperativePanelHandle } from "react-resizable-panels";

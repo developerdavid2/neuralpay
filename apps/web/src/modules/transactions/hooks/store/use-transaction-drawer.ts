@@ -1,4 +1,4 @@
-import type { Transaction } from "@neuralpay/types";
+import type { Transaction } from "@orra/types";
 import { create } from "zustand";
 
 export type TransactionDrawerMode = "view" | "edit" | "add";

@@ -2,7 +2,7 @@
 
 ## Context
 
-The landing page is the public face of NeuralPay and it is a work in progress. Hero and manifesto are partially built, and more sections are coming, built by different sessions. The dashboard has DESIGN.md as its durable design reference; the landing has none, so every section invents its own choices. The drift is already visible in code: the hero mixes landing tokens with dashboard tokens, the manifesto implements a one off light and dark flip with a theme ternary, colors are hardcoded as hex in several components, the palette has no light values, and the layout is desktop first.
+The landing page is the public face of Orra and it is a work in progress. Hero and manifesto are partially built, and more sections are coming, built by different sessions. The dashboard has DESIGN.md as its durable design reference; the landing has none, so every section invents its own choices. The drift is already visible in code: the hero mixes landing tokens with dashboard tokens, the manifesto implements a one off light and dark flip with a theme ternary, colors are hardcoded as hex in several components, the palette has no light values, and the layout is desktop first.
 
 The design intent is a soft and warm feel that still reads as high fintech capability, with cybernetic and geometric visuals. The page is a conversion focused marketing page, so animation must serve legibility and CTA visibility rather than compete with them, and it must hold 60fps on mobile. Both light and dark mode are required, with a deliberate inversion rule: a section that is dark in light mode becomes light in dark mode, and the reverse. That is a per section contrast flip, not a whole page token swap.
 

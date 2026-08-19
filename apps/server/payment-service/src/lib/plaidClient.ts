@@ -1,4 +1,4 @@
-import { paymentServiceEnv } from "@neuralpay/env/payment";
+import { paymentServiceEnv } from "@orra/env/payment";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 
 export const plaidClient = new PlaidApi(

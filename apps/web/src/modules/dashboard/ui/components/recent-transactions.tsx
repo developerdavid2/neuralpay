@@ -1,10 +1,10 @@
 "use client";
 
 import { formatAmount } from "@/lib/utils";
-import type { Transaction } from "@neuralpay/types";
-import { Card, CardContent, CardHeader } from "@neuralpay/ui/components/card";
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
-import { cn } from "@neuralpay/ui/lib/utils";
+import type { Transaction } from "@orra/types";
+import { Card, CardContent, CardHeader } from "@orra/ui/components/card";
+import { Skeleton } from "@orra/ui/components/skeleton";
+import { cn } from "@orra/ui/lib/utils";
 import { ArrowUpRight, Package } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";

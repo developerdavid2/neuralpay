@@ -1,12 +1,12 @@
 "use client";
 
-import { Skeleton } from "@neuralpay/ui/components/skeleton";
+import { Skeleton } from "@orra/ui/components/skeleton";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@neuralpay/ui/components/tabs";
+} from "@orra/ui/components/tabs";
 import { CalendarDays, LayoutList } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";

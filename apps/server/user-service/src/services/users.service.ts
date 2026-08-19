@@ -1,10 +1,10 @@
-import { db } from "@neuralpay/db";
-import { user } from "@neuralpay/db/schema";
+import { db } from "@orra/db";
+import { user } from "@orra/db/schema";
 import type {
   ServiceResult,
   UpdateProfileInput,
   UserRecord,
-} from "@neuralpay/types";
+} from "@orra/types";
 import { eq } from "drizzle-orm";
 
 export const UsersService = {

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Collapsible as CollapsiblePrimitive } from "radix-ui";
 
-import { cn } from "@neuralpay/ui/lib/utils";
+import { cn } from "@orra/ui/lib/utils";
 
 function Collapsible({
   ...props
