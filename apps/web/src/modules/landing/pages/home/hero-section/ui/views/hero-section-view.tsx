@@ -100,7 +100,6 @@ export default function HeroSectionView() {
           },
           0,
         )
-
         .to(
           letters,
           {
@@ -114,7 +113,6 @@ export default function HeroSectionView() {
           },
           0.35,
         )
-
         .to(
           [glowHead, path],
           { opacity: 0, duration: 0.6, ease: "power2.out" },
@@ -135,7 +133,7 @@ export default function HeroSectionView() {
             className="relative w-full select-none text-[clamp(4rem,11vw,12rem)] font-normal leading-none tracking-[0.2em] md:tracking-[0.85em] text-section-ink mb-[10%]"
           >
             <svg
-              className="pointer-events-none absolute left-0 -top-[22%] h-[55%] w-full"
+              className="pointer-events-none absolute left-0 top-[-22%] h-[55%] w-full"
               viewBox="0 0 100 40"
               preserveAspectRatio="none"
               fill="none"
