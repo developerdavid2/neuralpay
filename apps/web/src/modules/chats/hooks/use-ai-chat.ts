@@ -1,6 +1,8 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { DEFAULT_CHAT_MODEL_ID, type ToolMode } from "@orra/types";
+import type { SupportedChatModelId } from "@orra/types";
 import { webEnv } from "@orra/env/web";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useRef, useState } from "react";
@@ -8,8 +10,12 @@ import { normalizeChatMessages } from "../lib/message-parts";
 
 export type { ChatMessage } from "../lib/message-parts";
 
+export type ChatMode = ToolMode;
+
 export function useAIChat({ sessionId }: { sessionId: string }) {
   const [input, setInput] = useState("");
+  const [mode, setMode] = useState<ChatMode>("plan");
+  const [model, setModel] = useState<SupportedChatModelId>(DEFAULT_CHAT_MODEL_ID);
   const prevSessionId = useRef(sessionId);
 
   const isLocal = window.location.hostname === "localhost";
@@ -22,7 +28,7 @@ export function useAIChat({ sessionId }: { sessionId: string }) {
     transport: new DefaultChatTransport({
       api: url,
       credentials: "include",
-      body: { sessionId },
+      body: { sessionId, mode, model },
     }),
   });
 
@@ -74,5 +80,9 @@ export function useAIChat({ sessionId }: { sessionId: string }) {
     setMessages: chat.setMessages,
     status: chat.status,
     sendMessage,
+    mode,
+    setMode,
+    model,
+    setModel,
   };
 }

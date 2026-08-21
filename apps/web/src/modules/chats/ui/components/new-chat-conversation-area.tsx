@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { contextSuggestions } from "../../constants";
 import { useStartSession } from "../../hooks/mutations/use-start-session";
+import type { ChatMode } from "../../hooks/use-ai-chat";
+import type { SupportedChatModelId } from "@orra/types";
+import { DEFAULT_CHAT_MODEL_ID } from "@orra/types";
 import { ChatInput } from "./chat-input";
 import { ChatSuggestions } from "./chat-suggestions";
 
@@ -11,20 +14,19 @@ export const NewChatConversationArea = () => {
   const router = useRouter();
   const startSession = useStartSession();
   const [input, setInput] = useState("");
+  const [mode, setMode] = useState<ChatMode>("plan");
+  const [model, setModel] = useState<SupportedChatModelId>(DEFAULT_CHAT_MODEL_ID);
 
   const handleSubmit = useCallback(async () => {
     if (!input.trim() || startSession.isPending) return;
 
-    const session = await startSession.mutateAsync({
-      contextType: "general",
-      topic: "general",
-      title: input.slice(0, 50),
-    });
+    const message = input.trim();
 
+    // Optimistic navigation: navigate immediately with query params
     router.push(
-      `/dashboard/ai-chat/${session.id}?initialMessage=${encodeURIComponent(input)}` as Route,
+      `/dashboard/ai-chat/new?initialMessage=${encodeURIComponent(message)}&mode=${mode}&model=${model}` as Route,
     );
-  }, [input, startSession, router]);
+  }, [input, mode, model, startSession.isPending, router]);
 
   return (
     <div className="w-full max-w-2xl space-y-4">
@@ -39,6 +41,10 @@ export const NewChatConversationArea = () => {
         isLoading={startSession.isPending}
         onInputChange={(e) => setInput(e.target.value)}
         onSubmit={handleSubmit}
+        mode={mode}
+        onModeChange={setMode}
+        model={model}
+        onModelChange={setModel}
       />
     </div>
   );

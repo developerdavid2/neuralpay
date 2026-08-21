@@ -46,6 +46,10 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
     handleSubmit,
     sendMessage,
     isLoading,
+    mode,
+    setMode,
+    model,
+    setModel,
   } = useAIChat({ sessionId });
 
   const unarchiveSession = useUnarchiveSession();
@@ -190,6 +194,10 @@ export function ChatConversationArea({ sessionId, initialMessage }: Props) {
               isLoading={isLoading}
               onInputChange={handleInputChange}
               onSubmit={handleSubmit}
+              mode={mode}
+              onModeChange={setMode}
+              model={model}
+              onModelChange={setModel}
             />
           )}
         </div>
