@@ -2,8 +2,11 @@ import { db } from "@orra/db";
 import { chatMessages } from "@orra/db/schema";
 import {
   CONTEXT_TOOL_SCOPE,
+  DEFAULT_CHAT_MODEL_ID,
+  getToolContracts,
   type StreamChatRequest,
   type StreamChatResponse,
+  type ToolMode,
 } from "@orra/types";
 import {
   convertToModelMessages,
@@ -15,7 +18,7 @@ import {
 import { and, eq } from "drizzle-orm";
 import type { Response } from "express";
 import { fetchContext } from "../context";
-import { getModel } from "../lib/ai-provider";
+import { getModel, getModelById } from "../lib/ai-provider";
 import { buildSystemPrompt } from "../lib/prompt";
 import { buildTools } from "../tools";
 import { AICoachService } from "./coach.service";
@@ -31,6 +34,16 @@ function scopedTools(
   return Object.fromEntries(
     Object.entries(allTools).filter(([name]) => allowed.includes(name)),
   );
+}
+
+function hasPendingToolCalls(message: UIMessage) {
+  return message.parts.some((part) => {
+    if (part.type === "dynamic-tool" || part.type.startsWith("tool-")) {
+      const state = (part as { state?: string }).state;
+      return state !== "output-available" && state !== "output-error";
+    }
+    return false;
+  });
 }
 
 export async function fetchMessageHistory(
@@ -80,10 +93,19 @@ export async function fetchMessageHistory(
 }
 
 export async function handleStreamChat(
-  req: StreamChatRequest,
+  req: StreamChatRequest & { mode?: ToolMode; model?: string },
   res: Response,
 ): Promise<StreamChatResponse> {
-  const { sessionId, userId, content, planTier = "free" } = req;
+  const {
+    sessionId,
+    userId,
+    content,
+    planTier = "free",
+    mode = "plan",
+    model: requestedModel,
+  } = req;
+
+  const startTime = Date.now();
 
   try {
     // 1. Session & quota
@@ -148,18 +170,37 @@ export async function handleStreamChat(
       sessionResult.data.contextType ?? "",
     );
 
-    // 4. Stream
+    // 4. Resolve model: requested > session default > global default
+    let resolvedModel;
+    if (requestedModel) {
+      resolvedModel = getModelById(requestedModel);
+    } else {
+      resolvedModel = getModel();
+    }
+
+    // 5. Resolve tools: primary filter by mode, secondary defense by context
+    const contextType = sessionResult.data.contextType ?? "general";
+    const modeTools = Object.keys(
+      getToolContractsForFiltering(mode, contextType),
+    );
+
+    const allTools = buildTools(userId);
+    const contextTools = scopedTools(allTools, contextType);
+
+    // Intersection: mode allows AND context allows
+    const filteredTools = Object.fromEntries(
+      Object.entries(contextTools).filter(([name]) => modeTools.includes(name)),
+    );
+
+    // 6. Stream
     // maxRetries: 1 — a 429 on the AI Gateway free tier is account-wide and
     // won't clear within the SDK's short backoff; retrying 3x (the default)
     // only triples request count and burns rate-limit quota faster.
     const result = streamText({
-      model: getModel(),
+      model: resolvedModel,
       system: systemPrompt,
       messages: await convertToModelMessages(originalMessages),
-      tools: scopedTools(
-        buildTools(userId),
-        sessionResult.data.contextType ?? "general",
-      ),
+      tools: filteredTools,
       maxRetries: 1,
       stopWhen: ({ steps }) => steps.length >= 5,
       onError: ({ error }) => {
@@ -175,28 +216,32 @@ export async function handleStreamChat(
       stream: result.stream,
       originalMessages,
       onFinish: async ({ messages }) => {
-        // `messages` = full UIMessage[] for this turn, including the new
-        // assistant message with parts in the exact order they streamed
-        // (text, tool calls, tool results, more text — all preserved).
         const assistantMessage = messages[messages.length - 1];
 
-        const metadata = JSON.stringify({
-          contextSnapshot: snapshot,
-          model: process.env.AI_MODEL,
-        });
+        // Only save if there are no pending tool calls
+        if (assistantMessage && !hasPendingToolCalls(assistantMessage)) {
+          const duration = Date.now() - startTime;
 
-        await AICoachService.saveMessage(
-          resolvedSessionId,
-          userId,
-          "assistant",
-          assistantMessage?.parts!,
-          undefined,
-          metadata,
-        );
+          const metadata = JSON.stringify({
+            contextSnapshot: snapshot,
+            mode,
+            model: requestedModel ?? DEFAULT_CHAT_MODEL_ID,
+            duration,
+          });
+
+          await AICoachService.saveMessage(
+            resolvedSessionId,
+            userId,
+            "assistant",
+            assistantMessage.parts,
+            undefined,
+            metadata,
+          );
+        }
       },
       onError: (error) => {
         console.error("[handleStreamChat] stream error:", error);
-        return "Something went wrong generating a response.";
+        return error instanceof Error ? error.message : String(error);
       },
     });
 
@@ -234,4 +279,12 @@ export async function handleStreamChat(
       code: "INTERNAL_SERVER_ERROR",
     };
   }
+}
+
+function getToolContractsForFiltering(mode: ToolMode, contextType: string) {
+  const modeTools = getToolContracts(mode);
+  const allowed = CONTEXT_TOOL_SCOPE[contextType] ?? [];
+  return Object.fromEntries(
+    Object.entries(modeTools).filter(([name]) => allowed.includes(name)),
+  );
 }

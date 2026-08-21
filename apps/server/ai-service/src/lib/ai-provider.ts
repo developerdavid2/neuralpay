@@ -1,6 +1,7 @@
 import { createGroq } from "@ai-sdk/groq";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { findSupportedChatModel } from "@orra/types";
 
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY ?? "",
@@ -15,6 +16,23 @@ const aiGateway = createOpenAICompatible({
   baseURL: "https://ai-gateway.vercel.sh/v1",
   apiKey: process.env.AI_GATEWAY_API_KEY ?? "",
 });
+
+export function getModelById(modelId: string) {
+  const definition = findSupportedChatModel(modelId);
+  if (!definition) {
+    throw new Error(`Unsupported model ID: ${modelId}`);
+  }
+
+  switch (definition.provider) {
+    case "openrouter":
+      return openrouter(definition.id);
+    case "ai-gateway":
+      return aiGateway.languageModel(definition.id);
+    case "groq":
+    default:
+      return groq.languageModel(definition.id);
+  }
+}
 
 export function getModel() {
   const provider = process.env.AI_PROVIDER ?? "groq";
